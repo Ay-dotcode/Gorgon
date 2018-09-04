@@ -54,7 +54,7 @@ namespace Gorgon { namespace Animation {
 		basic_Instance &operator =(A_ &instance) {
 			Remove();
 			isowned = true;
-			instance = &instance;
+			this->instance = &instance;
 
             return *this;
 		}

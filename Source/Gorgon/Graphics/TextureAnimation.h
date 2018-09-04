@@ -67,7 +67,7 @@ namespace Gorgon { namespace Graphics {
 
 		/// Creates a new image animation from the given parent
         basic_TextureAnimation(const ParentType &parent, bool create) :
-		Gorgon::Animation::Base(controller), parent(&parent) { }
+		Gorgon::Animation::Base(create), parent(&parent) { }
 
 		/// Deletes this animation object
 		virtual void DeleteAnimation() const override {

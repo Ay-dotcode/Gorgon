@@ -221,10 +221,6 @@ namespace Animation {
             else
                 return 0;
 		}
-
-
-		int GetWidth() const { return GetSize().Width; }
-		int GetHeight() const { return GetSize().Height; }
     };
     
     template<>
@@ -237,6 +233,37 @@ namespace Animation {
             else
                 return true;
         }
+    
+        virtual void SetController(ControllerBase &controller) override {
+            auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
+            if(me.HasAnimation())
+                return me->SetController(controller);
+        }
+
+        virtual bool HasController() const override { 
+            auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
+            if(me.HasAnimation())
+                return me->HasController();
+            else
+                return false;
+        }
+
+        virtual ControllerBase &GetController() const override {
+#ifndef NDEBUG
+            if(!HasController()) {
+                throw std::runtime_error("Animation does not have a controller");
+            }
+#endif
+            auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
+            return me->GetController();
+        }
+        
+        virtual void RemoveController() override {
+            auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
+            if(me.HasAnimation())
+                return me->RemoveController();
+        }
+
         
     protected:
 		virtual void draw(Graphics::TextureTarget &target, const Geometry::Pointf &p, Graphics::RGBAf color) const override {
@@ -248,7 +275,7 @@ namespace Animation {
 		virtual void draw(Graphics::TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
 			const Geometry::Pointf &p3, const Geometry::Pointf &p4,
 			const Geometry::Pointf &tex1, const Geometry::Pointf &tex2,
-			const Geometry::Pointf &tex3, const Geometry::Pointf &tex4, Graphics::RGBAf color) const 
+			const Geometry::Pointf &tex3, const Geometry::Pointf &tex4, Graphics::RGBAf color) const override 
         {
             auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
             if(me.HasAnimation())
@@ -256,32 +283,32 @@ namespace Animation {
         }
 
 		virtual void draw(Graphics::TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
-			const Geometry::Pointf &p3, const Geometry::Pointf &p4, Graphics::RGBAf color) const
+			const Geometry::Pointf &p3, const Geometry::Pointf &p4, Graphics::RGBAf color) const override
         {
             auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
             if(me.HasAnimation())
                 me->Draw(target, p1, p2, p3, p4);
         }
 
-		virtual void drawstretched(Graphics::TextureTarget &target, const Geometry::Rectanglef &r, Graphics::RGBAf color) const {
+		virtual void drawstretched(Graphics::TextureTarget &target, const Geometry::Rectanglef &r, Graphics::RGBAf color) const override {
             auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
             if(me.HasAnimation())
                 me->DrawStretched(target, r, color);
 		}
 
-		virtual void drawin(Graphics::TextureTarget &target, const Geometry::Rectanglef &r, Graphics::RGBAf color) const { 
+		virtual void drawin(Graphics::TextureTarget &target, const Geometry::Rectanglef &r, Graphics::RGBAf color) const override { 
             auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
             if(me.HasAnimation())
                 me->DrawIn(target, r, color);
 		}
 
-		virtual void drawin(Graphics::TextureTarget &target, const Graphics::SizeController &controller, const Geometry::Rectanglef &r, Graphics::RGBAf color) const {
+		virtual void drawin(Graphics::TextureTarget &target, const Graphics::SizeController &controller, const Geometry::Rectanglef &r, Graphics::RGBAf color) const override {
             auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
             if(me.HasAnimation())
                 me->DrawIn(target, controller, r, color);
         }
 
-		virtual Geometry::Size calculatesize(const Geometry::Size &area) const {
+		virtual Geometry::Size calculatesize(const Geometry::Size &area) const override {
             auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
             if(me.HasAnimation())
                 return me->CalculateSize(area);
@@ -289,7 +316,7 @@ namespace Animation {
                 return {0, 0};
         }
 
-		virtual Geometry::Size calculatesize(const Graphics::SizeController &controller, const Geometry::Size &s) const {
+		virtual Geometry::Size calculatesize(const Graphics::SizeController &controller, const Geometry::Size &s) const override {
             auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
             if(me.HasAnimation())
                 return me->CalculateSize(controller, s);
@@ -297,14 +324,13 @@ namespace Animation {
                 return {0, 0};
         }
 
-		virtual Geometry::Size getsize() const {
+		virtual Geometry::Size getsize() const override {
             auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
             if(me.HasAnimation())
                 return me->GetSize();
             else
                 return {0, 0};
         }
-        
     };
     
 } 

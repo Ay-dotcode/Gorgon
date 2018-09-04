@@ -4,11 +4,10 @@
 #include <Gorgon/Graphics/Layer.h>
 #include <Gorgon/Resource/File.h>
 #include <Gorgon/Resource/Animation.h>
+#include "GraphicsHelper.h"
 
 using Gorgon::Window;
 using Gorgon::Geometry::Point;
-namespace Graphics = Gorgon::Graphics;
-namespace Resource = Gorgon::Resource;
 
 int main() {
     Gorgon::Initialize("anim-test");
@@ -23,31 +22,21 @@ int main() {
 		exit(0);
 	});
 
-	Graphics::Bitmap img3({50, 50}, Graphics::ColorMode::Grayscale);
-
-	for(int x = 0; x<img3.GetWidth(); x++)
-		for(int y = 0; y<img3.GetHeight(); y++) {
-			if((x/(img3.GetWidth()/2)) != (y/(img3.GetHeight()/2)))
-				img3({x, y}, 0) = 0x10;
-			else
-				img3({x, y}, 0) = 0x30;
-		}
-
-	img3.Prepare();
-	img3.DrawIn(l);
+    auto bg = BGImage(30, 30, 0x40, 0x20);
+    bg.Prepare();
 
     Graphics::BitmapAnimationProvider animprov;
 
-    for(int i=0; i<15; i++) {
-        Graphics::Bitmap bmp({30, i + 1}, Graphics::ColorMode::Alpha);
+    for(int i=0; i<25; i++) {
+        Graphics::Bitmap bmp({25, i + 1}, Graphics::ColorMode::Alpha);
         bmp.Clear();
         for(int y = 0; y<i; y++) {
-            for(int x = 0; x<30; x++) {
+            for(int x = 0; x<25; x++) {
                 bmp(x, y, 0) = 255;
             }
         }
         
-        animprov.Add(std::move(bmp), 60);
+        animprov.Add(std::move(bmp), 30+i*5);
     }
     
     animprov.Prepare();
@@ -58,17 +47,33 @@ int main() {
 	std::cout<<"!..."<<animprov.GetDuration()<<std::endl;
 	std::cout<<"!..."<<cbp.GetDuration()<<std::endl;
 
-    Graphics::Instance anim = cbp.CreateAnimation(true);
+    Graphics::Instance anim[8];
+    for(int i=0; i<2; i++) 
+        anim[i] = cbp.CreateAnimation(true);
     
-    anim.Draw(l, 100, 100);
-
+    int tm = 0;
+    int inst = 0;
     
 	while(true) {
         l.Clear();
         
-        for(int i=0; i<20; i++)
-            for(int j=0; j<20; j++)
-                anim.Draw(l, 10+35*i, 10+35*j);
+        bg.DrawIn(l);
+        
+        tm += Time::DeltaTime();
+        
+        if((inst+1) * 500 < tm && inst < 6) {
+            if(inst >= 4)
+                anim[2 + inst] = cbp.CreateAnimation(anim[0].GetController());
+            else
+                anim[2 + inst] = cbp.CreateAnimation(true);
+
+            inst++;
+        }
+        
+        for(int i=0; i<4; i++)
+            for(int j=0; j<2; j++)
+                if(anim[i*2+j].HasAnimation())
+                    anim[i*2+j].Draw(l, 30*i+5, 30*j);
         
 		Gorgon::NextFrame();
 	}
