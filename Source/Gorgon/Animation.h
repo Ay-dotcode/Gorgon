@@ -297,6 +297,7 @@ namespace Gorgon {
 		/// This is the base class for all animations. It handles some common tasks and defines
 		/// the animation interface.
 		class Base {
+			friend class ControllerBase;
 		public:
 			/// Sets the controller for this animation to the given controller.
 			explicit Base(ControllerBase &controller) {
@@ -322,9 +323,7 @@ namespace Gorgon {
 			}
 		
 			/// Virtual destructor
-			virtual ~Base() {
-				if(controller) controller->Remove(*this);
-			}
+			virtual ~Base();
 
 			/// Sets the controller to the given controller.
 			virtual void SetController(ControllerBase &controller) {

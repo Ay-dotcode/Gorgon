@@ -9,11 +9,18 @@
 using Gorgon::Window;
 using Gorgon::Geometry::Point;
 
+namespace Gorgon {
+	namespace Animation {
+
+		extern Utils::Logger log;
+	}}
 int main() {
     Gorgon::Initialize("anim-test");
         
 	Window wind({800, 600}, "animtest", "Animation test", true);
 	Graphics::Initialize();
+
+	Gorgon::Animation::log.InitializeConsole();
 
 	Graphics::Layer l;
 	wind.Add(l);
@@ -53,15 +60,26 @@ int main() {
     
     int tm = 0;
     int inst = 0;
-    
+
+	wind.KeyEvent.Register([&](Gorgon::Input::Key key, float amount) {
+		using namespace Gorgon::Input::Keyboard;
+		if(amount && key == Keycodes::X) {
+			anim[inst+1].Remove();
+			inst--;
+			tm = -1;
+		}
+		return true;
+	});
+
 	while(true) {
         l.Clear();
         
         bg.DrawIn(l);
         
-        tm += Time::DeltaTime();
+		if(tm >= 0)
+			tm += Time::DeltaTime();
         
-        if((inst+1) * 500 < tm && inst < 6) {
+        if((inst+1) * 500 < tm && inst < 6 && tm >= 0) {
             if(inst >= 4)
                 anim[2 + inst] = cbp.CreateAnimation(anim[0].GetController());
             else

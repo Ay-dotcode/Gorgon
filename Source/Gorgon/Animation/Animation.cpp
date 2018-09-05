@@ -3,9 +3,18 @@
 
 #include "../Animation.h"
 #include "../Time.h"
+#include "../Utils/Logging.h"
 
 
 namespace Gorgon { namespace Animation {
+
+	Utils::Logger log;
+
+#ifndef NDEBUG
+#	define LOG	if(true) log
+#else
+#	define LOG if(false) log
+#endif
 
     Governor *Governor::active = nullptr;
 
@@ -47,6 +56,8 @@ namespace Gorgon { namespace Animation {
             governor->controllers.Remove(this);
         else //try removing from active one
             Governor::Active().controllers.Remove(this);
+
+		LOG<<"Controller is destroyed";
 	}
 	
 	void ControllerBase::SetGovernor(Governor &governor) {
@@ -69,7 +80,7 @@ namespace Gorgon { namespace Animation {
 		if(item.IsValid()) {
 			auto &anim=*item;
 			item.Remove();
-			anim.RemoveController();
+			anim.controller = nullptr;
 		}
 		
 		if(animations.GetSize() == 0 && collectable)
@@ -184,4 +195,11 @@ namespace Gorgon { namespace Animation {
 	void Controller::Pause() {
 		ispaused=true;
 	}
+
+	Base::~Base() {
+		if(controller) controller->Remove(*this);
+
+		LOG<<"Animation is destroyed";
+	}
+
 } }
