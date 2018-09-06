@@ -4,6 +4,7 @@
 #include <Gorgon/Graphics/Layer.h>
 #include <Gorgon/Resource/File.h>
 #include <Gorgon/Resource/Animation.h>
+#include <Gorgon/Animation/ControlledTimer.h>
 #include "GraphicsHelper.h"
 
 using Gorgon::Window;
@@ -40,6 +41,8 @@ int main() {
         
         animprov.Add(std::move(bmp), 30+i*5);
     }
+    
+    Gorgon::Animation::ControlledTimer t;
     
     animprov.Prepare();
     

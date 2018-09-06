@@ -33,6 +33,10 @@ namespace Gorgon { namespace Graphics {
 		virtual bool Progress(unsigned &) override {
 			return true;
 		}
+		
+		int GetDuration() const override {
+            return 0;
+        }
 
 		virtual void DeleteAnimation() const override {
 		}

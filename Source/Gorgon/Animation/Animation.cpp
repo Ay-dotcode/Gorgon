@@ -121,6 +121,13 @@ namespace Gorgon { namespace Animation {
 
 			if(progress<0) {
 				if(islooping) {
+                    if(!length && animations.GetSize()) {
+                        length = animations[0].GetDuration();
+                        
+                        if(length == -1) {
+                            length = 0;
+                        }
+                    }
 					if(length) {
 						progress = length-progress;
 					}
@@ -151,7 +158,8 @@ namespace Gorgon { namespace Animation {
 				}
 				else if(leftover) {
 					progress-=leftover;
-					Progress(0);
+                    if(timepassed) // prevent recursion
+                        Progress(0);
 				}
 				callfinished=true;
 			}
@@ -162,6 +170,14 @@ namespace Gorgon { namespace Animation {
 
 	void Controller::Play() {
 		if(isfinished) {
+            if(!length && speed < 0 && animations.GetSize()) {
+                length = animations[0].GetDuration();
+                
+                if(length == -1) {
+                    length = 0;
+                }
+            }
+            
 			if(speed>=0) {
 				progress=0;
 				ispaused=false;

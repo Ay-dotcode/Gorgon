@@ -160,6 +160,12 @@ namespace Gorgon {
 			unsigned progress = 0;
 		};
 
+        /**
+         * This class allows finer control for the animations, allowing loop, stopping at the end, events,
+         * speed and direction control. Use SetLength to control the length of the animation. Otherwise, if
+         * the first controlled animation exists, its length is used. Best used with a single animation or
+         * animations that have the same duration.
+         */
 		class Controller : public ControllerBase {
 		public:
 
@@ -362,6 +368,11 @@ namespace Gorgon {
 			/// progress is possible. If progress should end, leftover parameter should be set to the amount of
 			/// time that cannot be progressed. Progress function should also mind uncontrollable controllers.
 			virtual bool Progress(unsigned &leftover) = 0;
+            
+            /// Returns the duration of the animation if it is a known apriori. If the animation can be progressed
+            /// infinitely, if it is possible to derive optimal duration, it should be returned. In case when it
+            /// is impossible to determine the duration, 
+            virtual int GetDuration() const = 0;
 
 			/// Deletes this animation. Please note that some animations are also the animation provider. In these
 			/// cases trying to delete the animation will delete the provider as well. This function should be called

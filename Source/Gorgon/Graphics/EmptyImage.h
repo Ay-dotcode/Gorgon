@@ -26,6 +26,10 @@ namespace Gorgon { namespace Graphics {
 		virtual bool Progress(unsigned &leftover) override {
 			return true;
 		}
+		
+		int GetDuration() const override {
+            return 0;
+        }
 
 		virtual EmptyImage &CreateAnimation(Gorgon::Animation::ControllerBase &timer) const override {
 			return const_cast<EmptyImage&>(*this);

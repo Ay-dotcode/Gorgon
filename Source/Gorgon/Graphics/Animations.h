@@ -234,6 +234,14 @@ namespace Animation {
             else
                 return true;
         }
+        
+		int GetDuration() const override {
+            auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);
+            if(me.HasAnimation())
+                return me.GetDuration();
+            else
+                return 0;
+        }
     
         virtual void SetController(ControllerBase &controller) override {
             auto &me = dynamic_cast<const basic_Instance<Graphics::RectangularAnimation>&>(*this);

@@ -75,7 +75,11 @@ namespace Gorgon { namespace Graphics {
 		}
         
 		virtual bool Progress(unsigned &leftover) override;
-        
+                		
+		int GetDuration() const override {
+            return parent->GetDuration();
+        }
+
         virtual GL::Texture GetID() const override {
 			if(current < (unsigned)parent->GetCount())
 				return (*parent)[current].GetID();

@@ -691,6 +691,8 @@ namespace Gorgon { namespace Graphics {
 	protected:
 		/// When used as animation, an image is always persistent and it never finishes.
 		bool Progress(unsigned &) override { return true; }
+		
+		int GetDuration() const override { return 0; }
         
         Geometry::Size getsize() const override {
             return GetSize();

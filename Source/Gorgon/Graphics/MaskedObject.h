@@ -65,7 +65,11 @@ namespace Gorgon { namespace Graphics {
 		virtual bool Progress(unsigned &) override {
 			return true; //individual parts will work automatically
 		}
-        
+        		
+		int GetDuration() const override {
+            return base.GetDuration();
+        }
+
     protected:
 		virtual void drawin(TextureTarget &target, const Geometry::Rectanglef &r, RGBAf color) const override;
 

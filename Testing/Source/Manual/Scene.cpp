@@ -177,12 +177,23 @@ int main() {
 	sty.SetTabWidthInLetters(4.f);
 	sty.SetParagraphSpacing(2);
     
-    Graphics::BitmapAnimationProvider prov;
-    prov.Add(BGImage(10, 10, 0x80, 0xa0), 100);
-    prov.Add(BGImage(10, 10, 0xa0, 0xe0), 100);
-    prov.Prepare();
+    Graphics::BitmapAnimationProvider animprov;
 
-	wind.NewScene<InitScene>(SCENE_INIT, bgimage, sty, prov);
+    for(int i=0; i<25; i++) {
+        Graphics::Bitmap bmp({25, i + 1}, Graphics::ColorMode::Alpha);
+        bmp.Clear();
+        for(int y = 0; y<i; y++) {
+            for(int x = 0; x<25; x++) {
+                bmp(x, y, 0) = 255;
+            }
+        }
+        
+        animprov.Add(std::move(bmp), 30+i*5);
+    }
+    
+    animprov.Prepare();
+
+	wind.NewScene<InitScene>(SCENE_INIT, bgimage, sty, animprov);
 	wind.NewScene<NextScene>(NEXT_SCENE, bgimage, sty);
 	wind.SwitchScene(SCENE_INIT);
 
