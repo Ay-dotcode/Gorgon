@@ -4,6 +4,7 @@
 
 #include "Drawables.h"
 #include "../Animation.h"
+#include "../Animation/Discrete.h"
 #include "../Animation/Instance.h"
 #include "../Animation/Storage.h"
 

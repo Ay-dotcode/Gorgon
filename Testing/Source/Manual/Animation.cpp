@@ -9,28 +9,23 @@
 using Gorgon::Window;
 using Gorgon::Geometry::Point;
 
-namespace Gorgon {
-	namespace Animation {
+namespace Gorgon { namespace Animation {
+	extern Utils::Logger log;
+} }
 
-		extern Utils::Logger log;
-	}}
+std::string helptext =
+"Key list:\n"
+"x\tRemove last animation: last two animations uses first animation's controller\n"
+"esc\tClose\n"
+;
+
 int main() {
-    Gorgon::Initialize("anim-test");
-        
-	Window wind({800, 600}, "animtest", "Animation test", true);
-	Graphics::Initialize();
+	Application app("animtest", "Animation Test", helptext);
 
 	Gorgon::Animation::log.InitializeConsole();
 
 	Graphics::Layer l;
-	wind.Add(l);
-
-	wind.DestroyedEvent.Register([]{
-		exit(0);
-	});
-
-    auto bg = BGImage(30, 30, 0x40, 0x20);
-    bg.Prepare();
+	app.wind.Add(l);
 
     Graphics::BitmapAnimationProvider animprov;
 
@@ -61,9 +56,12 @@ int main() {
     int tm = 0;
     int inst = 0;
 
-	wind.KeyEvent.Register([&](Gorgon::Input::Key key, float amount) {
+	app.wind.KeyEvent.Register([&](Gorgon::Input::Key key, float state) {
 		using namespace Gorgon::Input::Keyboard;
-		if(amount && key == Keycodes::X) {
+		if(key == Keycodes::Escape && state) {
+			exit(0);
+		}
+		else if(state && key == Keycodes::X) {
 			anim[inst+1].Remove();
 			inst--;
 			tm = -1;
@@ -73,8 +71,6 @@ int main() {
 
 	while(true) {
         l.Clear();
-        
-        bg.DrawIn(l);
         
 		if(tm >= 0)
 			tm += Time::DeltaTime();

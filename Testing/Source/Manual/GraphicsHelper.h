@@ -54,10 +54,10 @@ public:
 		sty.JustifyLeft();
 
 		sty.SetTabWidthInLetters(6.f);
-		sty.SetParagraphSpacing(2);
+		sty.SetParagraphSpacing(8);
 		sty.Print(l,
 				  helptext
-				  , 500, 10
+				  , 500, 10, wind.GetWidth()-505
 		);
 
 		wind.KeyEvent.Register([](Input::Key key, bool state) {
