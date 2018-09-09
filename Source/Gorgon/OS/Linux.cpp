@@ -139,7 +139,7 @@ namespace Gorgon { namespace OS {
 			close(execpipe[0]);
 
 			//build args
-			char *v[args.size()+2] = {};
+			char *v[args.size()+2];
 			int arg=1;
 			v[0]=(char*)malloc(name.length()+1);
 			strcpy(v[0], Filesystem::GetFilename(name).c_str());
@@ -161,8 +161,7 @@ namespace Gorgon { namespace OS {
 
 			//only arrives here if there is an error
 			write(execpipe[1], &errno, sizeof(errno));
-			close(1);
-			close(2);
+			close(execpipe[1]);
 			exit(-1);
 		}
 		else {
@@ -176,6 +175,91 @@ namespace Gorgon { namespace OS {
 				return false;
 			}
 			close(execpipe[0]);
+			
+			return true;
+		}
+	}
+	
+	#include <ext/stdio_filebuf.h>
+	
+	/// This variant of start enables reading output of the application, buf is returned,
+	/// ownership lies with the caller of the function
+	bool Start(const std::string &name, std::streambuf *&buf, const std::vector<std::string> &args) {
+        buf = nullptr;
+        
+		int execpipe[2];
+		if(pipe(execpipe)) {
+			return false;
+            
+		}int outpipe[2];
+		if(pipe(outpipe)) {
+			return false;
+		}
+
+		if(fcntl(execpipe[1], F_SETFD, fcntl(execpipe[1], F_GETFD) | FD_CLOEXEC) == -1) {
+			close(execpipe[0]);
+			close(execpipe[1]);
+
+			return false;
+		}
+		
+		int f=fork();
+		
+		if(f==-1) {
+			close(execpipe[0]);
+			close(execpipe[1]);
+			close(outpipe[0]);
+			close(outpipe[1]);
+
+			return false;
+		}
+		
+		if(f==0) {
+			close(execpipe[0]);
+			close(outpipe[0]);
+            dup2(outpipe[1], 1);
+
+			//build args
+			char *v[args.size()+2];
+			int arg=1;
+			v[0]=(char*)malloc(name.length()+1);
+			strcpy(v[0], Filesystem::GetFilename(name).c_str());
+
+			for(auto &s : args) {
+				v[arg] = (char*)malloc(s.length()+1);
+				strcpy(v[arg], s.c_str());
+				arg++;
+			}
+			v[args.size()+1]=nullptr;
+
+			//if path is given, from current directory
+			if(name.find_first_of('/')!=name.npos) {
+				execv(name.c_str(), v);
+			}
+			else {
+				execvp(name.c_str(), v);
+			}
+
+			//only arrives here if there is an error
+			write(execpipe[1], &errno, sizeof(errno));
+			close(execpipe[1]);
+			exit(-1);
+		}
+		else {
+			close(execpipe[1]);
+			close(outpipe[1]);
+			int childErrno;
+
+			//check if execution is successful
+			if(read(execpipe[0], &childErrno, sizeof(childErrno)) == sizeof(childErrno)) {
+				close(execpipe[0]);
+                close(outpipe[0]);
+
+				return false;
+			}
+			close(execpipe[0]);
+            
+            buf = new __gnu_cxx::stdio_filebuf<char>(outpipe[0], std::ios::in);
 			
 			return true;
 		}

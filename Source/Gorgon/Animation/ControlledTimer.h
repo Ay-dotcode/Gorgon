@@ -22,9 +22,7 @@ namespace Gorgon { namespace Animation {
             return true;
         }
         
-        virtual void Progress(unsigned int timepassed) override {
-            float v = progress - floor(progress);
-            
+        virtual void Progress(unsigned int) override {
             for(auto &anim : animations) {
                 unsigned int left = 0;
                 
@@ -40,12 +38,14 @@ namespace Gorgon { namespace Animation {
         }
         
         virtual unsigned int GetProgress() const override {
+            float v = progress - floor(progress);
+            
             if(curind < animations.GetSize()) {
                 auto dur = animations[curind].GetDuration();
                 if(dur == -1)
                     return 0;
                 
-                return int(dur * progress);
+                return int(dur * v);
             }
             else
                 return 0;
@@ -54,8 +54,10 @@ namespace Gorgon { namespace Animation {
         /// Returns the progress of the given animation. If the given
         /// index does not exists, this function will return (unsigned)-1.
         unsigned int GetProgress(int ind) const {
+            float v = progress - floor(progress);
+            
             if(ind < animations.GetSize() && ind >= 0)
-                return int(animations[ind].GetDuration() * progress);
+                return int(animations[ind].GetDuration() * v);
             else
                 return (unsigned)-1;
         }

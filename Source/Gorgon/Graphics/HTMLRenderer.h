@@ -227,7 +227,7 @@ private:
             case Tag::Break:
                 if(drawunderlined) { drawline(LineType::Underline); }
                 if(drawstriked) { drawline(LineType::Strike); }
-                yy += (int)std::round(renderer.GetGlyphRenderer()->GetHeight() * 1.2f); // magic number from Font.cpp
+                yy += (int)std::round(renderer.GetGlyphRenderer().GetHeight() * 1.2f); // magic number from Font.cpp
                 xx = orgx;
                 break;
             default:
@@ -318,9 +318,9 @@ private:
         if(linetype == LineType::Underline) {
             HR_LOG_NOTICE("drawing underline");  
             target->Draw((float)underlinedstart,
-                         (float)(yy + renderer.GetGlyphRenderer()->GetUnderlineOffset() /*+ baselineoffset*/),
+                         (float)(yy + renderer.GetGlyphRenderer().GetUnderlineOffset() /*+ baselineoffset*/),
                          (float)(xx  - underlinedstart),
-                         (float)renderer.GetGlyphRenderer()->GetLineThickness(),
+                         (float)renderer.GetGlyphRenderer().GetLineThickness(),
                          ucolor);
         }
         else if(linetype == LineType::Strike) {
@@ -328,7 +328,7 @@ private:
             target->Draw((float)strikedstart,
                          (float)(yy + renderer.GetStrikePosition() /*+ baselineoffset*/),
                          (float)(xx  - strikedstart),
-                         (float)renderer.GetGlyphRenderer()->GetLineThickness(),
+                         (float)renderer.GetGlyphRenderer().GetLineThickness(),
                          scolor);
         }
         else {
@@ -339,13 +339,13 @@ private:
     // !!! further cases can ben covered in a switch-case/if-else block
     void changeglyphrenderer(FontFamily::Style newstyle) {
         // store previous baseline
-        int prevbaselineoffset = (int)renderer.GetGlyphRenderer()->GetBaseLine();
+        int prevbaselineoffset = (int)renderer.GetGlyphRenderer().GetBaseLine();
         
-        renderer.SetGlyphRenderer(fontfamily.GetGlyphRenderer(newstyle));
+        renderer.SetGlyphRenderer(*fontfamily.GetGlyphRenderer(newstyle));
         
         // calculate the baseline offset if there is a difference in baselines
-        if((prevbaselineoffset - renderer.GetGlyphRenderer()->GetBaseLine()) < 0) {
-            baselineoffset =  (int)std::round(prevbaselineoffset - renderer.GetGlyphRenderer()->GetBaseLine());
+        if((prevbaselineoffset - renderer.GetGlyphRenderer().GetBaseLine()) < 0) {
+            baselineoffset =  (int)std::round(prevbaselineoffset - renderer.GetGlyphRenderer().GetBaseLine());
         }
         else {
             baselineoffset = 0;

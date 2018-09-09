@@ -131,7 +131,7 @@ void HTMLRenderer::parseandprint(TextureTarget &target, const std::string &str, 
         }
         else {
             auto start = str.begin() + i;
-            int width = (int)std::round(renderer.GetGlyphRenderer()->GetCursorAdvance(internal::decode(start, str.end())));
+            int width = (int)std::round(renderer.GetGlyphRenderer().GetCursorAdvance(internal::decode(start, str.end())));
             offset += width;
             text += current;
         }

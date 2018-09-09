@@ -17,6 +17,8 @@ namespace Gorgon { namespace Animation {
 std::string helptext =
 "Key list:\n"
 "x\tRemove last animation: last two animations uses first animation's controller\n"
+"1\tRewind controlled timer\n"
+"2\tForward controlled timer\n"
 "esc\tClose\n"
 ;
 
@@ -42,8 +44,6 @@ int main() {
         animprov.Add(std::move(bmp), 30+i*5);
     }
     
-    Gorgon::Animation::ControlledTimer t;
-    
     animprov.Prepare();
     
 	Resource::AnimationStorage *aa = new Resource::Animation(animprov.Duplicate());
@@ -58,6 +58,10 @@ int main() {
     
     int tm = 0;
     int inst = 0;
+    
+    
+    Gorgon::Animation::ControlledTimer t;
+    Graphics::Instance canim = cbp.CreateAnimation(t);
 
 	app.wind.KeyEvent.Register([&](Gorgon::Input::Key key, float state) {
 		using namespace Gorgon::Input::Keyboard;
@@ -69,6 +73,12 @@ int main() {
 			inst--;
 			tm = -1;
 		}
+		else if(state && key == Keycodes::Number_1) {
+            t.SetProgress(t.GetProgressRate() - 0.1);
+        }
+		else if(state && key == Keycodes::Number_2) {
+            t.SetProgress(t.GetProgressRate() + 0.1);
+        }
 		return true;
 	});
 
@@ -91,6 +101,8 @@ int main() {
             for(int j=0; j<2; j++)
                 if(anim[i*2+j].HasAnimation())
                     anim[i*2+j].Draw(l, 30*i+5, 30*j);
+                
+        canim.Draw(l, 150, 30);
         
 		Gorgon::NextFrame();
 	}

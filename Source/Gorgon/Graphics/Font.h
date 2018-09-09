@@ -379,12 +379,12 @@ namespace Gorgon { namespace Graphics {
 			tabwidth = renderer.GetMaxWidth() * 8;
 		}
 
-		GlyphRenderer* GetGlyphRenderer() {
-            return renderer;
+		GlyphRenderer &GetGlyphRenderer() {
+            return *renderer;
         }
         
-        void SetGlyphRenderer(GlyphRenderer *renderer) {
-            this->renderer = renderer;
+        void SetGlyphRenderer(GlyphRenderer &renderer) {
+            this->renderer = &renderer;
         }
 		
         /// Changes the color of the text
@@ -608,15 +608,15 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Distance between tab stops. This value is in pixels. Default value is
-		/// 8 * widest glyph's width. Tabbing is only fully effective when text is
+		/// 8 * A width. Tabbing is only fully effective when text is
 		/// left aligned.
 		void SetTabWidth(int value) {
 			tabwidth = value;
 		}
 
-		/// Sets the tab width in widest glyph's multiples.
+		/// Sets the tab width in digit widths.
 		void SetTabWidthInLetters(float value) {
-			tabwidth = (int)std::round(value * renderer->GetMaxWidth());
+			tabwidth = (int)std::round(value * renderer->GetCursorAdvance('A'));
 		}
 		
 		/// Returns tab width in pixels.

@@ -4,7 +4,17 @@
 #include <Gorgon/Main.h>
 #include <Gorgon/Graphics/Layer.h>
 #include <Gorgon/Graphics/Bitmap.h>
-#include <Gorgon/Graphics/BitmapFont.h>
+#include <Gorgon/Graphics/FreeType.h>
+#include <Gorgon/OS.h>
+
+#ifdef LINUX
+#include <unistd.h>
+#include <wait.h>
+
+namespace Gorgon { namespace OS {
+    bool Start(const std::string &name, std::streambuf *&buf, const std::vector<std::string> &args);
+} }
+#endif
 
 using namespace Gorgon;
 namespace WM = Gorgon::WindowManager;
@@ -46,15 +56,46 @@ public:
 		bgimage = BGImage(25, 25);
 		bgimage.Prepare();
 		bgimage.DrawIn(l);
-
-		fnt.ImportFolder("Victoria", Graphics::BitmapFont::Automatic, 0, "");
-
+    
+        int sz = 11;
+#ifdef WIN32
+        fnt.LoadFile("C:/Windows/Fonts/tahoma.ttf", sz);
+#else
+        bool found = false;
+        std::streambuf *buf;
+        OS::Start("fc-match", buf, {"-v", "sans"});
+        
+        if(buf) {
+            std::istream in(buf);
+            std::string line;
+            while(getline(in, line)) {
+                line = String::Trim(line);
+                auto name = String::Extract(line, ':', true);
+                if(name == "file") {
+                    String::Extract(line, '"', true);
+                    auto fname = String::Extract(line, '"', true);
+                    std::cout<<fname<<std::endl;
+                    found = fnt.LoadFile(fname, sz);
+                    break;
+                }
+            }
+        }
+        
+        if(!found)
+            fnt.LoadFile("/usr/share/fonts/gnu-free/FreeSans.ttf", sz);
+#endif
+        if(!fnt.HasKerning()) {
+            auto bmpfnt = new Graphics::BitmapFont(fnt.MoveOutBitmap());
+            sty.SetGlyphRenderer(*bmpfnt);
+            bmpfnt->AutoKern();
+        }
+        
 		sty.UseFlatShadow({0.f, 1.0f}, {1.f, 1.f});
 		sty.SetColor({0.6f, 1.f, 1.f});
 		sty.JustifyLeft();
 
-		sty.SetTabWidthInLetters(6.f);
-		sty.SetParagraphSpacing(8);
+		sty.SetTabWidthInLetters(4);
+		sty.SetParagraphSpacing(4);
 		sty.Print(l,
 				  helptext
 				  , 500, 10, wind.GetWidth()-505
@@ -71,7 +112,7 @@ public:
 	Window wind;
 	Graphics::Layer l;
 	Bitmap bgimage, icon;
-	Graphics::BitmapFont fnt;
+	Graphics::FreeType fnt;
     Graphics::StyledRenderer sty = {fnt};
     WM::Icon ico;
 
