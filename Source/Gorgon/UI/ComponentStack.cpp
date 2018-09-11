@@ -1612,7 +1612,12 @@ realign:
 				//check if textholder and if so use emsize from the font
 				int emsize = getemsize(comp);
            
-				auto parentmargin = Convert(temp.GetMargin(), parent.innersize, emsize).CombinePadding(Convert(cont.GetPadding(), parent.size, emsize)) + Convert(temp.GetIndent(), parent.innersize, emsize);
+				auto parentmargin = Convert(
+                        temp.GetMargin(), parent.innersize, emsize
+                    ).CombinePadding(
+                        Convert(cont.GetPadding(), parent.size, emsize)
+                    ) + 
+                    Convert(temp.GetIndent(), parent.innersize, emsize);
             
 				auto maxsize = parent.innersize - parentmargin;
             
@@ -1629,14 +1634,23 @@ realign:
 				if(temp.GetValueModification() == temp.ModifySize) {
 					if(NumberOfSetBits(temp.GetValueSource()) == 1) {
 						if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-							size = {{int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, size.Height};
+							size = {
+                                {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, 
+                                size.Height
+                            };
 						}
 						else {
-							size = {size.Width, {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}};
+							size = {
+                                size.Width, 
+                                {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}
+                            };
 						}
 					}
 					else {
-						size ={{int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, {int(calculatevalue(*val, 1, comp)*10000), Dimension::BasisPoint}};
+						size ={
+                            {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, 
+                            {int(calculatevalue(*val, 1, comp)*10000), Dimension::BasisPoint}
+                        };
 					}
 				}
 				else if(temp.GetValueModification() == temp.ModifyWidth) {
@@ -1645,15 +1659,32 @@ realign:
 				else if(temp.GetValueModification() == temp.ModifyHeight) {
 					size ={size.Width, {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}};
 				}
-
-				comp.size = Convert(size, maxsize, emsize);
-            
-				if(
+				
+				if(temp.GetValueModification() == temp.ModifySize && NumberOfSetBits(temp.GetValueSource()) > 1) {
+                    auto minimum = Convert(temp.GetSize(), maxsize, emsize);
+                    
+                    comp.size = Convert(size, maxsize - minimum, emsize) + minimum;
+                }
+                else if(temp.GetValueModification() == temp.ModifyWidth || (temp.GetValueModification() == temp.ModifySize && cont.GetOrientation() == Graphics::Orientation::Horizontal)) {
+                    auto minimum = Convert(temp.GetSize(), maxsize, emsize);
+                                        
+                    comp.size = Convert(size, {maxsize.Width - minimum.Width, maxsize.Height}, emsize) + Geometry::Size(minimum.Width, 0);
+                }
+                else if(temp.GetValueModification() == temp.ModifyHeight || (temp.GetValueModification() == temp.ModifySize && cont.GetOrientation() == Graphics::Orientation::Vertical)) {
+                    auto minimum = Convert(temp.GetSize(), maxsize, emsize);
+                                        
+                    comp.size = Convert(size, {maxsize.Width, maxsize.Height - minimum.Height}, emsize) + Geometry::Size(0, minimum.Height);
+                }
+                else {
+                    comp.size = Convert(size, maxsize, emsize);
+                }
+                
+				if(temp.GetPositioning() == temp.Relative && (
 					(cont.GetOrientation() == Graphics::Orientation::Horizontal && 
 						(size.Width.GetUnit() == Dimension::Percent || size.Width.GetUnit() == Dimension::BasisPoint)) ||
 					(cont.GetOrientation() == Graphics::Orientation::Vertical && 
 						(size.Height.GetUnit() == Dimension::Percent || size.Height.GetUnit() == Dimension::BasisPoint))
-				)
+				))
 					requiresrepass = true;
                 
 				if((temp.GetHorizontalSizing() != temp.Fixed || temp.GetVerticalSizing() != temp.Fixed) &&

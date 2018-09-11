@@ -116,7 +116,7 @@ int main() {
     
     auto &indicator_sym = temp.AddGraphics(4, UI::ComponentCondition::Always);
     indicator_sym.Content.SetDrawable(btn_bg);
-    indicator_sym.SetSize({20, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
+    indicator_sym.SetSize({20, UI::Dimension::Pixel}, {0, UI::Dimension::Pixel});
 	indicator_sym.SetSizing(UI::ComponentTemplate::GrowOnly, UI::ComponentTemplate::Fixed);
     indicator_sym.SetValueModification(indicator_sym.ModifyHeight);
     indicator_sym.SetPositioning(indicator_sym.Absolute);
@@ -160,8 +160,8 @@ int main() {
 	auto &tickt = temp.AddTextholder(8, UI::ComponentCondition::Always);
 	tickt.SetRenderer(styc);
     tickt.SetDataEffect(tickt.ValueText1);
-	tickt.SetSize({12, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
-	tickt.SetMargin(4, 2, 4, 7);
+	tickt.SetSize({16, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
+	tickt.SetMargin(1, 0, 2, 7);
 	tickt.SetRepeatMode(tickt.XTick);
 	tickt.SetPositioning(tickt.Absolute);
 	tickt.SetValueModification(tickt.ModifyX);
@@ -180,7 +180,7 @@ int main() {
     app.wind.Add(button);
 
 
-    UI::ComponentStack stack(temp, {300, 20});
+    UI::ComponentStack stack(temp, {300, 24});
     stack.HandleMouse();
     
     for(auto i = 0; i<=10; i++) {
