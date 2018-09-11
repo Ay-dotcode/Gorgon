@@ -3,6 +3,8 @@
 #include "../Graphics/Font.h"
 #include "../Time.h"
 
+#include "math.h"
+
 namespace Gorgon { namespace UI {
 
     ComponentStack::ComponentStack(const Template& temp, Geometry::Size size) : temp(temp), size(size) {
@@ -140,12 +142,19 @@ namespace Gorgon { namespace UI {
 			if(temp.GetType() == ComponentType::Container) {
 				const auto &ctemp = dynamic_cast<const ContainerTemplate&>(temp);
 
+                Animation::ControllerBase *cnt = &controller;
+                
+                if(ctemp.GetValueModification() == ctemp.ModifyAnimation) {
+                    storage->timer = new Animation::ControlledTimer();
+                    cnt = storage->timer;
+                }
+                
 				if(ctemp.Background.HasContent()) {
-					storage->primary = &ctemp.Background.Instantiate(controller);
+					storage->primary = &ctemp.Background.Instantiate(*cnt);
 				}
 
 				if(ctemp.Overlay.HasContent()) {
-					storage->secondary = &ctemp.Overlay.Instantiate(controller);
+					storage->secondary = &ctemp.Overlay.Instantiate(*cnt);
 				}
 			}
 			else if(temp.GetType() == ComponentType::Placeholder) {
@@ -161,8 +170,15 @@ namespace Gorgon { namespace UI {
 			else if(temp.GetType() == ComponentType::Graphics) {
 				const auto &gtemp = dynamic_cast<const GraphicsTemplate&>(temp);
 
+                Animation::ControllerBase *cnt = &controller;
+                
+                if(gtemp.GetValueModification() == gtemp.ModifyAnimation) {
+                    storage->timer = new Animation::ControlledTimer();
+                    cnt = storage->timer;
+                }
+                
 				if(gtemp.Content.HasContent()) {
-					storage->primary = &gtemp.Content.Instantiate(controller);
+					storage->primary = &gtemp.Content.Instantiate(*cnt);
 				}
 			}
 		}
@@ -175,11 +191,7 @@ namespace Gorgon { namespace UI {
 			}
 		}
 		
-		auto primaryanim = dynamic_cast<const Graphics::Animation*>(storage.at(&temp)->primary);
-        if(primaryanim) {
-            if(primaryanim->HasController())
-                primaryanim->GetController().Reset();
-        }
+		controller.Reset();
 		
 		//handle repeat storage
 		if(temp.GetRepeatMode() != temp.NoRepeat && !repeated.count(&temp) && temp.GetCondition() == ComponentCondition::Always) {
@@ -551,7 +563,6 @@ namespace Gorgon { namespace UI {
 	void ComponentStack::Update() {
 		updaterequired = true;
 	}
-
 
 	Component &ComponentStack::get(int ind, ComponentCondition condition) const {
 		ASSERT(stacksizes[ind], String::Concat("Stack for index ", ind, " is empty"));
@@ -2059,7 +2070,8 @@ realign:
                     if(!stacksizes[i]) continue;
                     
                     if(get(i).GetTemplate().GetValueSource() == ComponentTemplate::UseTransition) {
-                        updaterequired = true;
+                        if(get(i).GetTemplate().GetValueModification() != ComponentTemplate::ModifyAnimation && get(i).GetTemplate().GetValueModification() != ComponentTemplate::NoModification)
+                            updaterequired = true;
                     }
                 }
                         
@@ -2095,6 +2107,14 @@ realign:
         
 		if(updaterequired)
 			update();
+        
+        for(int i=0; i<indices; i++)  {
+            if(!stacksizes[i]) continue;
+            
+            if(storage[&get(i).GetTemplate()]->timer) {
+               storage[&get(i).GetTemplate()]->timer->SetProgress(nextafter(1.0f, 0.0f) * calculatevalue(0, get(i))); 
+            }
+        }
 
 		Gorgon::Layer::Render();
 	}

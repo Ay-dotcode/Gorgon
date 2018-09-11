@@ -2,6 +2,7 @@
 
 #include "Template.h"
 #include "../Graphics/Layer.h"
+#include "../Animation/ControlledTimer.h"
 
 namespace Gorgon { namespace UI {
 
@@ -53,6 +54,17 @@ namespace Gorgon { namespace UI {
 	/// This prevents constant construction and destruction of objects.
 	class ComponentStorage {
 	public:
+        ~ComponentStorage() {
+            if(dynamic_cast<const Animation::Base*>(primary)) 
+                dynamic_cast<const Animation::Base*>(primary)->DeleteAnimation();
+            
+            if(dynamic_cast<const Animation::Base*>(secondary)) 
+                dynamic_cast<const Animation::Base*>(secondary)->DeleteAnimation();
+
+            delete layer;
+            delete timer;
+        }
+        
 		/// Primary drawable is either background for container or the graphics for the graphic
 		/// template
 		const Graphics::Drawable *primary   = nullptr;
@@ -63,6 +75,8 @@ namespace Gorgon { namespace UI {
         /// If necessary a layer will be assigned to this component
         Graphics::Layer *layer = nullptr;
 
+        /// This is a controlled timer that will be used for ModifyAnimation value modification
+        Animation::ControlledTimer *timer = nullptr;
 	};
 
 }}

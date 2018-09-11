@@ -20,6 +20,22 @@ int main() {
 
 	Graphics::Layer l;
     app.wind.Add(l);
+
+    Graphics::BitmapAnimationProvider animprov;
+
+    for(int i=0; i<25; i++) {
+        Graphics::Bitmap bmp({25, 25}, Graphics::ColorMode::Alpha);
+        bmp.Clear();
+        for(int y = 0; y<i; y++) {
+            for(int x = 0; x<25; x++) {
+                bmp(x, y, 0) = 80;
+            }
+        }
+        
+        animprov.Add(std::move(bmp), 30+i*5);
+    }
+    
+    animprov.Prepare();
     
     Graphics::BlankImage border_col(1, 1, 0xff000000);
     Graphics::BlankImage border_bg(0.8f);
@@ -51,8 +67,8 @@ int main() {
 
     //this handles normal to hover, hover and hover to normal
 	auto &btnleft_n_h = lbtn.AddContainer(2, UI::ComponentCondition::Always, UI::ComponentCondition::Hover);
-	btnleft_n_h.Background.SetDrawable(btn_bgh);
-    btnleft_n_h.SetValueModification(btnleft_n_h.ModifySize, btnleft_n_h.UseTransition);
+	btnleft_n_h.Background.SetAnimation(animprov);
+    btnleft_n_h.SetValueModification(btnleft_n_h.ModifyAnimation, btnleft_n_h.UseTransition);
     btnleft_n_h.SetPositioning(btnleft_n_h.Absolute);
 	btnleft_n_h.SetSize({100, UI::Dimension::Percent}, {100, UI::Dimension::Percent});
 	btnleft_n_h.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleRight, UI::Anchor::MiddleRight);
@@ -116,9 +132,9 @@ int main() {
     
     auto &indicator_sym = temp.AddGraphics(4, UI::ComponentCondition::Always);
     indicator_sym.Content.SetDrawable(btn_bg);
-    indicator_sym.SetSize({20, UI::Dimension::Pixel}, {0, UI::Dimension::Pixel});
+    indicator_sym.SetSize({20, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
 	indicator_sym.SetSizing(UI::ComponentTemplate::GrowOnly, UI::ComponentTemplate::Fixed);
-    indicator_sym.SetValueModification(indicator_sym.ModifyHeight);
+    indicator_sym.SetValueModification(indicator_sym.ModifyX);
     indicator_sym.SetPositioning(indicator_sym.Absolute);
     indicator_sym.SetPosition(0, 0);
     indicator_sym.SetMargin(0, 1, 0, 1);
@@ -174,7 +190,7 @@ int main() {
 	rbtn_p.SetTag(UI::ComponentTemplate::IncrementTag);
 	outer.AddIndex(5);
     
-    UI::ComponentStack button(lbtn, {30, 30});
+    UI::ComponentStack button(lbtn, {25, 25});
 	button.HandleMouse();
     button.Move(0, 100);
     app.wind.Add(button);

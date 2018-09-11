@@ -817,9 +817,9 @@ namespace Gorgon {
 			/// is set to 0.5, the degrees will go up to 180. For now, this effect is not in use.
 			ModifyRotation,
 
-			/// Data will affect the frame of the animation. Will only work for Objects
-			/// with animations. For now, this effect is disabled.
-			Frame,
+			/// Data will affect the progress of the animation. Will only work for Objects
+			/// with animations.
+			ModifyAnimation,
 
 			/// Size of this component will be affected. Data will be given as a percent
 			/// and will modify Size property. Useful for sliders and progress bars. The direction
