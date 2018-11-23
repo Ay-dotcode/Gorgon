@@ -13,6 +13,7 @@ namespace Gorgon {
 		
 		Library Integrals("Integrals", "Integral types and functions");
 		Library Keywords("Keywords", "Function like keywords.");
+		Library Math("Math", "Maths library.");
 		extern Library Reflection;
 		
 		namespace {

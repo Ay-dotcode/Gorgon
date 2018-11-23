@@ -37,21 +37,23 @@ namespace Gorgon {
 			// Name of the symbol is optimized out
 			// std::string name;
 		};
-		
+        
+        extern Library Reflection, Integrals, Keywords, Math;
+
 		
 		/// This class defines a virtual environment for scripts to run.
 		class VirtualMachine {
 		public:
 
 			/// Default constructor
-			VirtualMachine(bool automaticreset=true, std::ostream &out=std::cout, std::istream &in=std::cin);
+			explicit VirtualMachine(bool automaticreset=true, std::ostream &out=std::cout, std::istream &in=std::cin);
 			
 			~VirtualMachine() {
 			}
 
 			/// Executes a single statement in this virtual machine. This operation will create a new
-			/// input scope and will not affect current scope
-			bool ExecuteStatement(const std::string &code);
+			/// input scope and run the code within that scope.
+			bool ExecuteStatement(const std::string &code, InputProvider::Dialect dialect = InputProvider::Programming);
 			
 			/// Executes a function in the current scope
 			Data ExecuteFunction(const Function *fn, const std::vector<Data> &params, bool method);
@@ -200,7 +202,8 @@ namespace Gorgon {
 			}
 			
 			/// Sets the handler for special identifiers. These are application defined variables and values.
-			/// Unless they are returned as references, they will be considered as readonly.
+			/// Unless they are returned as references, they will be considered as readonly. Characters @, %,
+			/// !, and $ are treated as special identifiers. They could be functions too.
 			void SetSpecialIdentifierHandler(std::function<Data(char,std::string)> handler) {
 				spechandler=handler;
 			}

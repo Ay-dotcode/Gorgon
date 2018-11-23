@@ -195,8 +195,29 @@ namespace Gorgon {
 		Data VirtualMachine::FindSymbol(const std::string &original, bool reference, bool allownull) {
 			ASSERT(scopeinstances.size(), "No scope instance is active");
 			
+			
 			std::string name=original;
 			std::string cname=String::Extract(name, ':');
+            
+			bool spec=false;
+			switch(original[0]) {
+				case '@':
+				case '%':
+				case '!':
+				case '$':
+					spec=true;
+			}
+			
+			if(spec) {
+				if(spechandler) {
+					Data dat=spechandler(original[0], &original[1]);
+					if(dat.IsValid()) {
+						return dat;
+					}
+				}
+				
+				throw SymbolNotFoundException(original, SymbolType::Identifier, "Special identifier "+original+" cannot be found");
+			}
 			
 			Data current=CurrentScopeInstance().FindSymbol(cname, reference);
 			if(!current.IsValid()) {
@@ -266,6 +287,7 @@ namespace Gorgon {
 				case '@':
 				case '%':
 				case '!':
+				case '$':
 					spec=true;
 			}
 			
@@ -1385,6 +1407,14 @@ namespace Gorgon {
 			
 			scopeinstances.back()->Jumpto(marker.GetLine());
 		}
+		
+		bool VirtualMachine::ExecuteStatement(const std::string &code, InputProvider::Dialect dialect) {
+            std::stringstream ss(code);
+            StreamInput si(ss, dialect);
+            Start(si);
+            
+            return true;
+        }
 		
 		Data VirtualMachine::ExecuteFunction(const Function *fn, const std::vector<Data> &params, bool method) {
 			std::vector<Value> pars;
