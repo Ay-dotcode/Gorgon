@@ -305,7 +305,7 @@ namespace Gorgon { namespace Scripting {
 			),
 			
 			new Scripting::Function("GetTypes", 
-				"Returns the constants in this type", nmspace,
+				"Returns the types in this type", nmspace,
 				{
 					MapFunction(
 						[](const Namespace &n) -> Array* {

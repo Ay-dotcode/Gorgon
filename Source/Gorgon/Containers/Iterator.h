@@ -69,7 +69,7 @@ namespace Gorgon {
 			}
 
 			/// Checks if the operator is pointing to a valid item
-			operator bool() const {
+			explicit operator bool() const {
 				return IsValid();
 			}
 

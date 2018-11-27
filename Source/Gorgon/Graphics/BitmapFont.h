@@ -346,8 +346,8 @@ namespace Gorgon { namespace Graphics {
         bool Release(RectangularDrawable &img) {
             auto it = destroylist.Find(img);
             
-            if(it.IsValid()) {            
-                destroylist.Remove(it);
+            if(it.IsValid()) {
+                destroylist.Remove(*it);
                 
                 return true;
             }

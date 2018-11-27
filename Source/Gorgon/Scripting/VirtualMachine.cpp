@@ -12,6 +12,7 @@ namespace Gorgon {
 		Containers::Hashmap<std::thread::id, VirtualMachine> VirtualMachine::activevms;
 		Type *ParameterTemplateType();
 		Library &FilesystemLib();
+		extern Library Math;
 
 		VirtualMachine::VirtualMachine(bool automaticreset, std::ostream &out, std::istream &in) : 
 		Libraries(libraries), output(&out), input(&in), 
@@ -22,6 +23,7 @@ namespace Gorgon {
 			AddLibrary(Integrals);
 			AddLibrary(Keywords);
 			AddLibrary(Reflection);
+			AddLibrary(Math);
 			AddLibrary(FilesystemLib());
 		}
 		

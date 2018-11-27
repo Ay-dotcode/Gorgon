@@ -41,7 +41,13 @@ namespace Gorgon {
 					return true;
 				}
 				if(str=="false") {
+					return false;
+				}
+				if(str=="yes") {
 					return true;
+				}
+				if(str=="no") {
+					return false;
 				}
 				return String::To<bool>(str);
 			}
@@ -1313,8 +1319,6 @@ namespace Gorgon {
 					Char,
 					String,
 					Variant,
-					new Constant("Pi", "Contains the value of PI", {Double,             3.14159265358979}),
-					new Constant("Euler",  "Contains the value of Euler's number", {Double, 2.71828182845905}),
 			});
 			
 			Integrals.AddMember(ArrayType());
@@ -1445,6 +1449,204 @@ namespace Gorgon {
 			});
 			
 			InitReflection();
+            
+			Math.AddMembers({
+                new Function("Sin",
+                    "This function will calculate sine of an angle given in radians", nullptr,
+                    {
+                        MapFunction(
+                            static_cast<double(*)(double)>(sin),
+                            Types::Double(),
+                            {
+                                Parameter( "value",
+                                    "Input value",
+                                    Types::Double()
+                                )
+                            }
+                        )
+                    }
+                ),
+                new Function("Cos",
+                    "This function will calculate cosine of an angle given in radians", nullptr,
+                    {
+                        MapFunction(
+                            static_cast<double(*)(double)>(cos),
+                            Types::Double(),
+                            {
+                                Parameter( "value",
+                                    "Input value",
+                                    Types::Double()
+                                )
+                            }
+                        )
+                    }
+                ),
+                new Function("Tan",
+                    "This function will calculate tangent of an angle given in radians", nullptr,
+                    {
+                        MapFunction(
+                            static_cast<double(*)(double)>(tan),
+                            Types::Double(),
+                            {
+                                Parameter( "value",
+                                    "Input value",
+                                    Types::Double()
+                                )
+                            }
+                        )
+                    }
+                ),
+                new Function("ASin",
+                    "This function will calculate arcsine of a given number to obtain angle in radians", nullptr,
+                    {
+                        MapFunction(
+                            static_cast<double(*)(double)>(asin),
+                            Types::Double(),
+                            {
+                                Parameter( "value",
+                                    "Input value",
+                                    Types::Double()
+                                )
+                            }
+                        )
+                    }
+                ),
+                new Function("ACos",
+                    "This function will calculate arccosine of a given number to obtain angle in radians", nullptr,
+                    {
+                        MapFunction(
+                            static_cast<double(*)(double)>(acos),
+                            Types::Double(),
+                            {
+                                Parameter( "value",
+                                    "Input value",
+                                    Types::Double()
+                                )
+                            }
+                        )
+                    }
+                ),
+                new Function("Atan",
+                    "This function will calculate arctangent of a given number to obtain angle in radians", nullptr,
+                    {
+                        MapFunction(
+                            static_cast<double(*)(double)>(atan),
+                            Types::Double(),
+                            {
+                                Parameter( "value",
+                                    "Input value",
+                                    Types::Double()
+                                )
+                            }
+                        ),
+                        MapFunction(
+                            static_cast<double(*)(double, double)>(atan2),
+                            Types::Double(),
+                            {
+                                Parameter( "y",
+                                    "Input value",
+                                    Types::Double()
+                                ),
+                                Parameter( "x",
+                                    "Input value",
+                                    Types::Double()
+                                )
+                            }
+                        )
+                    }
+                ),
+                new Function("Degrees",
+                    "Converts the given angle in radians to degrees.", nullptr,
+                    {
+                        MapFunction(
+                            [](double v) { return v * (180.0/3.141592653589793238463); },
+                            Types::Double(),
+                            {
+                                Parameter( "value",
+                                    "Input value",
+                                    Types::Double()
+                                )
+                            }
+                        )
+                    }
+                ),
+                new Function("Radians",
+                    "Converts the given angle in degrees to radians.", nullptr,
+                    {
+                        MapFunction(
+                            [](double v) { return v / (180.0/3.141592653589793238463); },
+                            Types::Double(),
+                            {
+                                Parameter( "value",
+                                    "Input value",
+                                    Types::Double()
+                                )
+                            }
+                        )
+                    }
+                ),
+                new Function("Log",
+                    "This function will calculate log of given number in base e", nullptr,
+                    {
+                        MapFunction(
+                            static_cast<double(*)(double)>(log),
+                            Types::Double(),
+                            {
+                                Parameter( "value",
+                                    "Input value",
+                                    Types::Double()
+                                )
+                            }
+                        ),
+                        MapFunction(
+                            [](double l, double b) { return log(l) / log(b); },
+                            Types::Double(),
+                            {
+                                Parameter( "value",
+                                    "Input value",
+                                    Types::Double()
+                                ),
+                                Parameter( "base",
+                                    "The base for the logarithm",
+                                    Types::Double()
+                                )
+                            }
+                        )
+                    }
+                ),
+                new Function("Log10",
+                    "This function will calculate log of given number in base 10", nullptr,
+                    {
+                        MapFunction(
+                            static_cast<double(*)(double)>(log10),
+                            Types::Double(),
+                            {
+                                Parameter( "value",
+                                    "Input value",
+                                    Types::Double()
+                                )
+                            }
+                        )
+                    }
+                ),
+                new Function("Log2",
+                    "This function will calculate log of given number in base 2", nullptr,
+                    {
+                        MapFunction(
+                            static_cast<double(*)(double)>(log2),
+                            Types::Double(),
+                            {
+                                Parameter( "value",
+                                    "Input value",
+                                    Types::Double()
+                                )
+                            }
+                        )
+                    }
+                ),
+                new Constant("Pi", "Contains the value of PI", {Double,             3.14159265358979}),
+                new Constant("e",  "Contains the value of Euler's number", {Double, 2.71828182845905}),
+            });
 			
 			Keywords.AddMembers({
 				new Function("Echo",
