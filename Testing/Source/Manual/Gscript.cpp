@@ -8,6 +8,7 @@
 #include <Gorgon/Filesystem/Iterator.h>
 #include <Gorgon/Filesystem.h>
 #include <Gorgon/Enum.h>
+#include <Gorgon/Time.h>
 
 using namespace Gorgon::Scripting;
 
@@ -180,6 +181,8 @@ int main() {
 	Gorgon::Geometry::init_scripting();
 	vm.AddLibrary(Gorgon::Geometry::LibGeometry);
 	vm.SetSpecialIdentifierHandler(SpecHandler);
+    
+    std::cout<<Gorgon::Time::GetDate().ISODateTime()<<std::endl;
     
     auto console = Gorgon::Utils::StdConsole();
 	

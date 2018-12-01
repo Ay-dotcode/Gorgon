@@ -157,7 +157,7 @@ namespace Gorgon { namespace Time {
 		return ss.str();
 	}
 	
-	std::string Date::ISODateTime() const {
+	std::string Date::ISODateTime(bool timezone) const {
 		using std::setw;
 		
 		std::stringstream ss;
@@ -170,12 +170,14 @@ namespace Gorgon { namespace Time {
 			<<setw(2)<<Minute<<":"
 			<<setw(2)<<Second;
 			
-			if(Timezone>0) 
-				ss<<"+"<<setw(2)<<(Timezone/60)<<setw(2)<<(Timezone%60);
-			else if(Timezone<0)
-				ss<<"-"<<setw(2)<<(-Timezone/60)<<setw(2)<<(-Timezone%60);
-			else
-				ss<<"Z";
+        if(timezone) {
+            if(Timezone>0) 
+                ss<<"+"<<setw(2)<<(Timezone/60)<<setw(2)<<(Timezone%60);
+            else if(Timezone<0)
+                ss<<"-"<<setw(2)<<(-Timezone/60)<<setw(2)<<(-Timezone%60);
+            else
+                ss<<"Z";
+        }
 			
 		return ss.str();
 	}

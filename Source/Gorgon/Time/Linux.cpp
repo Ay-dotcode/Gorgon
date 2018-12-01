@@ -8,10 +8,11 @@ namespace Gorgon { namespace Time {
 	
 	Date GetDate() {
 		time_t rawtime;
-		struct tm *timeinfo;
+        struct tm storage;
+		struct tm *timeinfo = &storage;
 
 		time ( &rawtime );
-		timeinfo = localtime ( &rawtime );	
+		timeinfo = localtime_r ( &rawtime , timeinfo);
 			
 		struct timeval  tv;
 		gettimeofday(&tv, NULL);

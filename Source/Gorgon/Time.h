@@ -99,9 +99,8 @@ namespace Gorgon {
 			/// ISO compliant date format. Contains only date
 			std::string ISODate() const;
 			
-			/// ISO compliant date/time including timezone. This format should be
-			/// used to serialize as text.
-			std::string ISODateTime() const;
+			/// ISO compliant date/time. This format should be used to serialize as text.
+			std::string ISODateTime(bool timezone = true) const;
 			
 			/// Returns currently stored month's name in English. Month 0 is valid
 			/// and returns "". 
