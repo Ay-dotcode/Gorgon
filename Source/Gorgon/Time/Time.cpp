@@ -221,7 +221,7 @@ namespace Gorgon { namespace Time {
 		};
 		
 #ifndef NDEBUG
-		if((int)Month > (int)Saturday) {
+		if((int)Weekday > (int)Saturday) {
 			throw std::logic_error("Invalid weekday");
 		}
 #endif
