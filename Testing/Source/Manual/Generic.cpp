@@ -26,6 +26,11 @@ int main() {
     auto &a = anim.CreateAnimation();
     
     Geometry::Pointf p(0,0);
+    
+    Graphics::Bitmap bmp;
+    bmp.Import("icon.png");
+    bmp.Grayscale(0.5);
+    bmp.Prepare();
 
 
 	while(true) {
@@ -34,6 +39,8 @@ int main() {
         l.Clear();
         
         a.Draw(l, p, 0xff000080);
+        
+        bmp.Draw(l, 10, 100);
 
 		Gorgon::NextFrame();
 	}

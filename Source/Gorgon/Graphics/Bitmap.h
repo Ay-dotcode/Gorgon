@@ -36,6 +36,13 @@ namespace Gorgon { namespace Graphics {
 			/// Wraps to the other side
 			Wrap
 		};
+        
+        enum GrayscaleConversionMethod {
+            Luminance,
+            Average,
+            Maximum,
+            Minimum
+        };
 
 		/// Default constructor will create an empty bitmap
 		Bitmap() {
@@ -524,7 +531,8 @@ namespace Gorgon { namespace Graphics {
 		/// @param  ratio of the transformation. If ratio is 0, image is not modified. If the ratio is 1, image will be transformed
 		///         into fully grayscale image. Values between 0 and 1 will desaturate the image depending on the given ratio.
 		///         If the ratio is 1, color mode of the image will be modified to Grayscale or Grayscale_Alpha.
-		void Grayscale(float ratio=1.0f);
+        /// @param  method to be used for transformation. Default is Luminance which mimic human vision
+		void Grayscale(float ratio=1.0f, GrayscaleConversionMethod method = Luminance);
 
 		/// This function removes transparency information from the image
 		void StripAlpha();

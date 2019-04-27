@@ -102,7 +102,7 @@ namespace Gorgon { namespace Graphics {
 		RGBA(Byte r, Byte g, Byte b, Byte a=255) : R(r), G(g), B(b), A(a) { }
 
 		/// Constructs a grayscale color from the given luminance
-		explicit RGBA(Byte lum, Byte a=255) : RGBA(lum, lum, lum) { }
+		explicit RGBA(Byte lum, Byte a=255) : RGBA(lum, lum, lum, a) { }
 
 		/// Conversion from integer
 		RGBA(const int &color) {

@@ -270,6 +270,84 @@ namespace Gorgon { namespace Graphics {
 		Assume(img);
 	}
 
+	void Bitmap::Grayscale(float ratio, GrayscaleConversionMethod method) {
+        mode = GetMode();        
+        ColorMode newmode = mode;
+        bool alpha = HasAlpha();
+        
+        if(ratio == 1) {
+            if(mode == ColorMode::RGBA || mode == ColorMode::BGRA)  {
+                newmode = ColorMode::Grayscale_Alpha;
+            }
+            else if(mode == ColorMode::RGB || mode == ColorMode::BGR)  {
+                newmode = ColorMode::Grayscale;
+            }
+            else if(mode == ColorMode::Alpha || mode == ColorMode::Grayscale_Alpha) {
+                return;
+            }
+            else
+                throw std::runtime_error("Unsupported color mode");
+        }
+        
+        
+		auto &data = *this->data;
+		Containers::Image img(data.GetSize(), newmode);
+        
+        std::function<RGBA(int, int)> getcolor;
+        std::function<void(int, int, RGBA)> setcolor;
+        std::function<Byte(RGBA)> convert;
+        
+        if(mode == ColorMode::RGB || mode == ColorMode::RGBA) {
+            getcolor = [&data] (int x, int y) {
+                return RGBA(data(x, y, 0), data(x, y, 1), data(x, y, 2));
+            };
+            setcolor = [&img] (int x, int y, RGBA color) {
+                img(x, y, 0) = color.R;
+                img(x, y, 1) = color.G;
+                img(x, y, 2) = color.B;
+            };
+        }
+        else {
+            getcolor = [&data] (int x, int y) {
+                return RGBA(data(x, y, 2), data(x, y, 1), data(x, y, 0));
+            };
+            setcolor = [&img] (int x, int y, RGBA color) {
+                img(x, y, 2) = color.R;
+                img(x, y, 1) = color.G;
+                img(x, y, 0) = color.B;
+            };
+        }
+        
+        if(method == Luminance) {
+            convert = [](RGBA color) {
+                return color.Luminance();
+            };
+        }
+        
+        
+		for(int y=0; y<data.GetHeight(); y++) {
+			for(int x=0; x<data.GetWidth(); x++) {
+                if(ratio == 1) {
+                    if(alpha)
+                        img(x, y, 1) = data(x, y, 3);
+                
+                    img(x, y, 0) = convert(getcolor(x, y));
+                }
+                else {
+                    if(alpha)
+                        img(x, y, 3) = data(x, y, 3);
+                    
+                    RGBA c = getcolor(x, y);
+                    c.Blend(RGBA(convert(c), ratio*255));
+                    
+                    setcolor(x, y, c);
+                }
+            }
+        }
+        
+        Assume(img);
+    }
+	
 	std::vector<Geometry::Bounds> Bitmap::CreateLinearAtlas(Containers::Collection<const Bitmap> list, AtlasMargin margins) {
         std::vector<Geometry::Bounds> ret;
         std::map<const Bitmap *, Geometry::Bounds> mapping;
