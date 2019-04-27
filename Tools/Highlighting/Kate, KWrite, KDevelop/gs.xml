@@ -3,6 +3,7 @@
 <!ENTITY identrx "[a-zA-Z_][a-zA-Z0-9_]*">
 <!ENTITY breakerregex "\s\+\-\*\/\.\&quot;\&apos;@#\&lt;\&gt;\^\&amp;\|\\\!=\?\&#37;\(\)\[\]\{\}\$\,$\;">
 ]> 
+<!-- Place in $HOME/.local/share/org.kde.syntax-highlighting/syntax/ folder -->
 <language name="Gorgon Script" version="1.00" kateversion="3.5" casesensitive="false" 
 		  section="Sources" extensions="*.gs; *.gsp" author="Cem Kalyoncu" license="CC-0"
 		  indentation="normal">
