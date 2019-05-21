@@ -22,6 +22,8 @@ namespace Compilers {
 	public:
 		Base(Scope *scope) : scope(scope) { }
 		
+		virtual ~Base() {}
+		
 		/// Asks the compiler to compile the given input. Returns the number of instructions
 		/// generated from the code. Compiler is free to request additional input by returning
 		/// zero. This does not necessarily mean there is no compilable source in the given input
