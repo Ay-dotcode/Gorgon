@@ -27,6 +27,14 @@ namespace Gorgon { namespace Geometry {
 				point, point, point, 
 				[] (Point lhs, Point rhs) { return lhs + rhs; }
 			),
+            
+            new Scripting::MappedOperator(
+                "-",
+                "Subtracts one point from another, returns a new resultant point",
+                point,point,point,
+                [](Point lhs, Point rhs){return lhs - rhs;}
+            ),
+            
 			new Scripting::Function("Distance",
 				"Returns the distance between two Points", point,
 				{
@@ -47,9 +55,23 @@ namespace Gorgon { namespace Geometry {
 						Scripting::ConstTag
 					),
 				}
-			)
+			),
+            
+            new Scripting::Function("Slope",
+                "Returns the slope of the point (Gradient)", point,
+                {
+                    Scripting::MapFunction(
+                        [](Point owner){
+                            return owner.Slope();
+                        },Scripting::Types::Float(),
+                        { },
+                        Scripting::ConstTag
+                    )
+                }
+            )
+            
 		});
-		
+        
 		point->AddConstructors({
 			Scripting::MapFunction([]{ return Point(0,0); }, point, {})
 		});
@@ -62,7 +84,7 @@ namespace Gorgon { namespace Geometry {
 			new Scripting::MappedInstanceMember<Point, int>(&Point::X, "x", "X coordinate", Scripting::Types::Int()),
 			new Scripting::MappedInstanceMember<Point, int>(&Point::Y, "y", "Y coordinate", Scripting::Types::Int())
 		});
-
+        
 		LibGeometry.AddMember(point);
 	}
 } }
