@@ -61,8 +61,76 @@ namespace Gorgon { namespace Geometry {
                 "Returns the slope of the point (Gradient)", point,
                 {
                     Scripting::MapFunction(
+                        [](Point owner, Point other){
+                            return owner.Slope(other);
+                        },Scripting::Types::Float(),
+                        {
+                            Scripting::Parameter("Point", "Another point to calculate the slope between",point)
+                        },
+                        Scripting::ConstTag
+                    ),
+                    Scripting::MapFunction(
                         [](Point owner){
                             return owner.Slope();
+                        },Scripting::Types::Float(),
+                        { },
+                        Scripting::ConstTag
+                    )
+                }
+            ),
+            
+            new Scripting::Function("Angle",
+                "Returns the angle formed from the origin to this point", point,
+                {
+                    Scripting::MapFunction(
+                        [](Point owner, Point other){
+                            return owner.Angle(other);
+                        },Scripting::Types::Float(),
+                        {
+                            Scripting::Parameter("Point", "Another point to calculate the angle between",point)
+                        },
+                        Scripting::ConstTag
+                    ),
+                    Scripting::MapFunction(
+                        [](Point owner){
+                            return owner.Angle();
+                        },Scripting::Types::Float(),
+                        { },
+                        Scripting::ConstTag
+                    )
+                }
+            ),
+            
+            new Scripting::Function("Compare",
+                "Returns a boolean value after comparing two points against one another",point,
+                {
+                    Scripting::MapFunction(
+                        [](Point owner, Point other){
+                            return owner.Compare(other);
+                        },Scripting::Types::Bool(),
+                        {
+                            Scripting::Parameter("Point", "Comparing a point against another",point)
+                        },
+                        Scripting::ConstTag
+                    )
+                }
+            ),
+            
+            new Scripting::Function("ManhattanDistance",
+                "Returns the Manhattan Distance between two points",point,
+                {
+                    Scripting::MapFunction(
+                        [](Point owner, Point other){
+                            return owner.ManhattanDistance(other);
+                        },Scripting::Types::Float(),
+                        {
+                            Scripting::Parameter("Point","Another point to calculate the Manhattan Distance from",point)
+                        },
+                        Scripting::ConstTag
+                    ),
+                    Scripting::MapFunction(
+                        [](Point owner){
+                            return owner.ManhattanDistance();
                         },Scripting::Types::Float(),
                         { },
                         Scripting::ConstTag
