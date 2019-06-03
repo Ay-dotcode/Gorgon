@@ -136,8 +136,46 @@ namespace Gorgon { namespace Geometry {
                         Scripting::ConstTag
                     )
                 }
-            )
+            ),
             
+            new Scripting::Function("Scale",
+                "scales the point by the factor provided",point,
+                {
+                    Scripting::MapFunction(
+                        [](Point *owner, Float factor){
+                            Scale(*owner,factor);
+                        },NULL,
+                        {
+                            Scripting::Parameter("Float","What to scale the point by",Scripting::Types::Float())
+                        }
+                    )
+                }
+            ),
+            
+            new Scripting::Function("Move",
+                "Moves this point to the given coordinate",point,
+                {
+                    Scripting::MapFunction(
+                        [](Point *owner, int x, int y){
+                            Point temp(0,0);
+                            temp.Move(x,y);
+                            *owner = temp;
+                        },NULL,
+                        {
+                            Scripting::Parameter("Int","The new X coordinate of the point",Scripting::Types::Int()),
+                            Scripting::Parameter("Int","The new Y coordinate of the point",Scripting::Types::Int())
+                        }
+                    ),
+                    Scripting::MapFunction(
+                        [](Point *owner, Point other){
+                            *owner = other;
+                        },NULL,
+                        {
+                            Scripting::Parameter("Point","The new X coordinate of the point",point)
+                        }
+                    )
+                }
+            )
 		});
         
 		point->AddConstructors({
