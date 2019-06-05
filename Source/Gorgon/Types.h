@@ -110,6 +110,11 @@ namespace Gorgon {
 	int Sign(T_ val) {
 		return (T_{} < val) - (val < T_{});
 	}
+	
+	template <typename T_>
+	T_ PositiveMod(T_ value, T_ mod) {
+        return ((value%mod)+mod)%mod;
+    }
 
 	/// Where acceptable, denotes that the object will assume the ownership
 	class AssumeOwnershipTag { };

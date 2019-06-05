@@ -11,6 +11,9 @@ namespace Gorgon { namespace Geometry {
     template<class T_>
     class basic_Point3D {
     public:
+        ///Base type of the point elements.
+        typedef T_ BaseType;
+
 		/// Default constructor, does not zero initialize point.
         basic_Point3D() { }
 

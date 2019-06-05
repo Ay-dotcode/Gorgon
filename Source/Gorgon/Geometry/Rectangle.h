@@ -18,6 +18,9 @@ namespace Gorgon { namespace Geometry {
 	template <class T_>
 	class basic_Rectangle {
 	public:
+        ///Base type of the rectangle elements.
+        typedef T_ BaseType;
+
 		
 		/// Default constructor, does not initialize stored values
 		basic_Rectangle() {}

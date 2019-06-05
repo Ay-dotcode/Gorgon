@@ -21,6 +21,8 @@ namespace Gorgon { namespace Geometry {
 	template <class T_>
 	class basic_Margin {
 	public:
+        ///Base type of the margin elements.
+        typedef T_ BaseType;
 		
 		/// Default constructor
 		basic_Margin() {}

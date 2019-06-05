@@ -45,6 +45,12 @@ ELSEIF()
 	)
 ENDIF()
 
+IF(${CGI})
+    LIST(APPEND Local
+        CGI
+    )
+ENDIF()
+
 IF(${SCRIPTING})
 	LIST(APPEND Local
 		Scripting

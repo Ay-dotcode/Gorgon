@@ -22,6 +22,9 @@ namespace Gorgon { namespace Geometry {
 	template<class T_>
 	class basic_Size {
 	public:
+        ///Base type of the size elements.
+        typedef T_ BaseType;
+
 		/// Default constructor. This constructor does **not** zero initialize 
 		/// the object.
 		basic_Size() { }

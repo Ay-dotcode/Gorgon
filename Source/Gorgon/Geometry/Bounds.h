@@ -26,6 +26,8 @@ namespace Gorgon { namespace Geometry {
 	template <class T_>
 	class basic_Bounds {
 	public:
+        ///Base type of the bounds elements.
+        typedef T_ BaseType;
 		
 		/// Default constructor, does **not** zero initialize object
 		basic_Bounds() { }
