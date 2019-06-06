@@ -198,9 +198,7 @@ namespace Gorgon { namespace Geometry {
                 "scales the point by the factor provided",point,
                 {
                     Scripting::MapFunction(
-                        [](Point &owner, Float factor){
-                            Scale(owner,factor);
-                        },NULL,
+                        static_cast<void(*)(Point &, const Float &)>(Scale),NULL,
                         {
                             Scripting::Parameter("Float","What to scale the point by",Scripting::Types::Float())
                         }
