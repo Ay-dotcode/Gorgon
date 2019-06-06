@@ -35,6 +35,62 @@ namespace Gorgon { namespace Geometry {
                 [](Point lhs, Point rhs){return lhs - rhs;}
             ),
             
+            new Scripting::MappedOperator(
+                "*",
+                "Multiplies the point by a float value, basically scale function",
+                point, point,Scripting::Types::Float(),
+                [](Point lhs, Float rhs){return lhs * rhs;}
+            ),
+            
+            new Scripting::MappedOperator(
+                "/",
+                "Divides the point by a float value, basically scale function",
+                point,point,Scripting::Types::Float(),
+                [](Point lhs, Float rhs){return lhs / rhs;}
+            ),
+            
+            new Scripting::MappedOperator(
+                "!=",
+                "Checks if the curent point is not equal to the second",
+                point,Scripting::Types::Bool(),point,
+                [](Point lhs, Point rhs){return lhs != rhs;}
+            ),
+            
+            new Scripting::MappedOperator(
+                "=",
+                "Checks if the current point is equal to the second point",
+                point,Scripting::Types::Bool(),point,
+                [](Point lhs, Point rhs){return lhs == rhs;}
+            ),
+            
+            new Scripting::Function(
+                "+=",
+                "Adds a point from the left hand side to the right hand side",
+                point,point,point,
+                [](Point &lhs, Point rhs){return lhs += rhs;}
+            ),
+            
+            new Scripting::Function(
+                "-=",
+                "Subtracts the point on the left hand side from the right hand side",
+                point,point,point,
+                [](Point &lhs, Point rhs){return lhs -= rhs;}
+            ),
+            
+            new Scripting::Function(
+                "*=",
+                "Multiplies the point by a float value and returns the result, basically scale function",
+                point,point,Scripting::Types::Float(),
+                [](Point &lhs, Float rhs){return lhs *= rhs;}
+            ),
+            
+            new Scripting::Function(
+                "/=",
+                "Divides the point by a float value and returns the result, basically scale function",
+                point,point,Scripting::Types::Float(),
+                [](Point &lhs, Float rhs){return lhs /= rhs;}
+            ),
+            
 			new Scripting::Function("Distance",
 				"Returns the distance between two Points", point,
 				{
@@ -142,8 +198,8 @@ namespace Gorgon { namespace Geometry {
                 "scales the point by the factor provided",point,
                 {
                     Scripting::MapFunction(
-                        [](Point *owner, Float factor){
-                            Scale(*owner,factor);
+                        [](Point &owner, Float factor){
+                            Scale(owner,factor);
                         },NULL,
                         {
                             Scripting::Parameter("Float","What to scale the point by",Scripting::Types::Float())
@@ -171,7 +227,7 @@ namespace Gorgon { namespace Geometry {
                             *owner = other;
                         },NULL,
                         {
-                            Scripting::Parameter("Point","The new X coordinate of the point",point)
+                            Scripting::Parameter("Point","The new point to at which the current point will be moved",point)
                         }
                     )
                 }
