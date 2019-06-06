@@ -707,7 +707,7 @@ namespace Gorgon { namespace Graphics {
 		return target;
 	}
 
-	Graphics::Bitmap Bitmap::Rotate270() {
+	Graphics::Bitmap Bitmap::Rotate270() const {
 		ASSERT(data, "Bitmap data is not set");
 
 		Graphics::Bitmap target(GetHeight(), GetWidth(), GetMode());
@@ -720,5 +720,19 @@ namespace Gorgon { namespace Graphics {
 		return target;
 	}
 
+	Graphics::Bitmap Bitmap::ZoomMultiple(int factor) const {
+        ASSERT(data, "Bitmap data is not set");
+
+        if(factor <= 0)
+            throw std::runtime_error("Zoom factor is invalid.");
+        
+		Graphics::Bitmap target(GetHeight() * factor, GetWidth() * factor, GetMode());
+        
+        target.ForAllPixels([&](int x, int y, int c) {
+            target(x, y, c) = (*data)(x / factor, y / factor, c);
+        });
+        
+        return target;
+    }
 
 } }

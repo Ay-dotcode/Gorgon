@@ -183,7 +183,7 @@ namespace Gorgon { namespace Geometry {
         ///Adds the coordinates of the points on the right list to the left.
         ///Right list is treated as cyclic. If right list is empty, nothing is
         ///done.
-        PointList operator +=(const PointList &right) {
+        PointList &operator +=(const PointList &right) {
             PointList ret;
             
             long ind = 0;
@@ -215,7 +215,7 @@ namespace Gorgon { namespace Geometry {
         ///Subtracts the coordinates of the points on the right list to the left.
         ///Right list is treated as cyclic. If right list is empty, nothing is
         ///done.
-        PointList operator -=(const PointList &right) {
+        PointList &operator -=(const PointList &right) {
             PointList ret;
             
             long ind = 0;
@@ -242,7 +242,7 @@ namespace Gorgon { namespace Geometry {
         
         ///Adds a point to each element of the list.
         template<class O_>
-        PointList operator +=(const O_ &right) {
+        PointList &operator +=(const O_ &right) {
             PointList ret;
             
             for(auto &p : *this) {
@@ -266,7 +266,7 @@ namespace Gorgon { namespace Geometry {
         
         ///Subtracts a point to each element of the list.
         template<class O_>
-        PointList operator -=(const O_ &right) {
+        PointList &operator -=(const O_ &right) {
             PointList ret;
             
             for(auto &p : *this) {
@@ -290,7 +290,7 @@ namespace Gorgon { namespace Geometry {
         
         ///Adds a point to each element of the list.
         template<class O_>
-        PointList operator *=(const O_ &right) {
+        PointList &operator *=(const O_ &right) {
             PointList ret;
             
             for(auto &p : *this) {
@@ -314,7 +314,7 @@ namespace Gorgon { namespace Geometry {
         
         ///Subtracts a point to each element of the list.
         template<class O_>
-        PointList operator /=(const O_ &right) {
+        PointList &operator /=(const O_ &right) {
             PointList ret;
             
             for(auto &p : *this) {

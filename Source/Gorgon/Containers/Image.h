@@ -612,8 +612,8 @@ namespace Gorgon {
 
 				auto headersize = IO::ReadUInt32(file);
 
-				int width, height;
-				int bpp;
+				int width = 0, height = 0;
+				int bpp = 0;
 				bool upsidedown = false;
 				bool bitcompress = false;
 				bool grayscalepalette = true;
@@ -1188,6 +1188,92 @@ namespace Gorgon {
 				return data[bpp*(size.Width*y+x)+alphaloc];
 			}
 
+            /// Returns the alpha at the given location. If the given location does not exits
+            /// this function will return 0. If there is no alpha channel, image is assumed
+            /// to be opaque.
+            Graphics::RGBA GetRGBAAt(int x, int y) const {
+                if(x<0 || y<0 || x>=size.Width || y>=size.Height) {
+                    return 0;
+                }
+                
+                switch(mode) {
+                    case Graphics::ColorMode::Alpha:
+                        return {255, 255, 255, (*this)(x, y, 0)};
+                    case Graphics::ColorMode::Grayscale_Alpha:
+                        return {(*this)(x, y, 0), (*this)(x, y, 0), (*this)(x, y, 0), (*this)(x, y, 1)};
+                    case Graphics::ColorMode::Grayscale:
+                        return {(*this)(x, y, 0), (*this)(x, y, 0), (*this)(x, y, 0), 255};
+                    case Graphics::ColorMode::RGB:
+                        return {(*this)(x, y, 0), (*this)(x, y, 1), (*this)(x, y, 2), 255};
+                    case Graphics::ColorMode::BGR:
+                        return {(*this)(x, y, 2), (*this)(x, y, 1), (*this)(x, y, 0), 255};
+                    case Graphics::ColorMode::RGBA:
+                        return {(*this)(x, y, 0), (*this)(x, y, 1), (*this)(x, y, 2), (*this)(x, y, 3)};
+                    case Graphics::ColorMode::BGRA:
+                        return {(*this)(x, y, 2), (*this)(x, y, 1), (*this)(x, y, 0), (*this)(x, y, 3)};
+                    default:
+                        return 0;
+                }
+            }
+
+            /// Returns the alpha at the given location. If the given location does not exits
+            /// this function will return 0. If there is no alpha channel, image is assumed
+            /// to be opaque.
+            Graphics::RGBA GetRGBAAt(Geometry::Point p) const {
+                return GetRGBAAt(p.X, p.Y);
+            }
+            
+            ///Sets the color at the given location to the specified RGBA value. If pixel does not
+            ///exists, the call will be ignored.
+            void SetRGBAAt(int x, int y, Graphics::RGBA color) {
+                if(x<0 || y<0 || x>=size.Width || y>=size.Height) {
+                    return;
+                }
+                
+                switch(mode) {
+                    case Graphics::ColorMode::Alpha:
+                        (*this)(x, y, 0) = color.A;
+                        break;
+                    case Graphics::ColorMode::Grayscale_Alpha:
+                        (*this)(x, y, 0) = color.Luminance();
+                        (*this)(x, y, 1) = color.A;
+                        break;
+                    case Graphics::ColorMode::Grayscale:
+                        (*this)(x, y, 0) = color.Luminance();
+                        break;
+                    case Graphics::ColorMode::RGB:
+                        (*this)(x, y, 0) = color.R;
+                        (*this)(x, y, 1) = color.G;
+                        (*this)(x, y, 2) = color.B;
+                        break;
+                    case Graphics::ColorMode::BGR:
+                        (*this)(x, y, 2) = color.R;
+                        (*this)(x, y, 1) = color.G;
+                        (*this)(x, y, 0) = color.B;
+                        break;
+                    case Graphics::ColorMode::RGBA:
+                        (*this)(x, y, 0) = color.R;
+                        (*this)(x, y, 1) = color.G;
+                        (*this)(x, y, 2) = color.B;
+                        (*this)(x, y, 3) = color.A;
+                        break;
+                    case Graphics::ColorMode::BGRA:
+                        (*this)(x, y, 2) = color.R;
+                        (*this)(x, y, 1) = color.G;
+                        (*this)(x, y, 0) = color.B;
+                        (*this)(x, y, 3) = color.A;
+                        break;
+                    default:
+                        ;
+                }
+            }
+            
+            ///Sets the color at the given location to the specified RGBA value. If pixel does not
+            ///exists, the call will be ignored.
+            void SetRGBAAt(Geometry::Point p, Graphics::RGBA color) {
+                SetRGBAAt(p.X, p.Y, color);
+            }
+        
 			/// Returns the size of the image
 			Geometry::Size GetSize() const {
 				return size;

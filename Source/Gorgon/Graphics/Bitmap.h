@@ -11,9 +11,14 @@
 namespace Gorgon { namespace Graphics {
 
 
-	/// This object contains an bitmap image. It allows draw, load, import, export functionality. An image may work
-	/// without its data buffer. In order to be drawn, an image object should be prepared. Both data and texture
-	/// might be released from the image.
+    /**
+	 * This object contains an bitmap image. It allows draw, load, import, export functionality. An image may work
+	 * without its data buffer. In order to be drawn, an image object should be prepared. Both data and texture
+	 * might be released from the image. 
+     * 
+     * Some operations are inplace while others create new Bitmaps. This is done for performance reasons and both
+     * can be used to create a new image: `newimage = cur.Duplicate.Grayscale();` or inplace: `cur = cur.Blur();`
+     */
 	class Bitmap : 
 		public virtual Graphics::RectangularAnimationProvider, public virtual Graphics::Image,
 		public virtual Graphics::RectangularAnimation, protected virtual Graphics::Texture, public virtual Graphics::TextureSource
@@ -321,7 +326,7 @@ namespace Gorgon { namespace Graphics {
 			}
 #endif
 
-			return (*data)(p, component);
+			return data->Get(p, component);
 		}
 
 		/// Returns the alpha at the given location. If the given location does not exits
@@ -335,7 +340,14 @@ namespace Gorgon { namespace Graphics {
 #endif
 			return data->GetAlphaAt(x, y);
 		}
-
+		
+		/// Returns the alpha at the given location. If the given location does not exits
+		/// this function will return 0. If there is no alpha channel, image is assumed
+		/// to be opaque.
+		Byte GetAlphaAt(Geometry::Point p) const {
+            return GetAlphaAt(p.X, p.Y);
+        }
+        
 		/// Returns the alpha at the given location. If the given location does not exits
 		/// this function will return 0. If there is no alpha channel, image is assumed
 		/// to be opaque.
@@ -345,26 +357,35 @@ namespace Gorgon { namespace Graphics {
 				throw std::runtime_error("Bitmap data is not set");
 			}
 #endif
-            switch(data->GetMode()) {
-                case ColorMode::Alpha:
-                    return {255, 255, 255, (*data)(x, y, 0)};
-                case ColorMode::Grayscale_Alpha:
-                    return {(*data)(x, y, 0), (*data)(x, y, 0), (*data)(x, y, 0), (*data)(x, y, 1)};
-                case ColorMode::Grayscale:
-                    return {(*data)(x, y, 0), (*data)(x, y, 0), (*data)(x, y, 0), 255};
-                case ColorMode::RGB:
-                    return {(*data)(x, y, 0), (*data)(x, y, 1), (*data)(x, y, 2), 255};
-                case ColorMode::BGR:
-                    return {(*data)(x, y, 2), (*data)(x, y, 1), (*data)(x, y, 0), 255};
-                case ColorMode::RGBA:
-                    return {(*data)(x, y, 0), (*data)(x, y, 1), (*data)(x, y, 2), (*data)(x, y, 3)};
-                case ColorMode::BGRA:
-                    return {(*data)(x, y, 2), (*data)(x, y, 1), (*data)(x, y, 0), (*data)(x, y, 3)};
-                default:
-                    return 0;
-            }
+            
+            return data->GetRGBAAt(x, y);
 		}
 
+		/// Returns the alpha at the given location. If the given location does not exits
+		/// this function will return 0. If there is no alpha channel, image is assumed
+		/// to be opaque.
+		RGBA GetRGBAAt(Geometry::Point p) const {
+            return GetRGBAAt(p.X, p.Y);
+        }
+        
+        ///Sets the color at the given location to the specified RGBA value. If pixel does not
+        ///exists, the call will be ignored.
+        void SetRGBAAt(int x, int y, RGBA color) {
+#ifndef NDEBUG
+			if(!data) {
+				throw std::runtime_error("Bitmap data is not set");
+			}
+#endif
+            
+            data->SetRGBAAt(x, y, color);
+        }
+        
+        ///Sets the color at the given location to the specified RGBA value. If pixel does not
+        ///exists, the call will be ignored.
+        void SetRGBAAt(Geometry::Point p, RGBA color) {
+            SetRGBAAt(p.X, p.Y, color);
+        }
+        
 		/// Returns the bytes occupied by a single pixel of this image
 		int GetBytesPerPixel() const {
 #ifndef NDEBUG
@@ -678,7 +699,10 @@ namespace Gorgon { namespace Graphics {
 		Graphics::Bitmap Rotate180() const;
 
 		/// Rotates image data without any losses
-		Graphics::Bitmap Rotate270();
+		Graphics::Bitmap Rotate270() const;
+        
+        /// Zooms the image while preserving the colors.
+        Graphics::Bitmap ZoomMultiple(int factor) const;
 
         /// Cleans the contents of the buffer by setting every byte it contains to 0.
         void Clear() {
