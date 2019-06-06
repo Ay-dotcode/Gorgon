@@ -31,7 +31,51 @@ namespace Gorgon { namespace Geometry {
             return Start.Y - Slope() * Start.X;
         }
         
-        //Needs a lot more operators and functions...
+        ///Returns the inverse slope of the line, where the line
+        ///formula is now x = a * y + b
+        Float SlopeInv() const {
+            return Float(End.X - Start.X) / (End.Y - Start.Y);
+        }
+        
+        ///Returns the inverse offset of the line, where the line
+        ///formula is now x = a * y + b
+        Float OffsetInv() const {
+            return Start.X - SlopeInv() * Start.Y;
+        }
+        
+        ///Returns minimum Y point
+        typename P_::BaseType MinY() const {
+            return Start.Y < End.Y ? Start.Y : End.Y;
+        }
+        
+        ///Returns maximum Y point
+        typename P_::BaseType MaxY() const {
+            return Start.Y > End.Y ? Start.Y : End.Y;
+        }
+        
+        ///Returns minimum X point
+        typename P_::BaseType MinX() const {
+            return Start.X < End.X ? Start.X : End.X;
+        }
+        
+        ///Returns maximum X point
+        typename P_::BaseType MaxX() const {
+            return Start.X > End.X ? Start.X : End.X;
+        }
+        
+        ///Returns whether the line is moving up or down. Up movement is -1
+        ///down movement is 1 and if line is horizontal this function will
+        ///return 0
+        int YDirection() const {
+            return Sign(End.Y - Start.Y);
+        }
+        
+        ///Returns whether the line is moving left or right. Left movement is -1
+        ///right movement is 1 and if line is vertical this function will
+        ///return 0
+        int XDirection() const {
+            return Sign(End.X - Start.X);
+        }
         
         ///Starting point of the line.
         P_ Start;

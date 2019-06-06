@@ -152,7 +152,7 @@ namespace Gorgon { namespace Geometry {
             if(Points.size() == 0)
                 throw std::out_of_range("List is empty");
                         
-            return {Points[PositiveMod(index, Points.size())], Points[PositiveMod(index+1, Points.size())]};
+            return {Points[PositiveMod(index, (long)Points.size())], Points[PositiveMod(index+1, (long)Points.size())]};
         }
         
         void Push(P_ point) {

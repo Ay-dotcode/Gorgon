@@ -20,9 +20,11 @@ int main() {
     Graphics::Bitmap bmp(20, 20, Graphics::ColorMode::Alpha);
     bmp.Clear();
 
-    Geometry::PointList<Geometry::Point> points = {{0, 0}, {4, 0}, {4, 4}, {0, 4}};
+    Geometry::PointList<Geometry::Pointf> points = {{0, 1}, {1, 1}, {1, 4}, {4, 4}, {4, 2}, {5, 2}, {5, 4}, {6, 4}, {6, 1}, {3, 1}, {3, 3}, {2, 3},
+        {2, 0}, {7, 0}, {7, 5}, {0, 5}
+    };
     
-    points += Geometry::Point{5, 5};
+    //points += Geometry::Point{5, 5};
     
     CGI::Polyfill(bmp, points);
     
