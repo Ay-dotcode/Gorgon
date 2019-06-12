@@ -726,7 +726,7 @@ namespace Gorgon { namespace Graphics {
         if(factor <= 0)
             throw std::runtime_error("Zoom factor is invalid.");
         
-		Graphics::Bitmap target(GetHeight() * factor, GetWidth() * factor, GetMode());
+		Graphics::Bitmap target(GetWidth() * factor, GetHeight() * factor, GetMode());
         
         target.ForAllPixels([&](int x, int y, int c) {
             target(x, y, c) = (*data)(x / factor, y / factor, c);

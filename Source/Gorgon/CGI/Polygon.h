@@ -48,6 +48,10 @@ namespace Gorgon { namespace CGI {
                 }
                 
                 struct vertexinfo {
+					vertexinfo() = default;
+
+					vertexinfo (Float first, Float second) : first(first), second(second) { }
+
                     Float first, second;
                     bool skip = false;
                 };
