@@ -65,32 +65,56 @@ namespace Gorgon { namespace Geometry {
             
             new Scripting::Function(
                 "+=",
-                "Adds a point from the left hand side to the right hand side",
-                point,point,point,
-                [](Point &lhs, Point rhs){return lhs += rhs;}
+                "Adds a point from the left hand side to the right hand side",point,
+                {
+                    Scripting::MapFunction(
+                        [](Point &lhs, Point rhs){return lhs += rhs;},point,
+                        {
+                            Scripting::Parameter("Point", "The float that is added to the first point and returns the result.",point)
+                        }
+                    )
+                }
             ),
             
             new Scripting::Function(
                 "-=",
-                "Subtracts the point on the left hand side from the right hand side",
-                point,point,point,
-                [](Point &lhs, Point rhs){return lhs -= rhs;}
+                "Subtracts the point on the left hand side from the right hand side",point,
+                {
+                    Scripting::MapFunction(
+                        [](Point &lhs, Point rhs){return lhs -= rhs;},point,
+                        {
+                            Scripting::Parameter("Point", "The point that is subtracted from the second point and returns the result.",point)
+                        }
+                    )
+                }
             ),
             
             new Scripting::Function(
                 "*=",
-                "Multiplies the point by a float value and returns the result, basically scale function",
-                point,point,Scripting::Types::Float(),
-                [](Point &lhs, Float rhs){return lhs *= rhs;}
+                "Multiplies the point by a float value and returns the result, basically scale function",point,
+                {
+                    Scripting::MapFunction(
+                        [](Point &lhs, Float rhs){return lhs *= rhs;},point,
+                        {
+                            Scripting::Parameter("Float", "The float that is multiplied to the first point and returns the result.",Scripting::Types::Float())
+                        }
+                    )
+                }
             ),
             
             new Scripting::Function(
                 "/=",
-                "Divides the point by a float value and returns the result, basically scale function",
-                point,point,Scripting::Types::Float(),
-                [](Point &lhs, Float rhs){return lhs /= rhs;}
+                "Divides the point by a float value and returns the result, basically scale function",point,
+                {
+                    Scripting::MapFunction(
+                        [](Point &lhs, Float rhs){return lhs /= rhs;},point,
+                        {
+                            Scripting::Parameter("Float", "The float that divides from the first point and returns the result.",Scripting::Types::Float())
+                        }
+                    )
+                }
             ),
-            
+
 			new Scripting::Function("Distance",
 				"Returns the distance between two Points", point,
 				{
