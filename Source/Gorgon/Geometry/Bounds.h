@@ -512,7 +512,7 @@ namespace Gorgon { namespace Geometry {
 	/// Checks whether the given point is inside this bounds.
 	template<class T_>
 	bool IsInside(const basic_Bounds<T_> &b, const basic_Point<T_> &p) {
-		return p.X>=b.Left && p.Y>=b.Top && p.X<=b.Right && p.Y<=b.Bottom;
+		return p.X>=b.Left && p.Y>=b.Top && p.X<b.Right && p.Y<b.Bottom;
 	}
 
 	/// Translation moves the given bounds *by* the given amount
