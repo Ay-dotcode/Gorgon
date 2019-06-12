@@ -1761,7 +1761,6 @@ namespace Gorgon {
 	}
 
 	void Window::Resize(const Geometry::Size &size) {
-		Layer::Resize(size);
 
 		WINDOWINFO wi;
 		wi.cbSize=sizeof(wi);
@@ -1773,8 +1772,15 @@ namespace Gorgon {
 			size.Height+ (wi.rcWindow.bottom-wi.rcWindow.top) - (wi.rcClient.bottom-wi.rcClient.top), 
 			SWP_NOMOVE | SWP_NOZORDER
 		);
+
+		RECT rect;
+		GetClientRect(data->handle, &rect);
+
+		auto s = Geometry::Size(rect.right-rect.left, rect.bottom-rect.top);
+
 		activatecontext();
-		GL::Resize(size);
+		Layer::Resize(s);
+		GL::Resize(s);
 	}
 
 	void Window::Move(const Geometry::Point &location) {
