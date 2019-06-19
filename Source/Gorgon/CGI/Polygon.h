@@ -155,10 +155,9 @@ namespace Gorgon { namespace CGI {
             pp = &p;
         }
         else {
-            p2 = p;
-            for(auto &pl : p2)
-                pl *= S_;
-            
+            for(auto &pl : p) {
+                p2.push_back(pl.Duplicate());
+            }
             pp = &p2;
         }
         
@@ -166,9 +165,9 @@ namespace Gorgon { namespace CGI {
         
         if(points.size() < 1) return;
         
-        Float ymin = target.GetHeight() - 1;
+        Float ymin = target.GetHeight()*S_ - 1;
         Float ymax = 0;
-        int xmin = target.GetWidth() - 1;
+        int xmin = target.GetWidth()*S_ - 1;
         int xmax = 0;
         
         for(const auto &p : points) {
@@ -185,15 +184,14 @@ namespace Gorgon { namespace CGI {
             if(xmin > xrange.first->X)
                 xmin = xrange.first->X;
             
-            if(xmax > xrange.second->X)
+            if(xmax < xrange.second->X)
                 xmax = xrange.second->X;
         }
         
+        ymax++;
+        
         Gorgon::FitInto<Float>(ymin, 0.f, (Float)target.GetHeight()-1);
         Gorgon::FitInto<Float>(ymax, 0.f, (Float)target.GetHeight());
-        
-        ymin *= S_;
-        ymax *= S_;
 
         if(S_ > 1) subpixelonly = true;
         
@@ -225,36 +223,39 @@ namespace Gorgon { namespace CGI {
             });
         }
         
-        if(S_ > 1) {
+        if(S_ > 1) {            
+            for(auto &pl : p2)
+                pl *= S_;
+            
             Float cy = -1;
+            
             int ew = xmax-xmin+1; //effective width
-            int cnts[ew];
-            int yminint = (int)floor(ymin);
+            std::vector<int> cnts(ew);
+            int yminint = (int)floor(ymin*S_);
             
             float a = 1.f / (S_ * S_);
             
-            internal::findpolylinestofill<S_>(points, yminint, (int)ceil(ymax), [&](float y, auto &xpoints) {
-                if((int)cy != (int)y) {
+            internal::findpolylinestofill<S_>(points, yminint, (int)ceil(ymax*S_), [&](float y, auto &xpoints) {
+                if(int(cy) != int(y/S_)) {
                     if(y != yminint) { //transfer
-                        int prevy = (int)floor(y) - 1;
                         for(int x=0; x<ew; x++) {
-                            Graphics::RGBA prevcol = target.GetRGBAAt(x, prevy);
-                            Graphics::RGBA col = fill(x, prevy-yminint, x + xmin, prevy, prevcol);
+                            Graphics::RGBA prevcol = target.GetRGBAAt(x, cy);
+                            Graphics::RGBA col = fill(x, cy-yminint, x + xmin, cy, prevcol);
                             col.A = (int)round(a * cnts[x] * col.A);
-                            col = col.Blend(prevcol);
-                            target.SetRGBAAt(x + xmin, prevy,  col);
+                            col.Blend(prevcol);
+                            target.SetRGBAAt(x + xmin, cy,  col);
                         }
                     }
                     
                     for(int x=0; x<xmax-xmin+1; x++)//reset
                         cnts[x] = 0;
                     
-                    cy = y;
+                    cy = int(y/S_);
                 }
                 
                 for(int i=0; i<(int)xpoints.size()-1; i+=2) {
-                    Float s = ceil(xpoints[i].second*S_)/S_;
-                    Float e = floor(xpoints[i+1].first*S_)/S_;
+                    Float s = ceil(xpoints[i].second)/S_;
+                    Float e = floor(xpoints[i+1].first)/S_;
                     
                     Gorgon::FitInto<Float>(s, 0, target.GetWidth()-1);
                     Gorgon::FitInto<Float>(e, 0, target.GetWidth());
@@ -269,7 +270,7 @@ namespace Gorgon { namespace CGI {
                     }
                     
                     if(s < e) {
-                        for(Float x=s; x<e; x+=1/S_) {
+                        for(Float x=s; x<e; x+=1.f/S_) {
                             cnts[(int)x]++;
                         }
                     }
