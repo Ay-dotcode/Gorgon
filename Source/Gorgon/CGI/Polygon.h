@@ -283,10 +283,10 @@ namespace Gorgon { namespace CGI {
      * This function fills the given point list as a polygon. List is treated as closed
      * where last pixel connects to the first. 
      */
-    template<class P_, class F_ = SolidFill<>>
+    template<int S_ = 8, class P_, class F_ = SolidFill<>>
     void Polyfill(Graphics::Bitmap &target, const std::vector<Geometry::PointList<P_>> &points, F_ fill = SolidFill<>{Graphics::Color::Black}, bool subpixelonly = false) {
         if(target.HasData())
-            Polyfill(target.GetData(), points, fill, subpixelonly);
+            Polyfill<S_>(target.GetData(), points, fill, subpixelonly);
     }
     
     /**

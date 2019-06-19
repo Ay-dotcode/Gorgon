@@ -281,10 +281,15 @@ namespace Gorgon { namespace Graphics {
             }
             else if(mode == ColorMode::RGB || mode == ColorMode::BGR)  {
                 newmode = ColorMode::Grayscale;
-            }
-            else if(mode == ColorMode::Alpha || mode == ColorMode::Grayscale_Alpha) {
-                return;
-            }
+			}
+			else if(mode == ColorMode::Grayscale || mode == ColorMode::Grayscale_Alpha) {
+				return;
+			}
+			else if(mode == ColorMode::Alpha) {
+				this->data->ChangeMode(ColorMode::Grayscale);
+
+				return;
+			}
             else
                 throw std::runtime_error("Unsupported color mode");
         }
@@ -338,7 +343,7 @@ namespace Gorgon { namespace Graphics {
                         img(x, y, 3) = data(x, y, 3);
                     
                     RGBA c = getcolor(x, y);
-                    c.Blend(RGBA(convert(c), ratio*255));
+                    c.Blend(RGBA(convert(c), int(round(ratio*255))));
                     
                     setcolor(x, y, c);
                 }
