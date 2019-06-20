@@ -151,14 +151,14 @@ namespace Gorgon { namespace CGI {
         std::vector<Geometry::PointList<P_>> p2;
         const std::vector<Geometry::PointList<P_>> *pp;
         
-        if(S_ < 2) {
-            pp = &p;
-        }
-        else {
+        if(S_ > 1) {
             for(auto &pl : p) {
                 p2.push_back(pl.Duplicate());
             }
             pp = &p2;
+        }
+        else {
+            pp = &p;
         }
         
         const std::vector<Geometry::PointList<P_>> &points = *pp;
@@ -188,7 +188,7 @@ namespace Gorgon { namespace CGI {
                 xmax = xrange.second->X;
         }
         
-        ymax++;
+        ymax++; //ensuring the last line is not skipped due to <
         
         Gorgon::FitInto<Float>(ymin, 0.f, (Float)target.GetHeight()-1);
         Gorgon::FitInto<Float>(ymax, 0.f, (Float)target.GetHeight());
@@ -201,7 +201,7 @@ namespace Gorgon { namespace CGI {
                     int s = (int)ceil(xpoints[i].second);
                     int e = (int)xpoints[i+1].first;
                     
-                    Gorgon::FitInto(s, 0, target.GetWidth()-1);
+                    Gorgon::FitInto(s, 0, target.GetWidth());
                     Gorgon::FitInto(e, 0, target.GetWidth());
                     
                     if(xpoints[i].skip) {
@@ -239,15 +239,26 @@ namespace Gorgon { namespace CGI {
                 if(int(cy) != int(y/S_)) {
                     if(y != yminint) { //transfer
                         for(int x=0; x<ew; x++) {
-                            Graphics::RGBA prevcol = target.GetRGBAAt(x, cy);
-                            Graphics::RGBA col = fill(x, cy-yminint, x + xmin, cy, prevcol);
-                            col.A = (int)round(a * cnts[x] * col.A);
-                            col.Blend(prevcol);
-                            target.SetRGBAAt(x + xmin, cy,  col);
+                            //if(cnts[x]) {
+                                Graphics::RGBA prevcol = target.GetRGBAAt(x+xmin, cy);
+                                Graphics::RGBA col = fill(x, cy-yminint, x + xmin, cy, prevcol);
+                                int targeta = (int)round(a * cnts[x] * col.A);
+                                FitInto(targeta, 0, 255);
+                                
+                                col.A = targeta;
+                                
+                                col.Blend(prevcol);
+                                
+                                
+                                if(cnts[x] == 0 && col.A > 0)
+                                    std::cout<<x<<std::endl;
+                                
+                                target.SetRGBAAt(x + xmin, cy,  col);
+                            //}
                         }
                     }
                     
-                    for(int x=0; x<xmax-xmin+1; x++)//reset
+                    for(int x=0; x<ew; x++)//reset
                         cnts[x] = 0;
                     
                     cy = int(y/S_);
@@ -257,8 +268,8 @@ namespace Gorgon { namespace CGI {
                     Float s = ceil(xpoints[i].second)/S_;
                     Float e = floor(xpoints[i+1].first)/S_;
                     
-                    Gorgon::FitInto<Float>(s, 0, target.GetWidth()-1);
-                    Gorgon::FitInto<Float>(e, 0, target.GetWidth());
+                    FitInto<Float>(s, 0, target.GetWidth());
+                    FitInto<Float>(e, 0, target.GetWidth());
                     
                     if(xpoints[i].skip) {
                         i--; //only skip the first point and continue
@@ -271,7 +282,7 @@ namespace Gorgon { namespace CGI {
                     
                     if(s < e) {
                         for(Float x=s; x<e; x+=1.f/S_) {
-                            cnts[(int)x]++;
+                            cnts[(int)x-xmin]++;
                         }
                     }
                 }
@@ -330,7 +341,7 @@ namespace Gorgon { namespace CGI {
                     int s = (int)ceil(xpoints[i].second);
                     int e = (int)xpoints[i+1].first;
                     
-                    Gorgon::FitInto(s, 0, target.GetWidth()-1);
+                    Gorgon::FitInto(s, 0, target.GetWidth());
                     Gorgon::FitInto(e, 0, target.GetWidth());
                     
                     if(xpoints[i].skip) {
