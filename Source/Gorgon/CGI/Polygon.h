@@ -150,6 +150,14 @@ namespace Gorgon { namespace CGI {
         
         std::vector<Geometry::PointList<P_>> p2;
         const std::vector<Geometry::PointList<P_>> *pp;
+        class vi {
+        public:
+            vi(int s, int e, int y) : s(s), e(e), y(y) {
+            }
+            
+            int s, e, y;
+        };
+        std::vector<vi> saved;
         
         if(S_ > 1) {
             for(auto &pl : p) {
@@ -193,7 +201,7 @@ namespace Gorgon { namespace CGI {
         Gorgon::FitInto<Float>(ymin, 0.f, (Float)target.GetHeight()-1);
         Gorgon::FitInto<Float>(ymax, 0.f, (Float)target.GetHeight());
 
-        if(S_ > 1) subpixelonly = true;
+        //if(S_ > 1) subpixelonly = true;
         
         if(ceil(ymin) <= floor(ymax) && !subpixelonly) {
             internal::findpolylinestofill<1>(points, (int)floor(ymin), (int)ceil(ymax), [&](float y, auto &xpoints) {
@@ -216,14 +224,17 @@ namespace Gorgon { namespace CGI {
                     if(s < e) {
                         for(int x=s; x<e; x++) {
                             target.SetRGBAAt(x, y, fill(x-xmin, y-ymin, x, y, target.GetRGBAAt(x, y)));
-                            //save to speedup subpixel accuracy
+                            
+                            if(S_ > 1) {
+                                saved.push_back({s, e, (int)y});
+                            }
                         }
                     }
                 }
             });
         }
         
-        if(S_ > 1) {            
+        if(S_ > 1) {
             for(auto &pl : p2)
                 pl *= S_;
             

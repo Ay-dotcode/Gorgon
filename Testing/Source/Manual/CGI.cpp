@@ -19,7 +19,7 @@ int main() {
     ((Graphics::Layer&)app.wind.Children[0]).Clear();
     app.wind.Add(l);
     
-    Graphics::Bitmap bmp(400, 400, Graphics::ColorMode::Alpha);
+    Graphics::Bitmap bmp(500, 500, Graphics::ColorMode::Alpha);
     bmp.Clear();
 
     //{{2, 0}, {5, 0}, {5, 4}, {4, 4}, {4, 3}, {3, 2.5}, {1, 2.5}, {0, 3}}
@@ -31,21 +31,22 @@ int main() {
     
     Gorgon::Time::Timer tm;
     tm.Start();
-    float s=10;
+    float maxr=10;
     float st = 0;
-    int c = 10;
-    for(int i=st*36; i<=36*c; i+=1) {
-        float a = Gorgon::PI * (i%36) / 18;
-        float r = s * i / 36;
+    float c = 9;
+    int step=72;
+    for(int i=st*step; i<=step*c; i+=1) {
+        float a = Gorgon::PI * (i%step) / step*2;
+        float r = maxr * i / step;
         
-        points.back().Push({r * cos(a)+200, r * sin(a)+200});
+        points.back().Push({r * cos(a)+250, r * sin(a)+250});
     }
     
-    for(int i=36*c; i>=st*36; i-=1) {
-        float a = Gorgon::PI * (i%36) / 18;
-        float r = s * i / 36 + 5;
+    for(int i=step*c; i>=st*step; i-=1) {
+        float a = Gorgon::PI * (i%step) / step*2;
+        float r = (maxr + 1) * i / step;
         
-        points.back().Push({r * cos(a)+200, r * sin(a)+200});
+        points.back().Push({r * cos(a)+250, r * sin(a)+250});
     }
     std::cout<<"Build time: "<<tm.Tick()<<std::endl;
     
@@ -58,13 +59,13 @@ int main() {
     //points *= 1;
     
     tm.Start();
-    CGI::Polyfill<16>(bmp.GetData(), points);
+    CGI::Polyfill<8>(bmp.GetData(), points);
     std::cout<<"Draw time: "<<tm.Tick()<<std::endl;
     
     auto bmp2 = bmp.ZoomMultiple(1);
     bmp2.Prepare();
     
-    bmp2.Draw(l, 0,0);
+    bmp2.Draw(l, 0,0, Gorgon::Graphics::Color::CanaryYellow);
     
     
 	while(true) {
