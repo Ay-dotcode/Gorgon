@@ -25,12 +25,12 @@ namespace Gorgon { namespace CGI {
             bool skip = false;
         };
         
-        template<int S_, class PL_, class F_, class T_>
-        void findpolylinestofill(const PL_ &pointlist, T_ ymin, T_ ymax, F_ fn, T_ step = 1) {
+        template<class PL_, class F_, class T_>
+        void findpolylinestofill(const PL_ &pointlist, T_ ymin, T_ ymax, F_ fn, T_ step = 1, T_ cover = 1) {
         using std::swap;
         
         for(T_ y = ymin; y<ymax; y += step) {
-            T_ nexty = y + step;
+            T_ nexty = y + cover;
             
             std::vector<vertexinfo> xpoints;
             
@@ -146,18 +146,11 @@ namespace Gorgon { namespace CGI {
      * improve speed. S_ should be a power of two for this algorithm to work properly.
      */
     template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
-    void Polyfill(Containers::Image &target, const std::vector<Geometry::PointList<P_>> &p, F_ fill = SolidFill<>{Graphics::Color::Black}, bool subpixelonly = false) {
+    void Polyfill(Containers::Image &target, const std::vector<Geometry::PointList<P_>> &p, F_ fill = SolidFill<>{Graphics::Color::Black}) {
+        if(p.size() < 1) return;
         
         std::vector<Geometry::PointList<P_>> p2;
         const std::vector<Geometry::PointList<P_>> *pp;
-        class vi {
-        public:
-            vi(int s, int e, int y) : s(s), e(e), y(y) {
-            }
-            
-            int s, e, y;
-        };
-        std::vector<vi> saved;
         
         if(S_ > 1) {
             for(auto &pl : p) {
@@ -171,7 +164,6 @@ namespace Gorgon { namespace CGI {
         
         const std::vector<Geometry::PointList<P_>> &points = *pp;
         
-        if(points.size() < 1) return;
         
         Float ymin = target.GetHeight()*S_ - 1;
         Float ymax = 0;
@@ -200,57 +192,26 @@ namespace Gorgon { namespace CGI {
         
         Gorgon::FitInto<Float>(ymin, 0.f, (Float)target.GetHeight()-1);
         Gorgon::FitInto<Float>(ymax, 0.f, (Float)target.GetHeight());
-
-        //if(S_ > 1) subpixelonly = true;
         
-        if(ceil(ymin) <= floor(ymax) && !subpixelonly) {
-            internal::findpolylinestofill<1>(points, (int)floor(ymin), (int)ceil(ymax), [&](float y, auto &xpoints) {
-                for(int i=0; i<(int)xpoints.size()-1; i+=2) {
-                    int s = (int)ceil(xpoints[i].second);
-                    int e = (int)xpoints[i+1].first;
-                    
-                    Gorgon::FitInto(s, 0, target.GetWidth());
-                    Gorgon::FitInto(e, 0, target.GetWidth());
-                    
-                    if(xpoints[i].skip) {
-                        i--; //only skip the first point and continue
-                        continue;
-                    }
-                    else if(xpoints[i+1].skip) {
-                        xpoints[i+1].skip = false;
-                        i--; //fill until the start of the second point, next time start from the end of it
-                    }
-                    
-                    if(s < e) {
-                        for(int x=s; x<e; x++) {
-                            target.SetRGBAAt(x, y, fill(x-xmin, y-ymin, x, y, target.GetRGBAAt(x, y)));
-                            
-                            if(S_ > 1) {
-                                saved.push_back({s, e, (int)y});
-                            }
-                        }
-                    }
-                }
-            });
-        }
+        if(ceil(ymin) > floor(ymax)) return;
         
-        if(S_ > 1) {
+        if(S_ > 1) { //subpixel
             for(auto &pl : p2)
                 pl *= S_;
             
             Float cy = -1;
             
             int ew = xmax-xmin+1; //effective width
-            std::vector<int> cnts(ew);
+            std::vector<int> cnts(ew); //line buffer for counting
             int yminint = (int)floor(ymin*S_);
             
             float a = 1.f / (S_ * S_);
             
-            internal::findpolylinestofill<S_>(points, yminint, (int)ceil(ymax*S_), [&](float y, auto &xpoints) {
+            internal::findpolylinestofill(points, yminint, (int)ceil(ymax*S_), [&](float y, auto &xpoints) {
                 if(int(cy) != int(y/S_)) {
                     if(y != yminint) { //transfer
                         for(int x=0; x<ew; x++) {
-                            //if(cnts[x]) {
+                            if(cnts[x]) {
                                 Graphics::RGBA prevcol = target.GetRGBAAt(x+xmin, cy);
                                 Graphics::RGBA col = fill(x, cy-yminint, x + xmin, cy, prevcol);
                                 int targeta = (int)round(a * cnts[x] * col.A);
@@ -265,12 +226,12 @@ namespace Gorgon { namespace CGI {
                                     std::cout<<x<<std::endl;
                                 
                                 target.SetRGBAAt(x + xmin, cy,  col);
-                            //}
+                            }
                         }
                     }
                     
-                    for(int x=0; x<ew; x++)//reset
-                        cnts[x] = 0;
+                    //reset
+                    memset(&cnts[0], 0, cnts.size()*sizeof(int));
                     
                     cy = int(y/S_);
                 }
@@ -299,6 +260,32 @@ namespace Gorgon { namespace CGI {
                 }
             });
         }
+        else { //integer
+            internal::findpolylinestofill(points, (int)floor(ymin), (int)ceil(ymax), [&](float y, auto &xpoints) {
+                for(int i=0; i<(int)xpoints.size()-1; i+=2) {
+                    int s = (int)ceil(xpoints[i].second);
+                    int e = (int)xpoints[i+1].first;
+                    
+                    Gorgon::FitInto(s, 0, target.GetWidth());
+                    Gorgon::FitInto(e, 0, target.GetWidth());
+                    
+                    if(xpoints[i].skip) {
+                        i--; //only skip the first point and continue
+                        continue;
+                    }
+                    else if(xpoints[i+1].skip) {
+                        xpoints[i+1].skip = false;
+                        i--; //fill until the start of the second point, next time start from the end of it
+                    }
+                    
+                    if(s < e) {
+                        for(int x=s; x<e; x++) {
+                            target.SetRGBAAt(x, y, fill(x-xmin, y-ymin, x, y, target.GetRGBAAt(x, y)));
+                        }
+                    }
+                }
+            });
+        }
     }
     
     /**
@@ -306,48 +293,115 @@ namespace Gorgon { namespace CGI {
      * where last pixel connects to the first. 
      */
     template<int S_ = 8, class P_, class F_ = SolidFill<>>
-    void Polyfill(Graphics::Bitmap &target, const std::vector<Geometry::PointList<P_>> &points, F_ fill = SolidFill<>{Graphics::Color::Black}, bool subpixelonly = false) {
+    void Polyfill(Graphics::Bitmap &target, const std::vector<Geometry::PointList<P_>> &points, F_ fill = SolidFill<>{Graphics::Color::Black}) {
         if(target.HasData())
-            Polyfill<S_>(target.GetData(), points, fill, subpixelonly);
+            Polyfill<S_>(target.GetData(), points, fill);
     }
     
     /**
      * This function fills the given point list as a polygon. List is treated as closed
      * where last pixel connects to the first. S_ is the number of subdivision for subpixel
-     * accuracy. If subpixelonly is true, the segment where fully set pixels are determined
-     * is skipped. When drawing very thin polygon such as lines, setting this parameters can
-     * improve speed.
+     * accuracy.
      */
     template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
-    void Polyfill(Containers::Image &target, const Geometry::PointList<P_> &p, F_ fill = SolidFill<>{Graphics::Color::Black}, bool subpixelonly = false) {
+    void Polyfill(Containers::Image &target, const Geometry::PointList<P_> &p, F_ fill = SolidFill<>{Graphics::Color::Black}) {
         if(p.Size() <= 1) return;
 
         Geometry::PointList<P_> p2;
         const Geometry::PointList<P_> *pp;
         
-        if(S_ < 2) {
-            pp = &p;
+        if(S_ > 1) {
+            p2 = p.Duplicate();
+            pp = &p2;
         }
         else {
-            p2 = p * S_;
-            pp = &p2;
+            pp = &p;
         }
         const Geometry::PointList<P_> &points = *pp;
         
         auto yrange = std::minmax_element(points.begin(), points.end(), [](auto l, auto r) { return l.Y < r.Y; });
         
-        int ymin = (int)floor(yrange.first->Y);
-        int ymax = (int)ceil(yrange.second->Y);
+        Float ymin = yrange.first->Y;
+        Float ymax = yrange.second->Y;
         
-        Gorgon::FitInto(ymin, 0, target.GetHeight()-1);
-        Gorgon::FitInto(ymax, 0, target.GetHeight());
+        ymax++;
+        
+        Gorgon::FitInto<Float>(ymin, 0, target.GetHeight()-1);
+        Gorgon::FitInto<Float>(ymax, 0, target.GetHeight());
         
         auto xrange = std::minmax_element(points.begin(), points.end(), [](auto l, auto r) { return l.X < r.X; });
         
-        int xmin = (int)floor(xrange.first->X);
+        int xmin = xrange.first->X;
+        int xmax = xrange.second->X;
         
-        if(ceil(ymin) <= floor(ymax) && !subpixelonly) {
-            internal::findpolylinestofill<1>(Containers::Collection<const Geometry::PointList<P_>>({points}), ymin, ymax, [&](float y, auto &xpoints) {
+        if(ceil(ymin) > floor(ymax)) return;
+        
+        if(S_ > 1) { //subpixel
+            p2 *= S_;
+            
+            Float cy = -1;
+            
+            int ew = xmax-xmin+1; //effective width
+            std::vector<int> cnts(ew); //line buffer for counting
+            int yminint = (int)floor(ymin*S_);
+            
+            float a = 1.f / (S_ * S_);
+            
+            internal::findpolylinestofill(Containers::Collection<const Geometry::PointList<P_>>({points}), yminint, (int)ceil(ymax*S_), [&](float y, auto &xpoints) {
+                if(int(cy) != int(y/S_)) {
+                    if(y != yminint) { //transfer
+                        for(int x=0; x<ew; x++) {
+                            if(cnts[x]) {
+                                Graphics::RGBA prevcol = target.GetRGBAAt(x+xmin, cy);
+                                Graphics::RGBA col = fill(x, cy-yminint, x + xmin, cy, prevcol);
+                                int targeta = (int)round(a * cnts[x] * col.A);
+                                FitInto(targeta, 0, 255);
+                                
+                                col.A = targeta;
+                                
+                                col.Blend(prevcol);
+                                
+                                
+                                if(cnts[x] == 0 && col.A > 0)
+                                    std::cout<<x<<std::endl;
+                                
+                                target.SetRGBAAt(x + xmin, cy,  col);
+                            }
+                        }
+                    }
+                    
+                    //reset
+                    memset(&cnts[0], 0, cnts.size()*sizeof(int));
+                    
+                    cy = int(y/S_);
+                }
+                
+                for(int i=0; i<(int)xpoints.size()-1; i+=2) {
+                    Float s = ceil(xpoints[i].second)/S_;
+                    Float e = floor(xpoints[i+1].first)/S_;
+                    
+                    FitInto<Float>(s, 0, target.GetWidth());
+                    FitInto<Float>(e, 0, target.GetWidth());
+                    
+                    if(xpoints[i].skip) {
+                        i--; //only skip the first point and continue
+                        continue;
+                    }
+                    else if(xpoints[i+1].skip) {
+                        xpoints[i+1].skip = false;
+                        i--; //fill until the start of the second point, next time start from the end of it
+                    }
+                    
+                    if(s < e) {
+                        for(Float x=s; x<e; x+=1.f/S_) {
+                            cnts[(int)x-xmin]++;
+                        }
+                    }
+                }
+            });
+        }
+        else {
+            internal::findpolylinestofill(Containers::Collection<const Geometry::PointList<P_>>({points}), ymin, ymax, [&](float y, auto &xpoints) {
                 for(int i=0; i<(int)xpoints.size()-1; i+=2) {
                     int s = (int)ceil(xpoints[i].second);
                     int e = (int)xpoints[i+1].first;
@@ -380,9 +434,9 @@ namespace Gorgon { namespace CGI {
      * where last pixel connects to the first. 
      */
     template<int S_ = 8, class P_, class F_ = SolidFill<>>
-    void Polyfill(Graphics::Bitmap &target, const Geometry::PointList<P_> &points, F_ fill = SolidFill<>{Graphics::Color::Black}, bool subpixelonly = false) {
+    void Polyfill(Graphics::Bitmap &target, const Geometry::PointList<P_> &points, F_ fill = SolidFill<>{Graphics::Color::Black}) {
         if(target.HasData())
-            Polyfill<S_>(target.GetData(), points, fill, subpixelonly);
+            Polyfill<S_>(target.GetData(), points, fill);
     }
     
 } }
