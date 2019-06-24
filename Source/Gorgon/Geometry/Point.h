@@ -280,6 +280,16 @@ namespace Gorgon {
 			Float ManhattanDistance() const {
 				return (Float)(std::abs(X) + std::abs(Y));
 			}
+			
+			/// Normalizes the point as a unit vector
+			basic_Point Normalize() const {
+                return (*this)/Distance();
+            }
+            
+            /// Calculates perpendicular vector to this point
+            basic_Point Perpendicular() const {
+                return {-Y, X};
+            }
 
 			/// Calculates the angle of the line formed from the given point
 			/// to this point.

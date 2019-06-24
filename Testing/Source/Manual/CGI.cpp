@@ -3,6 +3,7 @@
 #include <Gorgon/Geometry/PointList.h>
 #include <Gorgon/CGI.h>
 #include <Gorgon/CGI/Polygon.h>
+#include <Gorgon/CGI/Line.h>
 #include <Gorgon/Time/Timer.h>
 
 
@@ -47,12 +48,8 @@ int main() {
         points.Push({r * cos(a)+250, r * sin(a)+250});
     }
     
-    for(int i=step*c; i>=st*step; i-=1) {
-        float a = Gorgon::PI * (i%step) / step*2;
-        float r = (maxr) * i / step+8;
-        
-        points.Push({r * cos(a)+250, r * sin(a)+250});
-    }
+    //points = {{20,20}, {100, 100}, {200, 50}};
+    
     std::cout<<"Build time: "<<tm.Tick()<<std::endl;
     
     for(auto &p : points) {
@@ -63,9 +60,10 @@ int main() {
     //points += Geometry::Point{5, 5};
     //points *= 1;
     
+    
     tm.Start();
     //for(int i=0; i<100; i++)
-    CGI::Polyfill<DefaultAA>(bmp.GetData(), points, CGI::SolidFill<>(0x80ffffff));
+    CGI::DrawLines<DefaultAA>(bmp.GetData(), points, 5.0f, CGI::SolidFill<>(0x80ffffff));
     
     std::cout<<"Draw time: "<<tm.Tick()<<std::endl;
     
@@ -73,7 +71,7 @@ int main() {
     bmp2.Prepare();
     
     bmp2.Draw(l, 0,0, Gorgon::Graphics::Color::CanaryYellow);
-    
+    bmp2.ExportPNG("poly.png");
     
 	while(true) {
 		Gorgon::NextFrame();

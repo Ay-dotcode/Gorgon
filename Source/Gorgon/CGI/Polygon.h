@@ -169,8 +169,11 @@ namespace Gorgon { namespace CGI {
         Float ymax = 0;
         int xmin = target.GetWidth()*S_ - 1;
         int xmax = 0;
+        bool found = false;
         
         for(const auto &p : points) {
+            if(p.Size() <= 0) continue;
+            
             auto yrange = std::minmax_element(p.begin(), p.end(), [](auto l, auto r) { return l.Y < r.Y; });
             
             if(ymin > yrange.first->Y)
@@ -186,7 +189,11 @@ namespace Gorgon { namespace CGI {
             
             if(xmax < xrange.second->X)
                 xmax = xrange.second->X;
+            
+            found = true;
         }
+        
+        if(!found) return;
         
         ymax++; //ensuring the last line is not skipped due to <
         

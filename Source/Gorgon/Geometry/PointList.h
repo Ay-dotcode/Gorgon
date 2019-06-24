@@ -39,12 +39,6 @@ namespace Gorgon { namespace Geometry {
             return {Points};
         }
         
-        ///Assignment to a vector
-        PointList &operator =(std::vector<P_> points) {
-            using std::swap;
-            
-            swap(points, Points);
-        }
         
         ///Due to relatively high cost, copying is disabled. Use Duplicate instead
         PointList &operator =(const PointList &) = delete;
@@ -95,6 +89,26 @@ namespace Gorgon { namespace Geometry {
         ///End iterator to underlying points vector
         auto end() const {
             return Points.end();
+        }
+        
+        ///Begin iterator to underlying points vector
+        auto rbegin() {
+            return Points.rbegin();
+        }
+        
+        ///End iterator to underlying points vector
+        auto rend() {
+            return Points.rend();
+        }
+        
+        ///Begin iterator to underlying points vector
+        auto rbegin() const {
+            return Points.rbegin();
+        }
+        
+        ///End iterator to underlying points vector
+        auto rend() const {
+            return Points.rend();
         }
         
         ///Accesses the elements in the list

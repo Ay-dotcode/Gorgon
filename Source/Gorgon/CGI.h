@@ -3,7 +3,7 @@
 #include "Graphics/Color.h"
 
 namespace Gorgon { namespace CGI {
-   
+    
     /**
      * Fills a drawing with a solid color
      */
