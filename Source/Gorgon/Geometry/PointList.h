@@ -169,13 +169,20 @@ namespace Gorgon { namespace Geometry {
             return {Points[PositiveMod(index, (long)Points.size())], Points[PositiveMod(index+1, (long)Points.size())]};
         }
         
+        /// Adds a new point to the end of the point list
         void Push(P_ point) {
             Points.push_back(point);
         }
         
+        /// Adds a new point to the end of the point list
         template<class ...T_>
         void Push(T_&&... params) {
             Points.emplace_back(std::forward<T_>(params)...);
+        }
+        
+        /// Removes the last point from the list
+        void Pop() {
+            Points.pop_back();
         }
         
         ///Adds the coordinates of the points on the right list to the left.
