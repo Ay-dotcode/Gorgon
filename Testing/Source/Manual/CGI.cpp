@@ -48,7 +48,7 @@ int main() {
         points.Push({r * cos(a)+250, r * sin(a)+250});
     }
     
-    //points = {{20,20}, {100, 100}, {200, 50}};
+    points = {{20,20}, {20, 100}, {100, 100}, {200, 50}, {20,20}};
     
     std::cout<<"Build time: "<<tm.Tick()<<std::endl;
     
@@ -63,7 +63,7 @@ int main() {
     
     tm.Start();
     //for(int i=0; i<100; i++)
-    CGI::DrawLines<DefaultAA>(bmp.GetData(), points, 5.0f, CGI::SolidFill<>(0x80ffffff));
+    CGI::DrawLines<DefaultAA>(bmp.GetData(), points, 24.0f, CGI::SolidFill<>(0x80ffffff));
     
     std::cout<<"Draw time: "<<tm.Tick()<<std::endl;
     

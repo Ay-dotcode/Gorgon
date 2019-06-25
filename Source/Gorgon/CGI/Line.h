@@ -19,8 +19,11 @@ namespace Gorgon { namespace CGI {
      */
     template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void DrawLines(Containers::Image &target, const Geometry::PointList<P_> &p, StrokeSettings settings = 1.0, F_ stroke = SolidFill<>{Graphics::Color::Black}) {
-        Geometry::PointList<P_> points;
-        Geometry::PointList<P_> ret;
+        if(p.Size() == 0) return;
+        
+        std::vector<Geometry::PointList<P_>> points;
+        points.push_back({});
+        points.push_back({});
         
         Float w = settings.width / 2;
         
@@ -28,21 +31,23 @@ namespace Gorgon { namespace CGI {
             Geometry::Line<P_> l = p.LineAt(i);
             
             auto v = (l.End - l.Start).Perpendicular().Normalize();
-            points.Push(l.Start + v * w);
-            points.Push(l.End + v * w);
-            ret.Push(l.Start - v * w);
-            ret.Push(l.End - v * w);
+            points[0].Push(l.Start + v * w);
+            points[0].Push(l.End + v * w);
+            points[1].Push(l.Start - v * w);
+            points[1].Push(l.End - v * w);
         }
         
-        for(auto it=ret.rbegin(); it!=ret.rend(); ++it) {
-            points.Push(*it);
+        if(p[0] == p[p.Size()-1]) {
+            points[0].Push(points[0][0]);
+            points[1].Push(points[1][0]);
         }
-        points.Push(points[0]);
-        
-        for(auto &p : points) {
-            std::cout<<p.X<<","<<p.Y<<" ";
+        else {
+            for(auto it=points[1].rbegin(); it!=points[1].rend(); ++it) {
+                points[0].Push(*it);
+            }
+            points[0].Push(points[0][0]);
+            points.pop_back();
         }
-        std::cout<<std::endl;
     
         Polyfill<S_, P_, F_>(target, points, stroke);
     }
