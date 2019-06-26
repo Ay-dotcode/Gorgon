@@ -214,7 +214,7 @@ namespace Gorgon {
 			}
 
 			/// Multiplies two points. This is essentially a dot product
-			Float operator *(const basic_Point<T_> &value) const {
+			T_ operator *(const basic_Point<T_> &value) const {
 				return X*value.X + Y*value.Y;
 			}
 
@@ -260,6 +260,17 @@ namespace Gorgon {
 
 				return *this;
 			}
+
+			/// Calculates cross product of two points
+			T_ CrossProduct(const basic_Point<T_> &value) const {
+				return X*value.Y - Y*value.X;
+			}
+
+			/// Calculates dot product of two points
+			T_ DotProduct(const basic_Point<T_> &value) const {
+				return X*value.X + Y*value.Y;
+			}
+
 
 			/// Calculates Euclidean distance from this point to the given target
 			Float Distance(const basic_Point &target) const {

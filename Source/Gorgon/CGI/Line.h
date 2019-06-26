@@ -29,52 +29,116 @@ namespace Gorgon { namespace CGI {
         Float w = settings.width / 2 + 1.0 / (S_ * 2);
         
         Geometry::Line<P_> prev;
+		Geometry::Pointf prevoff;
+
+		//first point is special
+		{
+			Geometry::Line<P_> l = p.LineAt(0);
+			auto off = (Geometry::Pointf(l.End) - Geometry::Pointf(l.Start)).Perpendicular().Normalize() * w;
+
+			//if closed the first two points will be added last
+			if(p.Front() != p.Back()) {
+				//point for left polygon
+				points[0].Push(l.Start + off);
+
+				//point for right polygon
+				points[1].Push(l.Start - off);
+			}
+
+			//point for left polygon
+			points[0].Push(l.End + off);
+
+			//point for right polygon
+			points[1].Push(l.End - off);
+
+			prev = l;
+			prevoff = off;
+		}
+
         
-        for(int i=0; i<p.Size()-1; i++) {
+        for(int i=1; i<p.Size()-1; i++) {
             Geometry::Line<P_> l = p.LineAt(i);
             
-            auto v = (Geometry::Pointf(l.End) - Geometry::Pointf(l.Start)).Perpendicular().Normalize();
+            auto off = (Geometry::Pointf(l.End) - Geometry::Pointf(l.Start)).Perpendicular().Normalize() * w;
             
-            if(i > 0) {
-                auto prevv = (prev.End - prev.Start).Normalize();
-                auto dotp = (prevv * v);
-                
-                auto avg = (prevv.Perpendicular() + v) / 2;
-                
-                if(dotp >= 0) {
-                    points[1].Pop();
-                    points[1].Push(l.Start - avg * w * (1 + avg.Y));
-                }
-                else {
-                    points[1].Push(l.Start - v * w);
-                }
-                points[1].Push(l.End - v * w);
-                
-                if(dotp <= 0) {
-                    points[0].Pop();
-                    points[0].Push(l.Start + avg * w * (1 + dotp));
-                }
-                else {
-                    points[0].Push(l.Start + v * w);
-                }
-                points[0].Push(l.End + v * w);
-            }
-            else {
-                //points for left polygon
-                points[0].Push(l.Start + v * w);
-                points[0].Push(l.End + v * w);
-                
-                //points for right polygon
-                points[1].Push(l.Start - v * w);
-                points[1].Push(l.End - v * w);
-            }
+			auto prevv = (prev.End - prev.Start).Normalize();
+			auto dotp = (prevv * off);
+
+			auto r = l.End - l.Start;
+			auto s = prev.End - prev.Start;
+
+			if(dotp >= 0) {
+				auto p = l.Start - off;
+				auto q = prev.Start - prevoff;
+
+				auto intersect = q + s * ((q - p).CrossProduct(r) / r.CrossProduct(s));
+
+				points[1].Pop();
+				points[1].Push(intersect);
+			}
+			else {
+				points[1].Push(l.Start - off);
+			}
+			points[1].Push(l.End - off);
+
+			if(dotp <= 0) {
+				auto p = l.Start + off;
+				auto q = prev.Start + prevoff;
+
+				auto intersect = q + s * ((q - p).CrossProduct(r) / r.CrossProduct(s));
+
+				points[0].Pop();
+				points[0].Push(intersect);
+			}
+			else {
+				points[0].Push(l.Start + off);
+			}
+			points[0].Push(l.End + off);
             
             prev = l;
+			prevoff = off;
         }
         
         //if closed, keep left/right polygons separate
-        if(p[0] == p[p.Size()-1]) {
-            points[0].Push(points[0][0]);
+        if(p.Front() == p.Back()) {
+			//add start points of first line by checking the angle with the last line
+			Geometry::Line<P_> l = p.LineAt(0);
+
+			auto off = (Geometry::Pointf(l.End) - Geometry::Pointf(l.Start)).Perpendicular().Normalize() * w;
+
+			auto prevv = (prev.End - prev.Start).Normalize();
+			auto dotp = (prevv * off);
+
+			auto r = l.End - l.Start;
+			auto s = prev.End - prev.Start;
+
+			if(dotp >= 0) {
+				auto p = l.Start - off;
+				auto q = prev.Start - prevoff;
+
+				auto intersect = q + s * ((q - p).CrossProduct(r) / r.CrossProduct(s));
+
+				points[1].Pop();
+				points[1].Push(intersect);
+			}
+			else {
+				points[1].Push(l.Start - off);
+			}
+
+			if(dotp <= 0) {
+				auto p = l.Start + off;
+				auto q = prev.Start + prevoff;
+
+				auto intersect = q + s * ((q - p).CrossProduct(r) / r.CrossProduct(s));
+
+				points[0].Pop();
+				points[0].Push(intersect);
+			}
+			else {
+				points[0].Push(l.Start + off);
+			}
+
+			points[0].Push(points[0][0]);
             points[1].Push(points[1][0]);
         }
         else { //if open join left/right polygons
