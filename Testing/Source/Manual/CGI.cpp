@@ -38,7 +38,7 @@ int main() {
     Gorgon::Time::Timer tm;
     tm.Start();
     float maxr=10;
-    float st = 0;
+    float st = 0.2;
     float c = 9;
     int step=72;
     for(int i=st*step; i<=step*c; i+=1) {
@@ -48,7 +48,10 @@ int main() {
         points.Push({r * cos(a)+250, r * sin(a)+250});
     }
     
-	//points = {{20,50}, {50, 50},{50, 20}, {80, 20}, {80, 80}, {20, 80}, {20,50}};
+    
+	//points = {{2,5}, {40,10}, {40,40}, {10,40}, {10,2}, {20,2}, {20,30}, {30,30}, {30,20}, {0,15}};
+    points.Push(points.Front());
+    //points += Geometry::Pointf{0,0.1};
     
     std::cout<<"Build time: "<<tm.Tick()<<std::endl;
     
@@ -60,17 +63,19 @@ int main() {
     //points += Geometry::Point{5, 5};
     //points *= 1;
     
+    std::vector<Geometry::PointList<Geometry::Pointf>> v;
+    v.push_back(points.Duplicate());
     
     tm.Start();
     //for(int i=0; i<100; i++)
-    CGI::DrawLines<DefaultAA>(bmp.GetData(), points, 12.0f, CGI::SolidFill<>(0x80ffffff));
+    CGI::DrawLines<DefaultAA>(bmp.GetData(), points, 5.f, CGI::SolidFill<>(0x80ffffff));
     
     std::cout<<"Draw time: "<<tm.Tick()<<std::endl;
     
     auto bmp2 = bmp.ZoomMultiple(1);
     bmp2.Prepare();
     
-    bmp2.Draw(l, 0,0, Gorgon::Graphics::Color::CanaryYellow);
+    bmp2.Draw(l, 10,10, Gorgon::Graphics::Color::CanaryYellow);
     bmp2.ExportPNG("poly.png");
     
 	while(true) {

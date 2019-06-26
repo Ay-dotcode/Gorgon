@@ -23,6 +23,7 @@ namespace Gorgon { namespace CGI {
 
             Float first, second;
             bool skip = false;
+            int wind = false;
         };
         
         template<class PL_, class F_, class T_>
@@ -97,6 +98,7 @@ namespace Gorgon { namespace CGI {
                             
                             firstdir = line.YDirection();
                             xpoints.push_back({x1, x2});
+                            xpoints.back().wind = firstdir;
                         }
                         
                         lastdir = line.YDirection();
@@ -107,6 +109,7 @@ namespace Gorgon { namespace CGI {
                     else {
                         if(wasconnected && lastdir != firstdir) { //change in direction
                             xpoints.back().skip= true;
+                            xpoints.back().wind = 0;
                         }
                         connected = false;
                     }
@@ -114,20 +117,21 @@ namespace Gorgon { namespace CGI {
                 
                 if(wasconnected && lastdir != firstdir) { //change in direction
                     xpoints.back().skip= true;
+                    xpoints.back().wind = 0;
                 }
             }
             
-            std::sort(xpoints.begin(), xpoints.end(), [](auto l, auto r) { return l.first < r.first; });
+            std::sort(xpoints.begin(), xpoints.end(), [](auto l, auto r) { return l.second < r.second; });
             
             //join overlapping x sections
-            for(int i=0; i<(int)xpoints.size()-1; i++) {
+            /*for(int i=0; i<(int)xpoints.size()-1; i++) {
                 if(xpoints[i].second >= xpoints[i+1].first) {
                     //join
                     xpoints[i+1].first = xpoints[i].first; //sorted
                     xpoints[i].second  = xpoints[i].second > xpoints[i+1].second ? xpoints[i].second : xpoints[i+1].second;
                     xpoints[i+1].second= xpoints[i].second;
                 }
-            }
+            }*/
             
             //fill
             fn(y, xpoints);
@@ -143,9 +147,10 @@ namespace Gorgon { namespace CGI {
      * where last pixel connects to the first. S_ is the number of subdivision for subpixel
      * accuracy. If subpixelonly is true, the segment where fully set pixels are determined
      * is skipped. When drawing very thin polygon such as lines, setting this parameters can
-     * improve speed. S_ should be a power of two for this algorithm to work properly.
+     * improve speed. S_ should be a power of two for this algorithm to work properly. W_ is
+     * winding, 1 is odd, 0 is non-zero.
      */
-    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    template<int S_ = 8, int W_ = 1, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void Polyfill(Containers::Image &target, const std::vector<Geometry::PointList<P_>> &p, F_ fill = SolidFill<>{Graphics::Color::Black}) {
         if(p.size() < 1) return;
         
@@ -243,53 +248,81 @@ namespace Gorgon { namespace CGI {
                     cy = int(y/S_);
                 }
                 
-                for(int i=0; i<(int)xpoints.size()-1; i+=2) {
+                int wind = 0;
+                for(int i=0; i<(int)xpoints.size()-1; i++) {
+                    wind += xpoints[i].wind;
+                    
+                    if(wind == 0) continue;
+                    
                     Float s = ceil(xpoints[i].second)/S_;
-                    Float e = floor(xpoints[i+1].first)/S_;
+                    std::sort(xpoints.begin() + i + 1, xpoints.end(), [](auto l, auto r) { return l.first < r.first; });
                     
-                    FitInto<Float>(s, 0, target.GetWidth());
-                    FitInto<Float>(e, 0, target.GetWidth());
-                    
-                    if(xpoints[i].skip) {
-                        i--; //only skip the first point and continue
-                        continue;
-                    }
-                    else if(xpoints[i+1].skip) {
-                        xpoints[i+1].skip = false;
-                        i--; //fill until the start of the second point, next time start from the end of it
-                    }
-                    
-                    if(s < e) {
-                        for(Float x=s; x<e; x+=1.f/S_) {
-                            cnts[(int)x-xmin]++;
+                    while(true) {
+                        i++;
+                        
+                        if(i >= xpoints.size())
+                            break;
+                        
+                        wind += xpoints[i].wind;
+                        
+                        if(W_ == 0 ? (wind == 0) : (wind%2==0)) {
+                            Float e = floor(xpoints[i].first)/S_;
+                            
+                            FitInto<Float>(s, 0, target.GetWidth());
+                            FitInto<Float>(e, 0, target.GetWidth());
+                            if(s < e) {
+                                for(Float x=s; x<e; x+=1.f/S_) {
+                                    cnts[(int)x-xmin]++;
+                                }
+                            }
+                            
+                            break;
                         }
                     }
+                    
+                    if(xpoints.begin() + i == xpoints.end()) continue;
+                    
+                    std::sort(xpoints.begin() + i + 1, xpoints.end(), [](auto l, auto r) { return l.second < r.second; });
                 }
             });
         }
         else { //integer
             internal::findpolylinestofill(points, (int)floor(ymin), (int)ceil(ymax), [&](float y, auto &xpoints) {
-                for(int i=0; i<(int)xpoints.size()-1; i+=2) {
+                int wind = 0;
+                for(int i=0; i<(int)xpoints.size()-1; i++) {
+                    wind += xpoints[i].wind;
+                    
+                    if(wind == 0) continue;
+                    
                     int s = (int)ceil(xpoints[i].second);
-                    int e = (int)xpoints[i+1].first;
+                    std::sort(xpoints.begin() + i + 1, xpoints.end(), [](auto l, auto r) { return l.first < r.first; });
                     
-                    Gorgon::FitInto(s, 0, target.GetWidth());
-                    Gorgon::FitInto(e, 0, target.GetWidth());
-                    
-                    if(xpoints[i].skip) {
-                        i--; //only skip the first point and continue
-                        continue;
-                    }
-                    else if(xpoints[i+1].skip) {
-                        xpoints[i+1].skip = false;
-                        i--; //fill until the start of the second point, next time start from the end of it
-                    }
-                    
-                    if(s < e) {
-                        for(int x=s; x<e; x++) {
-                            target.SetRGBAAt(x, y, fill(x-xmin, y-ymin, x, y, target.GetRGBAAt(x, y)));
+                    while(true) {
+                        i++;
+                        
+                        if(i >= xpoints.size())
+                            break;
+                        
+                        wind += xpoints[i].wind;
+                        
+                        if(W_ == 0 ? (wind == 0) : (wind%2 == 0)) {
+                            int e = (int)floor(xpoints[i].first);
+                            
+                            FitInto(s, 0, target.GetWidth());
+                            FitInto(e, 0, target.GetWidth());
+                            if(s < e) {
+                                for(int x=s; x<e; x++) {
+                                    target.SetRGBAAt(x, y, fill(x-xmin, y-ymin, x, y, target.GetRGBAAt(x, y)));
+                                }
+                            }
+                            
+                            break;
                         }
                     }
+                    
+                    if(xpoints.begin() + i == xpoints.end()) continue;
+                    
+                    std::sort(xpoints.begin() + i + 1, xpoints.end(), [](auto l, auto r) { return l.second < r.second; });
                 }
             });
         }
@@ -299,10 +332,10 @@ namespace Gorgon { namespace CGI {
      * This function fills the given point list as a polygon. List is treated as closed
      * where last pixel connects to the first. 
      */
-    template<int S_ = 8, class P_, class F_ = SolidFill<>>
+    template<int S_ = 8, int W_ = 1, class P_, class F_ = SolidFill<>>
     void Polyfill(Graphics::Bitmap &target, const std::vector<Geometry::PointList<P_>> &points, F_ fill = SolidFill<>{Graphics::Color::Black}) {
         if(target.HasData())
-            Polyfill<S_>(target.GetData(), points, fill);
+            Polyfill<S_, W_, P_, F_>(target.GetData(), points, fill);
     }
     
     /**
@@ -310,7 +343,7 @@ namespace Gorgon { namespace CGI {
      * where last pixel connects to the first. S_ is the number of subdivision for subpixel
      * accuracy.
      */
-    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    template<int S_ = 8, int W_ = 1, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void Polyfill(Containers::Image &target, const Geometry::PointList<P_> &p, F_ fill = SolidFill<>{Graphics::Color::Black}) {
         if(p.Size() <= 1) return;
 
@@ -383,54 +416,82 @@ namespace Gorgon { namespace CGI {
                     cy = int(y/S_);
                 }
                 
-                for(int i=0; i<(int)xpoints.size()-1; i+=2) {
+
+                int wind = 0;
+                for(int i=0; i<(int)xpoints.size()-1; i++) {
+                    wind += xpoints[i].wind;
+                    
+                    if(wind == 0) continue;
+                    
                     Float s = ceil(xpoints[i].second)/S_;
-                    Float e = floor(xpoints[i+1].first)/S_;
+                    std::sort(xpoints.begin() + i + 1, xpoints.end(), [](auto l, auto r) { return l.first < r.first; });
                     
-                    FitInto<Float>(s, 0, target.GetWidth());
-                    FitInto<Float>(e, 0, target.GetWidth());
-                    
-                    if(xpoints[i].skip) {
-                        i--; //only skip the first point and continue
-                        continue;
-                    }
-                    else if(xpoints[i+1].skip) {
-                        xpoints[i+1].skip = false;
-                        i--; //fill until the start of the second point, next time start from the end of it
-                    }
-                    
-                    if(s < e) {
-                        for(Float x=s; x<e; x+=1.f/S_) {
-                            cnts[(int)x-xmin]++;
+                    while(true) {
+                        i++;
+                        
+                        if(i >= xpoints.size())
+                            break;
+                        
+                        wind += xpoints[i].wind;
+                        
+                        if(W_ == 0 ? (wind == 0) : (wind%2==0)) {
+                            Float e = floor(xpoints[i].first)/S_;
+                            
+                            FitInto<Float>(s, 0, target.GetWidth());
+                            FitInto<Float>(e, 0, target.GetWidth());
+                            if(s < e) {
+                                for(Float x=s; x<e; x+=1.f/S_) {
+                                    cnts[(int)x-xmin]++;
+                                }
+                            }
+                            
+                            break;
                         }
                     }
+                    
+                    if(xpoints.begin() + i == xpoints.end()) continue;
+                    
+                    std::sort(xpoints.begin() + i + 1, xpoints.end(), [](auto l, auto r) { return l.second < r.second; });
                 }
             });
         }
         else {
             internal::findpolylinestofill(Containers::Collection<const Geometry::PointList<P_>>({points}), ymin, ymax, [&](float y, auto &xpoints) {
-                for(int i=0; i<(int)xpoints.size()-1; i+=2) {
+                int wind = 0;
+                for(int i=0; i<(int)xpoints.size()-1; i++) {
+                    wind += xpoints[i].wind;
+                    
+                    if(wind == 0) continue;
+                    
                     int s = (int)ceil(xpoints[i].second);
-                    int e = (int)xpoints[i+1].first;
+                    std::sort(xpoints.begin() + i + 1, xpoints.end(), [](auto l, auto r) { return l.first < r.first; });
                     
-                    Gorgon::FitInto(s, 0, target.GetWidth());
-                    Gorgon::FitInto(e, 0, target.GetWidth());
-                    
-                    if(xpoints[i].skip) {
-                        i--; //only skip the first point and continue
-                        continue;
-                    }
-                    else if(xpoints[i+1].skip) {
-                        xpoints[i+1].skip = false;
-                        i--; //fill until the start of the second point, next time start from the end of it
-                    }
-                    
-                    if(s < e) {
-                        for(int x=s; x<e; x++) {
-                            target.SetRGBAAt(x, y, fill(x-xmin, y-ymin, x, y, target.GetRGBAAt(x, y)));
-                            //save to speedup subpixel accuracy
+                    while(true) {
+                        i++;
+                        
+                        if(i >= xpoints.size())
+                            break;
+                        
+                        wind += xpoints[i].wind;
+                        
+                        if(W_ == 0 ? (wind == 0) : (wind%2 == 0)) {
+                            int e = (int)floor(xpoints[i].first);
+                            
+                            FitInto(s, 0, target.GetWidth());
+                            FitInto(e, 0, target.GetWidth());
+                            if(s < e) {
+                                for(int x=s; x<e; x++) {
+                                    target.SetRGBAAt(x, y, fill(x-xmin, y-ymin, x, y, target.GetRGBAAt(x, y)));
+                                }
+                            }
+                            
+                            break;
                         }
                     }
+                    
+                    if(xpoints.begin() + i == xpoints.end()) continue;
+                    
+                    std::sort(xpoints.begin() + i + 1, xpoints.end(), [](auto l, auto r) { return l.second < r.second; });
                 }
             });
         }

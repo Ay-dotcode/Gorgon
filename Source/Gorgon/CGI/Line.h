@@ -140,6 +140,7 @@ namespace Gorgon { namespace CGI {
 
 			points[0].Push(points[0][0]);
             points[1].Push(points[1][0]);
+            std::reverse(points[1].begin(), points[1].end());
         }
         else { //if open join left/right polygons
             for(auto it=points[1].rbegin(); it!=points[1].rend(); ++it) {
@@ -149,7 +150,7 @@ namespace Gorgon { namespace CGI {
             points.pop_back();
         }
     
-        Polyfill<S_, P_, F_>(target, points, stroke);
+        Polyfill<S_, 0, P_, F_>(target, points, stroke);
     }
     
 } }
