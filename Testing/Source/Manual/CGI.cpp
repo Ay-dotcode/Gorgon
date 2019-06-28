@@ -22,10 +22,10 @@ int main() {
 	Application app("generictest", "Test", helptext);
 
 	Graphics::Layer l;
-    ((Graphics::Layer&)app.wind.Children[0]).Clear();
+    //((Graphics::Layer&)app.wind.Children[0]).Clear();
     app.wind.Add(l);
     
-    Graphics::Bitmap bmp(800, 500, Graphics::ColorMode::Alpha);
+    Graphics::Bitmap bmp(80, 50, Graphics::ColorMode::Alpha);
     bmp.Clear();
 
     //{{2, 0}, {5, 0}, {5, 4}, {4, 4}, {4, 3}, {3, 2.5}, {1, 2.5}, {0, 3}}
@@ -38,7 +38,7 @@ int main() {
     Gorgon::Time::Timer tm;
     tm.Start();
     float maxr=10;
-    float st = 0.2;
+    float st = 0.25;
     float c = 9;
     int step=72;
     for(int i=st*step; i<=step*c; i+=1) {
@@ -49,8 +49,8 @@ int main() {
     }
     
     
-	//points = {{2,5}, {40,10}, {40,40}, {10,40}, {10,2}, {20,2}, {20,30}, {30,30}, {30,20}, {0,15}};
-    points.Push(points.Front());
+	points = {{0,0},{3.5,5.5},{4.5, 5.5},{5, 6.5}, {7,2},{10,8},{14,0}};
+    //points.Push(points.Front());
     //points += Geometry::Pointf{0,0.1};
     
     std::cout<<"Build time: "<<tm.Tick()<<std::endl;
@@ -68,14 +68,14 @@ int main() {
     
     tm.Start();
     //for(int i=0; i<100; i++)
-    CGI::DrawLines<DefaultAA>(bmp.GetData(), points, 5.f, CGI::SolidFill<>(0x80ffffff));
+    CGI::Polyfill<1>(bmp.GetData(), points, CGI::SolidFill<>(0x80ffffff));
     
     std::cout<<"Draw time: "<<tm.Tick()<<std::endl;
     
-    auto bmp2 = bmp.ZoomMultiple(1);
+    auto bmp2 = bmp.ZoomMultiple(25);
     bmp2.Prepare();
     
-    bmp2.Draw(l, 10,10, Gorgon::Graphics::Color::CanaryYellow);
+    bmp2.Draw(l, 25,25, Gorgon::Graphics::Color::CanaryYellow);
     bmp2.ExportPNG("poly.png");
     
 	while(true) {

@@ -205,6 +205,10 @@ namespace Gorgon { namespace CGI {
         Gorgon::FitInto<Float>(ymin, 0.f, (Float)target.GetHeight()-1);
         Gorgon::FitInto<Float>(ymax, 0.f, (Float)target.GetHeight());
         
+        
+        Gorgon::FitInto(xmin, 0, target.GetWidth()-1);
+        Gorgon::FitInto(xmax, 0, target.GetWidth()-1);
+        
         if(ceil(ymin) > floor(ymax)) return;
         
         if(S_ > 1) { //subpixel
@@ -268,8 +272,8 @@ namespace Gorgon { namespace CGI {
                         if(W_ == 0 ? (wind == 0) : (wind%2==0)) {
                             Float e = floor(xpoints[i].first)/S_;
                             
-                            FitInto<Float>(s, 0, target.GetWidth());
-                            FitInto<Float>(e, 0, target.GetWidth());
+                            FitInto<Float>(s, xmin, xmax+1);
+                            FitInto<Float>(e, xmin, xmax+1);
                             if(s < e) {
                                 for(Float x=s; x<e; x+=1.f/S_) {
                                     cnts[(int)x-xmin]++;
@@ -290,6 +294,9 @@ namespace Gorgon { namespace CGI {
             internal::findpolylinestofill(points, (int)floor(ymin), (int)ceil(ymax), [&](float y, auto &xpoints) {
                 int wind = 0;
                 for(int i=0; i<(int)xpoints.size()-1; i++) {
+                    if(xpoints[i].skip) 
+                        continue;
+                    
                     wind += xpoints[i].wind;
                     
                     if(wind == 0) continue;
@@ -316,7 +323,19 @@ namespace Gorgon { namespace CGI {
                                 }
                             }
                             
+                            if(xpoints[i].skip) {
+                                xpoints[i].skip = false;
+                                xpoints[i].wind *= -1;
+                                i--;
+                            }
+                            
                             break;
+                        }
+                            
+                        if(xpoints[i].skip) {
+                            xpoints[i].skip = false;
+                            xpoints[i].wind *= -1;
+                            i--;
                         }
                     }
                     
@@ -373,6 +392,9 @@ namespace Gorgon { namespace CGI {
         
         int xmin = xrange.first->X;
         int xmax = xrange.second->X;
+        
+        Gorgon::FitInto(xmin, 0, target.GetWidth()-1);
+        Gorgon::FitInto(xmax, 0, target.GetWidth()-1);
         
         if(ceil(ymin) > floor(ymax)) return;
         
@@ -437,8 +459,8 @@ namespace Gorgon { namespace CGI {
                         if(W_ == 0 ? (wind == 0) : (wind%2==0)) {
                             Float e = floor(xpoints[i].first)/S_;
                             
-                            FitInto<Float>(s, 0, target.GetWidth());
-                            FitInto<Float>(e, 0, target.GetWidth());
+                            FitInto<Float>(s, xmin, xmax+1);
+                            FitInto<Float>(e, xmin, xmax+1);
                             if(s < e) {
                                 for(Float x=s; x<e; x+=1.f/S_) {
                                     cnts[(int)x-xmin]++;
@@ -459,6 +481,9 @@ namespace Gorgon { namespace CGI {
             internal::findpolylinestofill(Containers::Collection<const Geometry::PointList<P_>>({points}), ymin, ymax, [&](float y, auto &xpoints) {
                 int wind = 0;
                 for(int i=0; i<(int)xpoints.size()-1; i++) {
+                    if(xpoints[i].skip) 
+                        continue;
+                    
                     wind += xpoints[i].wind;
                     
                     if(wind == 0) continue;
@@ -485,7 +510,19 @@ namespace Gorgon { namespace CGI {
                                 }
                             }
                             
+                            if(xpoints[i].skip) {
+                                xpoints[i].skip = false;
+                                xpoints[i].wind *= -1;
+                                i--;
+                            }
+                            
                             break;
+                        }
+                            
+                        if(xpoints[i].skip) {
+                            xpoints[i].skip = false;
+                            xpoints[i].wind *= -1;
+                            i--;
                         }
                     }
                     
