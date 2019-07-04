@@ -147,7 +147,7 @@ namespace Gorgon { namespace Geometry {
             if(Points.size() == 0)
                 throw std::out_of_range("List is empty");
             
-            return Points[PositiveMod(index, Points.size())];
+            return Points[PositiveMod(index, (long)Points.size())];
         }
         
         ///Returns the element at the given index. This function treats
@@ -156,7 +156,7 @@ namespace Gorgon { namespace Geometry {
             if(Points.size() == 0)
                 throw std::out_of_range("List is empty");
             
-            return Points[PositiveMod(index, Points.size())];
+            return Points[PositiveMod(index, (long)Points.size())];
         }
         
         ///Returns the line at the given index. This function treats
