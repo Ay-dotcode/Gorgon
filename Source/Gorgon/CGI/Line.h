@@ -19,7 +19,7 @@ namespace Gorgon { namespace CGI {
      */
     template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void DrawLines(Containers::Image &target, const Geometry::PointList<P_> &p, StrokeSettings settings = 1.0, F_ stroke = SolidFill<>{Graphics::Color::Black}) {
-        if(p.Size() == 0) return;
+        if(p.GetSize() == 0) return;
         
         std::vector<Geometry::PointList<P_>> points;
         points.push_back({});
@@ -33,7 +33,7 @@ namespace Gorgon { namespace CGI {
 
 		//first point is special
 		{
-			Geometry::Line<P_> l = p.LineAt(0);
+			Geometry::Line<P_> l = p.GetLine(0);
 			auto off = (Geometry::Pointf(l.End) - Geometry::Pointf(l.Start)).Perpendicular().Normalize() * w;
 
 			//if closed the first two points will be added last
@@ -56,8 +56,8 @@ namespace Gorgon { namespace CGI {
 		}
 
         
-        for(int i=1; i<p.Size()-1; i++) {
-            Geometry::Line<P_> l = p.LineAt(i);
+        for(int i=1; i<p.GetSize()-1; i++) {
+            Geometry::Line<P_> l = p.GetLine(i);
             
             auto off = (Geometry::Pointf(l.End) - Geometry::Pointf(l.Start)).Perpendicular().Normalize() * w;
             
@@ -99,10 +99,10 @@ namespace Gorgon { namespace CGI {
 			prevoff = off;
         }
         
-        //if closed, keep left/right polygons separate
+        //if closed, keep left/right polygons separate  
         if(p.Front() == p.Back()) {
 			//add start points of first line by checking the angle with the last line
-			Geometry::Line<P_> l = p.LineAt(0);
+			Geometry::Line<P_> l = p.GetLine(0);
 
 			auto off = (Geometry::Pointf(l.End) - Geometry::Pointf(l.Start)).Perpendicular().Normalize() * w;
 
@@ -149,7 +149,11 @@ namespace Gorgon { namespace CGI {
             points[0].Push(points[0][0]);
             points.pop_back();
         }
-    
+        
+        for(auto &p : points[0]) {
+            std::cout<<"{"<<round(p.X)<<","<<round(p.Y)<<"}, ";
+        }
+        
         Polyfill<S_, 0, P_, F_>(target, points, stroke);
     }
     

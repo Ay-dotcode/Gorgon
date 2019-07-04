@@ -36,14 +36,14 @@ namespace Gorgon { namespace CGI {
             std::vector<vertexinfo> xpoints;
             
             for(const auto &points : pointlist) {
-                int N = points.Size();
+                int N = points.GetSize();
                 
                 if(N <= 1) continue;
             
                 int off = 0;
                 //trackback until the line that is not touching this scanline
                 while(off > -N) {
-                    auto line = points.LineAt(off);
+                    auto line = points.GetLine(off);
                     
                     if(line.End.Y <= nexty && line.End.Y >= y) {//fix
                         off--;
@@ -56,10 +56,10 @@ namespace Gorgon { namespace CGI {
                 bool connected = false, wasconnected = false;
                 int firstdir = 0, lastdir = 0;
                 for(int i=off; i<N+off; i++) {
-                    auto line = points.LineAt(i);
+                    auto line = points.GetLine(i);
                     
                     if(line.MinY() < nexty && line.MaxY() > y) {
-                        auto line = points.LineAt(i);
+                        auto line = points.GetLine(i);
                         
                         auto slope = line.SlopeInv();
                         auto offset= line.OffsetInv();
@@ -177,7 +177,7 @@ namespace Gorgon { namespace CGI {
         bool found = false;
         
         for(const auto &p : points) {
-            if(p.Size() <= 0) continue;
+            if(p.GetSize() <= 0) continue;
             
             auto yrange = std::minmax_element(p.begin(), p.end(), [](auto l, auto r) { return l.Y < r.Y; });
             
@@ -235,13 +235,13 @@ namespace Gorgon { namespace CGI {
                                 
                                 col.A = targeta;
                                 
-                                col.Blend(prevcol);
+                                prevcol.Blend(col);
                                 
                                 
                                 if(cnts[x] == 0 && col.A > 0)
                                     std::cout<<x<<std::endl;
                                 
-                                target.SetRGBAAt(x + xmin, cy,  col);
+                                target.SetRGBAAt(x + xmin, cy,  prevcol);
                             }
                         }
                     }
@@ -364,7 +364,7 @@ namespace Gorgon { namespace CGI {
      */
     template<int S_ = 8, int W_ = 1, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void Polyfill(Containers::Image &target, const Geometry::PointList<P_> &p, F_ fill = SolidFill<>{Graphics::Color::Black}) {
-        if(p.Size() <= 1) return;
+        if(p.GetSize() <= 1) return;
 
         Geometry::PointList<P_> p2;
         const Geometry::PointList<P_> *pp;
@@ -421,13 +421,13 @@ namespace Gorgon { namespace CGI {
                                 
                                 col.A = targeta;
                                 
-                                col.Blend(prevcol);
+                                prevcol.Blend(col);
                                 
                                 
                                 if(cnts[x] == 0 && col.A > 0)
                                     std::cout<<x<<std::endl;
                                 
-                                target.SetRGBAAt(x + xmin, cy,  col);
+                                target.SetRGBAAt(x + xmin, cy,  prevcol);
                             }
                         }
                     }

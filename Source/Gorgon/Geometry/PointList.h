@@ -67,7 +67,7 @@ namespace Gorgon { namespace Geometry {
         }
         
         ///Returns the number of elements in the list
-        auto Size() const {
+        auto GetSize() const {
             return Points.size();
         }
         
@@ -143,7 +143,7 @@ namespace Gorgon { namespace Geometry {
         
         ///Returns the element at the given index. This function treats
         ///the list as cyclic.
-        P_ &At(long index) {
+        P_ &Get(long index) {
             if(Points.size() == 0)
                 throw std::out_of_range("List is empty");
             
@@ -152,7 +152,7 @@ namespace Gorgon { namespace Geometry {
         
         ///Returns the element at the given index. This function treats
         ///the list as cyclic.
-        const P_ &At(long index) const {
+        const P_ &Get(long index) const {
             if(Points.size() == 0)
                 throw std::out_of_range("List is empty");
             
@@ -162,7 +162,7 @@ namespace Gorgon { namespace Geometry {
         ///Returns the line at the given index. This function treats
         ///the list as a cyclic line list. The list is assumed to be
         ///closed.
-        Line<P_> LineAt(long index) const {
+        Line<P_> GetLine(long index) const {
             if(Points.size() == 0)
                 throw std::out_of_range("List is empty");
                         

@@ -25,7 +25,7 @@ int main() {
     //((Graphics::Layer&)app.wind.Children[0]).Clear();
     app.wind.Add(l);
     
-    Graphics::Bitmap bmp(80, 50, Graphics::ColorMode::Alpha);
+    Graphics::Bitmap bmp(200, 100, Graphics::ColorMode::Alpha);
     bmp.Clear();
 
     //{{2, 0}, {5, 0}, {5, 4}, {4, 4}, {4, 3}, {3, 2.5}, {1, 2.5}, {0, 3}}
@@ -49,7 +49,7 @@ int main() {
     }
     
     
-	points = {{0,0},{3.5,5.5},{4.5, 5.5},{5, 6.5}, {7,2},{10,8},{14,0}};
+	points = {{3, 6}, {7, 10}, {11, 9}, {15, 10}, {19, 10}, {23, 10}, {27, 4}};
     //points.Push(points.Front());
     //points += Geometry::Pointf{0,0.1};
     
@@ -61,21 +61,21 @@ int main() {
     std::cout<<std::endl;
     
     //points += Geometry::Point{5, 5};
-    //points *= 1;
+    points *= 3;
     
     std::vector<Geometry::PointList<Geometry::Pointf>> v;
     v.push_back(points.Duplicate());
     
     tm.Start();
     //for(int i=0; i<100; i++)
-    CGI::Polyfill<1>(bmp.GetData(), points, CGI::SolidFill<>(0x80ffffff));
+    CGI::DrawLines<1>(bmp.GetData(), points, 4, CGI::SolidFill<>(0x80ffffff));
     
     std::cout<<"Draw time: "<<tm.Tick()<<std::endl;
     
-    auto bmp2 = bmp.ZoomMultiple(25);
+    auto bmp2 = bmp.ZoomMultiple(5);
     bmp2.Prepare();
     
-    bmp2.Draw(l, 25,25, Gorgon::Graphics::Color::CanaryYellow);
+    bmp2.Draw(l, 25,25);
     bmp2.ExportPNG("poly.png");
     
 	while(true) {
