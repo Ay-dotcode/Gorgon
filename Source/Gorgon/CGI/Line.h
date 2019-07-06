@@ -12,14 +12,12 @@ namespace Gorgon { namespace CGI {
         
     };
     
-    
     /**
-     * Draw a point list as a list of lines. Currently cannot properly
-     * draw closed lines.
+     * Returns the polygon to draw a list of lines.
      */
-    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
-    void DrawLines(Containers::Image &target, const Geometry::PointList<P_> &p, StrokeSettings settings = 1.0, F_ stroke = SolidFill<>{Graphics::Color::Black}) {
-        if(p.GetSize() == 0) return;
+    template<int S_ = 8, class P_= Geometry::Pointf>
+    std::vector<Geometry::PointList<P_>> LinesToPolygons(const Geometry::PointList<P_> &p, StrokeSettings settings = 1.0) {
+        if(p.GetSize() == 0) return {};
         
         std::vector<Geometry::PointList<P_>> points;
         points.push_back({});
@@ -67,7 +65,7 @@ namespace Gorgon { namespace CGI {
 			auto r = l.End - l.Start;
 			auto s = prev.End - prev.Start;
 
-			if(dotp >= 0) {
+			if(dotp > 0) {
 				auto p = l.Start - off;
 				auto q = prev.Start - prevoff;
 
@@ -76,12 +74,12 @@ namespace Gorgon { namespace CGI {
 				points[1].Pop();
 				points[1].Push(intersect);
 			}
-			else {
+			else if(dotp != 0) {
 				points[1].Push(l.Start - off);
 			}
 			points[1].Push(l.End - off);
 
-			if(dotp <= 0) {
+			if(dotp < 0) {
 				auto p = l.Start + off;
 				auto q = prev.Start + prevoff;
 
@@ -90,7 +88,7 @@ namespace Gorgon { namespace CGI {
 				points[0].Pop();
 				points[0].Push(intersect);
 			}
-			else {
+			else if(dotp != 0) {
 				points[0].Push(l.Start + off);
 			}
 			points[0].Push(l.End + off);
@@ -150,11 +148,19 @@ namespace Gorgon { namespace CGI {
             points.pop_back();
         }
         
-        for(auto &p : points[0]) {
-            std::cout<<"{"<<round(p.X)<<","<<round(p.Y)<<"}, ";
-        }
+        return points;
+    }
+    
+    
+    /**
+     * Draw a point list as a list of lines. 
+     */
+    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    void DrawLines(Containers::Image &target, const Geometry::PointList<P_> &p, StrokeSettings settings = 1.0, F_ stroke = SolidFill<>{Graphics::Color::Black}) {
+        auto points = LinesToPolygons<S_, P_>(p, settings);
         
         Polyfill<S_, 0, P_, F_>(target, points, stroke);
     }
+    
     
 } }

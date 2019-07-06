@@ -254,6 +254,9 @@ namespace Gorgon { namespace CGI {
                 
                 int wind = 0;
                 for(int i=0; i<(int)xpoints.size()-1; i++) {
+                    if(xpoints[i].skip) 
+                        continue;
+                    
                     wind += xpoints[i].wind;
                     
                     if(wind == 0) continue;
@@ -280,7 +283,19 @@ namespace Gorgon { namespace CGI {
                                 }
                             }
                             
+                            if(xpoints[i].skip) {
+                                xpoints[i].skip = false;
+                                xpoints[i].wind *= -1;
+                                i--;
+                            }
+                            
                             break;
+                        }
+                        
+                        if(xpoints[i].skip) {
+                            xpoints[i].skip = false;
+                            xpoints[i].wind *= -1;
+                            i--;
                         }
                     }
                     
@@ -441,6 +456,9 @@ namespace Gorgon { namespace CGI {
 
                 int wind = 0;
                 for(int i=0; i<(int)xpoints.size()-1; i++) {
+                    if(xpoints[i].skip) 
+                        continue;
+                    
                     wind += xpoints[i].wind;
                     
                     if(wind == 0) continue;
@@ -467,7 +485,19 @@ namespace Gorgon { namespace CGI {
                                 }
                             }
                             
+                            if(xpoints[i].skip) {
+                                xpoints[i].skip = false;
+                                xpoints[i].wind *= -1;
+                                i--;
+                            }
+                            
                             break;
+                        }
+                        
+                        if(xpoints[i].skip) {
+                            xpoints[i].skip = false;
+                            xpoints[i].wind *= -1;
+                            i--;
                         }
                     }
                     
@@ -518,7 +548,7 @@ namespace Gorgon { namespace CGI {
                             
                             break;
                         }
-                            
+                        
                         if(xpoints[i].skip) {
                             xpoints[i].skip = false;
                             xpoints[i].wind *= -1;

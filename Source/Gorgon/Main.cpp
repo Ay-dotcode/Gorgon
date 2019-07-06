@@ -16,6 +16,27 @@
 #	include "Scripting.h"
 #endif
 
+
+/**
+ * @page GDB Pretty Printing
+ * For GDB pretty printing to work with Gorgon objects
+ * simply copy Resource/Gorgon-gdb.py file to the startup
+ * directory of your program.
+ */
+
+#ifdef __GNUC__
+//For GDB pretty printing
+#define DEFINE_GDB_SCRIPT(name) \
+asm("\
+    .pushsection \".debug_gdb_scripts\", \"MS\",@progbits,1\n\
+    .byte 1\n\
+    .asciz \"" name "\"\n\
+    .popsection \n\
+");
+
+DEFINE_GDB_SCRIPT ("Gorgon-gdb.py")
+#endif
+
 namespace Gorgon {
 	
 	Event<> BeforeFrameEvent;
