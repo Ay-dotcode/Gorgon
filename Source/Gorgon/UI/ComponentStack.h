@@ -24,7 +24,8 @@ namespace Gorgon { namespace UI {
 			substacks.Destroy();
 		}
 
-        /// Adds the given component to the top of the stack
+        /// Adds the given component to the top of the stack. This function will be called
+        /// to add all components in the given template
 		void AddToStack(const ComponentTemplate &temp, bool reversed);
         
         /// Adds a condition and its associated components to the stack
@@ -391,6 +392,8 @@ namespace Gorgon { namespace UI {
 
         
         /// @}
+
+		Event<ComponentStack> ConditionChanged;
         
         
 	private:

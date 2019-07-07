@@ -312,11 +312,13 @@ namespace Gorgon { namespace UI {
         }
         
         if(updatereq)
-            Update();
+			Update();
+
+		ConditionChanged();
         
         return updatereq;
     }
-        
+    
     bool ComponentStack::removecondition(ComponentCondition from, ComponentCondition to) {
         bool updatereq = false;
         bool erased = false;
