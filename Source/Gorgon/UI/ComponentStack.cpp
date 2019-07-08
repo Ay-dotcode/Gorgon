@@ -7,7 +7,7 @@
 
 namespace Gorgon { namespace UI {
 
-    ComponentStack::ComponentStack(const Template& temp, Geometry::Size size) : temp(temp), size(size) {
+    ComponentStack::ComponentStack(const Template& temp, Geometry::Size size) : temp(temp), size(size), ConditionChanged(this) {
         int maxindex = 0;
         
         for(int i=0; i<temp.GetCount(); i++) {

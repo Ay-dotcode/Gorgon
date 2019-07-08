@@ -162,5 +162,45 @@ namespace Gorgon { namespace CGI {
         Polyfill<S_, 0, P_, F_>(target, points, stroke);
     }
     
+    /**
+     * Draw a point list as a list of lines. 
+     */
+    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    void DrawLines(Graphics::Bitmap &target, const Geometry::PointList<P_> &p, StrokeSettings settings = 1.0, F_ stroke = SolidFill<>{Graphics::Color::Black}) {
+        auto points = LinesToPolygons<S_, P_>(p, settings);
+        
+        Polyfill<S_, 0, P_, F_>(target, points, stroke);
+    }
+    
+    /**
+     * Draw a point list as a list of lines. 
+     */
+    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    void DrawLines(Containers::Image &target, const std::vector<Geometry::PointList<P_>> &pnts, StrokeSettings settings = 1.0, F_ stroke = SolidFill<>{Graphics::Color::Black}) {
+        std::vector<Geometry::PointList<P_>> points;
+        for(auto &p : pnts) {
+            for(auto &np : LinesToPolygons<S_, P_>(p, settings)) {
+                points.push_back(std::move(np));
+            }
+        }
+        
+        Polyfill<S_, 0, P_, F_>(target, points, stroke);
+    }
+    
+    /**
+     * Draw a point list as a list of lines. 
+     */
+    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    void DrawLines(Graphics::Bitmap &target, const std::vector<Geometry::PointList<P_>> &pnts, StrokeSettings settings = 1.0, F_ stroke = SolidFill<>{Graphics::Color::Black}) {
+        std::vector<Geometry::PointList<P_>> points;
+        for(auto &p : pnts) {
+            for(auto &np : LinesToPolygons<S_, P_>(p, settings)) {
+                points.push_back(std::move(np));
+            }
+        }
+        
+        Polyfill<S_, 0, P_, F_>(target, points, stroke);
+    }
+    
     
 } }
