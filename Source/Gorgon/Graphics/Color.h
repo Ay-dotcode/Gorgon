@@ -207,27 +207,54 @@ namespace Gorgon { namespace Graphics {
 		/// Blends the given color into this one. This operation performs regular alpha blending with the current
 		/// color being blended over.
 		void Blend(const RGBA &color) {
-			if(color.A==255) {
-				A=255;
-				R=color.R;
-				G=color.G;
-				B=color.B;
+			if (color.A == 255) {
+				A = 255;
+				R = color.R;
+				G = color.G;
+				B = color.B;
 			}
 			else {
-				float alpha  =(float)color.A/255;
-				float alpham1=(float)(255-color.A)/255;
+				float alpha = (float)color.A / 255;
+				float alpham1 = (float)(255 - color.A) / 255;
 
-				if(A<255) {
-					int aa=(int)A+color.A;
-					if(aa>255)
-						A=255;
+				if (A < 255) {
+					int aa = (int)A + color.A;
+					if (aa > 255)
+						A = 255;
 					else
-						A=aa;
+						A = aa;
 				}
 
-				R=(Byte)(R*alpham1+color.R*alpha);
-				G=(Byte)(G*alpham1+color.G*alpha);
-				B=(Byte)(B*alpham1+color.B*alpha);
+				R = (Byte)(R*alpham1 + color.R*alpha);
+				G = (Byte)(G*alpham1 + color.G*alpha);
+				B = (Byte)(B*alpham1 + color.B*alpha);
+			}
+		}
+
+		/// Blends the given color into this one. This operation performs regular alpha blending with the current
+		/// color being blended over.
+		void Blend(const RGBA &color, float alpha) {
+			if (color.A * alpha == 255) {
+				A = 255;
+				R = color.R;
+				G = color.G;
+				B = color.B;
+			}
+			else {
+				float a = color.A*alpha / 255;
+				float alpham1 = (float)(255 - color.A*alpha) / 255;
+
+				if (A < 255) {
+					int aa = (int)A + color.A*alpha;
+					if (aa > 255)
+						A = 255;
+					else
+						A = aa;
+				}
+
+				R = (Byte)(R*alpham1 + color.R*a);
+				G = (Byte)(G*alpham1 + color.G*a);
+				B = (Byte)(B*alpham1 + color.B*a);
 			}
 		}
 
