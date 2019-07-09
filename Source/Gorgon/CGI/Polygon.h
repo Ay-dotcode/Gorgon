@@ -109,7 +109,7 @@ namespace Gorgon { namespace CGI {
                     else {
                         if(wasconnected && lastdir != firstdir) { //change in direction
                             xpoints.back().skip= true;
-                            xpoints.back().wind = 0;
+                            //xpoints.back().wind = 0;
                         }
                         connected = false;
                     }
@@ -117,7 +117,7 @@ namespace Gorgon { namespace CGI {
                 
                 if(wasconnected && lastdir != firstdir) { //change in direction
                     xpoints.back().skip= true;
-                    xpoints.back().wind = 0;
+                    //xpoints.back().wind = 0;
                 }
             }
             

@@ -24,7 +24,7 @@ Graphics::Bitmap BGImage(int w, int h, Byte col1 = 0x10, Byte col2 = 0x30);
 
 class Application {
 public:
-	Application(std::string appname, std::string title, std::string helptext) :
+	Application(std::string appname, std::string title, std::string helptext, int tilesize=25) :
 		appname(appname)
 	{
 		std::cout<<"Current working directory: ";
@@ -53,7 +53,7 @@ public:
 			wind.SetIcon(ico);
 		}
 
-		bgimage = BGImage(25, 25);
+		bgimage = BGImage(tilesize, tilesize);
 		bgimage.Prepare();
 		bgimage.DrawIn(l);
     

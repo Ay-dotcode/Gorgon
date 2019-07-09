@@ -19,10 +19,11 @@ std::string helptext =
 #endif
     
 int main() {
-	Application app("generictest", "Test", helptext);
+    int zoom = 15;
+	Application app("generictest", "Test", helptext, zoom);
 
 	Graphics::Layer l;
-    ((Graphics::Layer&)app.wind.Children[0]).Clear();
+    //((Graphics::Layer&)app.wind.Children[0]).Clear();
     app.wind.Add(l);
     
     Graphics::Bitmap bmp(40, 30, Graphics::ColorMode::RGBA);
@@ -32,12 +33,12 @@ int main() {
     //{{0, 0}, {2, 0}, {2, 2}, {7, 3}, {7, 4}, {3, 4}, {3, 3}, {6, 2}, {6, 0}, {8, 0}, {8, 5}, {0, 5}}
     //std::vector<Geometry::PointList<Geometry::Pointf>> points = {{{0, 0}, {2, 0}, {2, 2}, {7, 3}, {7, 4}, {3, 4}, {3, 3}, {6, 2}, {6, 0}, {8, 0}, {8, 5}, {0, 5}}};
     
-    Geometry::PointList<Geometry::Pointf> points;
+    //Geometry::PointList<Geometry::Pointf> points;
     std::cout<<DefaultAA<<std::endl;
     
     Gorgon::Time::Timer tm;
     tm.Start();
-    float maxr=10;
+    /*float maxr=10;
     float st = 0.25;
     float c = 9;
     int step=72;
@@ -46,15 +47,18 @@ int main() {
         float r = maxr * i / step;
         
         points.Push({r * cos(a)+250, r * sin(a)+250});
-    }
+    }*/
     
     
-	points = {{3, 6}, {7, 10}, {11, 7.8}, {15, 10}, {19, 10}, {23, 10}, {27, 4}};
+	std::vector<Geometry::PointList<Geometry::Pointf>> points;
+    points.push_back({{15,9}, {21, 15}, {6,18}, {30,15}});
+
     //points.Push(points.Front());
-    //points += Geometry::Pointf{0,0.1};
+    //points -= Geometry::Pointf{310,240};
+    //points *= 0.2;
     
-    std::cout<<"Build time: "<<tm.Tick()<<std::endl;
-    
+    //std::cout<<"Build time: "<<tm.Tick()<<std::endl;
+    /*
     for(auto &p : points) {
         std::cout<<p.X<<","<<p.Y<<" ";
     }
@@ -62,34 +66,49 @@ int main() {
     
     //points += Geometry::Point{5, 5};
     //points *= 3;
-    
+    */
     std::vector<Geometry::PointList<Geometry::Pointf>> v;
-    v.push_back(points.Duplicate());
+    /*v.push_back(points.Duplicate());
     
     tm.Start();
-    //for(int i=0; i<100; i++)
-    CGI::DrawLines<8>(bmp.GetData(), points, 2, CGI::SolidFill<>(0xffffffff));
-    auto points2 = CGI::LinesToPolygons<8>(points, 2);
+    //for(int i=0; i<100; i++)*/
+    //for(auto &p : points)
+    CGI::DrawLines<1>(bmp.GetData(), points, 2, CGI::SolidFill<>(0xffffffff));
+    auto points2 = CGI::LinesToPolygons<1>(points[0], 2);
     
-    std::cout<<"Draw time: "<<tm.Tick()<<std::endl;
-    
-    auto bmp2 = bmp.ZoomMultiple(25);
-    for(auto &p : points) {
-        bmp2.SetRGBAAt(p*25, Graphics::Color::Red);
+   /* std::cout<<"Draw time: "<<tm.Tick()<<std::endl;
+    */
+    auto bmp2 = bmp.ZoomMultiple(zoom);
+    for(auto &pts : points)
+    for(auto &p : pts) {
+        bmp2.SetRGBAAt(p*zoom, Graphics::Color::Red);
+        bmp2.SetRGBAAt(p*zoom+Geometry::Point{1,1}, Graphics::Color::Red);
+        bmp2.SetRGBAAt(p*zoom+Geometry::Point{1,0}, Graphics::Color::Red);
+        bmp2.SetRGBAAt(p*zoom+Geometry::Point{0,1}, Graphics::Color::Red);
+    }
+    for(auto &pts : points2)
+    for(auto &p : pts) {
+        bmp2.SetRGBAAt(p*zoom, Graphics::Color::Green);
+        bmp2.SetRGBAAt(p*zoom+Geometry::Point{1,1}, Graphics::Color::Green);
+        bmp2.SetRGBAAt(p*zoom+Geometry::Point{1,0}, Graphics::Color::Green);
+        bmp2.SetRGBAAt(p*zoom+Geometry::Point{0,1}, Graphics::Color::Green);
+    }
+    /*for(auto &p : points) {
+        bmp2.SetRGBAAt(p*zoom, Graphics::Color::Red);
     }
     auto col = Graphics::Color::LightGreen;
     for(auto &p : points2[0]) {
         auto m=Graphics::Color::Mustard;
         m.A = 25;
         col.Blend(m);
-        bmp2.SetRGBAAt(p*25, col);
-    }
+        bmp2.SetRGBAAt(p*zoom, col);
+    }*/
     bmp2.Prepare();
-    std::cout<<std::endl;
+    /*std::cout<<std::endl;
         for(auto &p : points2[0]) {
             std::cout<<"{"<<round(p.X*10)/10<<","<<round(p.Y*10)/10<<"}, ";
         }
-    std::cout<<std::endl;
+    std::cout<<std::endl;*/
     
     bmp2.Draw(l, 0,0);
     bmp2.ExportPNG("poly.png");

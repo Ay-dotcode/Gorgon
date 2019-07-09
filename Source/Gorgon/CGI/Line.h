@@ -69,7 +69,12 @@ namespace Gorgon { namespace CGI {
 				auto p = l.Start - off;
 				auto q = prev.Start - prevoff;
 
-				auto intersect = q + s * ((q - p).CrossProduct(r) / r.CrossProduct(s));
+                auto pos = ((q - p).CrossProduct(r) / r.CrossProduct(s));
+                if(pos<0)
+                    pos = 0;
+                if(pos>1)
+                    pos = 1;
+				auto intersect = q + s * pos;
 
 				points[1].Pop();
 				points[1].Push(intersect);
@@ -83,7 +88,12 @@ namespace Gorgon { namespace CGI {
 				auto p = l.Start + off;
 				auto q = prev.Start + prevoff;
 
-				auto intersect = q + s * ((q - p).CrossProduct(r) / r.CrossProduct(s));
+                auto pos = ((q - p).CrossProduct(r) / r.CrossProduct(s));
+                if(pos<0)
+                    pos = 0;
+                if(pos>1)
+                    pos = 1;
+				auto intersect = q + s * pos;
 
 				points[0].Pop();
 				points[0].Push(intersect);
@@ -180,6 +190,10 @@ namespace Gorgon { namespace CGI {
         std::vector<Geometry::PointList<P_>> points;
         for(auto &p : pnts) {
             for(auto &np : LinesToPolygons<S_, P_>(p, settings)) {
+                for(auto &p : np) {
+                    std::cout<<"{"<<round(p.X*10)/10<<","<<round(p.Y*10)/10<<"}, ";
+                }
+                std::cout<<std::endl;
                 points.push_back(std::move(np));
             }
         }
