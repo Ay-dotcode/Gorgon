@@ -57,6 +57,9 @@ namespace Gorgon { namespace CGI {
         for(int i=1; i<p.GetSize()-1; i++) {
             Geometry::Line<P_> l = p.GetLine(i);
             
+            if(l.Start == l.End)
+                continue;
+            
             auto off = (Geometry::Pointf(l.End) - Geometry::Pointf(l.Start)).Perpendicular().Normalize() * w;
             
 			auto prevv = (prev.End - prev.Start).Normalize();

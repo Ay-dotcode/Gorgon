@@ -45,12 +45,18 @@ namespace Gorgon { namespace CGI {
                 while(off > -N) {
                     auto line = points.GetLine(off);
                     
-                    if(line.End.Y <= nexty && line.End.Y >= y) {//fix
+                    if(line.End.Y < nexty && line.End.Y > y) {
+                        off--;
+                    }
+                    if(line.Start.Y < nexty && line.Start.Y > y) {
                         off--;
                     }
                     else
                         break;
                 }
+                
+                if(off == -N)
+                    continue;
             
             
                 bool connected = false, wasconnected = false;
