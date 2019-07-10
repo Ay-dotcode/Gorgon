@@ -274,9 +274,16 @@ namespace Gorgon {
 
 			/// Calculates Euclidean distance from this point to the given target
 			Float Distance(const basic_Point &target) const {
-				return std::sqrt( (Float)(X-target.X)*(X-target.X) + (Y-target.Y)*(Y-target.Y) );
+				Float xdif = (Float)(X - target.X);
+				Float ydif = (Float)(Y - target.Y);
+				return std::sqrt((xdif*xdif) + (ydif*ydif));
 			}
-
+			/// Calculates EuclideanSquare  distance from this point to the given target
+			Float EuclideanSquare(const basic_Point &target) const {
+				Float xdif = (Float)(target.X - X);
+				Float ydif = (Float)(target.Y - Y);
+				return (xdif * xdif) + (ydif * ydif);
+			}
 			/// Calculates Euclidean distance from this point to origin
 			Float Distance() const {
 				return std::sqrt( (Float)(X*X) + (Y*Y) );
