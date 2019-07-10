@@ -123,29 +123,39 @@ namespace Gorgon { namespace CGI {
 			auto r = l.End - l.Start;
 			auto s = prev.End - prev.Start;
 
-			if(dotp >= 0) {
+			if(dotp > 0) {
 				auto p = l.Start - off;
 				auto q = prev.Start - prevoff;
 
-				auto intersect = q + s * ((q - p).CrossProduct(r) / r.CrossProduct(s));
+				auto pos = ((q - p).CrossProduct(r) / r.CrossProduct(s));
+				if(pos<0)
+					pos = 0;
+				if(pos>1)
+					pos = 1;
+				auto intersect = q + s * pos;
 
 				points[1].Pop();
 				points[1].Push(intersect);
 			}
-			else {
+			else if(dotp != 0) {
 				points[1].Push(l.Start - off);
 			}
 
-			if(dotp <= 0) {
+			if(dotp < 0) {
 				auto p = l.Start + off;
 				auto q = prev.Start + prevoff;
 
-				auto intersect = q + s * ((q - p).CrossProduct(r) / r.CrossProduct(s));
+				auto pos = ((q - p).CrossProduct(r) / r.CrossProduct(s));
+				if(pos<0)
+					pos = 0;
+				if(pos>1)
+					pos = 1;
+				auto intersect = q + s * pos;
 
 				points[0].Pop();
 				points[0].Push(intersect);
 			}
-			else {
+			else if(dotp != 0) {
 				points[0].Push(l.Start + off);
 			}
 

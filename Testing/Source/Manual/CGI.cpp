@@ -51,8 +51,8 @@ int main() {
     
     
 	std::vector<Geometry::PointList<Geometry::Pointf>> points;
-    points.push_back({{27.4286, 22.8571}, {26.2857, 22.8571}, {26.2857, 21.7143}, {27.4286, 20.5714}, {28.5714, 20.5714}, {29.7143, 21.7143}, {29.7143, 22.8571} });
-    points.push_back({{35, 10}, {35, 30}});
+    points.push_back({{27.4286f, 22.8571f}, {26.2857f, 22.8571f}, {26.2857f, 21.7143f}, {27.4286f, 20.5714f}, {28.5714f, 20.5714f}, {29.7143f, 21.7143f}, {29.7143f, 22.8571f} });
+    points.push_back({{35.f, 10.f}, {35.f, 30.f}});
     
     points[0].Push(points[0].Front());
     points[0] -= Geometry::Pointf{15,15};

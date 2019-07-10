@@ -1245,7 +1245,7 @@ namespace Compilers {
 // 		}
 		
 		
-		unsigned len=input.length();
+		unsigned long len=(unsigned long)input.length();
 		int cutfrom=-1;
 		int clearafter=-1;
 
@@ -1427,7 +1427,7 @@ namespace Compilers {
 			if(!process.empty() && !left.empty()) {
 				ASSERT(linemarkers.size()>1, "there shouldnt be any more data left");
 				
-				int p=(int)totalinput-left.size();
+				int p=(int)totalinput-(int)left.size();
 				
 				auto it=linemarkers.end()-1;
 				while(true) {

@@ -245,7 +245,7 @@ namespace Gorgon { namespace Graphics {
 				float alpham1 = (float)(255 - color.A*alpha) / 255;
 
 				if (A < 255) {
-					int aa = (int)A + color.A*alpha;
+					int aa = A + int(color.A*alpha);
 					if (aa > 255)
 						A = 255;
 					else

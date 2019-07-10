@@ -93,7 +93,7 @@ namespace Gorgon {
 		}
 
 		void VirtualMachine::Run() {
-			int target=scopeinstances.size()-1;
+			int target=(int)scopeinstances.size()-1;
 			if(target<0) {
 				throw std::runtime_error("No scope to execute.");
 			}
@@ -102,7 +102,7 @@ namespace Gorgon {
 		}
 
 		void VirtualMachine::Run(std::shared_ptr<ScopeInstance> scope) {
-			int target=scopeinstances.size();
+			int target=(int)scopeinstances.size();
 
 			activatescopeinstance(scope);
 
@@ -912,7 +912,7 @@ namespace Gorgon {
 			}
 			// if not and there are extra parameters
 			else if(pin!=incomingparams.end()) {
-				throw TooManyParametersException(incomingparams.size(), variant->Parameters.size(), 
+				throw TooManyParametersException((int)incomingparams.size(), (int)variant->Parameters.size(),
 												 "Too many parameters supplied for "+fn->GetName()
 				);
 			}

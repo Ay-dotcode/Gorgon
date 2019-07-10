@@ -43,7 +43,7 @@ namespace Gorgon { namespace Scripting {
 		
 		uintptr_t GetSource() const { return source; }
 		
-		uintptr_t GetLine() const { return line; }
+		unsigned long GetLine() const { return line; }
 		
 	private:
 		SourceMarker(unsigned long line, uintptr_t source) : line(line), source(source) {}
