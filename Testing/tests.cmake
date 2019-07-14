@@ -26,12 +26,13 @@ SET(UnitTests
 	GarbageCollection
 	Geometry
 	Hashmap
+	Layer
+	Logging
 	EncodingImage
+	Property
 	Scene
 	ScopeGuard
 	String
-	Layer
-	Logging
 	URI
 )
 

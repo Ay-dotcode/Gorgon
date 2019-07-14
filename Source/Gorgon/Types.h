@@ -121,6 +121,14 @@ namespace Gorgon {
     
 	/// Where acceptable, denotes that the object will assume the ownership
 	static constexpr AssumeOwnershipTag AssumeOwnership;
+
+	/// Marks an object that can be updated
+	class Updatable {
+	public:
+		virtual ~Updatable() {}
+
+		virtual void Update() = 0;
+	};
     
 #ifdef DOXYGEN
 #   define ENUMCLASS enum

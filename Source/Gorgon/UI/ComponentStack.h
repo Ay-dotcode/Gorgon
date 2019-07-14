@@ -11,7 +11,7 @@
 
 namespace Gorgon { namespace UI {
 
-	class ComponentStack : public Layer {
+	class ComponentStack : public Layer, public Updatable {
 	public:
 		/// should handle instantiation as well
 		explicit ComponentStack(const Template &temp, Geometry::Size size);
@@ -212,7 +212,7 @@ namespace Gorgon { namespace UI {
 		}		
 
 		/// Updates the layout of the component stack
-		void Update();
+		virtual void Update() override;
 
 		void Render() override;
 
