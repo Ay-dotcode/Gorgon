@@ -15,7 +15,9 @@ namespace Gorgon {
         class TextRenderer;
     }
     
-    /// This namespace contains User interface related functionality.
+    /// This namespace contains User interface related functionality. This namespace
+    /// does not contain the actual widgets that can be used. For that purpose, use
+    /// Gorgon::Widgets namespace.
     namespace UI {
 
 

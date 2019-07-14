@@ -62,6 +62,7 @@ ENDIF()
 IF(${UI})
 	LIST(APPEND Local
 		UI
+		Widgets
 	)
 ENDIF()
 

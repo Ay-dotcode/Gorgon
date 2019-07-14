@@ -4,4 +4,6 @@ SET(Local
 	ComponentStack.cpp
 	Template.h
 	Template.cpp
+	WidgetBase.h
+	WidgetContainer.h
 )
