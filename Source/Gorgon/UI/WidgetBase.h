@@ -28,6 +28,7 @@ namespace Gorgon { namespace UI {
     };
     
     
+    //!MOVE TO ANOTHER FILE
     /**
      * This class acts as a widget base that uses component stack to handle
      * rendering, resizing and other operations.
