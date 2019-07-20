@@ -712,7 +712,7 @@ namespace Gorgon {
 		/// @param  marker string that will be searched.
 		/// @param  trim   if set, both extracted and the remaining part of the string
 		/// @return Extracted string. Does not contain the marker.
-		inline std::string Extract(std::string &original, const std::string marker, bool trim = false) {
+		inline std::string Extract(std::string &original, const std::string &marker, bool trim = false) {
 			auto pos=original.find(marker);
 			
 			if(pos==original.npos) {

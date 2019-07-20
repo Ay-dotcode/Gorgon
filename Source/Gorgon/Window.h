@@ -414,7 +414,7 @@ namespace Gorgon {
 		void mouse_event(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount);
         void mouse_location();
         
-        void deleting(Layer *layer) { if(layer==down) down = nullptr; }
+        void deleting(Layer *layer) { if(layer==down) down = MouseHandler{}; }
 
 	private:
 		void createglcontext();

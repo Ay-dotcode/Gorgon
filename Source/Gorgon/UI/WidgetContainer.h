@@ -16,7 +16,7 @@ namespace Gorgon { namespace UI {
     class WidgetContainer {
     public:
         /// Virtual destructor
-        ~WidgetContainer() { }
+        virtual ~WidgetContainer() { }
 
         /// Adds the given widget to this container. Widget will 
         /// be placed to the top of the z-order, to the end of the
@@ -44,6 +44,18 @@ namespace Gorgon { namespace UI {
         /// bounds, the widget will be drawn on top. You may use the
         /// functions in the widget to manage z-order.
         void ChangeZorder(WidgetBase &widget, int order);
+        
+        /// Focusses the first widget that accepts focus. If none of the
+        /// widgets accept focus or if the currently focused widget blocks
+        /// focus transfer then this function will return false.
+        bool FocusFirst();
+        
+        /// Focusses the next widget that accepts focus. If no widget 
+        /// other than the currently focussed widget accept focus then 
+        /// this function will return false. Additionally, if the currently
+        /// focused widget blocks focus transfer, this function will
+        /// return false.
+        bool FocusNext();
         
         /// Should return whether the container is visible. Due to
         /// different container designs and capabilities, setting
@@ -123,10 +135,13 @@ namespace Gorgon { namespace UI {
         /// change focus to the next widget using tab key
         virtual void SetTabSwitchEnabledState(bool state) { tabswitch = state; }
         
-        //? Use some other type for default? ActivatableWidget?
-        /// Returns the default element of the container. Default elements are
-        /// generally buttons, however, any widget that can be activated can be
-        /// default objects.
+        /// Returns the default element of the container. Default widget is
+        /// activated when the user presses enter and the focussed widget 
+        /// does not consume the key or if the user presses ctrl+enter. 
+        /// Default elements are generally buttons, however, any widget 
+        /// can be designated as default widget. If there is no default object, 
+        /// this function will throw. Use HasDefault to check if this container 
+        /// has a default widget.
         virtual WidgetBase &GetDefault() const {
             if(!def) 
                 throw std::runtime_error("Container does not have a default");
@@ -134,12 +149,21 @@ namespace Gorgon { namespace UI {
             return *def; 
         }
         
-        virtual bool HasDefault() const { return def!=NULL; }
+        /// Returns if this container has a default object.
+        virtual bool HasDefault() const { return def!=nullptr; }
         
+        /// Sets the default object of the container. Ideally this should be
+        /// a button or a similar widget.
         virtual void SetDefault(WidgetBase &widget) { def=&widget; }
         
-        virtual void RemoveDefault() { def=NULL; }
+        /// Removes the default widget of this container.
+        virtual void RemoveDefault() { def=nullptr; }
         
+        /// Returns the cancel element of the container which is called when the
+        /// use presses escape key. It also might be activated programmatically. 
+        /// Cancel elements are generally buttons, however, any widget can 
+        /// be cancel widget. If there is no cancel object set, this function 
+        /// will throw. Use HasCancel to check if this container has a cancel widget.
         virtual WidgetBase &GetCancel() const { 
             if(!def) 
                 throw std::runtime_error("Container does not have a default");
@@ -147,11 +171,16 @@ namespace Gorgon { namespace UI {
             return *cancel; 
         }
         
-        virtual bool HasCancel() const { return cancel!=NULL; }
+        /// Returns if this container has a cancel widget.
+        virtual bool HasCancel() const { return cancel!=nullptr; }
         
+        /// Sets the cancel widget of the container. Ideally this should be
+        /// a button or a similar widget.
         virtual void SetCancel(WidgetBase &widget) { cancel=&widget; }
         
-        virtual void RemoveCancel() { cancel=NULL; }
+        /// Removes the cancel widget of this container.
+        virtual void RemoveCancel() { cancel=nullptr; }
+        
         
     protected:
         /// This container is sorted by the focus order
@@ -159,10 +188,10 @@ namespace Gorgon { namespace UI {
 
         /// This function can return false to prevent the given
         /// widget from getting added to the container.
-        virtual bool addingwidget(WidgetBase &widget) { return true; }
+        virtual bool addingwidget(WidgetBase &) { return true; }
 
         /// This function is called after a widget is added.
-        virtual void widgetadded(WidgetBase &widget) { }
+        virtual void widgetadded(WidgetBase &) { }
         
         /// This function is called when the container is to be enabled. This function
         /// will only be called when the container was disabled prior to the call.
@@ -179,10 +208,11 @@ namespace Gorgon { namespace UI {
         
     
     private:
-        bool isenabled = true;
-        bool tabswitch = true;
-        WidgetBase *def;
-        WidgetBase *cancel;
+        bool isenabled       = true;
+        bool tabswitch       = true;
+        WidgetBase *def      = nullptr;
+        WidgetBase *cancel   = nullptr;
+		WidgetBase *focused  = nullptr;
     };
     
 } }

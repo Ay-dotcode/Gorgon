@@ -422,6 +422,8 @@ namespace Gorgon {
         
 		Hover,
         
+        /// This is activated when the mouse is pressed on the component stack. However,
+        /// it can be activated in cases when activation key is pressed.
 		Down,
 		
 
@@ -499,6 +501,13 @@ namespace Gorgon {
 		/// Channel 4 value is 1, the value will be
 		/// rounded to 4 decimal points before comparison
 		Ch4V1,
+        
+        /// This widget is the default widget of its container
+        Default,
+        
+        
+        /// This widget is the cancel widget of its container
+        Cancel,
 
 
         /// Do not use this condition, this is to size the arrays.

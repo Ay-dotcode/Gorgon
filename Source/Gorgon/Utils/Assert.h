@@ -18,7 +18,7 @@ namespace Gorgon {
 		public:
 			//using std::runtime_error::runtime_error;
 
-			AssertationException(const std::string &what) : std::runtime_error(what) { }
+			explicit AssertationException(const std::string &what) : std::runtime_error(what) { }
 		};
 
 		/// @cond INTERNAL

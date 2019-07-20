@@ -265,6 +265,12 @@ namespace Gorgon { namespace Graphics {
 
 			data->Resize(size, mode);
 		}
+		
+		/// Resizes the image to the given size and color mode. This function discards the contents
+		/// of the image and does not perform any initialization.
+		void Resize(int w, int h, Graphics::ColorMode mode=Graphics::ColorMode::RGBA) {
+            Resize({w, h}, mode);
+		}
 
 		/// Provides access to the given component in x and y coordinates. This function performs bounds checking 
 		/// only on debug mode. Notice that changing a pixel does not prepare the new data to be drawn, a separate 

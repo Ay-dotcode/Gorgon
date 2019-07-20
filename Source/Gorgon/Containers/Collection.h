@@ -225,7 +225,7 @@ namespace Gorgon {
 
 			/// Duplicates this collection. Copy constructor is disabled for performance reasons. Therefore,
 			/// this function is necessary to duplicate a collection
-			Collection Duplicate() {
+			Collection Duplicate() const {
 				Collection c;
 				c.list=list;
 

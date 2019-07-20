@@ -64,7 +64,7 @@ namespace Gorgon {
 
 				x=String::To<T_>(&str[s-str.begin()]);
 				
-				while(*s!=',' && s!=str.end()) s++;
+				while(s!=str.end() && *s!=',') s++;
 
 				if(s==str.end())
 					return;
@@ -184,7 +184,7 @@ namespace Gorgon {
 					throw String::IllegalTokenError(s-str.begin(), 111004, std::string("Illegal token: ")+*s);
 				}
 				
-				if(par>=0) {
+				if(par>0) {
 					throw String::IllegalTokenError(par, 111005, "Unmatched parenthesis");
 				}
 				
@@ -399,7 +399,6 @@ namespace Gorgon {
 			}
 
 			std::string s;
-			std::stringstream ss;
 
 			while(in.peek()!=',' && !in.eof())
 				s.push_back((char)in.get());

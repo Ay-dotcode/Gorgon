@@ -224,6 +224,8 @@ namespace Gorgon { namespace Utils {
 
 
 	inline Console &Console::operator=(const Console &other) {
+        if(&other == this) return *this;
+        
 		if(refcount) {
 			if(--(*refcount) <= 0) {
 				delete backend;

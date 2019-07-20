@@ -28,7 +28,7 @@ namespace Gorgon {
             return *this;
         }
         
-        MouseHandler(Layer *layer = nullptr) {
+        explicit MouseHandler(Layer *layer = nullptr) {
             if(layer) layers.Add(layer);
         }
         
@@ -79,9 +79,7 @@ namespace Gorgon {
 		/// Initializing constructor
 		Layer(const Geometry::Bounds &bounds) :
 			Children(children),
-			parent(nullptr), 
-			bounds(bounds),
-			isvisible(true)
+			bounds(bounds)
 		{ }
 
 		/// Constructor that sets the layer to cover entire parent, no matter how big it is. The
@@ -428,14 +426,14 @@ namespace Gorgon {
 		Containers::Collection<Layer> children;
 		
 		/// Parent layer, could be nullptr
-		Layer *parent;
+		Layer *parent = nullptr;
 
 		/// Bounds of this layer.
 		Geometry::Bounds bounds;
 
 		/// Whether this layer is visible, invisible layers will not
 		/// be drawn or receive any events
-		bool isvisible;
+		bool isvisible =true;
 	};
 
 }

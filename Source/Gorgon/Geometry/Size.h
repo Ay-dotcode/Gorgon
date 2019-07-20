@@ -53,7 +53,7 @@ namespace Gorgon { namespace Geometry {
 			
 			Width=String::To<T_>(&str[s-str.begin()]);
 			
-			while(*s!='x' && *s!=',' && s!=str.end()) s++;
+			while(s!=str.end() && *s!='x' && *s!=',') s++;
 			
 			if(*s=='x' || *s==',') s++;
 			

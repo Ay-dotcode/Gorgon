@@ -2,8 +2,10 @@ SET(Local
 	Component.h
 	ComponentStack.h
 	ComponentStack.cpp
+	ComponentStackWidget.h
 	Template.h
 	Template.cpp
 	WidgetBase.h
 	WidgetContainer.h
+	WidgetContainer.cpp
 )

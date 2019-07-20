@@ -75,8 +75,7 @@ namespace Gorgon { namespace Geometry {
 			while(s!=str.end() && *s==' ')
 				s++;
 			
-			bool par=false;
-			
+            //todo finish parsing....
 		}
 		
 		explicit operator std::string() const {
@@ -84,7 +83,7 @@ namespace Gorgon { namespace Geometry {
 		}
 
 		/// Compares two bounds objects
-		bool operator ==(const basic_Bounds &other) {
+		bool operator ==(const basic_Bounds &other) const {
 			return Left==other.Left && Right==other.Right && Top==other.Top && Bottom==other.Bottom;
 		}
 
@@ -429,6 +428,7 @@ namespace Gorgon { namespace Geometry {
 		
 		if(in.peek()=='[') {
 			in.ignore(1);
+            par = true;
 		}
 		
 		decltype(bounds.TopLeft()) tl, br;
