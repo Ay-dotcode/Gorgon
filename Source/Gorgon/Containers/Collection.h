@@ -43,30 +43,30 @@ namespace Gorgon {
 
 			public:
 				/// Default constructor, creates an iterator pointing to invalid location
-				Iterator_() : Col(NULL), Offset(-1) {
+				Iterator_() : col(NULL), offset(-1) {
 				}
 				/// Copies another iterator
-				Iterator_(const Iterator_ &it) : Col(it.Col), Offset(it.Offset) {
+				Iterator_(const Iterator_ &it) : col(it.col), offset(it.offset) {
 				}
 
 				/// Removes the item pointed by this iterator. The iterator position will point
 				/// the previous item, so that the next item will not be missed when iterator is
 				/// incremented. This allows easy removal of elements using a simple for loop.
 				void Remove() {
-					Col->Remove(Offset);
-					Offset--;
+					col->Remove(offset);
+					offset--;
 				}
 
 				/// Deletes the item pointed by this iterator. The iterator position will point
 				/// the previous item, so that the next item will not be missed when iterator is
 				/// incremented. This allows easy removal of elements using a simple for loop.
 				void Delete() {
-					Col->Delete(Offset);
-					Offset--;
+					col->Delete(offset);
+					offset--;
 				}
 
 			protected:
-				Iterator_(C_ &c, long offset=0) : Col(&c), Offset(offset) {
+				Iterator_(C_ &c, long offset=0) : col(&c), offset(offset) {
 				}
 
 			protected:
@@ -76,42 +76,42 @@ namespace Gorgon {
 					if(!isvalid())
 						throw std::out_of_range("Iterator is not valid.");
 
-					return *Col->list[Offset];
+					return *col->list[offset];
 				}
 
 				bool isvalid() const {
-					return Offset>=0 && Offset<(Col->GetCount());
+					return offset>=0 && offset<(col->GetCount());
 				}
 
 				bool isinrange() const {
-					return Offset>=0 || Offset<(Col->GetCount());
+					return offset>=0 || offset<(col->GetCount());
 				}
 
 				bool moveby(long amount) {
 					//sanity check
 					if(amount==0)  return isvalid();
 
-					Offset+=amount;
+					offset+=amount;
 
 					return isvalid();
 				}
 
 				bool compare(const Iterator_ &it) const {
                     if(!it.isvalid() && !isvalid()) return true;
-					return it.Offset==Offset;
+					return it.offset==offset;
 				}
 
 				void set(const Iterator_ &it) {
-					Col=it.Col;
-					Offset=it.Offset;
+					col=it.col;
+					offset=it.offset;
 				}
 
 				long distance(const Iterator_ &it) const {
-					return it.Offset-Offset;
+					return it.offset-offset;
 				}
 
 				bool isbefore(const Iterator_ &it) const {
-					return Offset<it.Offset;
+					return offset<it.offset;
 				}
 				///@endcond
 
@@ -125,8 +125,8 @@ namespace Gorgon {
 				}
 
 			private:
-				C_ *Col;
-				long Offset;
+				C_ *col;
+				long offset;
 			};
 
 		public:
@@ -139,8 +139,8 @@ namespace Gorgon {
 			public:
 				///Regular iterators can be converted to const iterators
 				ConstIterator(const Iterator &it) {
-					this->Col=it.Col;
-					this->Offset=it.Offset;
+					this->Col=it.col;
+					this->Offset=it.offset;
 				}
 
 			private:
@@ -441,6 +441,18 @@ namespace Gorgon {
 				Remove(&data);
 			}
 
+			void Remove(ConstIterator &it) {
+				auto tmp = it;
+				++it;
+				list.erase(list.begin() + tmp.offset);
+			}
+
+			void Remove(Iterator &it) {
+				auto tmp = it;
+				++it;
+				list.erase(list.begin() + tmp.offset);
+			}
+
 			/// Deletes an item from the collection using its index.
 			/// Deleting both removes the item from the list and free the item itself.
 			void Delete(long index) {
@@ -466,6 +478,20 @@ namespace Gorgon {
 			/// If given item does not exists, this function deletes the item and does nothing else
 			void Delete(T_& data) {
 				Delete(&data);
+			}
+
+			void Delete(ConstIterator &it) {
+				auto tmp = it;
+				++it;
+				delete tmp.CurrentPtr();
+				list.erase(list.begin() + tmp.offset);
+			}
+
+			void Delete(Iterator &it) {
+				auto tmp = it;
+				++it;
+				delete tmp.CurrentPtr();
+				list.erase(list.begin() + tmp.offset);
 			}
 
 			/// Searches the position of a given item, if not found end iterator returned

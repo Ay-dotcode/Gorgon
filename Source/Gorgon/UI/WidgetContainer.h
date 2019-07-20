@@ -31,9 +31,14 @@ namespace Gorgon { namespace UI {
         /// the widget will be added at the end.
         bool Insert(WidgetBase &widget, int index);
 
-        /// Removes the given widget from this container. If the
-        /// widget does not exits, nothing will happen.
-        void Remove(WidgetBase &widget);
+		/// Removes the given widget from this container. If the
+		/// widget does not exits, this function will return true without
+		/// taking any additional action. If the widget cannot be removed
+		/// from the container, this function will return false.
+		bool Remove(WidgetBase &widget);
+
+		/// Forcefully removes the given widget from this container.
+		void ForceRemove(WidgetBase &widget);
 
         /// Changes the focus order of the given widget. If the order
         /// is out of bounds, the widget will be moved to the end.
@@ -45,13 +50,13 @@ namespace Gorgon { namespace UI {
         /// functions in the widget to manage z-order.
         void ChangeZorder(WidgetBase &widget, int order);
         
-        /// Focusses the first widget that accepts focus. If none of the
+        /// Focuses the first widget that accepts focus. If none of the
         /// widgets accept focus or if the currently focused widget blocks
         /// focus transfer then this function will return false.
         bool FocusFirst();
         
-        /// Focusses the next widget that accepts focus. If no widget 
-        /// other than the currently focussed widget accept focus then 
+        /// Focuses the next widget that accepts focus. If no widget 
+        /// other than the currently focused widget accept focus then 
         /// this function will return false. Additionally, if the currently
         /// focused widget blocks focus transfer, this function will
         /// return false.
@@ -127,16 +132,16 @@ namespace Gorgon { namespace UI {
         /// focus to the next widget using tab key
         void DisableTabSwitch() { SetTabSwitchEnabledState(false); }
         
-        /// Toggles the state of tab switcing. Tab switch allows user to 
+        /// Toggles the state of tab switching. Tab switch allows user to 
         /// change focus to the next widget using tab key
         void ToggleTabSwitchEnabledState() { tabswitch=!tabswitch; }
         
-        /// Sets the state of tab switcing. Tab switch allows user to 
+        /// Sets the state of tab switching. Tab switch allows user to 
         /// change focus to the next widget using tab key
         virtual void SetTabSwitchEnabledState(bool state) { tabswitch = state; }
         
         /// Returns the default element of the container. Default widget is
-        /// activated when the user presses enter and the focussed widget 
+        /// activated when the user presses enter and the focused widget 
         /// does not consume the key or if the user presses ctrl+enter. 
         /// Default elements are generally buttons, however, any widget 
         /// can be designated as default widget. If there is no default object, 
@@ -192,6 +197,14 @@ namespace Gorgon { namespace UI {
 
         /// This function is called after a widget is added.
         virtual void widgetadded(WidgetBase &) { }
+
+		/// This function is called before removing a widget. Return false
+		/// to prevent that widget from getting removed. This widget is
+		/// guaranteed to be in this container
+		virtual bool removingwidget(WidgetBase &) { return true; }
+
+		/// This function is called after a widget is removed
+		virtual void widgetremoved(WidgetBase &) { }
         
         /// This function is called when the container is to be enabled. This function
         /// will only be called when the container was disabled prior to the call.
@@ -213,6 +226,7 @@ namespace Gorgon { namespace UI {
         WidgetBase *def      = nullptr;
         WidgetBase *cancel   = nullptr;
 		WidgetBase *focused  = nullptr;
+		int focusindex	     = -1;
     };
     
 } }

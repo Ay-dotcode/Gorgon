@@ -1,13 +1,17 @@
 #pragma once
 
+#include "../Layer.h"
 #include "../Geometry/Point.h"
 
 namespace Gorgon { namespace UI {
+
+	class WidgetContainer;
    
     /**
      * This class is the base for all widgets. 
      */
     class WidgetBase {
+	friend class WidgetContainer;
     public:
         
         virtual ~WidgetBase() { }
@@ -30,10 +34,25 @@ namespace Gorgon { namespace UI {
         /// Removes the focus from this widget if this widget is focused.
         /// This function will not transfer the focus to another widget.
         bool Defocus();
+
+		WidgetContainer &GetParent() const;
+
+		virtual Layer &GetLayer() const = 0;
         
     protected:
-        
-        /// Should return true if the widget can be focussed
+		/// Called when it is about to be added to the given container
+		virtual bool addingto(WidgetContainer &) { return true; }
+
+		/// Called when this widget added to the given container
+		virtual void addedto(WidgetContainer &) { }
+
+		/// Called before this widget is removed from its parent.
+		virtual bool removingfrom() { return true; }
+
+		/// Called after this widget is removed from its parent.
+		virtual void removed() { }
+
+		/// Should return true if the widget can be focused
         virtual bool allowfocus() const { return true; }
         
         /// This is called after the focus is transferred to this widget.
