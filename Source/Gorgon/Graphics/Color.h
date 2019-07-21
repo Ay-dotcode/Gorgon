@@ -94,10 +94,22 @@ namespace Gorgon { namespace Graphics {
 		typedef Byte ChannelType;
 
 		/// Default constructor does not perform initialization
-		RGBA() { }
+		RGBA() {}
 
 		/// Copy constructor
 		RGBA(const RGBA &) = default;
+
+		/// Copy constructor with new alpha value
+		RGBA(const RGBA &other, Byte newalpha) : R(other.R), G(other.G), B(other.B), A(newalpha) {}
+
+		/// Copy constructor with new alpha value
+		RGBA(const RGBA &other, int newalpha) : R(other.R), G(other.G), B(other.B), A(Byte(newalpha)) {}
+
+		/// Copy constructor with new alpha value
+		RGBA(const RGBA &other, double newalpha) : R(other.R), G(other.G), B(other.B), A(Byte(255*newalpha)) {}
+
+		/// Copy constructor with new alpha value
+		RGBA(const RGBA &other, float newalpha) : R(other.R), G(other.G), B(other.B), A(Byte(255*newalpha)) {}
 
 		/// Filling constructor
 		RGBA(Byte r, Byte g, Byte b, Byte a=255) : R(r), G(g), B(b), A(a) { }
@@ -117,6 +129,14 @@ namespace Gorgon { namespace Graphics {
 
 		/// Conversion from float. Assumes the given float value is a 0 to 1 luminance. Sets alpha to 255
 		explicit RGBA(float lum) : A(255) {
+			if(lum<0) lum=0;
+			if(lum>1) lum=1;
+
+			R=G=B=Byte(lum*255);
+		}
+
+		/// Conversion from float. Assumes the given float value is a 0 to 1 luminance. Sets alpha to 255
+		explicit RGBA(double lum) : A(255) {
 			if(lum<0) lum=0;
 			if(lum>1) lum=1;
 

@@ -265,6 +265,20 @@ namespace Gorgon {
 			return showptr;
 		}
 
+		/// Removes the operating system pointer and starts using Locally defined pointers.
+		/// If there are no pointers added to the Pointers object, this function will throw.
+		/// After switching, ShowPointer and HidePointer will show and hide local pointers
+		/// not OS pointers. Calling this function will show the local pointer.
+		void SwitchToLocalPointers();
+
+		/// Stops showing local pointers and makes window manager pointer visible.
+		void SwitchToWMPointers();
+
+		/// Returns whether the current pointer is a local pointer
+		bool IsLocalPointer() const {
+			return !iswmpointer;
+		}
+
         /// Centers the window to the default monitor
         void Center() {
             Center(WindowManager::Monitor::Primary());
@@ -324,20 +338,6 @@ namespace Gorgon {
 		/// Prevents window to be resized by the user
 		void PreventResize();
         
-        /// Removes the operating system pointer and starts using Locally defined pointers.
-        /// If there are no pointers added to the Pointers object, this function will throw.
-        /// After switching, ShowPointer and HidePointer will show and hide local pointers
-        /// not OS pointers. Calling this function will show the local pointer.
-        void SwitchToLocalPointers();
-        
-        /// Stops showing local pointers and makes window manager pointer visible.
-        void SwitchToWMPointers();
-
-		/// Returns whether the current pointer is a local pointer
-		bool IsLocalPointer() const {
-			return !iswmpointer;
-		}
-
 		/// Returns the minimum size required to fit any window inside.
 		static Geometry::Size GetMinimumRequiredSize();
         

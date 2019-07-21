@@ -275,11 +275,19 @@ namespace Keyboard {
 		Modifier operator &(const Modifier &r) const {
 			return {Type(Key & r.Key)};
 		}
-			
+		
 		/// The modifier key
 		Type Key;
 	};
-		
+
+	inline bool operator ==(const Modifier &l, const Modifier &r) {
+		return l.Key == r.Key;
+	}
+
+	inline bool operator !=(const Modifier &l, const Modifier &r) {
+		return l.Key != r.Key;
+	}
+
 	/// Current keyboard modifier, this is a global value.
 	extern Modifier CurrentModifier;
 } } }

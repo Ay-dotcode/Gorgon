@@ -25,6 +25,7 @@ namespace Gorgon { namespace UI {
 		if(!widget.addingto(*this))
 			return false;
 
+		//we are inserting before the focused widget
 		if(index <= focusindex)
 			focusindex++;
 
@@ -40,6 +41,7 @@ namespace Gorgon { namespace UI {
 	bool WidgetContainer::Remove(WidgetBase &widget) {
 		auto pos = widgets.Find(widget);
 
+		//not our widget
 		if(pos == widgets.end())
 			return true;
 
@@ -49,17 +51,7 @@ namespace Gorgon { namespace UI {
 		if(!widget.removingfrom())
 			return false;
 
-		if(focusindex == pos - widgets.begin())
-			FocusNext();
-		
-		if(focusindex > pos - widgets.begin())
-			focusindex--;
-
-		layer().Remove(widget.GetLayer());
-		widgets.Remove(pos);
-
-		widgetremoved(widget);
-		widget.removed();
+		ForceRemove(widget);
 
 		return true;
 	}
@@ -67,6 +59,7 @@ namespace Gorgon { namespace UI {
 	void WidgetContainer::ForceRemove(WidgetBase &widget) {
 		auto pos = widgets.Find(widget);
 
+		//not our widget
 		if(pos == widgets.end())
 			return;
 
@@ -86,15 +79,19 @@ namespace Gorgon { namespace UI {
 	void WidgetContainer::ChangeFocusOrder(WidgetBase &widget, int order) {
 		auto pos = widgets.Find(widget);
 
+		//not our widget
 		if(pos == widgets.end())
 			return;
 
+		//widget is moving across currently focused widget
 		if(order <= focusindex && (pos-widgets.begin()) > focusindex) {
 			focusindex++;
 		}
+		//widget is moving across currently focused widget
 		else if(order >= focusindex && (pos-widgets.begin()) < focusindex) {
 			focusindex--;
 		}
+		//this is the focused widget
 		else if((pos-widgets.begin()) == focusindex) {
 			focusindex = order;
 		}
@@ -113,10 +110,104 @@ namespace Gorgon { namespace UI {
 	}
 
 	bool WidgetContainer::FocusFirst() {
+		if(focused && !focused->Defocus())
+			return false;
+
+		//starting from the first, try to focus widgets in order
+		focusindex = 0;
+		for(auto &w : widgets) {
+			if(w.Focus()) {
+				return true;
+			}
+
+			focusindex++;
+		}
+
+		//nothing can be focused
+		focusindex = -1;
 		return false;
 	}
 
 	bool WidgetContainer::FocusNext() {
+		if(focused && !focused->Defocus())
+			return false;
+
+		for(int i=focusindex+1; i<widgets.GetSize(); i++) {
+			if(widgets[i].Focus())
+				return true;
+		}
+
+		//not found, rollover
+		for(int i=0; i<focusindex; i++) {
+			if(widgets[i].Focus())
+				return true;
+		}
+
+		//nothing is found
+		return false;
+	}
+
+	bool WidgetContainer::FocusPrevious() {
+		if(focused && !focused->Defocus())
+			return false;
+
+		for(int i=focusindex-1; i>=0; i--) {
+			if(widgets[i].Focus())
+				return true;
+		}
+
+		//not found, rollover
+		for(int i=widgets.GetSize()-1; i>focusindex; i--) {
+			if(widgets[i].Focus())
+				return true;
+		}
+
+		//nothing is found
+		return false;
+	}
+
+
+	bool WidgetContainer::handlestandardkey(Input::Key key) {
+		namespace Keycodes = Input::Keyboard::Keycodes;
+
+		if((key == Keycodes::Enter || key == Keycodes::Numpad_Enter) && 
+		   (Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::Ctrl || Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::None)) {
+			if(def)
+				return def->Activate();
+			
+			return false;
+		}
+		else if(key == Keycodes::Escape && Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::None) {
+			if(cancel)
+				return cancel->Activate();
+
+			return false;
+		}
+		else if(key == Keycodes::Tab) {
+			if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::Shift)
+				return FocusPrevious();
+
+			if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::None)
+				return FocusNext();
+		}
+
+		return false;
+	}
+
+	bool WidgetContainer::distributekeyevent(Input::Key key, float state, bool handlestandard) {
+		if(focused && focused->KeyEvent(key, state))
+			return true;
+
+		if(handlestandard && state)
+			return handlestandardkey(key);
+
+		return false;
+	}
+
+	bool WidgetContainer::distributecharevent(Char c) {
+		if(focused)
+			return focused->CharEvent(c);
+
 		return false;
 	}
 

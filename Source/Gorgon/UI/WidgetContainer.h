@@ -2,6 +2,7 @@
 
 #include "WidgetBase.h"
 #include "../Layer.h"
+#include "../Input/Keyboard.h"
 
 namespace Gorgon { namespace UI {
 
@@ -53,14 +54,21 @@ namespace Gorgon { namespace UI {
         /// Focuses the first widget that accepts focus. If none of the
         /// widgets accept focus or if the currently focused widget blocks
         /// focus transfer then this function will return false.
-        bool FocusFirst();
-        
-        /// Focuses the next widget that accepts focus. If no widget 
-        /// other than the currently focused widget accept focus then 
-        /// this function will return false. Additionally, if the currently
-        /// focused widget blocks focus transfer, this function will
-        /// return false.
-        bool FocusNext();
+		bool FocusFirst();
+
+		/// Focuses the next widget that accepts focus. If no widget 
+		/// other than the currently focused widget accept focus then 
+		/// this function will return false. Additionally, if the currently
+		/// focused widget blocks focus transfer, this function will
+		/// return false.
+		bool FocusNext();
+
+		/// Focuses the previous widget that accepts focus. If no widget 
+		/// other than the currently focused widget accept focus then 
+		/// this function will return false. Additionally, if the currently
+		/// focused widget blocks focus transfer, this function will
+		/// return false.
+		bool FocusPrevious();
         
         /// Should return whether the container is visible. Due to
         /// different container designs and capabilities, setting
@@ -186,6 +194,12 @@ namespace Gorgon { namespace UI {
         /// Removes the cancel widget of this container.
         virtual void RemoveCancel() { cancel=nullptr; }
         
+		/// This function should be called whenever a key is pressed or released.
+		virtual bool KeyEvent(Input::Key key, float state) { return distributekeyevent(key, state, true); }
+		
+		/// This function should be called whenever a character is received from
+		/// operating system.
+		virtual bool CharEvent(Char c) { return distributecharevent(c); }
         
     protected:
         /// This container is sorted by the focus order
@@ -218,6 +232,12 @@ namespace Gorgon { namespace UI {
 
         /// Returns the layer that will be used to place the contained widgets.
         virtual Layer &layer() = 0;
+
+		bool handlestandardkey(Input::Key key);
+
+		bool distributekeyevent(Input::Key key, float state, bool handlestandard);
+
+		bool distributecharevent(Char c);
         
     
     private:

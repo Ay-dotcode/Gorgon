@@ -343,7 +343,7 @@ namespace Gorgon { namespace Graphics {
                         img(x, y, 3) = data(x, y, 3);
                     
                     RGBA c = getcolor(x, y);
-                    c.Blend(RGBA(convert(c), int(round(ratio*255))));
+                    c.Blend(RGBA(convert(c), Byte(round(ratio*255))));
                     
                     setcolor(x, y, c);
                 }

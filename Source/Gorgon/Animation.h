@@ -312,7 +312,8 @@ namespace Gorgon {
 
 			/// Copies the animation
 			Base(const Base &base) {
-				SetController(base.GetController());
+				if(base.HasController())
+					SetController(base.GetController());
 			}
 
 			/// This constructor creates a new controller depending on the create parameter. Animation has the

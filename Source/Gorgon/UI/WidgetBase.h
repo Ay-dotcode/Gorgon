@@ -2,6 +2,7 @@
 
 #include "../Layer.h"
 #include "../Geometry/Point.h"
+#include "../Input/Keyboard.h"
 
 namespace Gorgon { namespace UI {
 
@@ -38,7 +39,14 @@ namespace Gorgon { namespace UI {
 		WidgetContainer &GetParent() const;
 
 		virtual Layer &GetLayer() const = 0;
-        
+
+		/// This function should be called whenever a key is pressed or released.
+		virtual bool KeyEvent(Input::Key, float) { return false; }
+
+		/// This function should be called whenever a character is received from
+		/// operating system.
+		virtual bool CharEvent(Char) { return false; }
+
     protected:
 		/// Called when it is about to be added to the given container
 		virtual bool addingto(WidgetContainer &) { return true; }

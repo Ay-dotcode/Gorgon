@@ -16,6 +16,7 @@ SET(ManualTests
 	Font
 	HTMLRenderer
 	UI_Component
+	UI_Generate
 )
 
 SET(UnitTests

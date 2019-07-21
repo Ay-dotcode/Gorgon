@@ -770,7 +770,7 @@ namespace Gorgon { namespace UI {
 				}
 			}
 
-			target->SetTintColor(color * c);
+			target->SetColor(color * c);
             if(th.IsReady()) {
                 if(valuetotext && (ind != -1 || !stringdata.count(temp.GetDataEffect())) ) {
                     th.GetRenderer().Print(*target, valuetotext(temp.GetTag(), temp.GetDataEffect(), val), comp.location+offset, comp.size.Width);
@@ -779,7 +779,7 @@ namespace Gorgon { namespace UI {
 					th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
 				}
             }
-			target->SetTintColor(1.f);
+			target->SetColor(1.f);
 		}
         else if(temp.GetType() == ComponentType::Placeholder && comp.size.Area() > 0) {
             const auto &ph = dynamic_cast<const PlaceholderTemplate&>(temp);

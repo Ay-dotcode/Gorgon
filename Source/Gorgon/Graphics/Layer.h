@@ -203,7 +203,8 @@ namespace Gorgon { namespace Graphics {
 			swap(bounds, other.bounds);
 			swap(isvisible, other.isvisible);
 			swap(children, other.children);
-            swap(color, other.color);
+			swap(color, other.color);
+			swap(tint, other.tint);
             swap(mode, other.mode);
             swap(surfaces, other.surfaces);
 			
@@ -226,14 +227,14 @@ namespace Gorgon { namespace Graphics {
 		virtual void Draw(const TextureSource &image, const Geometry::Pointf &p1, const Geometry::Pointf &p2,
 						  const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color = RGBAf(1.f)) override {
 
-			surfaces.emplace_back(image, p1, p2, p3, p4, color, mode);
+			surfaces.emplace_back(image, p1, p2, p3, p4, color*this->color, mode);
 		}
 
 		/// Prefer using Draw functions of image or animations
 		virtual void Draw(const Geometry::Pointf &p1, const Geometry::Pointf &p2,
 						  const Geometry::Pointf &p3, const Geometry::Pointf &p4, RGBAf color = RGBAf(1.f)) override {
 
-			surfaces.emplace_back(p1, p2, p3, p4, color, mode);
+			surfaces.emplace_back(p1, p2, p3, p4, color*this->color, mode);
 		}
 
 		/// Prefer using Draw functions of image or animations
@@ -244,7 +245,7 @@ namespace Gorgon { namespace Graphics {
 			const Geometry::Pointf &tex1, const Geometry::Pointf &tex2, 
 			const Geometry::Pointf &tex3, const Geometry::Pointf &tex4, RGBAf color = RGBAf(1.f)) override {
 
-			surfaces.emplace_back(image, p1, p2, p3, p4, tex1, tex2, tex3, tex4, color, mode);
+			surfaces.emplace_back(image, p1, p2, p3, p4, tex1, tex2, tex3, tex4, color*this->color, mode);
 		}
 
 		/// Prefer using Draw functions of image or animations
@@ -268,12 +269,19 @@ namespace Gorgon { namespace Graphics {
 			Operation op = {Operation::NewMask, surfaces.size()+operations.size()};
 			operations.push_back(op);
 		}
-		
+
 		/// Changes the tint color of the layer, every image pixel will be multiplied by this color
-		virtual void SetTintColor(RGBAf color) { this->color = color; }
-		
+		virtual void SetTintColor(RGBAf value) { tint = value; }
+
 		/// Returns the tint color of the layer, every image pixel will be multiplied by this color
-		virtual RGBAf GetTintColor() const { return color; }
+		virtual RGBAf GetTintColor() const { return tint; }
+
+		/// Changes the tint color of the layer, every image pixel will be multiplied by this color.
+		/// This value effects only the images drawn after it is set.
+		virtual void SetColor(RGBAf value) { color = value; }
+
+		/// Changes the tint color of the layer, every image pixel will be multiplied by this color
+		virtual RGBAf GetColor() const { return color; }
 
 		virtual Geometry::Size GetTargetSize() const override {
             if(bounds.Width() != 0 && bounds.Height() != 0)
@@ -306,7 +314,8 @@ namespace Gorgon { namespace Graphics {
 		bool clippingenabled = false;
 
 		DrawMode mode = Graphics::TextureTarget::Normal;
-        RGBAf color = RGBAf(1.f);
+		RGBAf tint = RGBAf(1.f);
+		RGBAf color = RGBAf(1.f);
 
 		static GL::FrameBuffer mask;
 	};

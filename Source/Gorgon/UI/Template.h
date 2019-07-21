@@ -553,6 +553,8 @@ namespace Gorgon {
         Template() {
         }
 
+		Template(Template &&) = default;
+
         /// Destructor
         ~Template() {
             components.Destroy();

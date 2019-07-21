@@ -379,6 +379,8 @@ namespace Gorgon { namespace Graphics {
 			tabwidth = renderer.GetMaxWidth() * 8;
 		}
 
+		StyledRenderer() = default;
+
 		GlyphRenderer &GetGlyphRenderer() {
             return *renderer;
         }

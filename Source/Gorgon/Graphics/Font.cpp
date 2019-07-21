@@ -300,7 +300,8 @@ namespace Gorgon { namespace Graphics {
 				if(isspace(g)) {
 					if(prev) {
 						cur_spacing = spacing(prev, g);
-                        acc.back().location += cur_spacing;
+						if(acc.size())
+							acc.back().location += cur_spacing;
 					}
 
 					if(renderer.Exists(g)) {

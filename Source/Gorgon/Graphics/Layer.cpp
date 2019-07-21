@@ -64,7 +64,7 @@ namespace Graphics {
 		if(!isvisible) return;
 
 		auto prev_col = LayerColor;
-		LayerColor *= color;
+		LayerColor *= tint;
 
 		dotransformandclip();
 

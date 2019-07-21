@@ -152,7 +152,7 @@ namespace Gorgon {
 		
 		/// Joins two given paths or a path and filename
 		inline std::string Join(std::string path1, const std::string &path2) {
-			if(path1.back()!='/') {
+			if(path1.empty() || path1.back()!='/') {
 				path1.push_back('/');
 			}
 			path1+=path2;
