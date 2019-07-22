@@ -15,35 +15,36 @@ namespace Gorgon {
 		/// This class is a container for image data. It supports different color modes and access to the
 		/// underlying data through () operator. This object implements move semantics. Since copy constructor is
 		/// expensive, it is deleted against accidental use. If a copy of the object is required, use Duplicate function.
-		class Image {
+		template<class T_>
+		class basic_Image {
 		public:
 
 			/// Constructs an empty image data
-			Image() {
+			basic_Image() {
 			}
 
 			/// Constructs a new image data with the given width, height and color mode. This constructor 
 			/// does not initialize data inside the image
-			Image(const Geometry::Size &size, Graphics::ColorMode mode) : size(size), mode(mode) {
-				bpp=Graphics::GetBytesPerPixel(mode);
-				data=(Byte*)malloc(size.Area()*bpp*sizeof(Byte));
+			basic_Image(const Geometry::Size &size, Graphics::ColorMode mode) : size(size), mode(mode) {
+				cpp=Graphics::GetChannelsPerPixel(mode);
+				data=(Byte*)malloc(size.Area()*cpp*sizeof(T_));
 
 				alphaloc = Graphics::HasAlpha(mode) ? Graphics::GetAlphaIndex(mode) : -1;
 			}
 
 			/// Copy constructor is disabled
-			Image(const Image &) = delete;
+			basic_Image(const basic_Image &) = delete;
 
 			/// Move constructor
-			Image(Image &&data) : Image() {
+			basic_Image(basic_Image &&data) : basic_Image() {
 				Swap(data);
 			}
 
 			/// Copy assignment is disabled
-			Image &operator=(const Image &) = delete;
+			basic_Image &operator=(const basic_Image &) = delete;
 
 			/// Move assignment
-			Image &operator=(Image &&other) { 
+			basic_Image &operator=(basic_Image &&other) { 
 				if(this == &other) return *this;
 				
 				Destroy();
@@ -53,13 +54,13 @@ namespace Gorgon {
 			}
 
 			/// Destructor
-			~Image() {
+			~basic_Image() {
 				Destroy();
 			}
 
 			/// Duplicates this image, essentially performing the work of copy constructor
-			Image Duplicate() const {
-				Image data;
+			basic_Image Duplicate() const {
+				basic_Image data;
 				data.Assign(this->data, size, mode);
 
 				return data;
@@ -70,49 +71,49 @@ namespace Gorgon {
 			void Resize(const Geometry::Size &size, Graphics::ColorMode mode) {
 #ifndef NDEBUG
 				if(!size.IsValid())
-					throw std::runtime_error("Image size cannot be negative");
+					throw std::runtime_error("basic_Image size cannot be negative");
 #endif
 
 				// Check if resize is really necessary
-				if(this->size==size && this->bpp==Graphics::GetBytesPerPixel(mode))
+				if(this->size==size && this->cpp==Graphics::GetChannelsPerPixel(mode))
 					return;
 
 				this->size     = size;
 				this->mode     = mode;
-				this->bpp      = Graphics::GetBytesPerPixel(mode);
+				this->cpp      = Graphics::GetChannelsPerPixel(mode);
 				this->alphaloc = Graphics::HasAlpha(mode) ? Graphics::GetAlphaIndex(mode) : -1;
 
 				if(data) {
 					free(data);
 				}
 				
-				data=(Byte*)malloc(size.Area()*bpp*sizeof(Byte));
+				data=(Byte*)malloc(size.Area()*cpp*sizeof(T_));
 			}
 
 			/// Assigns the image to the copy of the given data. Ownership of the given data
 			/// is not transferred. If the given data is not required elsewhere, consider using
 			/// Assume function. This variant performs resize and copy at the same time. The given 
-			/// data should have the size of width*height*Graphics::GetBytesPerPixel(mode)*sizeof(Byte). 
+			/// data should have the size of width*height*Graphics::GetBytesPerPixel(mode)*sizeof(T_). 
 			/// This function does not perform any checks for the data size while copying it.
 			/// If width or height is 0, the newdata is not accessed and this method effectively
 			/// Destroys the current image. In this case, both width and height should be specified as 0.
 			void Assign(Byte *newdata, const Geometry::Size &size, Graphics::ColorMode mode) {
 #ifndef NDEBUG
 				if(!size.IsValid())
-					throw std::runtime_error("Image size cannot be negative");
+					throw std::runtime_error("basic_Image size cannot be negative");
 #endif
 				this->size     = size;
 				this->mode     = mode;
-				this->bpp      = Graphics::GetBytesPerPixel(mode);
+				this->cpp      = Graphics::GetChannelsPerPixel(mode);
 				this->alphaloc = Graphics::HasAlpha(mode) ? Graphics::GetAlphaIndex(mode) : -1;
 
 				if(data && data!=newdata) {
 					free(data);
 				}
 				
-				if(size.Area()*bpp>0) {
-					data=(Byte*)malloc(size.Area()*bpp*sizeof(Byte));
-					memcpy(data, newdata, size.Area()*bpp*sizeof(Byte));
+				if(size.Area()*cpp>0) {
+					data=(Byte*)malloc(size.Area()*cpp*sizeof(T_));
+					memcpy(data, newdata, size.Area()*cpp*sizeof(T_));
 				}
 				else {
 					data=nullptr;
@@ -122,15 +123,15 @@ namespace Gorgon {
 			/// Assigns the image to the copy of the given data. Ownership of the given data
 			/// is not transferred. If the given data is not required elsewhere, consider using
 			/// Assume function. The size and color mode of the image stays the same. The given 
-			/// data should have the size of width*height*Graphics::GetBytesPerPixel(mode)*sizeof(Byte). 
-			/// This function does not perform any checks for the data size while copying it.
+			/// data should have the size of width*height*Graphics::GetBytesPerPixel(mode)*sizeof(T_). 
+			/// This function does not perform any checks for the data size while copying it.t
 			void Assign(Byte *newdata) {
-				memcpy(data, newdata, size.Area()*bpp*sizeof(Byte));
+				memcpy(data, newdata, size.Area()*cpp*sizeof(T_));
 			}
 
 			/// Assumes the ownership of the given data. This variant changes the size and
 			/// color mode of the image. The given data should have the size of 
-			/// width*height*Graphics::GetBytesPerPixel(mode)*sizeof(Byte). This function
+			/// width*height*Graphics::GetBytesPerPixel(mode)*sizeof(T_). This function
 			/// does not perform any checks for the data size while assuming it.
 			/// newdata could be nullptr however, in this case
 			/// width, height should be 0. mode is not assumed to be ColorMode::Invalid while
@@ -138,11 +139,11 @@ namespace Gorgon {
 			void Assume(Byte *newdata, const Geometry::Size &size, Graphics::ColorMode mode) {
 #ifndef NDEBUG
 				if(!size.IsValid())
-					throw std::runtime_error("Image size cannot be negative");
+					throw std::runtime_error("basic_Image size cannot be negative");
 #endif
 				this->size   = size;
 				this->mode   = mode;
-				this->bpp    = Graphics::GetBytesPerPixel(mode);
+				this->cpp    = Graphics::GetChannelsPerPixel(mode);
 				this->alphaloc = Graphics::HasAlpha(mode) ? Graphics::GetAlphaIndex(mode) : -1;
 
 				if(data && data!=newdata) {
@@ -153,7 +154,7 @@ namespace Gorgon {
 			}
 
 			/// Assumes the ownership of the given data. The size and color mode of the image stays the same.
-			/// The given data should have the size of width*height*Graphics::GetBytesPerPixel(mode)*sizeof(Byte).
+			/// The given data should have the size of width*height*Graphics::GetBytesPerPixel(mode)*sizeof(T_).
 			/// This function does not perform any checks for the data size while assuming it.
 			void Assume(Byte *newdata) {
 				if(data && data!=newdata) {
@@ -176,11 +177,11 @@ namespace Gorgon {
 			void Clear() {
 #ifndef NDEBUG
 				if(!data) {
-					throw std::runtime_error("Image data is empty");
+					throw std::runtime_error("basic_Image data is empty");
 				}
 #endif
 
-				memset(data, 0, size.Area()*bpp*sizeof(Byte));
+				memset(data, 0, size.Area()*cpp*sizeof(T_));
 			}
 
 			/// Destroys this image by setting width and height to 0 and freeing the memory
@@ -191,18 +192,18 @@ namespace Gorgon {
 					data=nullptr;
 				}
 				size   = {0, 0};
-				bpp    = 0;
+				cpp    = 0;
 				mode   = Graphics::ColorMode::Invalid;
 			}
 
 			/// Swaps this image with another. This function is used to implement move semantics.
-			void Swap(Image &other) {
+			void Swap(basic_Image &other) {
 				using std::swap;
 
 				swap(data,     other.data);
 				swap(size,     other.size);
 				swap(mode,     other.mode);
-				swap(bpp,      other.bpp);
+				swap(cpp,      other.cpp);
 				swap(alphaloc, other.alphaloc);
 			}
 
@@ -229,7 +230,7 @@ namespace Gorgon {
 
 				case Graphics::ColorMode::Grayscale_Alpha: {
 					auto pdata = data;
-					data = (Byte*)malloc(size.Area()*4);
+					data = (Byte*)malloc(size.Area()*4*sizeof(T_));
 
 					for(int i=0; i<size.Area(); i++) {
 						data[i*4+0] = pdata[i*2+0];
@@ -243,7 +244,7 @@ namespace Gorgon {
 
 				case Graphics::ColorMode::Grayscale: {
 					auto pdata = data;
-					data = (Byte*)malloc(size.Area()*4);
+					data = (Byte*)malloc(size.Area()*4*sizeof(T_));
 
 					for(int i=0; i<size.Area(); i++) {
 						data[i*4+0] = pdata[i+0];
@@ -257,7 +258,7 @@ namespace Gorgon {
 
 				case Graphics::ColorMode::Alpha: {
 					auto pdata = data;
-					data = (Byte*)malloc(size.Area()*4);
+					data = (Byte*)malloc(size.Area()*4*sizeof(T_));
 
 					for(int i=0; i<size.Area(); i++) {
 						data[i*4+0] = 255;
@@ -271,7 +272,7 @@ namespace Gorgon {
 
 				case Graphics::ColorMode::RGB: {
 					auto pdata = data;
-					data = (Byte*)malloc(size.Area()*4);
+					data = (Byte*)malloc(size.Area()*4*sizeof(T_));
 
 					for(int i=0; i<size.Area(); i++) {
 						data[i*4+0] = pdata[i*3+0];
@@ -285,7 +286,7 @@ namespace Gorgon {
 
 				case Graphics::ColorMode::BGR: {
 					auto pdata = data;
-					data = (Byte*)malloc(size.Area()*4);
+					data = (Byte*)malloc(size.Area()*4*sizeof(T_));
 
 					for(int i=0; i<size.Area(); i++) {
 						data[i*4+0] = pdata[i*3+2];
@@ -313,7 +314,7 @@ namespace Gorgon {
 			/// blending. Additionally, color modes should be the same. However, this
 			/// function will do clipping for overflows. Do not use negative values for
 			/// target. Will return false if nothing is copied.
-			bool CopyTo(Image &dest, Geometry::Point target = {0, 0}) const {
+			bool CopyTo(basic_Image &dest, Geometry::Point target = {0, 0}) const {
                 if(dest.GetMode() != mode || size.Area() == 0 || dest.GetSize().Area() == 0) 
                     return false;
                 
@@ -330,10 +331,10 @@ namespace Gorgon {
                     if(y+target.Y >= dh)
                         break;
                     
-                    int si = y * bpp * size.Width;
-                    int di = (y+target.Y) * bpp * dw + target.X * bpp;
+                    int si = y * cpp * size.Width;
+                    int di = (y+target.Y) * cpp * dw + target.X * cpp;
                     
-                    int cs = std::min(size.Width, dw - target.X) * bpp;
+                    int cs = std::min(size.Width, dw - target.X) * cpp;
                     
                     memcpy(dd + di, sd + si, cs);
                 }
@@ -345,7 +346,7 @@ namespace Gorgon {
 			/// blending. Additionally, color modes should be the same. However, this
 			/// function will do clipping. Source bounds should be within the image.
 			/// Will return false if nothing is copied.
-			bool CopyTo(Image &dest, Geometry::Bounds source, Geometry::Point target = {0, 0}) const {
+			bool CopyTo(basic_Image &dest, Geometry::Bounds source, Geometry::Point target = {0, 0}) const {
                 if(dest.GetMode() != mode || size.Area() == 0 || dest.GetSize().Area() == 0) 
                     return false;
                 
@@ -376,10 +377,10 @@ namespace Gorgon {
                 const Byte *sd = RawData();
                 
                 for(int y=source.Top; y<source.Bottom; y++) {
-                    int si = (y * size.Width + source.Left) * bpp;
-                    int di = ((y - source.Top + target.Y) * dw + target.X) * bpp;
+                    int si = (y * size.Width + source.Left) * cpp;
+                    int di = ((y - source.Top + target.Y) * dw + target.X) * cpp;
                     
-                    int cs = sw * bpp;
+                    int cs = sw * cpp;
                     
                     memcpy(dd + di, sd + si, cs);
                 }
@@ -1112,66 +1113,66 @@ namespace Gorgon {
 			/// function performs bounds checking only on debug mode.
 			Byte &operator()(const Geometry::Point &p, unsigned component=0) {
 #ifndef NDEBUG
-				if(p.X<0 || p.Y<0 || p.X>=size.Width || p.Y>=size.Height || component>=bpp) {
+				if(p.X<0 || p.Y<0 || p.X>=size.Width || p.Y>=size.Height || component>=cpp) {
 					throw std::runtime_error("Index out of bounds");
 				}
 #endif
-				return data[bpp*(size.Width*p.Y+p.X)+component];
+				return data[cpp*(size.Width*p.Y+p.X)+component];
 			}
 
 			/// Provides access to the given component in x and y coordinates. This
 			/// function performs bounds checking only on debug mode.
 			Byte operator()(const Geometry::Point &p, unsigned component=0) const {
 #ifndef NDEBUG
-				if(p.X<0 || p.Y<0 || p.X>=size.Width || p.Y>=size.Height || component>=bpp) {
+				if(p.X<0 || p.Y<0 || p.X>=size.Width || p.Y>=size.Height || component>=cpp) {
 					throw std::runtime_error("Index out of bounds");
 				}
 #endif
-				return data[bpp*(size.Width*p.Y+p.X)+component];
+				return data[cpp*(size.Width*p.Y+p.X)+component];
 			}
 
 			/// Provides access to the given component in x and y coordinates. This
 			/// function returns 0 if the given coordinates are out of bounds. This
 			/// function works slower than the () operator.
 			Byte Get(const Geometry::Point &p, unsigned component=0) const {
-				if(p.X<0 || p.Y<0 || p.X>=size.Width || p.Y>=size.Height || component>=bpp) {
+				if(p.X<0 || p.Y<0 || p.X>=size.Width || p.Y>=size.Height || component>=cpp) {
 					return 0;
 				}
 
-				return data[bpp*(size.Width*p.Y+p.X)+component];
+				return data[cpp*(size.Width*p.Y+p.X)+component];
 			}
 
 			/// Provides access to the given component in x and y coordinates. This
 			/// function performs bounds checking only on debug mode.
 			Byte &operator()(int x, int y, unsigned component=0) {
 #ifndef NDEBUG
-				if(x<0 || y<0 || x>=size.Width || y>=size.Height || component>=bpp) {
+				if(x<0 || y<0 || x>=size.Width || y>=size.Height || component>=cpp) {
 					throw std::runtime_error("Index out of bounds");
 				}
 #endif
-				return data[bpp*(size.Width*y+x)+component];
+				return data[cpp*(size.Width*y+x)+component];
 			}
 
 			/// Provides access to the given component in x and y coordinates. This
 			/// function performs bounds checking only on debug mode.
 			Byte operator()(int x, int y, unsigned component=0) const {
 #ifndef NDEBUG
-				if(x<0 || y<0 || x>=size.Width || y>=size.Height || component>=bpp) {
+				if(x<0 || y<0 || x>=size.Width || y>=size.Height || component>=cpp) {
 					throw std::runtime_error("Index out of bounds");
 				}
 #endif
-				return data[bpp*(size.Width*y+x)+component];
+				return data[cpp*(size.Width*y+x)+component];
 			}
 
 			/// Provides access to the given component in x and y coordinates. This
 			/// function returns 0 if the given coordinates are out of bounds. This
 			/// function works slower than the () operator.
 			Byte Get(int x, int y, unsigned component=0) const {
-				if(x<0 || y<0 || x>=size.Width || y>=size.Height || component>=bpp) {
+				if(x<0 || y<0 || x>=size.Width || y>=size.Height || component>=cpp) {
 					return 0;
 				}
 
-				return data[bpp*(size.Width*y+x)+component];
+				return data[cpp*(size.Width*y+x)+component];
 			}
 
 			/// Returns the alpha at the given location. If the given location does not exits
@@ -1185,7 +1186,7 @@ namespace Gorgon {
 				if(alphaloc == -1)
 					return 255;
 
-				return data[bpp*(size.Width*y+x)+alphaloc];
+				return data[cpp*(size.Width*y+x)+alphaloc];
 			}
 
             /// Returns the alpha at the given location. If the given location does not exits
@@ -1198,19 +1199,19 @@ namespace Gorgon {
                 
                 switch(mode) {
                     case Graphics::ColorMode::Alpha:
-                        return {255, 255, 255, (*this)(x, y, 0)};
+                        return {255, 255, 255, Byte((*this)(x, y, 0))};
                     case Graphics::ColorMode::Grayscale_Alpha:
-                        return {(*this)(x, y, 0), (*this)(x, y, 0), (*this)(x, y, 0), (*this)(x, y, 1)};
+                        return {Byte((*this)(x, y, 0)), Byte((*this)(x, y, 0)), Byte((*this)(x, y, 0)), Byte((*this)(x, y, 1))};
                     case Graphics::ColorMode::Grayscale:
-                        return {(*this)(x, y, 0), (*this)(x, y, 0), (*this)(x, y, 0), 255};
+                        return {Byte((*this)(x, y, 0)), Byte((*this)(x, y, 0)), Byte((*this)(x, y, 0)), 255};
                     case Graphics::ColorMode::RGB:
-                        return {(*this)(x, y, 0), (*this)(x, y, 1), (*this)(x, y, 2), 255};
+                        return {Byte((*this)(x, y, 0)), Byte((*this)(x, y, 1)), Byte((*this)(x, y, 2)), 255};
                     case Graphics::ColorMode::BGR:
-                        return {(*this)(x, y, 2), (*this)(x, y, 1), (*this)(x, y, 0), 255};
+                        return {Byte((*this)(x, y, 2)), Byte((*this)(x, y, 1)), Byte((*this)(x, y, 0)), 255};
                     case Graphics::ColorMode::RGBA:
-                        return {(*this)(x, y, 0), (*this)(x, y, 1), (*this)(x, y, 2), (*this)(x, y, 3)};
+                        return {Byte((*this)(x, y, 0)), Byte((*this)(x, y, 1)), Byte((*this)(x, y, 2)), Byte((*this)(x, y, 3))};
                     case Graphics::ColorMode::BGRA:
-                        return {(*this)(x, y, 2), (*this)(x, y, 1), (*this)(x, y, 0), (*this)(x, y, 3)};
+                        return {Byte((*this)(x, y, 2)), Byte((*this)(x, y, 1)), Byte((*this)(x, y, 0)), Byte((*this)(x, y, 3))};
                     default:
                         return 0;
                 }
@@ -1289,9 +1290,9 @@ namespace Gorgon {
 				return size.Height;
 			}
 
-			/// Total size of this image in bytes
+			/// Total size of this image in number units
 			unsigned long GetTotalSize() const {
-				return size.Area()*bpp;
+				return size.Area()*cpp;
 			}
 
 			/// Returns the color mode of the image
@@ -1302,16 +1303,16 @@ namespace Gorgon {
 			/// Changes the color mode of the image. Only works if the bits/pixel 
 			/// of the target mode is the same as the original
 			void ChangeMode(Graphics::ColorMode value) {
-                if(Graphics::GetBytesPerPixel(mode) != Graphics::GetBytesPerPixel(value))
+                if(Graphics::GetChannelsPerPixel(mode) != Graphics::GetChannelsPerPixel(value))
                     throw std::runtime_error("Modes differ in number of bits/pixel");
                 
                 mode = value;
 				this->alphaloc = Graphics::HasAlpha(mode) ? Graphics::GetAlphaIndex(mode) : -1;
 			}
 
-			/// Returns the bytes occupied by a single pixel of this image
-			unsigned GetBytesPerPixel() const {
-				return bpp;
+			/// Returns the number units occupied by a single pixel of this image
+			unsigned GetChannelsPerPixel() const {
+				return cpp;
 			}
 
 			/// Returns if this image has alpha channel
@@ -1326,7 +1327,7 @@ namespace Gorgon {
 
 		protected:
 			/// Data that stores pixels of the image
-			Byte *data = nullptr;
+			T_ *data = nullptr;
 
 			/// Width of the image
 			Geometry::Size size = {0, 0};
@@ -1334,18 +1335,21 @@ namespace Gorgon {
 			/// Color mode of the image
 			Graphics::ColorMode mode = Graphics::ColorMode::Invalid;
 
-			/// Bytes per pixel information
-			unsigned bpp = 0;
+			/// Channels per pixel information
+			unsigned cpp = 0;
 
 			/// Location of the alpha channel, -1 means it does not exits
 			int alphaloc = -1;
 		};
 
 		/// Swaps two images. Should be used unqualified for ADL.
-		inline void swap(Image &l, Image &r) {
+		template <class T_>
+		inline void swap(basic_Image<T_> &l, basic_Image<T_> &r) {
 			l.Swap(r);
 		}
 
+
+		using Image = basic_Image<Byte>;
 
 	}
 }

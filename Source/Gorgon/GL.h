@@ -7,12 +7,9 @@
 #include "Geometry/Bounds.h"
 #include "Graphics/Color.h"
 #include "Utils/Logging.h"
+#include "Containers/Image.h"
 
 namespace Gorgon {
-	
-	namespace Containers {
-		class Image;
-	}
 	
 	/// This namespace contains underlying graphics library functions. These functions are presented
 	/// in a OS/Window manager generic way. However, direct access to GL functions might be necessary

@@ -393,13 +393,13 @@ namespace Gorgon { namespace Graphics {
         }
         
 		/// Returns the bytes occupied by a single pixel of this image
-		int GetBytesPerPixel() const {
+		int GetChannelsPerPixel() const {
 #ifndef NDEBUG
 			if(!data) {
 				throw std::runtime_error("Bitmap data is not set");
 			}
 #endif
-			return data->GetBytesPerPixel();
+			return data->GetChannelsPerPixel();
 		}
 
 		/// Returns the color mode of the image
@@ -613,7 +613,7 @@ namespace Gorgon { namespace Graphics {
 		void ForAllPixels(std::function<void(int, int, int)> fn) const {
 			for(int y=0; y<data->GetHeight(); y++)
 				for(int x=0; x<data->GetWidth(); x++)
-					for(int c=0; c<GetBytesPerPixel(); c++)
+					for(int c=0; c<GetChannelsPerPixel(); c++)
 						fn(x, y, c);
 		}
 
@@ -632,7 +632,7 @@ namespace Gorgon { namespace Graphics {
 		bool ForPixels(std::function<bool(int, int, int)> fn) const {
 			for(int y=0; y<data->GetHeight(); y++)
 				for(int x=0; x<data->GetWidth(); x++)
-					for(int c=0; c<GetBytesPerPixel(); c++)
+					for(int c=0; c<GetChannelsPerPixel(); c++)
 							if(!fn(x, y, c)) return false;
 
 			return true;
@@ -656,7 +656,7 @@ namespace Gorgon { namespace Graphics {
 		void ForAllValues(std::function<void(Byte&)> fn) {
 			for(int y=0; y<data->GetHeight(); y++)
 				for(int x=0; x<data->GetWidth(); x++)
-					for(int c=0; c<GetBytesPerPixel(); c++)
+					for(int c=0; c<GetChannelsPerPixel(); c++)
 						fn(this->operator()(x, y, c));
 		}
 
@@ -664,7 +664,7 @@ namespace Gorgon { namespace Graphics {
 		void ForAllValues(std::function<void(Byte)> fn) const {
 			for(int y=0; y<data->GetHeight(); y++)
 				for(int x=0; x<data->GetWidth(); x++)
-					for(int c=0; c<GetBytesPerPixel(); c++)
+					for(int c=0; c<GetChannelsPerPixel(); c++)
 						fn(this->operator()(x, y, c));
 		}
 

@@ -259,7 +259,7 @@ namespace Gorgon { namespace Graphics {
 		for(int y=0; y<data.GetHeight(); y++) {
 			for(int x=0; x<data.GetWidth(); x++) {
 				int cc = 0;
-				for(int c=0; c<(int)data.GetBytesPerPixel(); c++) {
+				for(int c=0; c<(int)data.GetChannelsPerPixel(); c++) {
 					if(c!=alpha) {
 						img(x, y, cc++) = data(x, y, c);
 					}
@@ -480,7 +480,7 @@ namespace Gorgon { namespace Graphics {
 		}
         
         //channel count
-        int C = GetBytesPerPixel();
+        int C = GetChannelsPerPixel();
         
         for(auto p : mapping) {
             auto b = p.second;
@@ -538,7 +538,7 @@ namespace Gorgon { namespace Graphics {
 		for(int y=ret.Top; y<data.GetHeight() - ret.Bottom; y++) {
 			int xx=0;
 			for(int x=ret.Left; x<data.GetWidth() - ret.Right; x++) {
-				for(int c=0; c<(int)data.GetBytesPerPixel(); c++) {
+				for(int c=0; c<(int)data.GetChannelsPerPixel(); c++) {
 					img(xx, yy, c) = data(x, y, c);
 				}
 				xx++;

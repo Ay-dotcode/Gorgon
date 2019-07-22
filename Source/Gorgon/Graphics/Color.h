@@ -44,7 +44,7 @@ namespace Gorgon { namespace Graphics {
 	};
 
 	/// Returns bytes per pixel for the given color mode
-	inline unsigned long GetBytesPerPixel(ColorMode mode) {
+	inline unsigned long GetChannelsPerPixel(ColorMode mode) {
 		switch(mode) {
 		case ColorMode::Grayscale:
 		case ColorMode::Alpha:

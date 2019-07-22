@@ -68,7 +68,7 @@ namespace Gorgon { namespace Encoding {
             output.Resize({w, h}, jpgtocolormode(cinfo));
 
 			auto data = output.RawData();
-            auto stride = w * output.GetBytesPerPixel();
+            auto stride = w * output.GetChannelsPerPixel();
             
 			while ((long)cinfo.output_scanline < h) {
 				jpeg_read_scanlines(&cinfo, (JSAMPARRAY)&data, 1);
@@ -117,7 +117,7 @@ namespace Gorgon { namespace Encoding {
 			jpeg_start_compress(&cinfo, TRUE);
 
 			auto data = input.RawData();
-            auto stride = input.GetSize().Width * input.GetBytesPerPixel();
+            auto stride = input.GetSize().Width * input.GetChannelsPerPixel();
             
             while (cinfo.next_scanline < cinfo.image_height) {
                 jpeg_write_scanlines(&cinfo, &data, 1);

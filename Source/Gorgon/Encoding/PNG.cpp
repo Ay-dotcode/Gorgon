@@ -139,18 +139,18 @@ namespace Gorgon { namespace Encoding {
 		rowbytes = (unsigned)png_get_rowbytes(png_ptr, info_ptr);
 
 		buffer.Resize(size, mode);
-		if(rowbytes<=width*buffer.GetBytesPerPixel()) {
+		if(rowbytes<=width*buffer.GetChannelsPerPixel()) {
 			for(i = 0; i < height; ++i) {
 				row_pointers[i] = buffer.RawData()+i*rowbytes;
 			}
 			png_read_image(png_ptr, row_pointers.get());
 		}
-		else if(rowbytes<width*buffer.GetBytesPerPixel()*2) {
+		else if(rowbytes<width*buffer.GetChannelsPerPixel()*2) {
 			// if rowbytes is not equal to image stride, the last row will not
 			// fit into image buffer. instead of copying all pixels, we will only copy
 			// the last row. This method will work if only the last row will be effected.
 
-			int stride=width*buffer.GetBytesPerPixel();
+			int stride=width*buffer.GetChannelsPerPixel();
 
 			for(i = 0; i < height-1; ++i) {
 				row_pointers[i] = buffer.RawData()+i*stride;
@@ -166,7 +166,7 @@ namespace Gorgon { namespace Encoding {
 		else {
 			// failsafe
 
-			int stride=width*buffer.GetBytesPerPixel();
+			int stride=width*buffer.GetChannelsPerPixel();
 
 			for(i = 0; i < height; ++i) {
 				row_pointers[i] = new Byte[rowbytes];
@@ -280,7 +280,7 @@ namespace Gorgon { namespace Encoding {
 				}
 			}
 			else {
-				int stride=buffer.GetSize().Width*buffer.GetBytesPerPixel();
+				int stride=buffer.GetSize().Width*buffer.GetChannelsPerPixel();
 				for(int i=0; i<buffer.GetSize().Height; i++) {
 					png_write_row(png_ptr, buffer.RawData()+i*stride);
 				}

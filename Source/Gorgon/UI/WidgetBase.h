@@ -18,7 +18,7 @@ namespace Gorgon { namespace UI {
         virtual ~WidgetBase() { }
         
 		/// Moves this widget to the given position.
-        void Move(int x, int y) { Move(target.X, target.Y); }
+		void Move(int x, int y) { Move({x, y}); }
         
 		/// Moves this widget to the given position.
         virtual void Move(Geometry::Point location) = 0;
@@ -26,7 +26,7 @@ namespace Gorgon { namespace UI {
 		virtual Geometry::Point GetLocation() const = 0;
 
 		/// Changes the size of the widget.
-		virtual void Resize(int w, int h) { Resize({x, y}); };
+		virtual void Resize(int w, int h) { Resize({w, h}); };
 
 		/// Changes the size of the widget.
 		virtual void Resize(Geometry::Size size) = 0;
