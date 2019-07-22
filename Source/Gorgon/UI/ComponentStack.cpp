@@ -479,6 +479,22 @@ namespace Gorgon { namespace UI {
         }
     }
     
+	void ComponentStack::FinalizeTransitions() { //untested
+		for(auto iter = transitions.begin(); iter != transitions.end();) {
+			auto c = *iter;
+
+			if(future_transitions.count(c.first.second)) {
+				removecondition(c.first.first, c.first.second);
+				addcondition(ComponentCondition::None, future_transitions[c.first.second], c.first.first);
+			}
+			else {
+				removecondition(c.first.first, c.first.second);
+				addcondition(ComponentCondition::None, c.first.second, c.first.first);
+			}
+			iter = transitions.erase(iter);
+		}
+	}
+
 	void ComponentStack::SetData(ComponentTemplate::DataEffect effect, const Graphics::Drawable &image) {
         imagedata.Add(effect, image);
         

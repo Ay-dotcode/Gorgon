@@ -74,10 +74,10 @@ int main() {
 			tm = -1;
 		}
 		else if(state && key == Keycodes::Number_1) {
-            t.SetProgress(t.GetProgressRate() - 0.1);
+            t.SetProgress(t.GetProgressRate() - 0.1f);
         }
 		else if(state && key == Keycodes::Number_2) {
-            t.SetProgress(t.GetProgressRate() + 0.1);
+            t.SetProgress(t.GetProgressRate() + 0.1f);
         }
 		return true;
 	});

@@ -24,7 +24,7 @@ namespace Gorgon { namespace CGI {
         points.push_back({});
         
                                     // To ensure thickness is corrected for strictly inside
-        Float w = settings.width / 2 + 1.0 / (S_ * 2);
+        Float w = settings.width / 2 + 1.0f / (S_ * 2);
         
         Geometry::Line<P_> prev;
 		Geometry::Pointf prevoff;

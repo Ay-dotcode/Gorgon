@@ -37,6 +37,9 @@ namespace Gorgon { namespace UI {
         /// Removes a condition and its associated components
         void RemoveCondition(ComponentCondition condition, bool transition = true)  { ReplaceCondition(condition, ComponentCondition::Always, transition); }
 
+		/// Finalizes on-going transitions immediately
+		void FinalizeTransitions();
+
         /// Sets the data for a specific data effect. This value will be cached by
         /// the stack for condition changes. This variant supports string based data.
         void SetData(ComponentTemplate::DataEffect effect, const std::string &text);

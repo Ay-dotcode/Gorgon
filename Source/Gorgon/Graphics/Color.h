@@ -112,10 +112,13 @@ namespace Gorgon { namespace Graphics {
 		RGBA(const RGBA &other, float newalpha) : R(other.R), G(other.G), B(other.B), A(Byte(255*newalpha)) {}
 
 		/// Filling constructor
-		RGBA(Byte r, Byte g, Byte b, Byte a=255) : R(r), G(g), B(b), A(a) { }
+		RGBA(Byte r, Byte g, Byte b, Byte a=255) : R(r), G(g), B(b), A(a) {}
 
 		/// Constructs a grayscale color from the given luminance
-		explicit RGBA(Byte lum, Byte a=255) : RGBA(lum, lum, lum, a) { }
+		explicit RGBA(Byte lum, Byte a=255) : RGBA(lum, lum, lum, a) {}
+
+		/// Constructs a grayscale color from the given luminance
+		explicit RGBA(int lum, int a) : RGBA(Byte(lum), Byte(lum), Byte(lum), Byte(a)) {}
 
 		/// Conversion from integer
 		constexpr RGBA(int color) : R((color>>0)&0xff), G((color>>8)&0xff), B((color>>16)&0xff), A((color>>24)&0xff) {

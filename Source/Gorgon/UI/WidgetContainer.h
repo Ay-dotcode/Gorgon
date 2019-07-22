@@ -245,7 +245,7 @@ namespace Gorgon { namespace UI {
         virtual bool disable() { return true; }
 
         /// Returns the layer that will be used to place the contained widgets.
-        virtual Layer &layer() = 0;
+        virtual Layer &getlayer() = 0;
 
 		/// This function is called when the focus is changed
 		virtual void focuschanged() { }

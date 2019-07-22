@@ -14,15 +14,34 @@ namespace Gorgon { namespace UI {
     public:
         ComponentStackWidget(const Template &temp) : stack(temp, temp.GetSize()) { }
         
-        virtual void Move(int x, int y) override;
+        virtual void Move(Geometry::Point location) override {
+			stack.Move(location);
+		}
         
-        virtual void Resize(int w, int h) override {
-            stack.Resize(w, h);
+        virtual void Resize(Geometry::Size size) override {
+            stack.Resize(size);
         }
+
+		virtual Layer &GetLayer() const {
+			return stack;
+		}
         
     protected:
         ComponentStack stack;
+
+		virtual void focused() override {
+			stack.AddCondition(ComponentCondition::Focused);
+		}
+
+		virtual void focuslost() override {
+			stack.RemoveCondition(ComponentCondition::Focused);
+		}
         
+		virtual void removed() {
+			WidgetBase::removed();
+
+			stack.FinalizeTransitions();
+		}
     };
      
     

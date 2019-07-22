@@ -9,7 +9,7 @@ namespace Gorgon { namespace UI {
 		if(!widget.addingto(*this))
 			return false;
 
-		layer().Add(widget.GetLayer());
+		getlayer().Add(widget.GetLayer());
 		widgets.Add(widget);
 
 		widgetadded(widget);
@@ -29,7 +29,7 @@ namespace Gorgon { namespace UI {
 		if(index <= focusindex)
 			focusindex++;
 
-		layer().Insert(widget.GetLayer(), index);
+		getlayer().Insert(widget.GetLayer(), index);
 		widgets.Insert(widget, index);
 
 		widgetadded(widget);
@@ -69,7 +69,7 @@ namespace Gorgon { namespace UI {
 		if(focusindex > pos - widgets.begin())
 			focusindex--;
 
-		layer().Remove(widget.GetLayer());
+		getlayer().Remove(widget.GetLayer());
 		widgets.Remove(pos);
 
 		widgetremoved(widget);
@@ -100,7 +100,7 @@ namespace Gorgon { namespace UI {
 	}
 
 	void WidgetContainer::ChangeZorder(WidgetBase &widget, int order) {
-		auto &l = layer();
+		auto &l = getlayer();
 		auto pos = l.Children.Find(widget.GetLayer());
 
 		if(pos == l.Children.end())

@@ -18,13 +18,18 @@ namespace Gorgon { namespace UI {
         virtual ~WidgetBase() { }
         
 		/// Moves this widget to the given position.
-        virtual void Move(int x, int y) = 0;
+        void Move(int x, int y) { Move(target.X, target.Y); }
         
 		/// Moves this widget to the given position.
-        void Move(Geometry::Point target) { Move(target.X, target.Y); }
-        
+        virtual void Move(Geometry::Point location) = 0;
+
+		virtual Geometry::Point GetLocation() const = 0;
+
 		/// Changes the size of the widget.
-        virtual void Resize(int w, int h) = 0;
+		virtual void Resize(int w, int h) { Resize({x, y}); };
+
+		/// Changes the size of the widget.
+		virtual void Resize(Geometry::Size size) = 0;
         
         /// Activates the widget. This might perform the action if the
         /// widget is a button, forward the focus if it is a label or
@@ -49,6 +54,7 @@ namespace Gorgon { namespace UI {
 		/// a parent.
 		WidgetContainer &GetParent() const;
 
+		/// Should return the layer that is used for this widget
 		virtual Layer &GetLayer() const = 0;
 
 		/// This function should be called whenever a key is pressed or released.

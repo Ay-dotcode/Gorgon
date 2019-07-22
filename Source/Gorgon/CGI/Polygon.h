@@ -36,7 +36,7 @@ namespace Gorgon { namespace CGI {
             std::vector<vertexinfo> xpoints;
             
             for(const auto &points : pointlist) {
-                int N = points.GetSize();
+                int N = (int)points.GetSize();
                 
                 if(N <= 1) continue;
             
@@ -176,9 +176,9 @@ namespace Gorgon { namespace CGI {
         const std::vector<Geometry::PointList<P_>> &points = *pp;
         
         
-        Float ymin = target.GetHeight()*S_ - 1;
+        Float ymin = Float(target.GetHeight()*S_ - 1);
         Float ymax = 0;
-        int xmin = target.GetWidth()*S_ - 1;
+        int xmin = Float(target.GetWidth()*S_ - 1);
         int xmax = 0;
         bool found = false;
         
@@ -196,10 +196,10 @@ namespace Gorgon { namespace CGI {
             auto xrange = std::minmax_element(p.begin(), p.end(), [](auto l, auto r) { return l.X < r.X; });
             
             if(xmin > xrange.first->X)
-                xmin = xrange.first->X;
+                xmin = (int)xrange.first->X;
             
             if(xmax < xrange.second->X)
-                xmax = xrange.second->X;
+                xmax = (int)xrange.second->X;
             
             found = true;
         }
@@ -234,8 +234,8 @@ namespace Gorgon { namespace CGI {
                     if(y != yminint) { //transfer
                         for(int x=0; x<ew; x++) {
                             if(cnts[x]) {
-                                Graphics::RGBA prevcol = target.GetRGBAAt(x+xmin, cy);
-                                Graphics::RGBA col = fill(x, cy-yminint, x + xmin, cy, prevcol);
+                                Graphics::RGBA prevcol = target.GetRGBAAt(int(x+xmin), (int)cy);
+                                Graphics::RGBA col = fill((int)x, int(cy-yminint), int(x + xmin), (int)cy, prevcol);
                                 int targeta = (int)round(a * cnts[x] * col.A);
                                 FitInto(targeta, 0, 255);
                                 
