@@ -69,6 +69,19 @@ namespace Gorgon { namespace UI {
 		/// focused widget blocks focus transfer, this function will
 		/// return false.
 		bool FocusPrevious();
+
+		/// Sets the focus to the given widget
+		bool SetFocusTo(WidgetBase &widget);
+
+		/// Removes the focus from the focused widget
+		bool RemoveFocus();
+
+		/// Returns if this container has a focused widget
+		bool HasFocusedWidget() const { return focusindex != -1; }
+
+		/// Returns the focused widget. If no widget is focused, this function
+		/// will throw.
+		WidgetBase &GetFocus() const;
         
         /// Should return whether the container is visible. Due to
         /// different container designs and capabilities, setting
@@ -201,6 +214,7 @@ namespace Gorgon { namespace UI {
 		/// operating system.
 		virtual bool CharEvent(Char c) { return distributecharevent(c); }
         
+
     protected:
         /// This container is sorted by the focus order
         Containers::Collection<WidgetBase> widgets;
@@ -233,13 +247,19 @@ namespace Gorgon { namespace UI {
         /// Returns the layer that will be used to place the contained widgets.
         virtual Layer &layer() = 0;
 
+		/// This function is called when the focus is changed
+		virtual void focuschanged() { }
+        
+		/// Performs the standard operations (tab/enter/escape)
 		bool handlestandardkey(Input::Key key);
 
+		/// Distributes the pressed key to the focused widget. If action not handled and
+		/// and handlestandard is true, this function will also perform standard action.
 		bool distributekeyevent(Input::Key key, float state, bool handlestandard);
 
+		/// Distributes a pressed character to the focused widget.
 		bool distributecharevent(Char c);
-        
-    
+
     private:
         bool isenabled       = true;
         bool tabswitch       = true;

@@ -17,10 +17,13 @@ namespace Gorgon { namespace UI {
         
         virtual ~WidgetBase() { }
         
+		/// Moves this widget to the given position.
         virtual void Move(int x, int y) = 0;
         
+		/// Moves this widget to the given position.
         void Move(Geometry::Point target) { Move(target.X, target.Y); }
         
+		/// Changes the size of the widget.
         virtual void Resize(int w, int h) = 0;
         
         /// Activates the widget. This might perform the action if the
@@ -36,6 +39,14 @@ namespace Gorgon { namespace UI {
         /// This function will not transfer the focus to another widget.
         bool Defocus();
 
+		/// Returns if this widget is focused.
+		bool IsFocused() const { return focus; }
+
+		/// Returns if this widget has a parent
+		bool HasParent() const { return parent != nullptr; }
+
+		/// Returns the parent of this widget, throws if it does not have
+		/// a parent.
 		WidgetContainer &GetParent() const;
 
 		virtual Layer &GetLayer() const = 0;
@@ -52,30 +63,32 @@ namespace Gorgon { namespace UI {
 		virtual bool addingto(WidgetContainer &) { return true; }
 
 		/// Called when this widget added to the given container
-		virtual void addedto(WidgetContainer &) { }
+		virtual void addedto(WidgetContainer &container) { parent = &container; }
 
 		/// Called before this widget is removed from its parent.
 		virtual bool removingfrom() { return true; }
 
 		/// Called after this widget is removed from its parent.
-		virtual void removed() { }
+		virtual void removed() { parent = nullptr; }
 
 		/// Should return true if the widget can be focused
         virtual bool allowfocus() const { return true; }
         
         /// This is called after the focus is transferred to this widget.
-        virtual void focused() { }
+        virtual void focused() { focus = true; }
         
         /// Should return true if the widget can loose the focus right now.
         virtual bool canloosefocus() const { return true; }
         
         /// This is called after the focus is lost.
-        virtual void focuslost() { }
+        virtual void focuslost() { focus = false; }
         
     private:
         bool visible = true;
         bool enabled = true;
         bool focus   = false;
+
+		WidgetContainer *parent = nullptr;
     };
     
     

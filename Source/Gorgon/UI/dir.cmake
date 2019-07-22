@@ -6,6 +6,7 @@ SET(Local
 	Template.h
 	Template.cpp
 	WidgetBase.h
+	WidgetBase.cpp
 	WidgetContainer.h
 	WidgetContainer.cpp
 )

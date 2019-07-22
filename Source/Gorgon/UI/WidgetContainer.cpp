@@ -110,13 +110,22 @@ namespace Gorgon { namespace UI {
 	}
 
 	bool WidgetContainer::FocusFirst() {
-		if(focused && !focused->Defocus())
+		if(focused && !focused->canloosefocus())
 			return false;
 
 		//starting from the first, try to focus widgets in order
 		focusindex = 0;
 		for(auto &w : widgets) {
-			if(w.Focus()) {
+			if(w.allowfocus()) {
+				auto prevfoc = focused;
+
+				focused = &w;
+
+				if(prevfoc)
+					prevfoc->focuslost();
+
+				w.focused();
+
 				return true;
 			}
 
@@ -129,18 +138,39 @@ namespace Gorgon { namespace UI {
 	}
 
 	bool WidgetContainer::FocusNext() {
-		if(focused && !focused->Defocus())
+		if(focused && !focused->canloosefocus())
 			return false;
 
 		for(int i=focusindex+1; i<widgets.GetSize(); i++) {
-			if(widgets[i].Focus())
+			if(widgets[i].allowfocus()) {
+				auto prevfoc = focused;
+
+				focused = &widgets[i];
+
+				if(prevfoc)
+					prevfoc->focuslost();
+
+				widgets[i].focused();
+
 				return true;
+			}
 		}
 
 		//not found, rollover
 		for(int i=0; i<focusindex; i++) {
-			if(widgets[i].Focus())
+			if(widgets[i].allowfocus()) {
+				auto prevfoc = focused;
+
+				focused = &widgets[i];
+
+				if(prevfoc)
+					prevfoc->focuslost();
+
+				widgets[i].focused();
+
+
 				return true;
+			}
 		}
 
 		//nothing is found
@@ -148,24 +178,100 @@ namespace Gorgon { namespace UI {
 	}
 
 	bool WidgetContainer::FocusPrevious() {
-		if(focused && !focused->Defocus())
+		if(focused && !focused->canloosefocus())
 			return false;
 
 		for(int i=focusindex-1; i>=0; i--) {
-			if(widgets[i].Focus())
+			if(widgets[i].allowfocus()) {
+				auto prevfoc = focused;
+
+				focused = &widgets[i];
+
+				if(prevfoc)
+					prevfoc->focuslost();
+
+				widgets[i].focused();
+
+
 				return true;
+			}
 		}
 
 		//not found, rollover
 		for(int i=widgets.GetSize()-1; i>focusindex; i--) {
-			if(widgets[i].Focus())
+			if(widgets[i].allowfocus()) {
+				auto prevfoc = focused;
+
+				focused = &widgets[i];
+
+				if(prevfoc)
+					prevfoc->focuslost();
+
+				widgets[i].focused();
+
+
 				return true;
+			}
 		}
 
 		//nothing is found
 		return false;
 	}
 
+	bool WidgetContainer::SetFocusTo(WidgetBase &widget) {
+		auto pos = widgets.Find(widget);
+
+		//not our widget
+		if(pos == widgets.end())
+			return false;
+
+		//already focused, no need to check
+		if(&widget == focused)
+			return true;
+
+		if(!widget.allowfocus())
+			return false;
+
+		if(focused && !focused->canloosefocus())
+			return false;
+
+		auto prevfoc = focused;
+
+		focusindex = pos - widgets.begin();
+		focused = &widget;
+
+		prevfoc->focuslost();
+
+		widget.focused();
+
+		return true;
+	}
+
+
+	bool WidgetContainer::RemoveFocus() {
+		if(!focused)
+			return true;
+
+		if(!focused->canloosefocus())
+			return false;
+
+		auto prevfoc = focused;
+
+		focused = nullptr;
+		focusindex = -1;
+
+		prevfoc->focuslost();
+
+		return true;
+	}
+
+
+	Gorgon::UI::WidgetBase & WidgetContainer::GetFocus() const {
+		if(!focused)
+			throw std::runtime_error("No widget is focused");
+
+		return *focused;
+	}
 
 	bool WidgetContainer::handlestandardkey(Input::Key key) {
 		namespace Keycodes = Input::Keyboard::Keycodes;
