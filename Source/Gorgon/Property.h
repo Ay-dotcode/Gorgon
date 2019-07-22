@@ -277,8 +277,8 @@ namespace Gorgon {
 	/// Object property allows the consumers of the property
 	/// to be able to access object's member functions and 
 	/// data members in a const manner
-	template<class C_, class T_, T_(C_::*Getter_)() const, void(C_::*Setter_)(const T_ &)>
-	class ObjectProperty : public Property<C_, T_, Getter_, Setter_> {
+	template<class C_, class T_, T_&(C_::*Getter_)() const, void(C_::*Setter_)(const T_ &)>
+	class ObjectProperty : public Property<C_, T_&, Getter_, Setter_> {
 	public:
 		using Type = T_;
 
@@ -292,9 +292,9 @@ namespace Gorgon {
 			return *this;
 		}
 
-		template <class AC_, T_(C_::*G_)() const, void(C_::*S_)(const T_ &)>
-		ObjectProperty &operator =(const Property<AC_, T_, G_, S_> &prop) {
-			(this->Object.*Setter_)((T_)prop);
+		template <class AC_, T_&(C_::*G_)() const, void(C_::*S_)(const T_ &)>
+		ObjectProperty &operator =(const Property<AC_, T_&, G_, S_> &prop) {
+			(this->Object.*Setter_)(dynamic_cast<T_&>(prop));
 
 			return *this;
 		}
@@ -791,7 +791,7 @@ namespace Gorgon {
     void set##name(const type &v) { variable=v; } \
     type variable;
 
-/// If property is there to call Update everytime the value is changed, this mapper can handle this situation.
+/// If property is there to call Update every time the value is changed, this mapper can handle this situation.
 /// Names the member variable as m_name. For proptype use the prefix part of the property name: Numeric for 
 /// NumericProperty
 #define PROPERTY_UPDATE(cls, proptype, type, name, def) \

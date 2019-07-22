@@ -55,7 +55,7 @@ namespace Gorgon { namespace UI {
 		WidgetContainer &GetParent() const;
 
 		/// Should return the layer that is used for this widget
-		virtual Layer &GetLayer() const = 0;
+		virtual Layer &GetLayer() = 0;
 
 		/// This function should be called whenever a key is pressed or released.
 		virtual bool KeyEvent(Input::Key, float) { return false; }

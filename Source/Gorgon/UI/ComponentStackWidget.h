@@ -22,7 +22,7 @@ namespace Gorgon { namespace UI {
             stack.Resize(size);
         }
 
-		virtual Layer &GetLayer() const {
+		virtual Layer &GetLayer() override {
 			return stack;
 		}
         
