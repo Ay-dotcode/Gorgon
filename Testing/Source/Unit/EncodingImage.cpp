@@ -16,7 +16,7 @@ bool operator ==(const Containers::Image &im1, const Containers::Image &im2) {
 
 	for(int y=0; y<im1.GetSize().Height; y++) {
 		for(int x=0; x<im1.GetSize().Width; x++) {
-			for(unsigned c=0; c<im1.GetBytesPerPixel(); c++)
+			for(unsigned c=0; c<im1.GetChannelsPerPixel(); c++)
 				if(im1({x,y}, c) != im2({x,y}, c))
 					return false;
 		}
@@ -31,7 +31,7 @@ bool similar(const Containers::Image &im1, const Containers::Image &im2, int max
 
 	for(int y=0; y<im1.GetSize().Height; y++) {
 		for(int x=0; x<im1.GetSize().Width; x++) {
-			for(unsigned c=0; c<im1.GetBytesPerPixel(); c++) {
+			for(unsigned c=0; c<im1.GetChannelsPerPixel(); c++) {
 				auto v1 = im1({x,y}, c);
 				auto v2 = im2({x,y}, c);
 				if(abs(v1-v2)>maxdif)

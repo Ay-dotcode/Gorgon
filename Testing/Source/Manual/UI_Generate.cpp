@@ -13,12 +13,12 @@ std::string helptext =
 using namespace Gorgon;
 
 int main() {
-	Application app("uitest", "UI Generator Test", helptext);
+	Application app("uitest", "UI Generator Test", helptext, 25, 0x40);
 
 	Graphics::Layer l;
     app.wind.Add(l);
 
-	Widgets::Generator gen;
+	Widgets::SimpleGenerator gen;
 
 	auto temp = gen.Button();
 

@@ -6,38 +6,54 @@
 #include "../Graphics/BlankImage.h"
 #include "../Graphics/Rectangle.h"
 
+//This should be fixed
+#ifdef LINUX
+#include <unistd.h>
+#include <wait.h>
+
+namespace Gorgon { namespace OS {
+    bool Start(const std::string &name, std::streambuf *&buf, const std::vector<std::string> &args);
+} }
+#endif
+
 namespace Gorgon { namespace Widgets { 
 
-	Generator::Generator(int fontsize /* = 12 */, std::string fontname /* = "" */) {
+	SimpleGenerator::SimpleGenerator(int fontsize, std::string fontname) {
 #ifdef WIN32
 		FontFilename = Filesystem::Join(OS::GetEnvVar("WINDIR"), "Fonts/tahoma.ttf");
 #else
-		bool found = false;
-		std::streambuf *buf;
-		OS::Start("fc-match", buf, {"-v", fontname == "" ? "sans" : fontname});
+        bool found = false;
+        
+        try {
+            std::streambuf *buf;
+            OS::Start("fc-match", buf, {"-v", fontname == "" ? "sans" : fontname});
 
-		if(buf) {
-			std::istream in(buf);
-			std::string line;
-			while(getline(in, line)) {
-				line = String::Trim(line);
-				auto name = String::Extract(line, ':', true);
-				if(name == "file") {
-					String::Extract(line, '"', true);
-					auto fname = String::Extract(line, '"', true);
-					FontFilename = fname;
-					found = true;
-					break;
-				}
-			}
-		}
+            if(buf) {
+                std::istream in(buf);
+                std::string line;
+                while(getline(in, line)) {
+                    line = String::Trim(line);
+                    auto name = String::Extract(line, ':', true);
+                    if(name == "file") {
+                        String::Extract(line, '"', true);
+                        auto fname = String::Extract(line, '"', true);
+                        fontname = fname;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+        }
+        catch(...) {
+            found = false;
+        }
 
 		if(!found)
-			FontFilename = "/usr/share/fonts/gnu-free/FreeSans.ttf";
+			fontname = "/usr/share/fonts/gnu-free/FreeSans.ttf";
 #endif
 
 		auto &regular = *new Graphics::FreeType();
-		regular.LoadFile(FontFilename, fontsize);
+		regular.LoadFile(fontname, fontsize);
 
 		RegularFont.SetGlyphRenderer(regular);
 
@@ -52,10 +68,9 @@ namespace Gorgon { namespace Widgets {
 		else {
 			regularrenderer = &regular;
 		}
-
 	}
 
-	Generator::~Generator() {
+	SimpleGenerator::~SimpleGenerator() {
 		if(regularrenderer)
 			delete regularrenderer;
 
@@ -63,56 +78,92 @@ namespace Gorgon { namespace Widgets {
 		drawables.DeleteAll();
 	}
 
-	UI::Template Generator::Button(int spacing, Geometry::Size defsize, 
-								   AreaParams normal_background, AreaParams hover_background, AreaParams down_background, 
-								   TextParams normal_text, TextParams hover_text, TextParams down_text) {
+	UI::Template SimpleGenerator::Button(Geometry::Size defsize) {
 
 		UI::Template temp;
 		temp.SetSize(defsize);
 
+        auto &bi = *new Graphics::BlankImage({Border.Width, Border.Width}, Border.Color);
+        drawables.Add(bi);
+
 		auto &bg_n = temp.AddContainer(0, UI::ComponentCondition::Always);
 		{
 			//assuming border radius = 0
-			auto &bi = *new Graphics::BlankImage({normal_background.BorderWidth, normal_background.BorderWidth}, normal_background.BorderColor);
-			auto &ci = *new Graphics::BlankImage({32, 32}, normal_background.BackgroundColor);
+			auto &ci = *new Graphics::BlankImage({32, 32}, Background.Regular);
+            drawables.Add(ci);
 
 			auto &rect = *new Graphics::RectangleProvider(bi, bi, bi, bi, ci, bi, bi, bi, bi);
-			rect.OwnProviders();
 
 			bg_n.Background.SetAnimation(rect);
 			providers.Add(rect);
-			bg_n.SetPadding(spacing);
+			bg_n.SetPadding(Spacing);
 			bg_n.AddIndex(1);
 		}
 
 		auto &txt_n = temp.AddTextholder(1, UI::ComponentCondition::Always);
 		txt_n.SetRenderer(RegularFont);
-		txt_n.SetColor(normal_text.Color);
+		txt_n.SetColor(Forecolor.Regular);
 		txt_n.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
 		txt_n.SetDataEffect(UI::ComponentTemplate::Text);
 		txt_n.SetSizing(UI::ComponentTemplate::Automatic);
 
-		auto &bg_h = temp.AddContainer(0, UI::ComponentCondition::Hover);
 		{
+            auto &bg_h = temp.AddContainer(0, UI::ComponentCondition::Hover);
+            
 			//assuming border radius = 0
-			auto &bi = *new Graphics::BlankImage({normal_background.BorderWidth, normal_background.BorderWidth}, normal_background.BorderColor);
-			auto &ci = *new Graphics::BlankImage({32, 32}, normal_background.BackgroundColor);
+            auto c = Background.Regular;
+            c.Blend(Background.Hover);
+			auto &ci = *new Graphics::BlankImage({32, 32}, c);
+            drawables.Add(ci);
 
 			auto &rect = *new Graphics::RectangleProvider(bi, bi, bi, bi, ci, bi, bi, bi, bi);
-			rect.OwnProviders();
 
 			bg_h.Background.SetAnimation(rect);
 			providers.Add(rect);
-			bg_h.SetPadding(spacing);
+			bg_h.SetPadding(Spacing);
 			bg_h.AddIndex(1);
 		}
 
-		auto &txt_h = temp.AddTextholder(1, UI::ComponentCondition::Hover);
-		txt_h.SetRenderer(RegularFont);
-		txt_h.SetColor(hover_text.Color);
-		txt_h.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
-		txt_h.SetDataEffect(UI::ComponentTemplate::Text);
-		txt_h.SetSizing(UI::ComponentTemplate::Automatic);
+		{
+            auto &txt_h = temp.AddTextholder(1, UI::ComponentCondition::Hover);
+            
+            auto c = Forecolor.Regular;
+            c.Blend(Forecolor.Hover);
+            txt_h.SetRenderer(RegularFont);
+            txt_h.SetColor(c);
+            txt_h.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+            txt_h.SetDataEffect(UI::ComponentTemplate::Text);
+            txt_h.SetSizing(UI::ComponentTemplate::Automatic);
+        }
+
+		{
+            auto &bg_h = temp.AddContainer(0, UI::ComponentCondition::Down);
+            
+			//assuming border radius = 0
+            auto c = Background.Regular;
+            c.Blend(Background.Down);
+			auto &ci = *new Graphics::BlankImage({32, 32}, c);
+            drawables.Add(ci);
+
+			auto &rect = *new Graphics::RectangleProvider(bi, bi, bi, bi, ci, bi, bi, bi, bi);
+
+			bg_h.Background.SetAnimation(rect);
+			providers.Add(rect);
+			bg_h.SetPadding(Spacing);
+			bg_h.AddIndex(1);
+		}
+
+		{
+            auto &txt_h = temp.AddTextholder(1, UI::ComponentCondition::Down);
+            
+            auto c = Forecolor.Regular;
+            c.Blend(Forecolor.Down);
+            txt_h.SetRenderer(RegularFont);
+            txt_h.SetColor(c);
+            txt_h.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+            txt_h.SetDataEffect(UI::ComponentTemplate::Text);
+            txt_h.SetSizing(UI::ComponentTemplate::Automatic);
+        }
 
 		return temp;
 	}

@@ -10,81 +10,57 @@
 namespace Gorgon { namespace Widgets {
 
 	/**
-	 * Functions in this namespace generates templates for widgets. To use this system
-	 * create a generator first, change any desired properties and call individual
-	 * generation functions such as Button. Every function allows override. This object
-	 * holds the generated images and fonts, thus, it should not be destroyed before the 
-	 * templates are destroyed.
+	 * Generators create templates for widgets. First setup a generator, then
+     * call specific generation functions.
 	 */
-	class Generator {
+    class Generator {
+    public:
+		virtual ~Generator() { }
+        
+        /// Generates a button template with the given default size.
+        virtual UI::Template Button(Geometry::Size size) = 0;
+    };
+    
+    /**
+     * This class generates very simple templates. Hover and down states are marked
+     * with simple fore and background color changes. For background, hover and down
+     * state colors are blended with the regular color. Font is shared, thus any
+     * changes to it will effect existing templates too.
+     */
+	class SimpleGenerator : public Generator {
 	public:
-		/// 
-		explicit Generator(int fontsize = 15, std::string fontname = "");
+		/// Initializes the generator
+		explicit SimpleGenerator(int fontsize = 15, std::string fontname = "");
 
-		~Generator();
+        
+		virtual ~SimpleGenerator();
 
-		/// Defines area parameters for the UI that will be generated
-		struct AreaParams {
-			/// If set and possible, the values will be ignored and automatically
-			/// generated.
-			bool            Automatic       = true;
-
-			/// Width of the area border
-			int			BorderWidth			=  2;
-
-			/// Color of the area border
-			Graphics::RGBA	BorderColor		= Graphics::Color::Charcoal;
-
-			/// Background color of the area
-			Graphics::RGBA	BackgroundColor	= {Graphics::Color::Ivory, 0.8};
-
-			/// Radius of the rounded corners, 0 to disable
-			float			BorderRadius	=  0;
-
-			/// The number of points that will be used for corner smoothing. 0 will
-			/// give a bevel edge
-			int				CornerSmoothing = 0;
-
-			/// Padding inside the area. Set -1 to automatically use standard spacing
-			int				Padding		    = -1;
-		};
-
-		/// Defines text parameters for the UI that will be generated
-		struct TextParams {
-			TextParams() = default;
-
-			explicit TextParams(Graphics::RGBA color) : Automatic(false), Color(color) { }
-			/// If set and possible, the values will be ignored and automatically.
-			/// generated.
-			bool					 Automatic	= true;
-
-			/// Renderer to be used. If left nullptr, a default will be provided.
-			Graphics::TextRenderer *Renderer	= nullptr;
-
-			/// The color to be used
-			Graphics::RGBA          Color		= Graphics::Color::Black;
-		};
-
-
-		UI::Template Button(
-			int spacing = 5,
-			Geometry::Size defsize = {100, 40},
-			AreaParams normal_background = {},
-			AreaParams hover_background  = {},
-			AreaParams down_background   = {},
-			TextParams normal_text       = {},
-			TextParams hover_text        = TextParams{Graphics::Color::Blue},
-			TextParams down_text         = {}
-		);
+		virtual UI::Template Button(
+			Geometry::Size size = {100, 40}
+		) override;
 
 		int Spacing = 5;
-		int BorderRadius = 0;
-		int CornerSmoothing = 0;
-
-		std::string FontFilename;
 
 		Graphics::StyledRenderer RegularFont;
-
+        
+        struct BorderInfo {
+            int Width             = 2;
+            Graphics::RGBA Color  = Graphics::Color::Charcoal;
+        } Border;
+        
+        struct BackgroundInfo {
+            Graphics::RGBA Regular = {Graphics::Color::Ivory, 0.8};
+            Graphics::RGBA Hover   = {Graphics::Color::White, 0.2};
+            Graphics::RGBA Down    = {Graphics::Color::Crimson, 0.2};
+            
+        } Background;
+        
+        struct ForecolorInfo {
+            Graphics::RGBA Regular = Graphics::Color::Charcoal;
+            Graphics::RGBA Hover   = Graphics::Color::Black;
+            Graphics::RGBA Down    = Graphics::Color::Black;
+        } Forecolor;
+        
 	private:
 		Graphics::GlyphRenderer *regularrenderer = nullptr;
 		Containers::Collection<Graphics::Drawable> drawables;
