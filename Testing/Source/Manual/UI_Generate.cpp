@@ -24,7 +24,7 @@ int main() {
 
 	auto temp = gen.Button();
 
-	Widgets::Button btn(temp, "Helloo", []() { std::cout<<"Hello..."<<std::endl; });
+	Widgets::Button btn(temp, "Helloo...", []() { std::cout<<"Hello..."<<std::endl; });
 
 	app.wind.Add(btn);
 

@@ -86,8 +86,9 @@ namespace Gorgon { namespace Widgets {
         auto &bi = *new Graphics::BlankImage({Border.Width, Border.Width}, Border.Color);
         drawables.Add(bi);
 
-		auto &bg_n = temp.AddContainer(0, UI::ComponentCondition::Always);
 		{
+			auto &bg_n = temp.AddContainer(0, UI::ComponentCondition::Always);
+			bg_n.SetSizing(UI::ComponentTemplate::Automatic);
 			//assuming border radius = 0
 			auto &ci = *new Graphics::BlankImage({32, 32}, Background.Regular);
             drawables.Add(ci);
@@ -100,15 +101,20 @@ namespace Gorgon { namespace Widgets {
 			bg_n.AddIndex(1);
 		}
 
-		auto &txt_n = temp.AddTextholder(1, UI::ComponentCondition::Always);
-		txt_n.SetRenderer(RegularFont);
-		txt_n.SetColor(Forecolor.Regular);
-		txt_n.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
-		txt_n.SetDataEffect(UI::ComponentTemplate::Text);
-		txt_n.SetSizing(UI::ComponentTemplate::Automatic);
+		{
+			auto &txt_n = temp.AddTextholder(1, UI::ComponentCondition::Always);
+			txt_n.SetRenderer(RegularFont);
+			txt_n.SetColor(Forecolor.Regular);
+			txt_n.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+			txt_n.SetDataEffect(UI::ComponentTemplate::Text);
+			//txt_n.SetClip(true);
+			txt_n.SetSize(100, 100, UI::Dimension::Percent);
+			txt_n.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+		}
 
 		{
             auto &bg_h = temp.AddContainer(0, UI::ComponentCondition::Hover);
+			bg_h.SetSizing(UI::ComponentTemplate::Automatic);
             
 			//assuming border radius = 0
             auto c = Background.Regular;
@@ -133,11 +139,14 @@ namespace Gorgon { namespace Widgets {
             txt_h.SetColor(c);
             txt_h.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
             txt_h.SetDataEffect(UI::ComponentTemplate::Text);
-            txt_h.SetSizing(UI::ComponentTemplate::Automatic);
-        }
+			txt_h.SetClip(true);
+			txt_h.SetSize(100, 100, UI::Dimension::Percent);
+			txt_h.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
+		}
 
 		{
-            auto &bg_h = temp.AddContainer(0, UI::ComponentCondition::Down);
+			auto &bg_d = temp.AddContainer(0, UI::ComponentCondition::Down);
+			bg_d.SetSizing(UI::ComponentTemplate::Automatic);
             
 			//assuming border radius = 0
             auto c = Background.Regular;
@@ -147,23 +156,32 @@ namespace Gorgon { namespace Widgets {
 
 			auto &rect = *new Graphics::RectangleProvider(bi, bi, bi, bi, ci, bi, bi, bi, bi);
 
-			bg_h.Background.SetAnimation(rect);
+			bg_d.Background.SetAnimation(rect);
 			providers.Add(rect);
-			bg_h.SetPadding(Spacing);
-			bg_h.AddIndex(1);
+			bg_d.SetPadding(Spacing);
+			bg_d.AddIndex(1);
 		}
 
 		{
-            auto &txt_h = temp.AddTextholder(1, UI::ComponentCondition::Down);
+            auto &txt_d = temp.AddTextholder(1, UI::ComponentCondition::Down);
             
             auto c = Forecolor.Regular;
             c.Blend(Forecolor.Down);
-            txt_h.SetRenderer(RegularFont);
-            txt_h.SetColor(c);
-            txt_h.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
-            txt_h.SetDataEffect(UI::ComponentTemplate::Text);
-            txt_h.SetSizing(UI::ComponentTemplate::Automatic);
+            txt_d.SetRenderer(RegularFont);
+            txt_d.SetColor(c);
+            txt_d.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+            txt_d.SetDataEffect(UI::ComponentTemplate::Text);
+			txt_d.SetClip(true);
+			txt_d.SetSize(100, 100, UI::Dimension::Percent);
+			txt_d.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
         }
+
+		return temp;
+	}
+
+	UI::Template SimpleGenerator::Checkbox(Geometry::Size defsize) {
+		UI::Template temp;
+		temp.SetSize(defsize);
 
 		return temp;
 	}

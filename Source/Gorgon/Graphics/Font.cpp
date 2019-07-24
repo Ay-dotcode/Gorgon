@@ -601,19 +601,21 @@ namespace Gorgon { namespace Graphics {
         
         auto y   = 0;
 		auto tot = width;
+		int maxx = 0;
 
 		internal::boundedprint(
 			*renderer, text.begin(), text.end(), tot,
 			[&](Glyph, internal::markvecit begin, internal::markvecit end, int width) {			
 				y += (int)std::round(renderer->GetLineGap() * vspace + pspace);
+				if(width > maxx)
+					maxx = width;
 			},
 			[&](Glyph prev, Glyph next) { return int(hspace + renderer->KerningDistance(prev, next).X); },
 			[&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
 			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth)
 		);
 
-        // !!! TODO pick min(width, maxX)??
-		return {width, y};
+		return {std::min(width, maxx), y};
     }
 
 	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align_override) const {

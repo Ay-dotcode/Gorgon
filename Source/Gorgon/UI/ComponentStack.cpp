@@ -137,6 +137,8 @@ namespace Gorgon { namespace UI {
             
             if(temp.GetClip()) {
                 storage->layer = new Graphics::Layer;
+				storage->layer->EnableClipping();
+				storage->layer->Hide();
             }
 
 			if(temp.GetType() == ComponentType::Container) {
@@ -652,6 +654,9 @@ namespace Gorgon { namespace UI {
 		updaterequired = false;
 
         base.Clear();
+		for(auto &s : storage) 
+			if(s.second->layer)
+				s.second->layer->Hide();
         
 		//draw everything
 		render(get(0), base, {0,0});
@@ -683,6 +688,9 @@ namespace Gorgon { namespace UI {
             parent.Add(*target);
             target->Resize(comp.size);
             target->Move(comp.location);
+			if(st.layer)
+				st.layer->Show();
+
             offset -= comp.location;
         }
         else {
@@ -1768,7 +1776,7 @@ realign:
 						if(th.IsReady() && stringdata[temp.GetDataEffect()] != "") {
 							auto s = size.Width(maxsize.Width, emsize);
 
-							if(s)
+							if(s > 0)
 								comp.size = th.GetRenderer().GetSize(stringdata[temp.GetDataEffect()], s);
 							else
 								comp.size = th.GetRenderer().GetSize(stringdata[temp.GetDataEffect()]);
