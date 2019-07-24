@@ -166,6 +166,10 @@ namespace Gorgon {
 
 		SceneManager() : Window() {
 		}
+		
+		SceneManager(SceneManager &&) = default;
+        
+        SceneManager &operator =(SceneManager &&) = default;
 
         ~SceneManager() {
             scenes.Destroy();

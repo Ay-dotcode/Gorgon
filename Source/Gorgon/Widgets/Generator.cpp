@@ -20,7 +20,7 @@ namespace Gorgon { namespace Widgets {
 
 	SimpleGenerator::SimpleGenerator(int fontsize, std::string fontname) {
 #ifdef WIN32
-		FontFilename = Filesystem::Join(OS::GetEnvVar("WINDIR"), "Fonts/tahoma.ttf");
+		fontname = Filesystem::Join(OS::GetEnvVar("WINDIR"), "Fonts/tahoma.ttf");
 #else
         bool found = false;
         

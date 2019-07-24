@@ -2,6 +2,8 @@
 
 #include <Gorgon/UI/ComponentStack.h>
 #include <Gorgon/Widgets/Generator.h>
+#include <Gorgon/UI/Window.h>
+#include <Gorgon/Widgets/Button.h>
 
 std::string helptext = 
     "Key list:\n"
@@ -13,7 +15,7 @@ std::string helptext =
 using namespace Gorgon;
 
 int main() {
-	Application app("uitest", "UI Generator Test", helptext, 25, 0x40);
+	basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x40);
 
 	Graphics::Layer l;
     app.wind.Add(l);
@@ -22,17 +24,11 @@ int main() {
 
 	auto temp = gen.Button();
 
-	UI::ComponentStack st(temp, temp.GetSize());
-	app.wind.Add(st);
-	st.Move(30, 30);
-	st.SetData(UI::ComponentTemplate::Text, "Click me");
-	st.HandleMouse();
+	Widgets::Button btn(temp, "Helloo", []() { std::cout<<"Hello..."<<std::endl; });
 
+	app.wind.Add(btn);
 
-	while(true) {
-		Gorgon::NextFrame();
-		
-	}
+    app.wind.Run();
 
 	return 0;
 }

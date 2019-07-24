@@ -16,8 +16,14 @@ namespace Gorgon { namespace UI {
     */
     class WidgetContainer {
     public:
+        WidgetContainer() = default;
+        
+        WidgetContainer(WidgetContainer &&) = default;
+        
         /// Virtual destructor
         virtual ~WidgetContainer() { }
+        
+        WidgetContainer &operator=(WidgetContainer&&) = default;
 
         /// Adds the given widget to this container. Widget will 
         /// be placed to the top of the z-order, to the end of the
@@ -212,7 +218,7 @@ namespace Gorgon { namespace UI {
 		
 		/// This function should be called whenever a character is received from
 		/// operating system.
-		virtual bool CharEvent(Char c) { return distributecharevent(c); }
+		virtual bool CharacterEvent(Char c) { return distributecharevent(c); }
         
 
     protected:

@@ -533,6 +533,31 @@ namespace Gorgon { namespace UI {
 			Update();
 	}
     
+	void ComponentStack::RemoveData(ComponentTemplate::DataEffect effect) {
+		bool update = stringdata.count(effect) || imagedata.Exists(effect);
+
+		if(!update)
+			return;
+		
+		stringdata.erase(effect);
+		imagedata.Remove(effect);
+
+		bool updatereq = false;
+
+		for(int i=0; i<indices; i++) {
+			if(stacksizes[i] > 0) {
+				const ComponentTemplate &temp = get(i).GetTemplate();
+
+				if(temp.GetDataEffect() == effect) {
+					updatereq = true;
+				}
+			}
+		}
+
+		if(updatereq)
+			Update();
+	}
+
 	void ComponentStack::SetValue(float first, float second, float third, float fourth) {
 		if(targetvalue[0] == first && targetvalue[1] == second && targetvalue[2]== third && targetvalue[3] == fourth)
 			return;

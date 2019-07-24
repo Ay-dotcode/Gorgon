@@ -15,6 +15,9 @@ namespace Gorgon { namespace UI {
 	public:
 		/// should handle instantiation as well
 		explicit ComponentStack(const Template &temp, Geometry::Size size);
+        
+        ComponentStack(ComponentStack &&) = default;
+        ComponentStack &operator =(ComponentStack &&) = default;
 		
 		~ComponentStack() {
 			for(auto &p : storage) {
@@ -48,6 +51,10 @@ namespace Gorgon { namespace UI {
         /// the stack for condition changes. This variant supports image based data.
         /// Ownership of the image stays with the caller.
 		void SetData(ComponentTemplate::DataEffect effect, const Graphics::Drawable &image);
+
+		/// Removes the data associated with data effect. This will remove all data
+		/// variants together.
+		void RemoveData(ComponentTemplate::DataEffect effect);
 
 		/// Sets the value for this stack. Value of the stack can affect various
 		/// properties of components. This will set the individual channels separately.

@@ -14,6 +14,10 @@ namespace Gorgon { namespace UI {
     public:
         ComponentStackWidget(const Template &temp) : stack(temp, temp.GetSize()) { }
         
+        ComponentStackWidget(ComponentStackWidget &&) = default;
+        
+        ComponentStackWidget &operator =(ComponentStackWidget &&) = default;
+        
         virtual void Move(Geometry::Point location) override {
 			stack.Move(location);
 		}
@@ -26,7 +30,11 @@ namespace Gorgon { namespace UI {
 			return stack;
 		}
         
-    protected:
+		virtual Geometry::Point GetLocation() const override {
+			return stack.GetLocation();
+		}
+
+	protected:
         ComponentStack stack;
 
 		virtual void focused() override {
@@ -37,7 +45,7 @@ namespace Gorgon { namespace UI {
 			stack.RemoveCondition(ComponentCondition::Focused);
 		}
         
-		virtual void removed() {
+		virtual void removed() override {
 			WidgetBase::removed();
 
 			stack.FinalizeTransitions();

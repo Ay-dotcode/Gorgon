@@ -399,6 +399,8 @@ namespace Gorgon {
 		/// List of currently created windows
 		static const Containers::Collection<Window> &Windows;
 
+        /// If the mouse is moved more than this value during a mouse down/up sequence, it will not 
+        /// register as a click operation. Default is 5px.
 		static int ClickThreshold;
 
 	protected:

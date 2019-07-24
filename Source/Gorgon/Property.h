@@ -277,12 +277,12 @@ namespace Gorgon {
 	/// Object property allows the consumers of the property
 	/// to be able to access object's member functions and 
 	/// data members in a const manner
-	template<class C_, class T_, T_&(C_::*Getter_)() const, void(C_::*Setter_)(const T_ &)>
+	template<class C_, class T_, T_&(C_::*Getter_)() const, void(C_::*Setter_)(T_ &)>
 	class ObjectProperty : public Property<C_, T_&, Getter_, Setter_> {
 	public:
 		using Type = T_;
 
-		ObjectProperty(C_ *Object) : Property<C_, T_, Getter_, Setter_>(Object) 
+		ObjectProperty(C_ *Object) : Property<C_, T_&, Getter_, Setter_>(Object) 
 		{ }
 
 		template <class O_>
