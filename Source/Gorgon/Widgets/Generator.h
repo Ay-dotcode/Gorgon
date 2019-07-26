@@ -48,6 +48,11 @@ namespace Gorgon { namespace Widgets {
 		int Spacing = 5;
 
 		Graphics::StyledRenderer RegularFont;
+
+		struct FocusInfo {
+			Graphics::RGBA	Color = {Graphics::Color::Charcoal, 0.7};
+			int				Width = 1;
+		} Focus;
         
         struct BorderInfo {
             int Width             = 2;

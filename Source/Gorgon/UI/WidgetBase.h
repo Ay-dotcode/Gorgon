@@ -23,6 +23,7 @@ namespace Gorgon { namespace UI {
 		/// Moves this widget to the given position.
         virtual void Move(Geometry::Point location) = 0;
 
+		/// Returns the location of the widget
 		virtual Geometry::Point GetLocation() const = 0;
 
 		/// Changes the size of the widget.
@@ -30,6 +31,9 @@ namespace Gorgon { namespace UI {
 
 		/// Changes the size of the widget.
 		virtual void Resize(Geometry::Size size) = 0;
+
+		/// Returns the size of the widget
+		virtual Geometry::Size GetSize() const = 0;
         
         /// Activates the widget. This might perform the action if the
         /// widget is a button, forward the focus if it is a label or

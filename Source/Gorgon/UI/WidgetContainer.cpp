@@ -146,6 +146,7 @@ namespace Gorgon { namespace UI {
 				auto prevfoc = focused;
 
 				focused = &widgets[i];
+				focusindex = i;
 
 				if(prevfoc)
 					prevfoc->focuslost();
@@ -162,6 +163,7 @@ namespace Gorgon { namespace UI {
 				auto prevfoc = focused;
 
 				focused = &widgets[i];
+				focusindex = i;
 
 				if(prevfoc)
 					prevfoc->focuslost();
@@ -186,6 +188,7 @@ namespace Gorgon { namespace UI {
 				auto prevfoc = focused;
 
 				focused = &widgets[i];
+				focusindex = i;
 
 				if(prevfoc)
 					prevfoc->focuslost();
@@ -203,6 +206,7 @@ namespace Gorgon { namespace UI {
 				auto prevfoc = focused;
 
 				focused = &widgets[i];
+				focusindex = i;
 
 				if(prevfoc)
 					prevfoc->focuslost();
@@ -240,7 +244,8 @@ namespace Gorgon { namespace UI {
 		focusindex = pos - widgets.begin();
 		focused = &widget;
 
-		prevfoc->focuslost();
+		if(prevfoc)
+			prevfoc->focuslost();
 
 		widget.focused();
 

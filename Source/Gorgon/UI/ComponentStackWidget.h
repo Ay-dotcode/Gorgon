@@ -34,6 +34,10 @@ namespace Gorgon { namespace UI {
 			return stack.GetLocation();
 		}
 
+		virtual Geometry::Size GetSize() const override {
+			return stack.GetSize();
+		}
+
 	protected:
         ComponentStack stack;
 

@@ -15,6 +15,7 @@ namespace Gorgon { namespace OS {
     bool Start(const std::string &name, std::streambuf *&buf, const std::vector<std::string> &args);
 } }
 #endif
+#include "../Graphics/EmptyImage.h"
 
 namespace Gorgon { namespace Widgets { 
 
@@ -99,6 +100,7 @@ namespace Gorgon { namespace Widgets {
 			providers.Add(rect);
 			bg_n.SetPadding(Spacing);
 			bg_n.AddIndex(1);
+			bg_n.AddIndex(2);
 		}
 
 		{
@@ -128,6 +130,7 @@ namespace Gorgon { namespace Widgets {
 			providers.Add(rect);
 			bg_h.SetPadding(Spacing);
 			bg_h.AddIndex(1);
+			bg_h.AddIndex(2);
 		}
 
 		{
@@ -160,6 +163,7 @@ namespace Gorgon { namespace Widgets {
 			providers.Add(rect);
 			bg_d.SetPadding(Spacing);
 			bg_d.AddIndex(1);
+			bg_d.AddIndex(2);
 		}
 
 		{
@@ -176,12 +180,44 @@ namespace Gorgon { namespace Widgets {
 			txt_d.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
         }
 
+		{
+			auto &foc = temp.AddContainer(2, UI::ComponentCondition::Focused);
+
+			auto &ci = *new Graphics::EmptyImage();
+			drawables.Add(ci);
+
+			auto &hi = *new Graphics::Bitmap({2, Focus.Width});
+			hi.Clear();
+			for(auto i=0; i<Focus.Width; i++)
+				hi.SetRGBAAt(0, i, Focus.Color);
+			hi.Prepare();
+
+			auto &vi = *new Graphics::Bitmap({Focus.Width, 2});
+			vi.Clear();
+			for(auto i=0; i<Focus.Width; i++)
+				vi.SetRGBAAt(i, 0, Focus.Color);
+			vi.Prepare();
+
+			auto &cri = *new Graphics::BlankImage(Focus.Width, Focus.Width, Focus.Color);
+
+			auto &rect = *new Graphics::RectangleProvider(cri, hi, cri, vi, ci, vi, cri, hi, cri);
+
+			foc.Background.SetAnimation(rect);
+			providers.Add(rect);
+			foc.SetMargin(Spacing / 2);
+			foc.SetSize(100, 100, UI::Dimension::Percent);
+			foc.SetPositioning(foc.Absolute);
+			foc.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+		}
+
 		return temp;
 	}
 
 	UI::Template SimpleGenerator::Checkbox(Geometry::Size defsize) {
 		UI::Template temp;
 		temp.SetSize(defsize);
+
+
 
 		return temp;
 	}

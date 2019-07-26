@@ -28,6 +28,13 @@ int main() {
 
 	app.wind.Add(btn);
 
+	btn.Focus();
+
+	Widgets::Button btn2(temp, "Helloo...", []() { std::cout<<"Hello..."<<std::endl; });
+
+	btn2.Move({0, btn.GetSize().Height + 5});
+	app.wind.Add(btn2);
+
     app.wind.Run();
 
 	return 0;

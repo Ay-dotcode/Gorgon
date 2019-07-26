@@ -72,10 +72,34 @@ namespace Gorgon { namespace UI {
             Gorgon::Window::Resize(size);
             
             return GetSize() == size;
-        }
+		}
+
+		decltype(KeyEvent)::Token keyinit() {
+			inputtoken = KeyEvent.Register([this](Input::Key key, float amount) {
+				WidgetContainer::KeyEvent(key, amount);
+
+				return true;
+			});
+
+			return inputtoken;
+		}
+
+		decltype(KeyEvent)::Token charinit() {
+			chartoken = CharacterEvent.Register([this](Char c) {
+				WidgetContainer::CharacterEvent(c);
+
+				return true;
+			});
+
+			return chartoken;
+		}
+
 
     private:
-        bool quiting = false;
+		bool quiting = false;
+
+		decltype(KeyEvent)::Token inputtoken = keyinit(); //to initialize token after window got constructed
+		decltype(CharacterEvent)::Token chartoken = charinit(); //to initialize token after window got constructed
     };
     
 } }
