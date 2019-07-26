@@ -217,7 +217,37 @@ namespace Gorgon { namespace Widgets {
 		UI::Template temp;
 		temp.SetSize(defsize);
 
+		auto &icon = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
+		icon.ForAllPixels([&](auto x, auto y) { 
+			if(x>=ObjectBorder && x<ObjectHeight-ObjectBorder && y>=ObjectBorder && y<ObjectHeight-ObjectBorder)
+			   icon.SetRGBAAt(x, y, Background.Regular); 
+		});
 
+		Geometry::PointList<Geometry::Pointf> border = {
+			{ObjectBorder/2.f, ObjectBorder/2.f},
+			{ObjectHeight-ObjectBorder/2.f, ObjectBorder/2.f},
+			{ObjectHeight-ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
+			{ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
+			{ObjectBorder/2.f, ObjectBorder/2.f},
+		};
+		CGI::DrawLines(icon, border, ObjectBorder, CGI::SolidFill<>(Forecolor.Regular));
+
+		Geometry::PointList<Geometry::Pointf> tick ={
+			{ObjectBorder*2.f, ObjectHeight/2.f},
+			{ObjectHeight/2.f, ObjectHeight-ObjectBorder*2.f},
+			{ObjectHeight-ObjectBorder*2.f, ObjectBorder*2.f}
+		};
+		CGI::DrawLines(icon, tick, ObjectBorder, CGI::SolidFill<>(Forecolor.Regular));
+
+		icon.Prepare();
+		drawables.Add(icon);
+
+		auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always);
+		cont.AddIndex(1);
+
+		auto &t = temp.AddGraphics(1, UI::ComponentCondition::Always);
+		t.Content.SetDrawable(icon);
+		t.SetSizing(t.Automatic);
 
 		return temp;
 	}

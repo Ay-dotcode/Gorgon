@@ -15,7 +15,7 @@ std::string helptext =
 using namespace Gorgon;
 
 int main() {
-	basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x40);
+	basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
 
 	Graphics::Layer l;
     app.wind.Add(l);

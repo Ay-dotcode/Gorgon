@@ -45,7 +45,9 @@ namespace Gorgon { namespace Widgets {
 
 		virtual UI::Template Checkbox(Geometry::Size size = {100, 40}) override;
 
-		int Spacing = 5;
+		int Spacing	     = 5;
+		int ObjectHeight = 15;
+		int ObjectBorder = 2;
 
 		Graphics::StyledRenderer RegularFont;
 

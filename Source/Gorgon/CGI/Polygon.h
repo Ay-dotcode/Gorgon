@@ -229,7 +229,7 @@ namespace Gorgon { namespace CGI {
             
             float a = 1.f / (S_ * S_);
             
-            internal::findpolylinestofill(points, yminint, (int)ceil(ymax*S_), [&](float y, auto &xpoints) {
+            internal::findpolylinestofill(points, yminint, (int)ceil(ymax*S_)+1, [&](float y, auto &xpoints) {
                 if(int(cy) != int(y/S_)) {
                     if(y != yminint) { //transfer
                         for(int x=0; x<ew; x++) {
@@ -430,7 +430,7 @@ namespace Gorgon { namespace CGI {
             
             float a = 1.f / (S_ * S_);
             
-            internal::findpolylinestofill(Containers::Collection<const Geometry::PointList<P_>>({points}), yminint, (int)ceil(ymax*S_), [&](float y, auto &xpoints) {
+            internal::findpolylinestofill(Containers::Collection<const Geometry::PointList<P_>>({points}), yminint, (int)ceil(ymax*S_)+1, [&](float y, auto &xpoints) {
                 if(int(cy) != int(y/S_)) {
                     if(y != yminint) { //transfer
                         for(int x=0; x<ew; x++) {
