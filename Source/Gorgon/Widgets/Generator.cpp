@@ -217,38 +217,215 @@ namespace Gorgon { namespace Widgets {
 		UI::Template temp;
 		temp.SetSize(defsize);
 
-		auto &icon = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
-		icon.ForAllPixels([&](auto x, auto y) { 
-			if(x>=ObjectBorder && x<ObjectHeight-ObjectBorder && y>=ObjectBorder && y<ObjectHeight-ObjectBorder)
-			   icon.SetRGBAAt(x, y, Background.Regular); 
-		});
-
-		Geometry::PointList<Geometry::Pointf> border = {
-			{ObjectBorder/2.f, ObjectBorder/2.f},
-			{ObjectHeight-ObjectBorder/2.f, ObjectBorder/2.f},
-			{ObjectHeight-ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
-			{ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
-			{ObjectBorder/2.f, ObjectBorder/2.f},
-		};
-		CGI::DrawLines(icon, border, ObjectBorder, CGI::SolidFill<>(Forecolor.Regular));
-
-		Geometry::PointList<Geometry::Pointf> tick ={
-			{ObjectBorder*2.f, ObjectHeight/2.f},
-			{ObjectHeight/2.f, ObjectHeight-ObjectBorder*2.f},
-			{ObjectHeight-ObjectBorder*2.f, ObjectBorder*2.f}
-		};
-		CGI::DrawLines(icon, tick, ObjectBorder, CGI::SolidFill<>(Forecolor.Regular));
-
-		icon.Prepare();
-		drawables.Add(icon);
-
 		auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always);
 		cont.AddIndex(1);
+		cont.AddIndex(3);
+		cont.AddIndex(4);
 
-		auto &t = temp.AddGraphics(1, UI::ComponentCondition::Always);
-		t.Content.SetDrawable(icon);
-		t.SetSizing(t.Automatic);
+		auto &cont2 = temp.AddContainer(0, UI::ComponentCondition::State2);
+		cont2.AddIndex(2);
+		cont2.AddIndex(3);
+		cont2.AddIndex(4);
 
+		{
+			auto color = Forecolor.Regular;
+
+			auto &icon = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
+			auto &icon2 = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
+			icon.ForAllPixels([&](auto x, auto y) {
+				if(x>=ObjectBorder && x<ObjectHeight-ObjectBorder && y>=ObjectBorder && y<ObjectHeight-ObjectBorder)
+					icon.SetRGBAAt(x, y, Background.Regular);
+			});
+			icon2.ForAllPixels([&](auto x, auto y) {
+				if(x>=ObjectBorder && x<ObjectHeight-ObjectBorder && y>=ObjectBorder && y<ObjectHeight-ObjectBorder)
+					icon2.SetRGBAAt(x, y, Background.Regular);
+			});
+
+			Geometry::PointList<Geometry::Pointf> border ={
+				{ObjectBorder/2.f, ObjectBorder/2.f},
+				{ObjectHeight-ObjectBorder/2.f, ObjectBorder/2.f},
+				{ObjectHeight-ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
+				{ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
+				{ObjectBorder/2.f, ObjectBorder/2.f},
+			};
+			CGI::DrawLines(icon, border, ObjectBorder, CGI::SolidFill<>(color));
+			CGI::DrawLines(icon2, border, ObjectBorder, CGI::SolidFill<>(color));
+
+			Geometry::PointList<Geometry::Pointf> tick ={
+				{ObjectBorder*2.f, ObjectHeight/2.f},
+				{ObjectHeight/2.f, ObjectHeight-ObjectBorder*2.f},
+				{ObjectHeight-ObjectBorder*2.f, ObjectBorder*2.f}
+			};
+			CGI::DrawLines(icon2, tick, ObjectBorder, CGI::SolidFill<>(color));
+			icon.Prepare();
+			drawables.Add(icon);
+			icon2.Prepare();
+			drawables.Add(icon2);
+
+			auto &it = temp.AddGraphics(1, UI::ComponentCondition::Always);
+			it.Content.SetDrawable(icon);
+			it.SetSizing(it.Automatic);
+			it.SetIndent(Spacing, 0, 0, 0);
+
+			auto &it2 = temp.AddGraphics(2, UI::ComponentCondition::Always);
+			it2.Content.SetDrawable(icon2);
+			it2.SetSizing(it2.Automatic);
+			it2.SetIndent(Spacing, 0, 0, 0);
+
+			auto &tt = temp.AddTextholder(3, UI::ComponentCondition::Always);
+			tt.SetRenderer(RegularFont);
+			tt.SetColor(color);
+			tt.SetMargin(Spacing, 0, 0, 0);
+			tt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+			tt.SetDataEffect(UI::ComponentTemplate::Text);
+			tt.SetClip(true);
+			tt.SetSize(100, 100, UI::Dimension::Percent);
+			tt.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
+		}
+
+		{
+			auto color = Forecolor.Regular;
+			color.Blend(Forecolor.Hover);
+
+			auto &icon = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
+			auto &icon2 = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
+			icon.ForAllPixels([&](auto x, auto y) {
+				if(x>=ObjectBorder && x<ObjectHeight-ObjectBorder && y>=ObjectBorder && y<ObjectHeight-ObjectBorder)
+					icon.SetRGBAAt(x, y, Background.Regular);
+			});
+			icon2.ForAllPixels([&](auto x, auto y) {
+				if(x>=ObjectBorder && x<ObjectHeight-ObjectBorder && y>=ObjectBorder && y<ObjectHeight-ObjectBorder)
+					icon2.SetRGBAAt(x, y, Background.Regular);
+			});
+
+			Geometry::PointList<Geometry::Pointf> border ={
+				{ObjectBorder/2.f, ObjectBorder/2.f},
+				{ObjectHeight-ObjectBorder/2.f, ObjectBorder/2.f},
+				{ObjectHeight-ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
+				{ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
+				{ObjectBorder/2.f, ObjectBorder/2.f},
+			};
+			CGI::DrawLines(icon, border, ObjectBorder, CGI::SolidFill<>(color));
+			CGI::DrawLines(icon2, border, ObjectBorder, CGI::SolidFill<>(color));
+
+			Geometry::PointList<Geometry::Pointf> tick ={
+				{ObjectBorder*2.f, ObjectHeight/2.f},
+				{ObjectHeight/2.f, ObjectHeight-ObjectBorder*2.f},
+				{ObjectHeight-ObjectBorder*2.f, ObjectBorder*2.f}
+			};
+			CGI::DrawLines(icon2, tick, ObjectBorder, CGI::SolidFill<>(color));
+			icon.Prepare();
+			drawables.Add(icon);
+			icon2.Prepare();
+			drawables.Add(icon2);
+
+			auto &it = temp.AddGraphics(1, UI::ComponentCondition::Hover);
+			it.Content.SetDrawable(icon);
+			it.SetSizing(it.Automatic);
+			it.SetIndent(Spacing, 0, 0, 0);
+
+			auto &it2 = temp.AddGraphics(2, UI::ComponentCondition::Hover);
+			it2.Content.SetDrawable(icon2);
+			it2.SetSizing(it2.Automatic);
+			it2.SetIndent(Spacing, 0, 0, 0);
+
+			auto &tt = temp.AddTextholder(3, UI::ComponentCondition::Hover);
+			tt.SetRenderer(RegularFont);
+			tt.SetColor(color);
+			tt.SetMargin(Spacing, 0, 0, 0);
+			tt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+			tt.SetDataEffect(UI::ComponentTemplate::Text);
+			tt.SetClip(true);
+			tt.SetSize(100, 100, UI::Dimension::Percent);
+			tt.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
+		}
+
+		{
+			auto color = Forecolor.Regular;
+			color.Blend(Forecolor.Down);
+
+			auto &icon = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
+			auto &icon2 = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
+			icon.ForAllPixels([&](auto x, auto y) {
+				if(x>=ObjectBorder && x<ObjectHeight-ObjectBorder && y>=ObjectBorder && y<ObjectHeight-ObjectBorder)
+					icon.SetRGBAAt(x, y, Background.Regular);
+			});
+			icon2.ForAllPixels([&](auto x, auto y) {
+				if(x>=ObjectBorder && x<ObjectHeight-ObjectBorder && y>=ObjectBorder && y<ObjectHeight-ObjectBorder)
+					icon2.SetRGBAAt(x, y, Background.Regular);
+			});
+
+			Geometry::PointList<Geometry::Pointf> border ={
+				{ObjectBorder/2.f, ObjectBorder/2.f},
+				{ObjectHeight-ObjectBorder/2.f, ObjectBorder/2.f},
+				{ObjectHeight-ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
+				{ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
+				{ObjectBorder/2.f, ObjectBorder/2.f},
+			};
+			CGI::DrawLines(icon, border, ObjectBorder, CGI::SolidFill<>(color));
+			CGI::DrawLines(icon2, border, ObjectBorder, CGI::SolidFill<>(color));
+
+			Geometry::PointList<Geometry::Pointf> tick ={
+				{ObjectBorder*2.f, ObjectHeight/2.f},
+				{ObjectHeight/2.f, ObjectHeight-ObjectBorder*2.f},
+				{ObjectHeight-ObjectBorder*2.f, ObjectBorder*2.f}
+			};
+			CGI::DrawLines(icon2, tick, ObjectBorder, CGI::SolidFill<>(color));
+			icon.Prepare();
+			drawables.Add(icon);
+			icon2.Prepare();
+			drawables.Add(icon2);
+
+			auto &it = temp.AddGraphics(1, UI::ComponentCondition::Down);
+			it.Content.SetDrawable(icon);
+			it.SetSizing(it.Automatic);
+			it.SetIndent(Spacing, 0, 0, 0);
+
+			auto &it2 = temp.AddGraphics(2, UI::ComponentCondition::Down);
+			it2.Content.SetDrawable(icon2);
+			it2.SetSizing(it2.Automatic);
+			it2.SetIndent(Spacing, 0, 0, 0);
+
+			auto &tt = temp.AddTextholder(3, UI::ComponentCondition::Down);
+			tt.SetRenderer(RegularFont);
+			tt.SetColor(color);
+			tt.SetMargin(Spacing, 0, 0, 0);
+			tt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+			tt.SetDataEffect(UI::ComponentTemplate::Text);
+			tt.SetClip(true);
+			tt.SetSize(100, 100, UI::Dimension::Percent);
+			tt.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
+		}
+
+		{
+			auto &foc = temp.AddContainer(4, UI::ComponentCondition::Focused);
+
+			auto &ci = *new Graphics::EmptyImage();
+			drawables.Add(ci);
+
+			auto &hi = *new Graphics::Bitmap({2, Focus.Width});
+			hi.Clear();
+			for(auto i=0; i<Focus.Width; i++)
+				hi.SetRGBAAt(0, i, Focus.Color);
+			hi.Prepare();
+
+			auto &vi = *new Graphics::Bitmap({Focus.Width, 2});
+			vi.Clear();
+			for(auto i=0; i<Focus.Width; i++)
+				vi.SetRGBAAt(i, 0, Focus.Color);
+			vi.Prepare();
+
+			auto &cri = *new Graphics::BlankImage(Focus.Width, Focus.Width, Focus.Color);
+
+			auto &rect = *new Graphics::RectangleProvider(cri, hi, cri, vi, ci, vi, cri, hi, cri);
+
+			foc.Background.SetAnimation(rect);
+			providers.Add(rect);
+			foc.SetMargin(Spacing / 2);
+			foc.SetSize(100, 100, UI::Dimension::Percent);
+			foc.SetPositioning(foc.Absolute);
+			foc.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+		}
 		return temp;
 	}
 

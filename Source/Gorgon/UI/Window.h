@@ -76,9 +76,7 @@ namespace Gorgon { namespace UI {
 
 		decltype(KeyEvent)::Token keyinit() {
 			inputtoken = KeyEvent.Register([this](Input::Key key, float amount) {
-				WidgetContainer::KeyEvent(key, amount);
-
-				return true;
+				return WidgetContainer::KeyEvent(key, amount);
 			});
 
 			return inputtoken;
@@ -86,9 +84,7 @@ namespace Gorgon { namespace UI {
 
 		decltype(KeyEvent)::Token charinit() {
 			chartoken = CharacterEvent.Register([this](Char c) {
-				WidgetContainer::CharacterEvent(c);
-
-				return true;
+				return WidgetContainer::CharacterEvent(c);
 			});
 
 			return chartoken;
