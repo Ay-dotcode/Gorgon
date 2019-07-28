@@ -30,7 +30,7 @@ int main() {
 
 	btn.Focus();
 
-	Widgets::Button btn2(temp, "Helloo...", []() { std::cout<<"Hello..."<<std::endl; });
+	Widgets::Button btn2(temp, "Exit", [&app]() { app.wind.Quit(); });
 
 	btn2.Move({0, btn.GetSize().Height + 5});
 	app.wind.Add(btn2);

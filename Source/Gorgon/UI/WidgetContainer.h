@@ -16,6 +16,32 @@ namespace Gorgon { namespace UI {
     */
     class WidgetContainer {
     public:
+		/// Defines focus strategy for the container. Default is Inherit
+		enum FocusStrategy {
+			/// Inherit from the parent. If this container is top level
+			/// then it will be AllowAll
+			Inherit,
+
+			/// All widgets that can be focused are allowed to receive focus, 
+			/// including buttons but not labels.
+			AllowAll,
+
+			/// Widgets that require input to work or benefit from input
+			/// greatly are allowed to receive focus. Button, listbox, and select
+			/// will loose the ability to receive focus. However, sliders and
+			/// input boxes will receive the focus
+			Selective,
+
+			/// Only the widget that will not work without input will receive
+			/// focus. This includes input boxes. This will also disable tab
+			/// switching.
+			Strict,
+
+			/// No widget is allowed focus and this container will not handle
+			/// any keys.
+			Deny
+		};
+
         WidgetContainer() = default;
         
         WidgetContainer(WidgetContainer &&) = default;
@@ -212,7 +238,26 @@ namespace Gorgon { namespace UI {
         
         /// Removes the cancel widget of this container.
         virtual void RemoveCancel() { cancel=nullptr; }
-        
+
+		/// Sets the focus strategy, see FocusStrategy
+		void SetFocusStrategy(FocusStrategy value) {
+			focusmode = value;
+		}
+
+		/// Returns the focus strategy set to this container. Do not use this to determine
+		/// current strategy, use CurrentFocusStrategy instead.
+		FocusStrategy GetFocusStrategy() const {
+			return focusmode;
+		}
+
+		/// Returns the active focus strategy. This function will not return Inherit.
+		FocusStrategy CurrentFocusStrategy() const {
+			if(focusmode == Inherit)
+				return getparentfocusstrategy();
+			else
+				return focusmode;
+		}
+
 		/// This function should be called whenever a key is pressed or released.
 		virtual bool KeyEvent(Input::Key key, float state) { return distributekeyevent(key, state, true); }
 		
@@ -250,6 +295,12 @@ namespace Gorgon { namespace UI {
         /// Return false if this container cannot be disabled.
         virtual bool disable() { return true; }
 
+		/// If this widget is not top level, return the current strategy used by the
+		/// parent. Never return Inherit from this function.
+		virtual FocusStrategy getparentfocusstrategy() const {
+			return AllowAll;
+		}
+
         /// Returns the layer that will be used to place the contained widgets.
         virtual Layer &getlayer() = 0;
 
@@ -267,12 +318,14 @@ namespace Gorgon { namespace UI {
 		bool distributecharevent(Char c);
 
     private:
-        bool isenabled       = true;
-        bool tabswitch       = true;
-        WidgetBase *def      = nullptr;
-        WidgetBase *cancel   = nullptr;
-		WidgetBase *focused  = nullptr;
-		int focusindex	     = -1;
+		bool isenabled          = true;
+		bool tabswitch          = true;
+		WidgetBase *def         = nullptr;
+		WidgetBase *cancel      = nullptr;
+		WidgetBase *focused     = nullptr;
+		int focusindex	        = -1;
+
+		FocusStrategy focusmode = Inherit;
     };
     
 } }

@@ -43,6 +43,8 @@ namespace Gorgon { namespace Widgets {
         void OwnIcon(const Graphics::Animation &value);
         
         virtual bool Activate() override;
+        
+        bool KeyEvent(Input::Key key, float state) override;
 
         TextualProperty<Button, std::string, &Button::GetText, &Button::SetText> Text;
 
@@ -53,7 +55,12 @@ namespace Gorgon { namespace Widgets {
     private:
         std::string text;
 		const Graphics::Animation *icon = nullptr;
-		bool ownicon = false;
-    };
+		bool ownicon    = false;
+        bool spacedown  = false;
+        
+	protected:
+		virtual bool allowfocus() const override;
+
+	};
     
 } }

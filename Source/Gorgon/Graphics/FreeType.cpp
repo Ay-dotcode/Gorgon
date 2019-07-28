@@ -34,8 +34,6 @@ namespace Gorgon { namespace Graphics {
         ~ftlib() {
             FT_Done_FreeType(library);
             library = nullptr;
-            
-            destroyface();
         }
         
         FT_Library library;
@@ -978,6 +976,9 @@ namespace Gorgon { namespace Graphics {
         }
         
         //destroy old images
+        for(auto &im : images) {
+            destroylist.Remove(im);
+        }
         images.Destroy();
     }
 

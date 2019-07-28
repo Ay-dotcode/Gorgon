@@ -1,4 +1,5 @@
 #include "Button.h"
+#include "../UI/WidgetContainer.h"
 
 namespace Gorgon { namespace Widgets {
    
@@ -12,8 +13,19 @@ namespace Gorgon { namespace Widgets {
 		stack.SetData(UI::ComponentTemplate::Text, text);
 		stack.HandleMouse(Input::Mouse::Button::Left);
 
-		stack.SetClickEvent([this](auto, auto, auto) {
-			ClickEvent();
+		stack.SetClickEvent([this](auto, auto, auto btn) {
+			if(btn == Input::Mouse::Button::Left)
+				ClickEvent();
+		});
+
+		stack.SetMouseDownEvent([this](auto, auto, auto btn) {
+			if(allowfocus() && btn == Input::Mouse::Button::Left)
+				Focus();
+		});
+
+		stack.SetMouseUpEvent([this](auto, auto, auto btn) {
+			if(btn == Input::Mouse::Button::Left && spacedown)
+				stack.AddCondition(UI::ComponentCondition::Down);
 		});
 	}
 
@@ -76,5 +88,40 @@ namespace Gorgon { namespace Widgets {
 		return true;
 	}
 
+	bool Button::allowfocus() const {
+		return !HasParent() || GetParent().CurrentFocusStrategy() == UI::WidgetContainer::AllowAll;
+	}
+	
+	
+    bool Button::KeyEvent(Input::Key key, float state) {
+        if(Input::Keyboard::CurrentModifier.IsModified())
+            return false;
+        
+        namespace Keycodes = Input::Keyboard::Keycodes;
+        
+        if(key == Keycodes::Enter && state == 1) {
+            ClickEvent();
+            
+            return true;
+        }
+        else if(key == Keycodes::Space) {
+            if(state == 1) {
+                spacedown = true;
+                stack.AddCondition(UI::ComponentCondition::Down);
+                
+                return true;
+            }
+            else if(spacedown) {
+                spacedown  =false;
+                stack.RemoveCondition(UI::ComponentCondition::Down);
+                ClickEvent();
+                
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
 }
 }
