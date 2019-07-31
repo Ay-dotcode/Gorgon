@@ -1,11 +1,12 @@
 #pragma once
 
 #include "../UI/ComponentStackWidget.h"
+#include "../UI/TwoStateControl.h"
 #include "../Property.h"
 
 namespace Gorgon { namespace Widgets {
 
-    class Checkbox : public UI::ComponentStackWidget {
+    class Checkbox : public UI::ComponentStackWidget, public UI::TwoStateControl {
     public:
         Checkbox(const Checkbox &) = delete;
         
@@ -38,27 +39,12 @@ namespace Gorgon { namespace Widgets {
         void SetText(const std::string &value);
 
         std::string GetText() const { return text; }
-		
-		/// Returns the state of the checkbox
-		explicit operator bool() const { return GetState(); }
-        
-        /// Returns the inverse state of the checkbox
-        bool operator !() const { return !GetState(); }
         
         /// Returns the state of the checkbox
-        bool GetState() const { return state; }
+        virtual bool GetState() const override { return state; }
         
         /// Changes the state of the checkbox
-        void SetState(bool value);
-        
-        /// Changes the state of the checkbox
-        void Check() { SetState(true); }
-        
-        /// Changes the state of the checkbox
-        void Clear() { SetState(false); }
-        
-        /// Changes the state of the checkbox
-        void Toggle() { SetState(!GetState()); }
+        virtual bool SetState(bool value, bool force = false) override;
         
         virtual bool Activate() override;
         

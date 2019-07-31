@@ -38,14 +38,16 @@ namespace Gorgon { namespace Widgets {
 		virtual ~SimpleGenerator();
 
 		virtual UI::Template Button(
-			Geometry::Size size = {100, 40}
+			Geometry::Size size = {80, 32}
 		) override;
 
 
 
-		virtual UI::Template Checkbox(Geometry::Size size = {100, 40}) override;
+		virtual UI::Template Checkbox(
+            Geometry::Size size = {100, 24}
+        ) override;
 
-		int Spacing	     = 5;
+		int Spacing      = 4;
 		int ObjectHeight = 15;
 		int ObjectBorder = 2;
 

@@ -7,8 +7,8 @@ namespace Gorgon { namespace Widgets {
     
     Checkbox::Checkbox(const UI::Template &temp, std::string text, bool state) :
         ComponentStackWidget(temp),
-        Text(this), state(state),
-        ChangedEvent(this), text(text) 
+        Text(this), ChangedEvent(this), 
+        text(text), state(state)
     {
         stack.SetData(UI::ComponentTemplate::Text, text);
         stack.HandleMouse(Input::Mouse::Button::Left);
@@ -99,8 +99,16 @@ namespace Gorgon { namespace Widgets {
         return false;
     }
     
-    void Checkbox::SetState(bool value) { 
+    bool Checkbox::SetState(bool value, bool force) { 
         if(value != state) {
+            if(!force) {
+                bool allow = true;
+                StateChangingEvent(value, allow);
+                
+                if(!allow)
+                    return false;
+            }
+            
             state = value;
             
             if(value) {
@@ -111,7 +119,11 @@ namespace Gorgon { namespace Widgets {
             }
             
             ChangedEvent();
+            
+            return true;
         }
+        else
+            return true;
     }
     
 } }

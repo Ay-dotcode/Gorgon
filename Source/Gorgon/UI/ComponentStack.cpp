@@ -114,7 +114,6 @@ namespace Gorgon { namespace UI {
 
     void ComponentStack::AddToStack(const ComponentTemplate& temp, bool reversed) {
         int ind = temp.GetIndex();
-        std::cout<<"Adding "<<ind<<std::endl;
 		
 		if(stacksizes[ind] == 0 || &get(ind).GetTemplate() != &temp) {
 			int si = stacksizes[ind];
@@ -358,7 +357,6 @@ namespace Gorgon { namespace UI {
                     
                     if(remove) {                            
                         if(j == stacksizes[i]-1) {
-                            std::cout<<"Removing "<<i<<std::endl;
                             updatereq = true;
 
 							if(temp.GetType() == ComponentType::Placeholder) {
@@ -373,7 +371,6 @@ namespace Gorgon { namespace UI {
                             stacksizes[i]--;
                         }
                         else {
-                            std::cout<<"Removing "<<i<<std::endl;
                             
                             //bubble the item to be deleted to the top of stack.
                             for(int k=j; k<stacksizes[i]-1; k++) {
@@ -623,7 +620,6 @@ namespace Gorgon { namespace UI {
 	void ComponentStack::update() {
 		if(!stacksizes[0]) return;
         
-        //std::cout<<"Updating..."<<std::endl;
 
         get(0).size = size;
         get(0).location = {0,0};
@@ -688,8 +684,10 @@ namespace Gorgon { namespace UI {
             parent.Add(*target);
             target->Resize(comp.size);
             target->Move(comp.location);
-			if(st.layer)
+			if(st.layer) {
 				st.layer->Show();
+                st.layer->Clear();
+            }
 
             offset -= comp.location;
         }
@@ -1543,7 +1541,6 @@ namespace Gorgon { namespace UI {
             if(comp.reversed)
                 v = 1 - v;
             
-            //std::cout<<v<<std::endl;
         }
         else {
             ComponentTemplate::ValueSource src = (ComponentTemplate::ValueSource)(1<<channel);

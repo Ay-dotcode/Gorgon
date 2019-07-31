@@ -421,7 +421,7 @@ namespace Gorgon { namespace Widgets {
 
 			foc.Background.SetAnimation(rect);
 			providers.Add(rect);
-			foc.SetMargin(Spacing / 2);
+			//foc.SetMargin(Spacing / 2);
 			foc.SetSize(100, 100, UI::Dimension::Percent);
 			foc.SetPositioning(foc.Absolute);
 			foc.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);

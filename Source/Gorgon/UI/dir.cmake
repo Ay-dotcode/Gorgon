@@ -5,6 +5,7 @@ SET(Local
 	ComponentStackWidget.h
 	Template.h
 	Template.cpp
+	TwoStateControl.h
 	WidgetBase.h
 	WidgetBase.cpp
 	WidgetContainer.h
