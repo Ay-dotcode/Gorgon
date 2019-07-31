@@ -1,8 +1,6 @@
 #pragma once
 
 #include "../UI/Template.h"
-#include "../CGI/Line.h"
-#include "../CGI/Polygon.h"
 #include "../Graphics/Color.h"
 #include "../Graphics/Font.h"
 
@@ -19,8 +17,10 @@ namespace Gorgon { namespace Widgets {
         
         /// Generates a button template with the given default size.
         virtual UI::Template Button(Geometry::Size size) = 0;
-
-		virtual UI::Template Checkbox(Geometry::Size size) = 0;
+        
+        virtual UI::Template Checkbox(Geometry::Size size) = 0;
+        
+        virtual UI::Template RadioButton(Geometry::Size size) = 0;
     };
     
     /**
@@ -41,12 +41,14 @@ namespace Gorgon { namespace Widgets {
 			Geometry::Size size = {80, 32}
 		) override;
 
-
-
-		virtual UI::Template Checkbox(
+        virtual UI::Template Checkbox(
             Geometry::Size size = {100, 24}
         ) override;
-
+        
+        virtual UI::Template RadioButton(
+            Geometry::Size size = {100, 24}
+        ) override;
+        
 		int Spacing      = 4;
 		int ObjectHeight = 15;
 		int ObjectBorder = 2;

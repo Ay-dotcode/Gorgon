@@ -7,4 +7,6 @@ SET(Local
 	
 	Generator.h
 	Generator.cpp
+	
+	RadioButtons.h
 )

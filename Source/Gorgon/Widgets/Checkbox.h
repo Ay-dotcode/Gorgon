@@ -14,7 +14,7 @@ namespace Gorgon { namespace Widgets {
 
         explicit Checkbox(const UI::Template &temp, std::string text = "") : Checkbox(temp, text, false) { }
 
-        Checkbox(const UI::Template &temp, const char *text) : Checkbox(temp, text, false) { }
+        Checkbox(const UI::Template &temp, const char *text) : Checkbox(temp, std::string(text), false) { }
 
         Checkbox(const UI::Template &temp, bool state) : Checkbox(temp, "", state) { }
 
@@ -24,7 +24,7 @@ namespace Gorgon { namespace Widgets {
 
         Checkbox(const UI::Template &temp, std::string text, std::function<void()> changed) : Checkbox(temp, text, false, changed) { }
 
-        Checkbox(const UI::Template &temp, const char *text, std::function<void()> changed) : Checkbox(temp, text, false, changed) { }
+        Checkbox(const UI::Template &temp, const char *text, std::function<void()> changed) : Checkbox(temp, std::string(text), false, changed) { }
 
         Checkbox(const UI::Template &temp, bool state, std::function<void()> changed) : Checkbox(temp, "", state, changed) { }
 
@@ -52,7 +52,7 @@ namespace Gorgon { namespace Widgets {
 
         TextualProperty<Checkbox, std::string, &Checkbox::GetText, &Checkbox::SetText> Text;
 
-        Event<Checkbox> ChangedEvent;
+        Event<Checkbox, bool /*state*/> ChangedEvent;
         
     private:
         std::string text;

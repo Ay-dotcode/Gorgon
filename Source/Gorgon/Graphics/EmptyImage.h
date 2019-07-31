@@ -32,12 +32,12 @@ namespace Gorgon { namespace Graphics {
         }
 
 		virtual EmptyImage &CreateAnimation(Gorgon::Animation::ControllerBase &timer) const override {
-			return const_cast<EmptyImage&>(*this);
+			return Instance();
 		}
 
 
 		virtual EmptyImage &CreateAnimation(bool create=true) const override {
-			return const_cast<EmptyImage&>(*this);
+			return Instance();
 		}
 
 		Geometry::Size GetSize() const override {

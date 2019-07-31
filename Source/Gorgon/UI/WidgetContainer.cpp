@@ -3,13 +3,16 @@
 namespace Gorgon { namespace UI {
     
 	bool WidgetContainer::Add(WidgetBase &widget) {
+		if(widgets.Find(widget) != widgets.end())
+			return true;
+
 		if(!addingwidget(widget))
 			return false;
 
 		if(!widget.addingto(*this))
 			return false;
 
-		getlayer().Add(widget.GetLayer());
+		widget.addto(getlayer());
 		widgets.Add(widget);
 
 		widgetadded(widget);
@@ -19,6 +22,13 @@ namespace Gorgon { namespace UI {
 	}
 
 	bool WidgetContainer::Insert(WidgetBase &widget, int index) {
+		if(widgets.Find(widget) != widgets.end()) {
+			ChangeFocusOrder(widget, index);
+			ChangeZorder(widget, index);
+
+			return true;
+		}
+
 		if(!addingwidget(widget))
 			return false;
 
@@ -29,7 +39,9 @@ namespace Gorgon { namespace UI {
 		if(index <= focusindex)
 			focusindex++;
 
-		getlayer().Insert(widget.GetLayer(), index);
+		widget.addto(getlayer());
+		widget.setlayerorder(getlayer(), index);
+
 		widgets.Insert(widget, index);
 
 		widgetadded(widget);
@@ -69,7 +81,7 @@ namespace Gorgon { namespace UI {
 		if(focusindex > pos - widgets.begin())
 			focusindex--;
 
-		getlayer().Remove(widget.GetLayer());
+		widget.removefrom(getlayer());
 		widgets.Remove(pos);
 
 		widgetremoved(widget);
@@ -101,12 +113,12 @@ namespace Gorgon { namespace UI {
 
 	void WidgetContainer::ChangeZorder(WidgetBase &widget, int order) {
 		auto &l = getlayer();
-		auto pos = l.Children.Find(widget.GetLayer());
+		auto pos = widgets.Find(widget);
 
-		if(pos == l.Children.end())
+		if(pos == widgets.end())
 			return;
 
-		widget.GetLayer().PlaceBefore(order);
+		widget.setlayerorder(l, order);
 	}
 
 	bool WidgetContainer::FocusFirst() {

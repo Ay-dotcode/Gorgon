@@ -30,10 +30,6 @@ namespace Gorgon { namespace UI {
             stack.Resize(size);
         }
 
-		virtual Layer &GetLayer() override {
-			return stack;
-		}
-        
 		virtual Geometry::Point GetLocation() const override {
 			return stack.GetLocation();
 		}
@@ -58,7 +54,22 @@ namespace Gorgon { namespace UI {
 
 			stack.FinalizeTransitions();
 		}
-    };
+
+		virtual void addto(Layer &layer) override {
+			layer.Add(stack);
+		}
+
+
+		virtual void removefrom(Layer &layer) override {
+			layer.Remove(stack);
+		}
+
+
+		virtual void setlayerorder(Layer &layer, int order) override {
+			stack.PlaceBefore(order);
+		}
+
+	};
      
     
 } }

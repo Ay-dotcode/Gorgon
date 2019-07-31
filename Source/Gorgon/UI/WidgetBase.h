@@ -39,6 +39,10 @@ namespace Gorgon { namespace UI {
         /// widget is a button, forward the focus if it is a label or
         /// focus if it is an input field.
         virtual bool Activate() = 0;
+
+		/// Removes the widget from its parent. Returns true if the widget
+		/// has no parent after the operation.
+		bool Remove();
         
         /// Transfers the focus to this widget. Returns true if the focus
         /// is actually transferred to this widget
@@ -58,9 +62,6 @@ namespace Gorgon { namespace UI {
 		/// a parent.
 		WidgetContainer &GetParent() const;
 
-		/// Should return the layer that is used for this widget
-		virtual Layer &GetLayer() = 0;
-
 		/// This function should be called whenever a key is pressed or released.
 		virtual bool KeyEvent(Input::Key, float) { return false; }
 
@@ -71,15 +72,24 @@ namespace Gorgon { namespace UI {
     protected:
 		/// Called when it is about to be added to the given container
 		virtual bool addingto(WidgetContainer &) { return true; }
+		
+		/// When called, widget should locate itself on to this layer.
+		virtual void addto(Layer &layer) = 0;
 
 		/// Called when this widget added to the given container
 		virtual void addedto(WidgetContainer &container) { parent = &container; }
+
+		/// When called, widget should remove itself from the given layer
+		virtual void removefrom(Layer &layer) = 0;
 
 		/// Called before this widget is removed from its parent.
 		virtual bool removingfrom() { return true; }
 
 		/// Called after this widget is removed from its parent.
 		virtual void removed() { parent = nullptr; }
+
+		/// When called, widget should reorder itself in layer hierarchy
+		virtual void setlayerorder(Layer &layer, int order) = 0;
 
 		/// Should return true if the widget can be focused
         virtual bool allowfocus() const { return true; }

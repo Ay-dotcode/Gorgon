@@ -5,6 +5,7 @@
 #include <Gorgon/UI/Window.h>
 #include <Gorgon/Widgets/Button.h>
 #include <Gorgon/Widgets/Checkbox.h>
+#include <Gorgon/Widgets/RadioButtons.h>
 #include <Gorgon/UI/RadioControl.h>
 
 std::string helptext = 
@@ -37,14 +38,16 @@ int main() {
 	btn2.Move({0, btn.GetSize().Height + 4});
 	app.wind.Add(btn2);
     
-    auto chktemp = gen.Checkbox();
+    auto radtemp = gen.RadioButton();
     
-    UI::RadioControl<> rad({
-        {0, new Widgets::Checkbox(chktemp, "Milk")},
-        {1, new Widgets::Checkbox(chktemp, "Sugar")},
-    }, 0);
-    
-    rad.PlaceIn(app.wind, {200, 4}, 4);
+    Widgets::RadioButtons<int> rad(radtemp);
+	
+	rad.Add(0, "Milk");
+	rad.Add(1, "Sugar");
+	rad.Add(2);
+
+	app.wind.Add(rad);
+	rad.Move(150, 4);
     
     rad.ChangedEvent.Register([](int val) {
         std::cout<<"Changed to "<<val<<std::endl;

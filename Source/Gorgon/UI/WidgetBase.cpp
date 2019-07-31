@@ -3,6 +3,13 @@
 
 namespace Gorgon { namespace UI {
 
+	bool WidgetBase::Remove() {
+		if(!parent)
+			return true;
+
+		return parent->Remove(*this);
+	}
+
 	bool WidgetBase::Focus() {
 		if(!parent)
 			return false;

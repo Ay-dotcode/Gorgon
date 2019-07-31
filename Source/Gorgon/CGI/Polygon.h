@@ -176,9 +176,9 @@ namespace Gorgon { namespace CGI {
         const std::vector<Geometry::PointList<P_>> &points = *pp;
         
         
-        Float ymin = Float(target.GetHeight()*S_ - 1);
+        Float ymin = int(target.GetHeight()*S_ - 1);
         Float ymax = 0;
-        int xmin = Float(target.GetWidth()*S_ - 1);
+        int xmin = int(target.GetWidth()*S_ - 1);
         int xmax = 0;
         bool found = false;
         
@@ -238,7 +238,7 @@ namespace Gorgon { namespace CGI {
                                 
                                 auto col = fill({floorf(x), floorf(cy-yminint)}, {int(x + xmin), (int)cy}, prevcol, a * cnts[x]);
                                 
-                                target.SetRGBAAt(x + xmin, cy,  col);
+                                target.SetRGBAAt(int(x + xmin), int(cy),  col);
                             }
                         }
                     }

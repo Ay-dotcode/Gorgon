@@ -118,7 +118,7 @@ namespace Gorgon { namespace Widgets {
                 stack.RemoveCondition(UI::ComponentCondition::State2);
             }
             
-            ChangedEvent();
+            ChangedEvent(state);
             
             return true;
         }

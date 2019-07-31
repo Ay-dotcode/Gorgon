@@ -29,7 +29,7 @@ namespace Gorgon { namespace UI {
      * 
      * @endcode
      */
-    template<class T_ = int>
+    template<class T_ = int, class CT_ = TwoStateControl>
     class RadioControl {
     public:
         /// Default constructor. Use filling constructor if possible.
@@ -40,7 +40,7 @@ namespace Gorgon { namespace UI {
         
         /// Filling constructor that prepares RadioControl from the start. This
         /// variant will not own its children.
-        explicit RadioControl(std::initializer_list<std::pair<const T_, TwoStateControl&>> elm, T_ current = T_()) : 
+        explicit RadioControl(std::initializer_list<std::pair<const T_, CT_&>> elm, T_ current = T_()) : 
         ChangedEvent(this),
         elements(elm), 
         current(current) 
@@ -61,7 +61,7 @@ namespace Gorgon { namespace UI {
         
         /// Filling constructor that prepares RadioControl from the start. This
         /// variant will own its children.
-        explicit RadioControl(std::initializer_list<std::pair<const T_, TwoStateControl*>> elm, T_ current = T_()) : 
+        explicit RadioControl(std::initializer_list<std::pair<const T_, CT_*>> elm, T_ current = T_()) : 
         ChangedEvent(this),
         elements(elm), 
         current(current) 
@@ -82,7 +82,7 @@ namespace Gorgon { namespace UI {
             own = true;
         }
         
-        ~RadioControl() {
+        virtual ~RadioControl() {
             if(own)
                 elements.DeleteAll();
         }
@@ -132,9 +132,10 @@ namespace Gorgon { namespace UI {
         }
         
         /// Adds the given element to this controller
-        void Add(const T_ value, TwoStateControl &control) {
-            elements.Push(value, control);
-            reverse.insert({&control, value});
+        void Add(const T_ value, CT_ &control) {
+            elements.Add(value, control);
+			reverse.insert({&control, value});
+			control.StateChangingEvent.Register(*this, &RadioControl::changing);
         }
         
         /// This function will add all widgets in this controller
@@ -176,17 +177,17 @@ namespace Gorgon { namespace UI {
         
         Event<RadioControl, T_> ChangedEvent;
         
-    private:
+    protected:
         void changing(TwoStateControl &control, bool state, bool &allow) {
             if(!state) {
                 allow = false;
             }
             else {
-                if(reverse[&control] == current)
+                if(reverse[dynamic_cast<CT_*>(&control)] == current)
                     return;
                 
                 clearall();
-                current = reverse[&control];
+                current = reverse[dynamic_cast<CT_*>(&control)];
                 
                 ChangedEvent(current);
             }
@@ -197,12 +198,15 @@ namespace Gorgon { namespace UI {
                 p.second.SetState(false, true);
             }
         }
+
+		virtual void elementadded(const T_ &index) { }
         
-        Containers::Hashmap<T_, TwoStateControl> elements;
-        std::map<TwoStateControl *, T_> reverse;
+        Containers::Hashmap<T_, CT_> elements;
+        std::map<CT_ *, T_> reverse;
         
         bool own = false;
         
         T_ current;
     };
+    
 } }
