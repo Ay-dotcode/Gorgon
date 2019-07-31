@@ -18,9 +18,13 @@ namespace Gorgon { namespace UI {
         
         ComponentStackWidget &operator =(ComponentStackWidget &&) = default;
         
+        using WidgetBase::Move;
+        
         virtual void Move(Geometry::Point location) override {
 			stack.Move(location);
 		}
+        
+        using WidgetBase::Resize;
         
         virtual void Resize(Geometry::Size size) override {
             stack.Resize(size);

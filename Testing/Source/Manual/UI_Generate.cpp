@@ -4,6 +4,7 @@
 #include <Gorgon/Widgets/Generator.h>
 #include <Gorgon/UI/Window.h>
 #include <Gorgon/Widgets/Button.h>
+#include <Gorgon/Widgets/Checkbox.h>
 
 std::string helptext = 
     "Key list:\n"
@@ -22,18 +23,24 @@ int main() {
 
 	Widgets::SimpleGenerator gen;
 
-	auto temp = gen.Button();
+	auto btntemp = gen.Button();
 
-	Widgets::Button btn(temp, "Helloo...", []() { std::cout<<"Hello..."<<std::endl; });
+	Widgets::Button btn(btntemp, "Helloo...", []() { std::cout<<"Hello..."<<std::endl; });
 
 	app.wind.Add(btn);
 
 	btn.Focus();
 
-	Widgets::Button btn2(temp, "Exit", [&app]() { app.wind.Quit(); });
+	Widgets::Button btn2(btntemp, "Exit", [&app]() { app.wind.Quit(); });
 
 	btn2.Move({0, btn.GetSize().Height + 5});
 	app.wind.Add(btn2);
+    
+    auto chktemp = gen.Checkbox();
+    
+    Widgets::Checkbox chk(chktemp, "Milk?", true, [&]() { std::cout<<(chk ? "with milk." : "without milk")<<std::endl; });
+    app.wind.Add(chk);
+    chk.Move(200, 0);
 
     app.wind.Run();
 
