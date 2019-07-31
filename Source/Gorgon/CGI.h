@@ -25,8 +25,9 @@ namespace Gorgon { namespace CGI {
             return color;
         }
         
-        Color_ operator()(float/* relx*/, float/* rely*/, float/* absx*/, float/* absy*/, Color_/* underlying*/) {
-            return color;
+        Color_ operator()(Geometry::Pointf /* relative */, Geometry::Point /* absolute */, Color_ underlying, float alpha) {
+            underlying.Blend(color, alpha);
+            return underlying;
         }
         
     private:

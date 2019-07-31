@@ -4,6 +4,7 @@
 #include <Gorgon/CGI.h>
 #include <Gorgon/CGI/Polygon.h>
 #include <Gorgon/CGI/Line.h>
+#include <Gorgon/CGI/Circle.h>
 #include <Gorgon/Time/Timer.h>
 
 
@@ -23,7 +24,7 @@ int main() {
 	Application app("generictest", "Test", helptext, zoom);
 
 	Graphics::Layer l;
-    //((Graphics::Layer&)app.wind.Children[0]).Clear();
+    ((Graphics::Layer&)app.wind.Children[0]).Clear();
     app.wind.Add(l);
     
     Graphics::Bitmap bmp(1000/zoom, 600/zoom, Graphics::ColorMode::RGBA);
@@ -76,12 +77,38 @@ int main() {
     tm.Start();
     //for(int i=0; i<100; i++)*/
     //for(auto &p : points)
-    CGI::DrawLines<1>(bmp.GetData(), points, 2, CGI::SolidFill<>(0xffffffff));
+    CGI::DrawLines<1>(bmp.GetData(), points, 2, CGI::SolidFill<>(0xa0ffffff));
     auto points2 = CGI::LinesToPolygons<1>(points[0], 2);
+    
+    CGI::Circle<1>(bmp.GetData(), {30.f, 10.f}, 7, 2, CGI::SolidFill<>(Graphics::Color::ArmyGreen));
+    
+    CGI::Circle<>(bmp.GetData(), {30.f, 30.f}, 7, 2, CGI::SolidFill<>(Graphics::Color::White));
+    
+    Geometry::PointList<> cp;
+    for(int i=0; i<21; i++) {
+        Geometry::Pointf p(37.5, 10);
+        Rotate(p, i*Gorgon::PI/10.f, {30.5f, 10.f});
+        
+        cp.Push(p);
+    }
+    
+    Geometry::PointList<> cpo;
+    for(int i=0; i<21; i++) {
+        Geometry::Pointf p(39.5, 10);
+        Rotate(p, i*Gorgon::PI/10.f, {30.5f, 10.f});
+        
+        cpo.Push(p);
+    }
+    
     
    /* std::cout<<"Draw time: "<<tm.Tick()<<std::endl;
     */
-    auto bmp2 = bmp.ZoomMultiple(zoom);
+   auto bmp2 = bmp.ZoomMultiple(zoom);
+   
+   /*CGI::DrawLines(bmp2, cp*zoom, 2, CGI::SolidFill<>(0xa0ffffff));
+   CGI::DrawLines(bmp2, cpo*zoom, 2, CGI::SolidFill<>(0xa0ffffff));*/
+   
+   
     for(auto &pts : points)
     for(auto &p : pts) {
         bmp2.SetRGBAAt(p*zoom, Graphics::Color::Red);

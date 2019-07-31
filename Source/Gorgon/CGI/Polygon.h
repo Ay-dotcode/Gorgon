@@ -235,19 +235,10 @@ namespace Gorgon { namespace CGI {
                         for(int x=0; x<ew; x++) {
                             if(cnts[x]) {
                                 Graphics::RGBA prevcol = target.GetRGBAAt(int(x+xmin), (int)cy);
-                                Graphics::RGBA col = fill((int)x, int(cy-yminint), int(x + xmin), (int)cy, prevcol);
-                                int targeta = (int)round(a * cnts[x] * col.A);
-                                FitInto(targeta, 0, 255);
                                 
-                                col.A = targeta;
+                                auto col = fill({floorf(x), floorf(cy-yminint)}, {int(x + xmin), (int)cy}, prevcol, a * cnts[x]);
                                 
-                                prevcol.Blend(col);
-                                
-                                
-                                if(cnts[x] == 0 && col.A > 0)
-                                    std::cout<<x<<std::endl;
-                                
-                                target.SetRGBAAt(x + xmin, cy,  prevcol);
+                                target.SetRGBAAt(x + xmin, cy,  col);
                             }
                         }
                     }
@@ -340,7 +331,7 @@ namespace Gorgon { namespace CGI {
                             FitInto(e, 0, target.GetWidth());
                             if(s < e) {
                                 for(int x=s; x<e; x++) {
-                                    target.SetRGBAAt(x, y, fill(x-xmin, y-ymin, x, y, target.GetRGBAAt(x, y)));
+                                    target.SetRGBAAt(x, y, fill({float(x-xmin), float(y-ymin)}, {(int)x, (int)y}, target.GetRGBAAt(x, y), 1.f));
                                 }
                             }
                             
@@ -435,20 +426,11 @@ namespace Gorgon { namespace CGI {
                     if(y != yminint) { //transfer
                         for(int x=0; x<ew; x++) {
                             if(cnts[x]) {
-                                Graphics::RGBA prevcol = target.GetRGBAAt(x+xmin, cy);
-                                Graphics::RGBA col = fill(x, cy-yminint, x + xmin, cy, prevcol);
-                                int targeta = (int)round(a * cnts[x] * col.A);
-                                FitInto(targeta, 0, 255);
+                                Graphics::RGBA prevcol = target.GetRGBAAt(int(x+xmin), (int)cy);
                                 
-                                col.A = targeta;
+                                auto col = fill({floorf(x), floorf(cy-yminint)}, {int(x + xmin), (int)cy}, prevcol, a * cnts[x]);
                                 
-                                prevcol.Blend(col);
-                                
-                                
-                                if(cnts[x] == 0 && col.A > 0)
-                                    std::cout<<x<<std::endl;
-                                
-                                target.SetRGBAAt(x + xmin, cy,  prevcol);
+                                target.SetRGBAAt(x + xmin, cy,  col);
                             }
                         }
                     }
@@ -542,7 +524,7 @@ namespace Gorgon { namespace CGI {
                             FitInto(e, 0, target.GetWidth());
                             if(s < e) {
                                 for(int x=s; x<e; x++) {
-                                    target.SetRGBAAt(x, y, fill(x-xmin, y-ymin, x, y, target.GetRGBAAt(x, y)));
+                                    target.SetRGBAAt(x, y, fill({float(x-xmin), float(y-ymin)}, {(int)x, (int)y}, target.GetRGBAAt(x, y), 1.f));
                                 }
                             }
                             
