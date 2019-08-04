@@ -51,13 +51,21 @@ namespace Gorgon { namespace Graphics {
         
         /// to be used internally.
         class GlyphDescriptor {
+            using Drawable = RectangularDrawable;
+            struct Images {
+                Images(Drawable *regular = nullptr, Drawable *withoffset = nullptr) :
+                    regular(regular), withoffset(withoffset) {}
+                Drawable *regular;
+                Drawable *withoffset;
+            };
         public:
             GlyphDescriptor() { }
             
-            GlyphDescriptor(RectangularDrawable &image, float advance, Geometry::Point offset, unsigned int ftind) :
-                image(&image), advance(advance), offset(offset), ftindex(ftind) { }
+            GlyphDescriptor(Images images, float advance, Geometry::Point offset, unsigned int ftind) :
+                images(images), advance(advance), offset(offset), ftindex(ftind) { }
             
-            RectangularDrawable *image = nullptr;
+            /// holds two bitmaps, a regular and one rendered with 0.5 pixel offset
+            Images images;
             float advance = 0;
             Geometry::Point offset = {0, 0};
             unsigned int ftindex = 0;

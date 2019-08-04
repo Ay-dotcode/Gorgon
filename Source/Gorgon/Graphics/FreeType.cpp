@@ -8,6 +8,77 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+namespace {
+    using namespace Gorgon::Graphics;
+
+    Bitmap* fill_bitmap(FT_Face face, int index, bool aa,
+                        FT_Vector *delta = nullptr, FT_Matrix *matrix = nullptr) {
+
+        if(delta || matrix)
+            FT_Set_Transform(face, matrix, delta);
+
+        auto error = FT_Load_Glyph(face, index, FT_LOAD_RENDER|(aa ? 0 : FT_LOAD_MONOCHROME));
+
+        if(error != FT_Err_Ok)
+            return nullptr;
+
+        auto slot = face->glyph;
+        auto &ftbmp = slot->bitmap;
+
+        auto &bmp = *new Bitmap(ftbmp.width, ftbmp.rows, ColorMode::Alpha);
+
+        if(ftbmp.pitch < 0) {
+            if(ftbmp.pixel_mode == FT_PIXEL_MODE_MONO) {
+                for(unsigned y=0; y<ftbmp.rows; y++) {
+                    int b = 7, B = 0; //bit, byte
+
+                    for(unsigned x=0; x<ftbmp.width; x++) {
+                        bmp(x, ftbmp.rows - y - 1, 0) = ftbmp.buffer[B + y*ftbmp.pitch]&(1<<b) ? 255 : 0;
+
+                        b--;
+                        if(b<0) {
+                            b = 7;
+                            B++;
+                        }
+                    }
+                }
+            }
+            else {
+                for(unsigned y=0; y<ftbmp.rows; y++) {
+                    for(unsigned x=0; x<ftbmp.width; x++) {
+                        bmp(x, ftbmp.rows - y - 1, 0) = ftbmp.buffer[x + y*ftbmp.pitch];
+                    }
+                }
+            }
+        }
+        else {
+            if(ftbmp.pixel_mode == FT_PIXEL_MODE_MONO) {
+                for(unsigned y=0; y<ftbmp.rows; y++) {
+                    int b = 7, B = 0; //bit, byte
+
+                    for(unsigned x=0; x<ftbmp.width; x++) {
+                        bmp(x, y, 0) = ftbmp.buffer[B + y*ftbmp.pitch]&(1<<b) ? 255 : 0;
+
+                        b--;
+                        if(b<0) {
+                            b = 7;
+                            B++;
+                        }
+                    }
+                }
+            }
+            else {
+                for(unsigned y=0; y<ftbmp.rows; y++) {
+                    for(unsigned x=0; x<ftbmp.width; x++) {
+                        bmp(x, y, 0) = ftbmp.buffer[x + y*ftbmp.pitch];
+                    }
+                }
+            }
+        }
+
+        return &bmp;
+    }
+} // end of anonymous namespace
 
 namespace Gorgon { namespace Graphics {
     
@@ -312,28 +383,29 @@ namespace Gorgon { namespace Graphics {
     bool FreeType::loadglyphs(GlyphRange range, bool prepare) const {
         if(!lib->face)
             return false;
-        
-        int done = 0;
-                    
+
         auto slot = lib->face->glyph;
 
+        int done = 0;
         for(Glyph g = range.Start; g <= range.End; g++) {
             done++; //already loaded glyphs are also counted as done
-            
+
             //we already have this glyph
             if(glyphmap.count(g)) continue;
 
             auto index = FT_Get_Char_Index(lib->face, g);
-            
+
             //check if glyph is already loaded. if so use the same
             if(ft_to_map.count(index) && glyphmap.count(ft_to_map[index])) {
                 glyphmap[g] = glyphmap[ft_to_map[index]];
                 continue;
             }
-            
-            auto error = FT_Load_Glyph(lib->face, index, FT_LOAD_RENDER|(aa ? 0 : FT_LOAD_MONOCHROME));
-            
-            if(error != FT_Err_Ok) {
+
+            auto bmp = fill_bitmap(lib->face, index, aa);
+            FT_Vector penpos = {32 /* 0.5 * 64 */, 0};
+            auto withoffset = fill_bitmap(lib->face, index, aa, &penpos);
+
+            if(!bmp || !withoffset) {
                 if(range.Count() > 1) {
                     //error, this one is not done
                     done--;
@@ -342,72 +414,23 @@ namespace Gorgon { namespace Graphics {
                 else
                     return false;
             }
-            
-            auto &ftbmp = slot->bitmap;
-            
-            auto &bmp = *new Bitmap(ftbmp.width, ftbmp.rows, ColorMode::Alpha);
-            
-            if(ftbmp.pitch < 0) {
-				if(ftbmp.pixel_mode == FT_PIXEL_MODE_MONO) {
-					for(unsigned y=0; y<ftbmp.rows; y++) {
-						int b = 7, B = 0; //bit, byte
 
-						for(unsigned x=0; x<ftbmp.width; x++) {
-							bmp(x, ftbmp.rows - y - 1, 0) = ftbmp.buffer[B + y*ftbmp.pitch]&(1<<b) ? 255 : 0;
+            destroylist.Add(*bmp);
+            destroylist.Add(*withoffset);
 
-							b--;
-							if(b<0) {
-								b = 7;
-								B++;
-							}
-						}
-					}
-				}
-				else {
-					for(unsigned y=0; y<ftbmp.rows; y++) {
-						for(unsigned x=0; x<ftbmp.width; x++) {
-							bmp(x, ftbmp.rows - y - 1, 0) = ftbmp.buffer[x + y*ftbmp.pitch];
-						}
-					}
-				}
-            }
-            else {
-				if(ftbmp.pixel_mode == FT_PIXEL_MODE_MONO) {
-					for(unsigned y=0; y<ftbmp.rows; y++) {
-						int b = 7, B = 0; //bit, byte
-
-						for(unsigned x=0; x<ftbmp.width; x++) {
-							bmp(x, y, 0) = ftbmp.buffer[B + y*ftbmp.pitch]&(1<<b) ? 255 : 0;
-
-							b--;
-							if(b<0) {
-								b = 7;
-								B++;
-							}
-						}
-					}
-				}
-				else {
-					for(unsigned y=0; y<ftbmp.rows; y++) {
-						for(unsigned x=0; x<ftbmp.width; x++) {
-							bmp(x, y, 0) = ftbmp.buffer[x + y*ftbmp.pitch];
-						}
-					}
-				}
-            }
-            
-            destroylist.Add(bmp);
-            
-            glyphmap[g] = {bmp, std::round(slot->advance.x/64.f), {(int)slot->bitmap_left, (int)-slot->bitmap_top}, (unsigned int)index};
+            glyphmap[g] = {{bmp, withoffset},
+                           std::round(slot->advance.x/64.f),
+                           {(int)slot->bitmap_left, (int)-slot->bitmap_top},
+                           (unsigned int)index};
             ft_to_map[index] = g;
-            
-            if(g < 127 && isdigit(g) && digw < bmp.GetWidth())
-                digw = bmp.GetWidth();
-            
+
+            if(g < 127 && isdigit(g) && digw < bmp->GetWidth())
+                digw = bmp->GetWidth();
+
             if(prepare)
-                bmp.Prepare();
+                bmp->Prepare();
         }
-        
+
         return done > 0;
     }
 
@@ -462,9 +485,9 @@ namespace Gorgon { namespace Graphics {
 
     Geometry::Size FreeType::GetSize(Glyph chr) const {
 		if(glyphmap.count(chr))
-			return glyphmap.at(chr).image->GetSize();
+			return glyphmap.at(chr).images.regular->GetSize();
 		else if(glyphmap.count(0) && !internal::isspace(chr) && !internal::isnewline(chr) && chr != '\t')
-			return glyphmap.at(0).image->GetSize();
+			return glyphmap.at(0).images.regular->GetSize();
 		else
 			return{0, 0};
 	}
@@ -499,11 +522,11 @@ namespace Gorgon { namespace Graphics {
     void FreeType::Render(Glyph chr, TextureTarget &target, Geometry::Pointf location, RGBAf color) const {
         if(glyphmap.count(chr)) {
             auto glyph = glyphmap.at(chr);
-            glyph.image->Draw(target, location + glyph.offset + Geometry::Pointf(0.f, (float)baseline), color);
+            glyph.images.regular->Draw(target, location + glyph.offset + Geometry::Pointf(0.f, (float)baseline), color);
         }
 		else if(glyphmap.count(0) && !internal::isspace(chr) && !internal::isnewline(chr) && chr != '\t') {
 			auto glyph = glyphmap.at(0);
-			glyph.image->Draw(target, location + glyph.offset + Geometry::Pointf(0.f, (float)baseline), color);
+			glyph.images.regular->Draw(target, location + glyph.offset + Geometry::Pointf(0.f, (float)baseline), color);
 		}
     }
     
@@ -564,15 +587,15 @@ namespace Gorgon { namespace Graphics {
 		GlyphDescriptor d;
 		int gs = int(GetHeight() / 10);
 
-		if(glyphmap.count('0') && glyphmap['0'].advance != 0 && glyphmap['0'].image != nullptr)
+		if(glyphmap.count('0') && glyphmap['0'].advance != 0 && glyphmap['0'].images.regular != nullptr)
 			d = glyphmap['0'];
-		else if(glyphmap.count('A') && glyphmap['A'].advance != 0 && glyphmap['A'].image != nullptr)
+		else if(glyphmap.count('A') && glyphmap['A'].advance != 0 && glyphmap['A'].images.regular != nullptr)
 			d = glyphmap['A'];
-		else if(glyphmap.count('_') && glyphmap['_'].advance != 0 && glyphmap['_'].image != nullptr)
+		else if(glyphmap.count('_') && glyphmap['_'].advance != 0 && glyphmap['_'].images.regular != nullptr)
 			d = glyphmap['_'];
 		
-		if(d.advance != 0 && d.image != nullptr)
-			gs = (int)std::round(d.advance - d.image->GetWidth() + glyphmap['0'].offset.X);
+		if(d.advance != 0 && d.images.regular != nullptr)
+			gs = (int)std::round(d.advance - d.images.regular->GetWidth() + glyphmap['0'].offset.X);
 
 		if(gs < 1)
 			gs = 1;
@@ -599,21 +622,21 @@ namespace Gorgon { namespace Graphics {
         std::map<const RectangularDrawable*, Bitmap*> newmapping;
         
         for(auto &g : glyphmap) {
-            if(!newmapping.count(g.second.image)) {
-                if(dynamic_cast<const Bitmap*>(g.second.image)) {
-                    auto img = dynamic_cast<const Bitmap*>(g.second.image);
+            if(!newmapping.count(g.second.images.regular)) {
+                if(dynamic_cast<const Bitmap*>(g.second.images.regular)) {
+                    auto img = dynamic_cast<const Bitmap*>(g.second.images.regular);
                     
                     newmapping[img] = new Bitmap(img->Duplicate());
                     
                     if(prepare)
                         newmapping[img]->Prepare();
                 }
-                else if(dynamic_cast<const TextureImage*>(g.second.image) && atlasdata.GetTotalSize() > 0 && 
-                        dynamic_cast<const TextureImage*>(g.second.image)->GetID() == atlas.GetID()) {
-                    auto img = dynamic_cast<const TextureImage*>(g.second.image);
+                else if(dynamic_cast<const TextureImage*>(g.second.images.regular) && atlasdata.GetTotalSize() > 0 && 
+                        dynamic_cast<const TextureImage*>(g.second.images.regular)->GetID() == atlas.GetID()) {
+                    auto img = dynamic_cast<const TextureImage*>(g.second.images.regular);
                     
                     //create a new bitmap
-                    auto bmp = new Bitmap(g.second.image->GetSize(), atlasdata.GetMode());
+                    auto bmp = new Bitmap(g.second.images.regular->GetSize(), atlasdata.GetMode());
                     
                     //copy atlas data back to it
                     auto c = img->GetCoordinates();
@@ -630,8 +653,8 @@ namespace Gorgon { namespace Graphics {
                 }
             }
             
-            if(newmapping.count(g.second.image)) {
-                font.AssumeGlyph(g.first, *newmapping[g.second.image], g.second.offset + Geometry::Pointf(0, baseline), g.second.advance);
+            if(newmapping.count(g.second.images.regular)) {
+                font.AssumeGlyph(g.first, *newmapping[g.second.images.regular], g.second.offset + Geometry::Pointf(0, baseline), g.second.advance);
             }
         }
         
@@ -646,15 +669,15 @@ namespace Gorgon { namespace Graphics {
 		GlyphDescriptor d;
 		int gs = int(GetHeight() / 10);
 
-		if(glyphmap.count('0') && glyphmap['0'].advance != 0 && glyphmap['0'].image != nullptr)
+		if(glyphmap.count('0') && glyphmap['0'].advance != 0 && glyphmap['0'].images.regular != nullptr)
 			d = glyphmap['0'];
-		else if(glyphmap.count('A') && glyphmap['A'].advance != 0 && glyphmap['A'].image != nullptr)
+		else if(glyphmap.count('A') && glyphmap['A'].advance != 0 && glyphmap['A'].images.regular != nullptr)
 			d = glyphmap['A'];
-		else if(glyphmap.count('_') && glyphmap['_'].advance != 0 && glyphmap['_'].image != nullptr)
+		else if(glyphmap.count('_') && glyphmap['_'].advance != 0 && glyphmap['_'].images.regular != nullptr)
 			d = glyphmap['_'];
 
-		if(d.advance != 0 && d.image != nullptr)
-			gs = (int)std::round(d.advance - d.image->GetWidth() + glyphmap['0'].offset.X);
+		if(d.advance != 0 && d.images.regular != nullptr)
+			gs = (int)std::round(d.advance - d.images.regular->GetWidth() + glyphmap['0'].offset.X);
 
 		if(gs < 1)
 			gs = 1;
@@ -684,17 +707,17 @@ namespace Gorgon { namespace Graphics {
 
             for(auto &g : glyphmap) {
                 // already bitmap no need to do anything
-                if(dynamic_cast<const Bitmap*>(g.second.image)) {
-                    font.AddGlyph(g.first, *g.second.image, g.second.offset + Geometry::Pointf(0, baseline), g.second.advance);
+                if(dynamic_cast<const Bitmap*>(g.second.images.regular)) {
+                    font.AddGlyph(g.first, *g.second.images.regular, g.second.offset + Geometry::Pointf(0, baseline), g.second.advance);
                 }
                 else {
                     //just to be sure
-                    auto img = dynamic_cast<const TextureImage*>(g.second.image);
+                    auto img = dynamic_cast<const TextureImage*>(g.second.images.regular);
                     
                     //if the glyph is not transformed and can be transformed
-                    if(!map.count(g.second.image) && img && img->GetID() == atlas.GetID()) {
+                    if(!map.count(g.second.images.regular) && img && img->GetID() == atlas.GetID()) {
                         //create a new bitmap
-                        auto bmp = new Bitmap(g.second.image->GetSize(), atlasdata.GetMode());
+                        auto bmp = new Bitmap(g.second.images.regular->GetSize(), atlasdata.GetMode());
                         
                         font.Adopt(*bmp);
                         
@@ -714,8 +737,8 @@ namespace Gorgon { namespace Graphics {
                         delete img;
                     }
                     
-                    if(map.count(g.second.image)) {
-                        font.AddGlyph(g.first, *map[g.second.image], g.second.offset + Geometry::Pointf(0, baseline), g.second.advance);
+                    if(map.count(g.second.images.regular)) {
+                        font.AddGlyph(g.first, *map[g.second.images.regular], g.second.offset + Geometry::Pointf(0, baseline), g.second.advance);
                     }
                 }
             }
@@ -723,7 +746,7 @@ namespace Gorgon { namespace Graphics {
         else {
             //add glpyhs
             for(auto &g : glyphmap) {
-                font.AddGlyph(g.first, *g.second.image, g.second.offset + Geometry::Pointf(0, baseline), g.second.advance);
+                font.AddGlyph(g.first, *g.second.images.regular, g.second.offset + Geometry::Pointf(0, baseline), g.second.advance);
             }
             
             //transfer ownership
@@ -780,9 +803,9 @@ namespace Gorgon { namespace Graphics {
             std::swap(used, nu);
             
             for(auto &g : glyphmap) {
-                if(g.second.image && dynamic_cast<const TextureImage*>(g.second.image)) {
+                if(g.second.images.regular && dynamic_cast<const TextureImage*>(g.second.images.regular)) {
                     //cast away constness, we need to update them as their base is modified
-                    auto im = dynamic_cast<TextureImage*>(g.second.image);
+                    auto im = dynamic_cast<TextureImage*>(g.second.images.regular);
                     auto c = im->GetCoordinates();
                         
                     int l = (int)std::round(c[0].X*ow);
@@ -820,8 +843,8 @@ namespace Gorgon { namespace Graphics {
         //collect images
         Containers::Collection<const Bitmap> images;
         for(auto &g : glyphmap) {
-            if(dynamic_cast<const Bitmap*>(g.second.image))
-                images.Add(dynamic_cast<const Bitmap*>(g.second.image));
+            if(dynamic_cast<const Bitmap*>(g.second.images.regular))
+                images.Add(dynamic_cast<const Bitmap*>(g.second.images.regular));
         }
         
         if(images.GetSize() == 0)
@@ -971,8 +994,8 @@ namespace Gorgon { namespace Graphics {
         
         //replace images
         for(auto &g : glyphmap) {
-            if(replacements.count(g.second.image))
-                g.second.image = replacements[g.second.image];
+            if(replacements.count(g.second.images.regular))
+                g.second.images.regular = replacements[g.second.images.regular];
         }
         
         //destroy old images
@@ -1008,7 +1031,7 @@ namespace Gorgon { namespace Graphics {
         atlasdata.Destroy();
         
         for(auto &g : glyphmap) {
-            auto bmp = dynamic_cast<Bitmap*>(g.second.image);
+            auto bmp = dynamic_cast<Bitmap*>(g.second.images.regular);
             
             if(bmp)
                 bmp->Discard();
