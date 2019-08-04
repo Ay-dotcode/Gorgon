@@ -33,10 +33,6 @@ namespace Gorgon { namespace Widgets {
             stack.AddCondition(UI::ComponentCondition::State2);
     }
 
-    Checkbox::Checkbox(const UI::Template &temp, std::string text, bool state, std::function<void()> changed) : Checkbox(temp, text, state) {
-        ChangedEvent.Register(changed);
-    }
-
 
     Checkbox::~Checkbox() {
     }

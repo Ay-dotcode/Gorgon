@@ -42,8 +42,8 @@ int main() {
     
     Widgets::RadioButtons<int> rad(radtemp);
 	
-	rad.Add(0, "Milk");
-	rad.Add(1, "Sugar");
+	rad.Add(0, "Americano");
+	rad.Add(1, "Latte");
 	rad.Add(2);
 
 	app.wind.Add(rad);
@@ -52,6 +52,16 @@ int main() {
     rad.ChangedEvent.Register([](int val) {
         std::cout<<"Changed to "<<val<<std::endl;
     });
+
+	auto chktemp = gen.Checkbox();
+
+	Widgets::Checkbox chk(chktemp, "Sugar", [](bool state) {
+		std::cout<<(state ? "with sugar" : "without sugar")<<std::endl;
+	});
+
+	app.wind.Add(chk);
+
+	chk.Move(rad.GetLocation() + Gorgon::Geometry::Point(0, rad.GetSize().Height + 4));
     
 
     app.wind.Run();

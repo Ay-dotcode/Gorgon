@@ -12,23 +12,36 @@ namespace Gorgon { namespace Widgets {
         
         Checkbox(Checkbox &&) = default;
 
-        explicit Checkbox(const UI::Template &temp, std::string text = "") : Checkbox(temp, text, false) { }
+		explicit Checkbox(const UI::Template &temp, std::string text = "") : Checkbox(temp, text, false) {}
 
-        Checkbox(const UI::Template &temp, const char *text) : Checkbox(temp, std::string(text), false) { }
+		Checkbox(const UI::Template &temp, const char *text) : Checkbox(temp, std::string(text), false) {}
 
-        Checkbox(const UI::Template &temp, bool state) : Checkbox(temp, "", state) { }
+		template<class F_>
+        Checkbox(const UI::Template &temp, std::function<F_> changed) : Checkbox(temp, "", false, changed) { }
 
-        Checkbox(const UI::Template &temp, std::string text, bool state);
+		template<class F_>
+        Checkbox(const UI::Template &temp, std::string text, F_ changed) : Checkbox(temp, text, false, changed) { }
 
-        Checkbox(const UI::Template &temp, std::function<void()> changed) : Checkbox(temp, "", false, changed) { }
+		template<class F_>
+        Checkbox(const UI::Template &temp, const char *text, F_ changed) : Checkbox(temp, std::string(text), false, changed) { }
 
-        Checkbox(const UI::Template &temp, std::string text, std::function<void()> changed) : Checkbox(temp, text, false, changed) { }
+		template<class F_>
+        Checkbox(const UI::Template &temp, bool state, F_ changed) : Checkbox(temp, "", state, changed) { }
 
-        Checkbox(const UI::Template &temp, const char *text, std::function<void()> changed) : Checkbox(temp, std::string(text), false, changed) { }
 
-        Checkbox(const UI::Template &temp, bool state, std::function<void()> changed) : Checkbox(temp, "", state, changed) { }
+		template<class F_>
+		Checkbox(const UI::Template &temp, std::string text, bool state, F_ changed) : Checkbox(temp, text, state) {
+			ChangedEvent.Register(changed);
+		}
 
-        Checkbox(const UI::Template &temp, std::string text, bool state, std::function<void()> changed);
+		template<class F_>
+		Checkbox(const UI::Template &temp, const char *text, bool state, F_ changed) : Checkbox(temp, std::string(text), state, changed) { }
+
+		Checkbox(const UI::Template &temp, bool state) : Checkbox(temp, "", state) {}
+
+		Checkbox(const UI::Template &temp, std::string text, bool state);
+
+		Checkbox(const UI::Template &temp, const char *text, bool state) : Checkbox(temp, std::string(text), state) { }
         
         Checkbox &operator =(Checkbox &&) = default;
         

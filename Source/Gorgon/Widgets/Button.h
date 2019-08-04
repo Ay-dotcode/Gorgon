@@ -13,9 +13,20 @@ namespace Gorgon { namespace Widgets {
 
         explicit Button(const UI::Template &temp, std::string text = "");
 
-        Button(const UI::Template &temp, std::function<void()> clickfn);
+		Button(const UI::Template &temp, const char *text) : Button(temp, std::string(text)) { }
 
-        Button(const UI::Template &temp, std::string text, std::function<void()> clickfn);
+		template<class F_>
+		Button(const UI::Template &temp, F_ clickfn) : Button(temp, "") {
+			ClickEvent.Register(clickfn);
+		}
+
+		template<class F_>
+		Button(const UI::Template &temp, std::string text, F_ clickfn) : Button(temp, text) {
+			ClickEvent.Register(clickfn);
+		}
+
+		template<class F_>
+		Button(const UI::Template &temp, const char *text, F_ clickfn) : Button(temp, std::string(text), clickfn) { }
         
         Button &operator =(Button &&) = default;
 

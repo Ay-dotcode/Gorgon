@@ -34,16 +34,39 @@ namespace Gorgon { namespace Widgets {
 			return location;
 		}
 
-
+		
 		virtual void Resize(Geometry::Size size) override {
-			//no resize
+			size.Height -= spacing * (elements.GetSize() - 1);
+
+			if(size.Height < 0)
+				size.Height = 0;
+
+			size.Height /= elements.GetSize();
+
+			for(auto p : elements) {
+				p.second.Resize(size);
+			}
+
+			PlaceIn(GetParent(), location, spacing);
 		}
 
 
 		virtual Geometry::Size GetSize() const override {
-			//needs calculation
+			int h = 0;
+			int maxw = 0;
+			for(auto p : elements) {
+				if(h != 0)
+					h += spacing;
 
-			return {0, 0};
+				auto s = p.second.GetSize();
+
+				h += s.Height;
+
+				if(s.Width > maxw)
+					maxw = s.Width;
+			}
+
+			return {maxw, h};
 		}
 
 
@@ -85,8 +108,11 @@ namespace Gorgon { namespace Widgets {
 
 
 		virtual void setlayerorder(Layer &layer, int order) override {
+			if(!HasParent()) 
+				return;
+
 			for(auto it=elements.Last(); it.IsValid(); it.Previous()) {
-				//todo
+				GetParent().ChangeZorder(it->second, order);
 			}
 		}
 

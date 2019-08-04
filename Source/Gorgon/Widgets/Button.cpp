@@ -29,17 +29,6 @@ namespace Gorgon { namespace Widgets {
 		});
 	}
 
-	Button::Button(const UI::Template & temp, std::function<void()> clickfn) : Button(temp) {
-		ClickEvent.Register(clickfn);
-	}
-
-
-
-	Button::Button(const UI::Template &temp, std::string text, std::function<void()> clickfn) : Button(temp, text) {
-		ClickEvent.Register(clickfn);
-	}
-
-
 	Button::~Button() {
 		if(ownicon)
 			delete icon;
