@@ -419,7 +419,7 @@ namespace Gorgon { namespace Graphics {
             destroylist.Add(*withoffset);
 
             glyphmap[g] = {{bmp, withoffset},
-                           std::round(slot->advance.x/64.f),
+                           slot->linearHoriAdvance/float(1<<16),
                            {(int)slot->bitmap_left, (int)-slot->bitmap_top},
                            (unsigned int)index};
             ft_to_map[index] = g;
