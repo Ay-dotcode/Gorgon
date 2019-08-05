@@ -427,8 +427,10 @@ namespace Gorgon { namespace Graphics {
             if(g < 127 && isdigit(g) && digw < bmp->GetWidth())
                 digw = bmp->GetWidth();
 
-            if(prepare)
+            if(prepare) {
                 bmp->Prepare();
+                withoffset->Prepare();
+            }
         }
 
         return done > 0;
