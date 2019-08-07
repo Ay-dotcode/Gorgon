@@ -1006,6 +1006,7 @@ namespace Gorgon {
             BottomTag,
             ExpandTag,
             ToggleTag,
+			Contents,
         };
         
         /// Some components are repeated along some axis, this property controls how they will be

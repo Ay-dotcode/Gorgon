@@ -329,7 +329,7 @@ namespace Gorgon { namespace UI {
 
 	bool WidgetContainer::distributecharevent(Char c) {
 		if(focused)
-			return focused->CharEvent(c);
+			return focused->CharacterEvent(c);
 
 		return false;
 	}

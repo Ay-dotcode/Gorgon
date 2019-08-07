@@ -11,5 +11,8 @@ SET(Local
 	Label.h
 	Label.cpp
 	
+	Panel.h
+	Panel.cpp
+	
 	RadioButtons.h
 )

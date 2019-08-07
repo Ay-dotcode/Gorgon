@@ -67,7 +67,7 @@ namespace Gorgon { namespace UI {
 
 		/// This function should be called whenever a character is received from
 		/// operating system.
-		virtual bool CharEvent(Char) { return false; }
+		virtual bool CharacterEvent(Char) { return false; }
 
     protected:
 		/// Called when it is about to be added to the given container

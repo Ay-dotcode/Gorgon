@@ -592,7 +592,7 @@ namespace Gorgon { namespace Graphics {
 			[&](Glyph) { cur.Y += (int)std::round(renderer->GetLineGap() * vspace + pspace); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
 		);
 
-		return{maxx, cur.Y};
+		return{maxx > 0 ? maxx + 1 : 0, cur.Y};
 	}
 	
     Geometry::Size StyledRenderer::GetSize(const std::string &text, int width) const {
@@ -615,7 +615,7 @@ namespace Gorgon { namespace Graphics {
 			std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth)
 		);
 
-		return {std::min(width, maxx), y};
+		return {std::min(width, maxx > 0 ? maxx + 1 : 0), y};
     }
 
 	void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align_override) const {

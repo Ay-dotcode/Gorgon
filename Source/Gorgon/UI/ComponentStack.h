@@ -273,9 +273,20 @@ namespace Gorgon { namespace UI {
         /// Translates the given coordinates to component space from 0 to 1.
         Geometry::Pointf TransformCoordinates(int ind, Geometry::Point location);
         
+		/// Returns the index of the component with the specified tag. This function may cause
+		/// update thus may take time to execute. If tag not found, this will return -1.
+		int IndexOfTag(ComponentTemplate::Tag tag);
+
         /// Returns the boundaries of the component marked with the given tag. This function may cause
         /// update thus may take time to execute.
-        Geometry::Bounds TagBounds(ComponentTemplate::Tag tag);
+		Geometry::Bounds TagBounds(ComponentTemplate::Tag tag);
+
+		/// Returns if the component at the given index has a layer.
+		bool HasLayer(int ind) const;
+
+		/// Returns the layer of the given component index. If the item does not have a layer, this function
+		/// will create a new one for it.
+		Graphics::Layer &GetLayerOf(int ind);
         
         /// Returns the boundaries of the component with the given index.
         Geometry::Bounds BoundsOf(int ind);

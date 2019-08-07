@@ -1204,7 +1204,31 @@ namespace Gorgon { namespace UI {
         return {comp->location, comp->size};
     }
 
-    Geometry::Bounds ComponentStack::BoundsOf(int ind) {
+	bool ComponentStack::HasLayer(int ind) const {
+		if(stacksizes[ind] == 0)
+			return false;
+
+		try {
+			return storage.at(&get(ind).GetTemplate())->layer != nullptr;
+		}
+		catch(...) {
+			return false;
+		}
+	}
+
+	Graphics::Layer &ComponentStack::GetLayerOf(int ind) {
+		if(stacksizes[ind] == 0)
+			throw std::runtime_error("Index does not exist");
+
+		if(storage[&get(ind).GetTemplate()]->layer == nullptr) {
+			storage[&get(ind).GetTemplate()]->layer = new Graphics::Layer;
+			update();
+		}
+
+		return *storage[&get(ind).GetTemplate()]->layer;
+	}
+
+	Geometry::Bounds ComponentStack::BoundsOf(int ind) {
         if(stacksizes[ind] == 0)
             return {0, 0, 0, 0};
         
@@ -1275,7 +1299,16 @@ namespace Gorgon { namespace UI {
         return TransformCoordinates(ind, location);
     }
 
-    std::array<float, 4> ComponentStack::CoordinateToValue(ComponentTemplate::Tag tag, Geometry::Point location) {
+	int ComponentStack::IndexOfTag(ComponentTemplate::Tag tag) {
+		Component *comp  = gettag(tag);
+
+		if(!comp)
+			return -1;
+
+		return comp->GetTemplate().GetIndex();
+	}
+
+	std::array<float, 4> ComponentStack::CoordinateToValue(ComponentTemplate::Tag tag, Geometry::Point location) {
         Component *comp  = gettag(tag);
         
         if(!comp)
