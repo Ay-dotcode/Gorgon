@@ -1,5 +1,6 @@
 #include "Button.h"
 #include "../UI/WidgetContainer.h"
+#include "../Graphics/Bitmap.h"
 
 namespace Gorgon { namespace Widgets {
    
@@ -70,7 +71,11 @@ namespace Gorgon { namespace Widgets {
 
 		ownicon = true;
 	}
-
+	
+	void Button::OwnIcon(Graphics::Bitmap &&value) {
+        OwnIcon(*new Graphics::Bitmap(std::move(value)));
+    }
+    
 	bool Button::Activate() {
 		ClickEvent();
 

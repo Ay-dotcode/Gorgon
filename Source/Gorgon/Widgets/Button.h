@@ -3,6 +3,8 @@
 #include "../UI/ComponentStackWidget.h"
 #include "../Property.h"
 
+namespace Gorgon { namespace Graphics { class Bitmap; } }
+
 namespace Gorgon { namespace Widgets {
 
     class Button : public UI::ComponentStackWidget {
@@ -52,6 +54,8 @@ namespace Gorgon { namespace Widgets {
         void OwnIcon();
 
         void OwnIcon(const Graphics::Animation &value);
+        
+        void OwnIcon(Graphics::Bitmap &&value);
         
         virtual bool Activate() override;
         

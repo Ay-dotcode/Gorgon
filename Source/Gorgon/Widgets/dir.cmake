@@ -8,5 +8,8 @@ SET(Local
 	Generator.h
 	Generator.cpp
 	
+	Label.h
+	Label.cpp
+	
 	RadioButtons.h
 )

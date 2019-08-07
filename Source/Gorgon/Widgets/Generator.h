@@ -21,6 +21,8 @@ namespace Gorgon { namespace Widgets {
         virtual UI::Template Checkbox(Geometry::Size size) = 0;
         
         virtual UI::Template RadioButton(Geometry::Size size) = 0;
+        
+        virtual UI::Template Label(Geometry::Size size) = 0;
     };
     
     /**
@@ -32,7 +34,7 @@ namespace Gorgon { namespace Widgets {
 	class SimpleGenerator : public Generator {
 	public:
 		/// Initializes the generator
-		explicit SimpleGenerator(int fontsize = 15, std::string fontname = "");
+		explicit SimpleGenerator(int fontsize = 14, std::string fontname = "");
 
         
 		virtual ~SimpleGenerator();
@@ -42,11 +44,15 @@ namespace Gorgon { namespace Widgets {
 		) override;
 
         virtual UI::Template Checkbox(
-            Geometry::Size size = {100, 24}
+            Geometry::Size size = {150, 24}
         ) override;
         
         virtual UI::Template RadioButton(
-            Geometry::Size size = {100, 24}
+            Geometry::Size size = {150, 24}
+        ) override;
+        
+        virtual UI::Template Label(
+            Geometry::Size size = {150, 24}
         ) override;
         
 		int Spacing      = 4;

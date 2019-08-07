@@ -6,6 +6,7 @@
 #include <Gorgon/Widgets/Button.h>
 #include <Gorgon/Widgets/Checkbox.h>
 #include <Gorgon/Widgets/RadioButtons.h>
+#include <Gorgon/Widgets/Label.h>
 #include <Gorgon/UI/RadioControl.h>
 
 std::string helptext = 
@@ -16,6 +17,12 @@ std::string helptext =
 ;
 
 using namespace Gorgon;
+
+Graphics::Bitmap &prep(Graphics::Bitmap &bmp) {
+    bmp.Prepare();
+    
+    return bmp;
+}
 
 int main() {
 	basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
@@ -39,6 +46,7 @@ int main() {
 	app.wind.Add(btn2);
     
     auto radtemp = gen.RadioButton();
+    std::cout<<"Height: "<<gen.RegularFont.GetGlyphRenderer().GetSize('A').Height<<std::endl;
     
     Widgets::RadioButtons<int> rad(radtemp);
 	
@@ -62,6 +70,15 @@ int main() {
 	app.wind.Add(chk);
 
 	chk.Move(rad.GetLocation() + Gorgon::Geometry::Point(0, rad.GetSize().Height + 4));
+    
+    auto lbltemp = gen.Label();
+    
+    Widgets::Label lbl(lbltemp, "This is a label");
+    
+    app.wind.Add(lbl);
+    
+    lbl.Move(chk.GetLocation() + Gorgon::Geometry::Point(0, chk.GetSize().Height + 4));
+    lbl.OwnIcon(prep(*new Graphics::Bitmap(Triangle(8, 8))));
     
 
     app.wind.Run();

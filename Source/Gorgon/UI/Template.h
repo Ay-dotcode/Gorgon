@@ -508,8 +508,61 @@ namespace Gorgon {
         
         /// This widget is the cancel widget of its container
         Cancel,
-
-
+        
+        /// Do not use this value
+        DataEffectStart = Cancel,
+        
+        /// Data effect of the component is set
+        TextIsSet,
+        
+        /// Data effect of the component is set
+        TitleIsSet,
+        
+        /// Data effect of the component is set
+        LabelIsSet,
+        
+        /// Data effect of the component is set
+        ValueText1IsSet,
+        
+        /// Data effect of the component is set
+        ValueText2IsSet,
+        
+        /// Data effect of the component is set
+        ValueText3IsSet,
+        
+        /// Data effect of the component is set
+        ValueText4IsSet,
+        
+        /// Data effect of the component is set
+        State1TextIsSet,
+        
+        /// Data effect of the component is set
+        State2TextIsSet,
+        
+        /// Data effect of the component is set
+        State3TextIsSet,
+        
+        /// Data effect of the component is set
+        State4TextIsSet,
+        
+        /// Data effect of the component is set
+        Icon1IsSet,
+        
+        /// Data effect of the component is set
+        Icon2IsSet,
+        
+        /// Data effect of the component is set
+        StateIcon1IsSet,
+        
+        /// Data effect of the component is set
+        StateIcon2IsSet,
+        
+        /// Data effect of the component is set
+        StateIcon3IsSet,
+        
+        /// Data effect of the component is set
+        StateIcon4IsSet,
+        
         /// Do not use this condition, this is to size the arrays.
         Max,
 	};
@@ -761,7 +814,11 @@ namespace Gorgon {
 			None,
 
 			/// Works only for TextholderTemplate, data will affect the text that is displayed.
-			Text,
+            Text,
+            
+            Title,
+            
+            Label,
 
 			ValueText1,
 
@@ -770,10 +827,6 @@ namespace Gorgon {
 			ValueText3,
 
 			ValueText4,
-
-			Title,
-
-			Label,
 			
 			State1Text,
 			State2Text,

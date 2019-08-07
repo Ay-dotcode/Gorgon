@@ -15,7 +15,7 @@ namespace Gorgon { namespace Widgets {
 		explicit RadioButtons(const UI::Template &temp) : temp(temp) { }
 
         ~RadioButtons() {
-			elements.Destroy();
+			this->elements.Destroy();
 		}
 		
 		using WidgetBase::Move;
@@ -26,7 +26,7 @@ namespace Gorgon { namespace Widgets {
 			location = value;
 
 			if(HasParent())
-				PlaceIn(GetParent(), location, spacing);
+				this->PlaceIn(GetParent(), location, spacing);
 		}
 
 
@@ -36,25 +36,25 @@ namespace Gorgon { namespace Widgets {
 
 		
 		virtual void Resize(Geometry::Size size) override {
-			size.Height -= spacing * (elements.GetSize() - 1);
+			size.Height -= spacing * (this->elements.GetSize() - 1);
 
 			if(size.Height < 0)
 				size.Height = 0;
 
-			size.Height /= elements.GetSize();
+			size.Height /= this->elements.GetSize();
 
-			for(auto p : elements) {
+			for(auto p : this->elements) {
 				p.second.Resize(size);
 			}
 
-			PlaceIn(GetParent(), location, spacing);
+			this->PlaceIn(GetParent(), location, spacing);
 		}
 
 
 		virtual Geometry::Size GetSize() const override {
 			int h = 0;
 			int maxw = 0;
-			for(auto p : elements) {
+			for(auto p : this->elements) {
 				if(h != 0)
 					h += spacing;
 
@@ -81,24 +81,24 @@ namespace Gorgon { namespace Widgets {
 			spacing = value;
 
 			if(HasParent())
-				PlaceIn(GetParent(), location, spacing);
+				this->PlaceIn(GetParent(), location, spacing);
 		}
 
 		void Add(const T_ value) {
-			RadioControl<T_, W_>::Add(value, *new W_(temp, String::From(value)));
+			UI::RadioControl<T_, W_>::Add(value, *new W_(temp, String::From(value)));
 		}
 
 		void Add(const T_ value, std::string text) {
-			RadioControl<T_, W_>::Add(value, *new W_(temp, text));
+            UI::RadioControl<T_, W_>::Add(value, *new W_(temp, text));
 		}
 
-		using RadioControl<T_, W_>::ChangedEvent;
+		using UI::RadioControl<T_, W_>::ChangedEvent;
 
-		using RadioControl<T_, W_>::Exists;
+        using UI::RadioControl<T_, W_>::Exists;
 
-		using RadioControl<T_, W_>::Get;
+        using UI::RadioControl<T_, W_>::Get;
 
-		using RadioControl<T_, W_>::Set;
+        using UI::RadioControl<T_, W_>::Set;
 
 	protected:
 		virtual void addto(Layer &layer) override { }
@@ -111,8 +111,9 @@ namespace Gorgon { namespace Widgets {
 			if(!HasParent()) 
 				return;
 
-			for(auto it=elements.Last(); it.IsValid(); it.Previous()) {
-				GetParent().ChangeZorder(it->second, order);
+			for(auto p : this->elements) {
+				GetParent().ChangeZorder(p.second, order);
+                order++;
 			}
 		}
 
@@ -123,14 +124,14 @@ namespace Gorgon { namespace Widgets {
 
 
 		virtual bool addingto(UI::WidgetContainer &container) override {
-			PlaceIn(container, location, spacing);
+			this->PlaceIn(container, location, spacing);
 
 			return true;
 		}
 
 
 		virtual bool removingfrom() override {
-			for(auto p : elements) {
+			for(auto p : this->elements) {
 				p.second.Remove();
 			}
 

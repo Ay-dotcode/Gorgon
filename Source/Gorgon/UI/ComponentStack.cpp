@@ -495,6 +495,7 @@ namespace Gorgon { namespace UI {
 	}
 
 	void ComponentStack::SetData(ComponentTemplate::DataEffect effect, const Graphics::Drawable &image) {
+        bool wasset = imagedata.Exists(effect);
         imagedata.Add(effect, image);
         
 		bool updatereq = false;
@@ -509,11 +510,16 @@ namespace Gorgon { namespace UI {
 			}
 		}
 
-		if(updatereq)
+		if(!wasset) {
+            AddCondition((ComponentCondition)((int)ComponentCondition::DataEffectStart + (int)effect));
+        }
+        if(updatereq) {
 			Update();
+        }
     }
     
 	void ComponentStack::SetData(ComponentTemplate::DataEffect effect, const std::string &text) {
+        bool wasset = stringdata.count(effect);
 		stringdata[effect] = text;
 
 		bool updatereq = false;
@@ -528,8 +534,12 @@ namespace Gorgon { namespace UI {
 			}
 		}
 
-		if(updatereq)
+		if(!wasset) {
+            AddCondition((ComponentCondition)((int)ComponentCondition::DataEffectStart + (int)effect));
+        }
+        if(updatereq) {
 			Update();
+        }
 	}
     
 	void ComponentStack::RemoveData(ComponentTemplate::DataEffect effect) {
@@ -537,6 +547,8 @@ namespace Gorgon { namespace UI {
 
 		if(!update)
 			return;
+        
+        RemoveCondition((ComponentCondition)((int)ComponentCondition::DataEffectStart + (int)effect));
 		
 		stringdata.erase(effect);
 		imagedata.Remove(effect);
