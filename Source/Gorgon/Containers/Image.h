@@ -1134,12 +1134,23 @@ namespace Gorgon {
 			/// Provides access to the given component in x and y coordinates. This
 			/// function returns 0 if the given coordinates are out of bounds. This
 			/// function works slower than the () operator.
-			Byte Get(const Geometry::Point &p, unsigned component=0) const {
-				if(p.X<0 || p.Y<0 || p.X>=size.Width || p.Y>=size.Height || component>=cpp) {
+			Byte Get(const Geometry::Point &p, unsigned component = 0) const {
+				if (p.X < 0 || p.Y < 0 || p.X >= size.Width || p.Y >= size.Height || component >= cpp) {
 					return 0;
 				}
 
-				return data[cpp*(size.Width*p.Y+p.X)+component];
+				return data[cpp*(size.Width*p.Y + p.X) + component];
+			}
+
+			/// Provides access to the given component in x and y coordinates. This
+			/// function returns 0 if the given coordinates are out of bounds. This
+			/// function works slower than the () operator.
+			Byte Get(const Geometry::Point &p, Byte def, unsigned component = 0) const {
+				if (p.X < 0 || p.Y < 0 || p.X >= size.Width || p.Y >= size.Height || component >= cpp) {
+					return def;
+				}
+
+				return data[cpp*(size.Width*p.Y + p.X) + component];
 			}
 
 			/// Provides access to the given component in x and y coordinates. This

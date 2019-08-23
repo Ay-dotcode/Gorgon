@@ -286,9 +286,13 @@ namespace Gorgon {
 			}
 			/// Calculates Euclidean distance from this point to origin
 			Float Distance() const {
-				return std::sqrt( (Float)(X*X) + (Y*Y) );
+				return std::sqrt( Float(X*X) + Float(Y*Y) );
 			}
 
+			/// Calculates EuclideanSquare  distance from this point to the given target
+			Float EuclideanSquare() const {
+				return Float(X * X) + Float(Y * Y);
+			}
 			/// Calculates Manhattan distance from this point to the given target
 			Float ManhattanDistance(const basic_Point &target) const {
 				return (Float)(std::abs(X-target.X) + std::abs(Y-target.Y));

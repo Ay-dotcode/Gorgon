@@ -325,14 +325,27 @@ namespace Gorgon { namespace Graphics {
 		/// Provides access to the given component in x and y coordinates. This
 		/// function returns 0 if the given coordinates are out of bounds. This
 		/// function works slower than the () operator.
-		Byte Get(const Geometry::Point &p, unsigned component=0) const {
+		Byte Get(const Geometry::Point &p, unsigned component = 0) const {
 #ifndef NDEBUG
-			if(!data) {
+			if (!data) {
 				throw std::runtime_error("Data is not set");
 			}
 #endif
 
 			return data->Get(p, component);
+		}
+
+		/// Provides access to the given component in x and y coordinates. This
+		/// function returns 0 if the given coordinates are out of bounds. This
+		/// function works slower than the () operator.
+		Byte Get(const Geometry::Point &p, Byte def, unsigned component = 0) const {
+#ifndef NDEBUG
+			if (!data) {
+				throw std::runtime_error("Data is not set");
+			}
+#endif
+
+			return data->Get(p, def, component);
 		}
 
 		/// Returns the alpha at the given location. If the given location does not exits

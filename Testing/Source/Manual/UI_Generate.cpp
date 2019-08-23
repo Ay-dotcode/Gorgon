@@ -31,7 +31,7 @@ int main() {
 	Graphics::Layer l;
     app.wind.Add(l);
 
-	Widgets::SimpleGenerator gen;
+	Widgets::SimpleGenerator gen(15);
 
 	auto btntemp = gen.Button();
 
@@ -89,6 +89,11 @@ int main() {
     lbl.Move(chk.GetLocation() + Gorgon::Geometry::Point(0, chk.GetSize().Height + 4));
     lbl.OwnIcon(prep(*new Graphics::Bitmap(Triangle(8, 8))));
     
+	auto chktemp = gen.Checkbox();
+	Widgets::Checkbox chk1(chktemp, "Sugar?");
+	
+	app.wind.Add(chk1);
+	chk1.Move(300, 0);
 
     app.wind.Run();
 
