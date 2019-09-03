@@ -285,8 +285,9 @@ namespace Gorgon { namespace UI {
 		bool HasLayer(int ind) const;
 
 		/// Returns the layer of the given component index. If the item does not have a layer, this function
-		/// will create a new one for it.
-		Graphics::Layer &GetLayerOf(int ind);
+		/// will create a new one for it. In the worst case, this function will return the object itself as
+        /// a layer. Layer is probably a graphics layer, you may use RTTI to query layer type.
+		Layer &GetLayerOf(int ind);
         
         /// Returns the boundaries of the component with the given index.
         Geometry::Bounds BoundsOf(int ind);

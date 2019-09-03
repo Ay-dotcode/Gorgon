@@ -1,6 +1,10 @@
 #include "Panel.h"
 
 namespace Gorgon { namespace Widgets {
+    Panel::Panel(const UI::Template &temp) : 
+    UI::ComponentStackWidget(temp) 
+    {
+    }
 
 	bool Panel::Activate() {
 		if(!Focus())
@@ -12,11 +16,11 @@ namespace Gorgon { namespace Widgets {
 	}
 
 	bool Panel::KeyEvent(Input::Key key, float state) {
-		UI::WidgetContainer::KeyEvent(key, state);
+		return UI::WidgetContainer::KeyEvent(key, state);
 	}
 
 	bool Panel::CharacterEvent(Char c) {
-		UI::WidgetContainer::CharacterEvent(c);
+		return UI::WidgetContainer::CharacterEvent(c);
 	}
 
 	bool Panel::IsVisible() const {
@@ -43,7 +47,7 @@ namespace Gorgon { namespace Widgets {
 	}
 
 	Gorgon::Layer &Panel::getlayer() {
-		throw std::logic_error("The method or operation is not implemented.");
+        return stack.GetLayerOf(stack.IndexOfTag(UI::ComponentTemplate::Contents));
 	}
 
 } }

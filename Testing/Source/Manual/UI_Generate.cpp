@@ -7,6 +7,7 @@
 #include <Gorgon/Widgets/Checkbox.h>
 #include <Gorgon/Widgets/RadioButtons.h>
 #include <Gorgon/Widgets/Label.h>
+#include <Gorgon/Widgets/Panel.h>
 #include <Gorgon/UI/RadioControl.h>
 
 std::string helptext = 
@@ -71,11 +72,19 @@ int main() {
 
 	chk.Move(rad.GetLocation() + Gorgon::Geometry::Point(0, rad.GetSize().Height + 4));
     
+    auto pnltemp = gen.BlankPanel();
+    
+    Widgets::Panel pnl(pnltemp);
+    pnl.Resize(500, 500);
+    
+    app.wind.Add(pnl);
+    pnl.Move(200, 0);
+    
     auto lbltemp = gen.Label();
     
     Widgets::Label lbl(lbltemp, "This is a label");
     
-    app.wind.Add(lbl);
+    pnl.Add(lbl);
     
     lbl.Move(chk.GetLocation() + Gorgon::Geometry::Point(0, chk.GetSize().Height + 4));
     lbl.OwnIcon(prep(*new Graphics::Bitmap(Triangle(8, 8))));

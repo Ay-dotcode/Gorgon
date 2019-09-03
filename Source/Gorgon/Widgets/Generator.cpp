@@ -682,5 +682,14 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
-    
+    UI::Template SimpleGenerator::BlankPanel(Geometry::Size defsize) {
+        UI::Template temp;
+        temp.SetSize(defsize);
+        
+        
+        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
+        bg.SetTag(UI::ComponentTemplate::Contents);
+        
+        return temp;
+    }
 }}

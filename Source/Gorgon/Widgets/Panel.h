@@ -4,12 +4,16 @@
 #include "../UI/WidgetContainer.h"
 #include "../Property.h"
 
-namespace Gorgon { namespace Graphics { class Bitmap; } }
-
 namespace Gorgon { namespace Widgets {
     
     class Panel : public UI::ComponentStackWidget, public UI::WidgetContainer {
     public:
+        
+        Panel(const Panel &) = delete;
+        
+        Panel(Panel &&) = default;
+        
+        explicit Panel(const UI::Template &temp);
         
 
 		virtual bool Activate() override;

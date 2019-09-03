@@ -23,6 +23,8 @@ namespace Gorgon { namespace Widgets {
         virtual UI::Template RadioButton(Geometry::Size size) = 0;
         
         virtual UI::Template Label(Geometry::Size size) = 0;
+        
+        virtual UI::Template BlankPanel(Geometry::Size size) = 0;
     };
     
     /**
@@ -40,19 +42,23 @@ namespace Gorgon { namespace Widgets {
 		virtual ~SimpleGenerator();
 
 		virtual UI::Template Button(
-			Geometry::Size size = {80, 32}
+			Geometry::Size size = {70, 32}
 		) override;
 
         virtual UI::Template Checkbox(
-            Geometry::Size size = {150, 24}
+            Geometry::Size size = {166, 24}
         ) override;
         
         virtual UI::Template RadioButton(
-            Geometry::Size size = {150, 24}
+            Geometry::Size size = {155, 24}
         ) override;
         
         virtual UI::Template Label(
-            Geometry::Size size = {150, 24}
+            Geometry::Size size = {155, 24}
+        ) override;
+        
+        virtual UI::Template BlankPanel(
+            Geometry::Size size = {155, 300}
         ) override;
         
 		int Spacing      = 4;

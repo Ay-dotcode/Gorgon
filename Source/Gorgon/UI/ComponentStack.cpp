@@ -1216,9 +1216,9 @@ namespace Gorgon { namespace UI {
 		}
 	}
 
-	Graphics::Layer &ComponentStack::GetLayerOf(int ind) {
+	Layer &ComponentStack::GetLayerOf(int ind) {
 		if(stacksizes[ind] == 0)
-			throw std::runtime_error("Index does not exist");
+			return *this;
 
 		if(storage[&get(ind).GetTemplate()]->layer == nullptr) {
 			storage[&get(ind).GetTemplate()]->layer = new Graphics::Layer;

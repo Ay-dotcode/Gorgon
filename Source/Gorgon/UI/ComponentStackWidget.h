@@ -39,7 +39,7 @@ namespace Gorgon { namespace UI {
 		}
 
 	protected:
-        ComponentStack stack;
+        mutable ComponentStack stack;
 
 		virtual void focused() override {
 			stack.AddCondition(ComponentCondition::Focused);
