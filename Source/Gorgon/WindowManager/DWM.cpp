@@ -610,6 +610,7 @@ namespace Gorgon {
 						parent->activatecontext();
 						parent->Layer::Resize({rect.right-rect.left, rect.bottom-rect.top});
 						GL::Resize({rect.right-rect.left, rect.bottom-rect.top});
+						parent->ResizedEvent();
 					}
 
 					case WM_LBUTTONUP: {
