@@ -80,13 +80,44 @@ int main() {
     auto pnltemp = gen.BlankPanel();
     
     Widgets::Panel pnl(pnltemp);
-    pnl.Resize(500, 500);
+    pnl.Resize(300, 300);
+	Widgets::Panel mainpanel(pnltemp);
+	mainpanel.Resize(300, 700);
+	app.wind.Add(mainpanel);
+	Widgets::Panel sub(pnltemp);
+	sub.Resize(300, 300);
+	Widgets::Button increase(btntemp);
+	Widgets::Button decrease(btntemp);
+
+	auto lbltemp = gen.Label();
+
+	mainpanel.Add(sub);
+	sub.Move(0, mainpanel.GetLocation().Y + 270);//problem start at this line
+
+	Widgets::Label valuelabel(lbltemp);
+	sub.Add(valuelabel);
+	valuelabel.SetText("Bug test : ");
+	increase.Resize(30, 30);
+	decrease.Resize(30, 30);
+	increase.SetText("+");
+	decrease.SetText("-");
+
+	valuelabel.Move(0, sub.GetLocation().Y);
+	increase.Move(0, valuelabel.GetLocation().Y + 60);
+	decrease.Move(0, increase.GetLocation().Y+50);
+	
+	//valuelabel can not show in screen;
+	sub.Add(increase);
+	sub.Add(decrease);
+
+	increase.Move(0,mainpanel.GetLocation().Y+20);
 	
     
     app.wind.Add(pnl);
     pnl.Move(200, 0);
+	app.wind.Add(mainpanel);
+	mainpanel.Move(0, pnl.GetLocation().Y + 90);
    
-	auto lbltemp = gen.Label();
 	auto errortemp = gen.ErrorLabel();
     
     Widgets::Label lbl(lbltemp, "This is a label");
