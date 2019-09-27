@@ -27,20 +27,25 @@ Graphics::Bitmap &prep(Graphics::Bitmap &bmp) {
 
 int main() {
 	basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
-
-	Graphics::Layer l;
+	
+	Graphics::Layer l, l2;
+	
     app.wind.Add(l);
-
+	app.wind.Add(l2);
+	
+	l2.SetColor(Gorgon::Graphics::Color::Pink);
+	l2.Resize({ 200,200 });
+	
+	l2.Move(400, 400);
 	Widgets::SimpleGenerator gen(15);
 
 	auto btntemp = gen.Button();
 
 	Widgets::Button btn(btntemp, "Helloo...", []() { std::cout<<"Hello..."<<std::endl; });
-
+	
 	app.wind.Add(btn);
-
 	btn.Focus();
-
+	
 	Widgets::Button btn2(btntemp, "Exit", [&app]() { app.wind.Quit(); });
 
 	btn2.Move({0, btn.GetSize().Height + 4});
@@ -76,20 +81,24 @@ int main() {
     
     Widgets::Panel pnl(pnltemp);
     pnl.Resize(500, 500);
+	
     
     app.wind.Add(pnl);
     pnl.Move(200, 0);
-    
-    auto lbltemp = gen.Label();
+   
+	auto lbltemp = gen.Label();
+	auto errortemp = gen.ErrorLabel();
     
     Widgets::Label lbl(lbltemp, "This is a label");
+	Widgets::Label error(errortemp, "This is an Error label");
     
     pnl.Add(lbl);
+	pnl.Add(error);
     
     lbl.Move(chk.GetLocation() + Gorgon::Geometry::Point(0, chk.GetSize().Height + 4));
+	error.Move(lbl.GetLocation().X,lbl.GetLocation().Y + 25);
     lbl.OwnIcon(prep(*new Graphics::Bitmap(Triangle(8, 8))));
     
-	auto chktemp = gen.Checkbox();
 	Widgets::Checkbox chk1(chktemp, "Sugar?");
 	
 	app.wind.Add(chk1);

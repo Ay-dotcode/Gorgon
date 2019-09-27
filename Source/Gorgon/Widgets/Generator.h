@@ -23,7 +23,9 @@ namespace Gorgon { namespace Widgets {
         virtual UI::Template RadioButton(Geometry::Size size) = 0;
         
         virtual UI::Template Label(Geometry::Size size) = 0;
-        
+		
+		virtual UI::Template ErrorLabel(Geometry::Size size) = 0;
+		        
         virtual UI::Template BlankPanel(Geometry::Size size) = 0;
     };
     
@@ -45,6 +47,7 @@ namespace Gorgon { namespace Widgets {
 			Geometry::Size size = {70, 32}
 		) override;
 
+
         virtual UI::Template Checkbox(
             Geometry::Size size = {166, 24}
         ) override;
@@ -56,7 +59,14 @@ namespace Gorgon { namespace Widgets {
         virtual UI::Template Label(
             Geometry::Size size = {155, 24}
         ) override;
-        
+
+
+		virtual UI::Template ErrorLabel(
+			Geometry::Size size = { 155, 24 }
+		) override;
+		
+	
+		
         virtual UI::Template BlankPanel(
             Geometry::Size size = {155, 300}
         ) override;
@@ -88,8 +98,10 @@ namespace Gorgon { namespace Widgets {
             Graphics::RGBA Regular = Graphics::Color::Charcoal;
             Graphics::RGBA Hover   = Graphics::Color::Black;
             Graphics::RGBA Down    = Graphics::Color::Black;
+			Graphics::RGBA Error = Graphics::Color::Red;
         } Forecolor;
-        
+		
+		
 	private:
 		Graphics::GlyphRenderer *regularrenderer = nullptr;
 		Containers::Collection<Graphics::Drawable> drawables;
