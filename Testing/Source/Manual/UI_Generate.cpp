@@ -102,7 +102,7 @@ int main() {
 	increase.SetText("+");
 	decrease.SetText("-");
 
-	valuelabel.Move(0, sub.GetLocation().Y);
+	valuelabel.Move(0, 0);
 	increase.Move(0, valuelabel.GetLocation().Y + 60);
 	decrease.Move(0, increase.GetLocation().Y+50);
 	
@@ -111,14 +111,21 @@ int main() {
 	sub.Add(decrease);
 
 	increase.Move(0,mainpanel.GetLocation().Y+20);
-	
+    
+    Widgets::Checkbox chk1(chktemp, "Sugar?");
+    
+    app.wind.Add(chk1);
+    chk1.Move(300, 0);
+    
     
     app.wind.Add(pnl);
-    pnl.Move(200, 0);
+    pnl.Move(150, 0);
 	app.wind.Add(mainpanel);
-	mainpanel.Move(0, pnl.GetLocation().Y + 90);
+	mainpanel.Move(0, 90);
    
 	auto errortemp = gen.ErrorLabel();
+    
+    //pnl.Hide();
     
     Widgets::Label lbl(lbltemp, "This is a label");
 	Widgets::Label error(errortemp, "This is an Error label");
@@ -130,11 +137,6 @@ int main() {
 	error.Move(lbl.GetLocation().X,lbl.GetLocation().Y + 25);
     lbl.OwnIcon(prep(*new Graphics::Bitmap(Triangle(8, 8))));
     
-	Widgets::Checkbox chk1(chktemp, "Sugar?");
-	
-	app.wind.Add(chk1);
-	chk1.Move(300, 0);
-
     app.wind.Run();
 
 	return 0;

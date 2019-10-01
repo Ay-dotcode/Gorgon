@@ -374,10 +374,10 @@ namespace Gorgon {
 		}
 		/// @}
 
-		/// Displays this window, may generate Activated event
+		/// Displays this layer
 		virtual void Show() { isvisible=true; }
 
-		/// Hides this window, may generate Deactivated event
+		/// Hides this layer
 		virtual void Hide() { isvisible=false; }
 		
 		/// Returns whether this layer is effectively visible

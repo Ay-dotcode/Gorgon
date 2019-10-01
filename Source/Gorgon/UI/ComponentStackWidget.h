@@ -69,6 +69,14 @@ namespace Gorgon { namespace UI {
 			stack.PlaceBefore(order);
 		}
 
+    private:
+        virtual void show() override {
+            stack.Show();
+        }
+        
+        virtual void hide() override {
+            stack.Hide();
+        }
 	};
      
     

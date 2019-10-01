@@ -44,7 +44,9 @@ namespace Gorgon {
 		dotransformandclip();
 
 		for(auto &l : children) {
-			l.Render();
+            if(l.IsVisible()) {
+                l.Render();
+            }
 		}
 
 		reverttransformandclip();
@@ -64,10 +66,12 @@ namespace Gorgon {
         }
         else {
             for(auto &l : children) {
-                if(l.propagate_mouseevent(event, location, button, amount, handlers)) {
-					ret=true;
-					break;
-				}
+                if(l.IsVisible()) {
+                    if(l.propagate_mouseevent(event, location, button, amount, handlers)) {
+                        ret=true;
+                        break;
+                    }
+                }
             }
         }
 

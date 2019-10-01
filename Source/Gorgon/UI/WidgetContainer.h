@@ -103,10 +103,13 @@ namespace Gorgon { namespace UI {
 		bool FocusPrevious();
 
 		/// Sets the focus to the given widget
-		bool SetFocusTo(WidgetBase &widget);
-
-		/// Removes the focus from the focused widget
-		bool RemoveFocus();
+        bool SetFocusTo(WidgetBase &widget);
+        
+        /// Removes the focus from the focused widget
+        bool RemoveFocus();
+        
+        /// Forcefully removes the focus from the focused widget
+        void ForceRemoveFocus();
 
 		/// Returns if this container has a focused widget
 		bool HasFocusedWidget() const { return focusindex != -1; }

@@ -37,6 +37,16 @@ namespace Gorgon { namespace Widgets {
 
 		return stack.TagBounds(UI::ComponentTemplate::Contents).GetSize() == size;
 	}
+	
+	bool Panel::allowfocus() const {
+        for(auto &w : widgets) {
+            if(w.AllowFocus()) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
 
 	void Panel::focused() {
 		FocusFirst();

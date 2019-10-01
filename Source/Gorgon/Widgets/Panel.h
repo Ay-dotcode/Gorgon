@@ -34,6 +34,8 @@ namespace Gorgon { namespace Widgets {
 		virtual bool ResizeInterior(Geometry::Size size) override;
 
 	protected:
+        virtual bool allowfocus() const override;
+        
 		virtual void focused() override;
 
 

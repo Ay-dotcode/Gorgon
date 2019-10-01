@@ -85,12 +85,20 @@ namespace Gorgon { namespace Widgets {
 		}
 
 		void Add(const T_ value) {
-			UI::RadioControl<T_, W_>::Add(value, *new W_(temp, String::From(value)));
+            auto &c = *new W_(temp, String::From(value));
+			UI::RadioControl<T_, W_>::Add(value, c);
+            
+            if(!IsVisible())
+                c.Hide();
 		}
 
 		void Add(const T_ value, std::string text) {
-            UI::RadioControl<T_, W_>::Add(value, *new W_(temp, text));
-		}
+            auto &c = *new W_(temp, text);
+            UI::RadioControl<T_, W_>::Add(value, c);
+            
+            if(!IsVisible())
+                c.Hide();
+        }
 
 		using UI::RadioControl<T_, W_>::ChangedEvent;
 
@@ -141,6 +149,19 @@ namespace Gorgon { namespace Widgets {
 		Geometry::Point location = {0, 0};
 		int spacing = 4;
 		const UI::Template &temp;
+        
+    private:
+        virtual void show() override {
+            for(auto p : this->elements) {
+                p.second.Show();
+            }
+        }
+        
+        virtual void hide() override {
+            for(auto p : this->elements) {
+                p.second.Hide();
+            }
+        }
 	};
     
 } }

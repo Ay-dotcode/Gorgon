@@ -128,7 +128,7 @@ namespace Gorgon { namespace UI {
 		//starting from the first, try to focus widgets in order
 		focusindex = 0;
 		for(auto &w : widgets) {
-			if(w.allowfocus()) {
+            if(w.allowfocus() && w.IsVisible()) {
 				auto prevfoc = focused;
 
 				focused = &w;
@@ -154,7 +154,7 @@ namespace Gorgon { namespace UI {
 			return false;
 
 		for(int i=focusindex+1; i<widgets.GetSize(); i++) {
-			if(widgets[i].allowfocus()) {
+			if(widgets[i].allowfocus() && widgets[i].IsVisible()) {
 				auto prevfoc = focused;
 
 				focused = &widgets[i];
@@ -168,10 +168,28 @@ namespace Gorgon { namespace UI {
 				return true;
 			}
 		}
-
-		//not found, rollover
+		
+		//last widget is focused, try bubbling the operation up to the parent
+		//if this container is top level focus will rollover
+		
+		// if this container is a widget
+		if(dynamic_cast<WidgetBase*>(this)) {
+            auto w = dynamic_cast<WidgetBase*>(this);
+            
+            // that has a parent
+            if(w->HasParent()) {
+                //try to focus previous widget
+                if(w->GetParent().FocusNext()) {
+                    return true;
+                }
+                
+                //if not possible, rollover
+            }
+        }
+        
+		//rollover
 		for(int i=0; i<focusindex; i++) {
-			if(widgets[i].allowfocus()) {
+            if(widgets[i].allowfocus() && widgets[i].IsVisible()) {
 				auto prevfoc = focused;
 
 				focused = &widgets[i];
@@ -196,7 +214,7 @@ namespace Gorgon { namespace UI {
 			return false;
 
 		for(int i=focusindex-1; i>=0; i--) {
-			if(widgets[i].allowfocus()) {
+            if(widgets[i].allowfocus() && widgets[i].IsVisible()) {
 				auto prevfoc = focused;
 
 				focused = &widgets[i];
@@ -211,10 +229,28 @@ namespace Gorgon { namespace UI {
 				return true;
 			}
 		}
+		
+		//first widget is focused, try bubbling the operation up to the parent
+		//if this container is top level focus will rollover
+		
+		// if this container is a widget
+		if(dynamic_cast<WidgetBase*>(this)) {
+            auto w = dynamic_cast<WidgetBase*>(this);
+            
+            // that has a parent
+            if(w->HasParent()) {
+                //try to focus previous widget
+                if(w->GetParent().FocusPrevious()) {
+                    return true;
+                }
+                
+                //if not possible, rollover
+            }
+        }
 
-		//not found, rollover
+		//rollover
 		for(int i=widgets.GetSize()-1; i>focusindex; i--) {
-			if(widgets[i].allowfocus()) {
+            if(widgets[i].allowfocus() && widgets[i].IsVisible()) {
 				auto prevfoc = focused;
 
 				focused = &widgets[i];
@@ -245,7 +281,7 @@ namespace Gorgon { namespace UI {
 		if(&widget == focused)
 			return true;
 
-		if(!widget.allowfocus())
+        if(!widget.allowfocus() && widget.IsVisible())
 			return false;
 
 		if(focused && !focused->canloosefocus())
@@ -264,23 +300,30 @@ namespace Gorgon { namespace UI {
 		return true;
 	}
 
-
+	
 	bool WidgetContainer::RemoveFocus() {
-		if(!focused)
-			return true;
-
-		if(!focused->canloosefocus())
-			return false;
-
-		auto prevfoc = focused;
-
-		focused = nullptr;
-		focusindex = -1;
-
-		prevfoc->focuslost();
-
-		return true;
-	}
+        if(!focused)
+            return true;
+        
+        if(!focused->canloosefocus())
+            return false;
+        
+        ForceRemoveFocus();
+        
+        return true;
+    }
+    
+    void WidgetContainer::ForceRemoveFocus() {
+        if(!focused)
+            return;
+        
+        auto prevfoc = focused;
+        
+        focused = nullptr;
+        focusindex = -1;
+        
+        prevfoc->focuslost();
+    }
 
 
 	Gorgon::UI::WidgetBase & WidgetContainer::GetFocus() const {

@@ -14,7 +14,7 @@ namespace Gorgon { namespace UI {
 		if(!parent)
 			return false;
 
-		if(!allowfocus())
+		if(!allowfocus() || !visible)
 			return false;
 
 		return parent->SetFocusTo(*this);
@@ -34,5 +34,18 @@ namespace Gorgon { namespace UI {
 		return *parent;
 	}
 
+
+    void WidgetBase::SetVisible(bool value) {
+        if(visible != value) {
+            if(value)
+                show();
+            else {
+                Defocus();
+                hide();
+            }
+            
+            visible = value;
+        }
+    }
 }
 }

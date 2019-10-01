@@ -44,6 +44,9 @@ namespace Gorgon { namespace UI {
 		/// has no parent after the operation.
 		bool Remove();
         
+        /// If this widget can be focused currently
+        bool AllowFocus() const { return allowfocus() && visible; }
+        
         /// Transfers the focus to this widget. Returns true if the focus
         /// is actually transferred to this widget
         bool Focus();
@@ -51,9 +54,26 @@ namespace Gorgon { namespace UI {
         /// Removes the focus from this widget if this widget is focused.
         /// This function will not transfer the focus to another widget.
         bool Defocus();
-
-		/// Returns if this widget is focused.
-		bool IsFocused() const { return focus; }
+        
+        /// Returns if this widget is focused.
+        bool IsFocused() const { return focus; }
+        
+        /// Shows this widget, widgets are visible by default.
+        void Show() { SetVisible(true); }
+        
+        /// Hides this widget, when hidden, widgets cannot gain focus
+        void Hide() { SetVisible(false); }
+        
+        /// Toggles the visibility state of the widget.
+        void ToggleVisible() { SetVisible(!IsVisible()); }
+        
+        /// Changes the visilibility of the widget
+        void SetVisible(bool value);
+        
+        /// Returns if the widget is visible
+        bool IsVisible() const {
+            return visible;
+        }
 
 		/// Returns if this widget has a parent
 		bool HasParent() const { return parent != nullptr; }
@@ -98,16 +118,25 @@ namespace Gorgon { namespace UI {
         virtual void focused() { focus = true; }
         
         /// Should return true if the widget can loose the focus right now.
+        /// Even if you return false, you still might be forced to loose
+        /// focus, even without this function getting called.
         virtual bool canloosefocus() const { return true; }
         
-        /// This is called after the focus is lost.
+        /// This is called after the focus is lost. This is called even if
+        /// focus removal is forced.
         virtual void focuslost() { focus = false; }
         
     private:
         bool visible = true;
         bool enabled = true;
         bool focus   = false;
-
+        
+        /// Never call this function
+        virtual void hide() = 0;
+        
+        /// Never call this function
+        virtual void show() = 0;
+        
 		WidgetContainer *parent = nullptr;
     };
     
