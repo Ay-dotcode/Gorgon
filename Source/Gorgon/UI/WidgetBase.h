@@ -67,7 +67,7 @@ namespace Gorgon { namespace UI {
         /// Toggles the visibility state of the widget.
         void ToggleVisible() { SetVisible(!IsVisible()); }
         
-        /// Changes the visilibility of the widget
+        /// Changes the visibility of the widget
         void SetVisible(bool value);
         
         /// Returns if the widget is visible
@@ -89,6 +89,18 @@ namespace Gorgon { namespace UI {
 		/// operating system.
 		virtual bool CharacterEvent(Char) { return false; }
 
+		/// This event will be fired when the widget receives or looses focus.
+		Event<WidgetBase> FocusEvent		 = Event<WidgetBase>{*this};
+
+		/// This event will be fired when the area that the widget occupies on
+		/// its container is changed. It will be fired when the widget is hidden
+		/// or shown or its parent is changed. Movement, resize and parent change
+		/// will not trigger this event if the widget is not visible. Similarly,
+		/// if the object does not have a parent movement and resize will not
+		/// trigger this event. Organizers use this event to rearrange widgets, 
+		/// thus it is not advisable to remove all handlers from this event.
+		Event<WidgetBase> BoundsChangedEvent = Event<WidgetBase>{*this};
+
     protected:
 		/// Called when it is about to be added to the given container
 		virtual bool addingto(WidgetContainer &) { return true; }
@@ -97,7 +109,11 @@ namespace Gorgon { namespace UI {
 		virtual void addto(Layer &layer) = 0;
 
 		/// Called when this widget added to the given container
-		virtual void addedto(WidgetContainer &container) { parent = &container; }
+		virtual void addedto(WidgetContainer &container) {
+			parent = &container;
+			if(IsVisible())
+				BoundsChangedEvent();
+		}
 
 		/// When called, widget should remove itself from the given layer
 		virtual void removefrom(Layer &layer) = 0;
@@ -106,7 +122,11 @@ namespace Gorgon { namespace UI {
 		virtual bool removingfrom() { return true; }
 
 		/// Called after this widget is removed from its parent.
-		virtual void removed() { parent = nullptr; }
+		virtual void removed() {
+			parent = nullptr;
+			if(IsVisible())
+				BoundsChangedEvent(); 
+		}
 
 		/// When called, widget should reorder itself in layer hierarchy
 		virtual void setlayerorder(Layer &layer, int order) = 0;
@@ -115,7 +135,10 @@ namespace Gorgon { namespace UI {
         virtual bool allowfocus() const { return true; }
         
         /// This is called after the focus is transferred to this widget.
-        virtual void focused() { focus = true; }
+		virtual void focused() {
+			focus = true;
+			FocusEvent();
+		}
         
         /// Should return true if the widget can loose the focus right now.
         /// Even if you return false, you still might be forced to loose
@@ -124,7 +147,10 @@ namespace Gorgon { namespace UI {
         
         /// This is called after the focus is lost. This is called even if
         /// focus removal is forced.
-        virtual void focuslost() { focus = false; }
+		virtual void focuslost() {
+			focus = false;
+			FocusEvent();
+		}
         
     private:
         bool visible = true;

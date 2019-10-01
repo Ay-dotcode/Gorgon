@@ -22,12 +22,18 @@ namespace Gorgon { namespace UI {
         
         virtual void Move(Geometry::Point location) override {
 			stack.Move(location);
+
+			if(IsVisible() && HasParent())
+				BoundsChangedEvent();
 		}
         
         using WidgetBase::Resize;
         
         virtual void Resize(Geometry::Size size) override {
             stack.Resize(size);
+
+			if(IsVisible() && HasParent())
+				BoundsChangedEvent();
         }
 
 		virtual Geometry::Point GetLocation() const override {
@@ -43,10 +49,12 @@ namespace Gorgon { namespace UI {
 
 		virtual void focused() override {
 			stack.AddCondition(ComponentCondition::Focused);
+			FocusEvent();
 		}
 
 		virtual void focuslost() override {
 			stack.RemoveCondition(ComponentCondition::Focused);
+			FocusEvent();
 		}
         
 		virtual void removed() override {
@@ -72,11 +80,17 @@ namespace Gorgon { namespace UI {
     private:
         virtual void show() override {
             stack.Show();
-        }
+
+			if(HasParent())
+				BoundsChangedEvent();
+		}
         
         virtual void hide() override {
             stack.Hide();
-        }
+
+			if(HasParent())
+				BoundsChangedEvent();
+		}
 	};
      
     

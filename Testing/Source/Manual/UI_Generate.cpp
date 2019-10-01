@@ -68,12 +68,20 @@ int main() {
     });
 
 	auto chktemp = gen.Checkbox();
+	
 
 	Widgets::Checkbox chk(chktemp, "Sugar", [](bool state) {
 		std::cout<<(state ? "with sugar" : "without sugar")<<std::endl;
 	});
 
+	chk.Hide();
 	app.wind.Add(chk);
+
+	chk.BoundsChangedEvent.Register([] { 
+		std::cout << "Bounds changed" << std::endl; 
+	});
+	rad.ChangedEvent.Register([&chk]{ chk.Show(); });
+	chk.FocusEvent.Register([]{ std::cout << "Focus changed." << std::endl; });
 
 	chk.Move(rad.GetLocation() + Gorgon::Geometry::Point(0, rad.GetSize().Height + 4));
     
@@ -92,7 +100,7 @@ int main() {
 	auto lbltemp = gen.Label();
 
 	mainpanel.Add(sub);
-	sub.Move(0, mainpanel.GetLocation().Y + 270);//problem start at this line
+	sub.Move(0, mainpanel.GetLocation().Y + 270);
 
 	Widgets::Label valuelabel(lbltemp);
 	sub.Add(valuelabel);
@@ -106,7 +114,6 @@ int main() {
 	increase.Move(0, valuelabel.GetLocation().Y + 60);
 	decrease.Move(0, increase.GetLocation().Y+50);
 	
-	//valuelabel can not show in screen;
 	sub.Add(increase);
 	sub.Add(decrease);
 
@@ -124,8 +131,6 @@ int main() {
 	mainpanel.Move(0, 90);
    
 	auto errortemp = gen.ErrorLabel();
-    
-    //pnl.Hide();
     
     Widgets::Label lbl(lbltemp, "This is a label");
 	Widgets::Label error(errortemp, "This is an Error label");
