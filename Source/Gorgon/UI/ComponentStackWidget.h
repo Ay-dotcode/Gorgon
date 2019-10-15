@@ -92,6 +92,5 @@ namespace Gorgon { namespace UI {
 				BoundsChangedEvent();
 		}
 	};
-     
     
 } }

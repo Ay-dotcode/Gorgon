@@ -738,6 +738,17 @@ namespace Gorgon { namespace Graphics {
 		/// Creates images from the given atlas image and map. Prepares every image as well. This requires image to be prepared.
         /// Texture images can be passed around as value, but it is best to avoid that.
 		std::vector<TextureImage> CreateAtlasImages(std::vector<Geometry::Bounds> boundaries) const;
+        
+        /// Returns a new bitmap containing a slice of this bitmap
+        Bitmap Slice(Geometry::Bounds bounds) const {            
+            ASSERT(data, "Bitmap data is not set");
+            
+            Bitmap ret(bounds.GetSize(), GetMode());
+            
+            data->CopyTo(ret.GetData(), bounds);
+                
+            return ret;
+        }
 
 	protected:
 		/// When used as animation, an image is always persistent and it never finishes.

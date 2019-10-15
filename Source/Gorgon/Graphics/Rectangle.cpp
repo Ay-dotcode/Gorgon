@@ -126,5 +126,34 @@ namespace Gorgon { namespace Graphics {
 	void Rectangle::draw(TextureTarget &target, const Geometry::Pointf &p, RGBAf color) const {
 		drawin(target, {p, Geometry::Sizef(getsize())}, color);
 	}
+	
+    BitmapRectangleProvider SliceHorizontal(const Bitmap &source, int t, int b, int tl, int tr, int l, int r, int bl, int br) {
+        return BitmapRectangleProvider(
+            source.Slice({0, 0, tl, t}),
+            source.Slice({tl, 0, tr, t}),
+            source.Slice({tr, 0, source.GetWidth(), t}),
+            source.Slice({0, t, l, b}),
+            source.Slice({l, t, r, b}),
+            source.Slice({r, t, source.GetWidth(), b}),
+            source.Slice({0, b, bl, source.GetHeight()}),
+            source.Slice({bl, b, br, source.GetHeight()}),
+            source.Slice({br, b, source.GetWidth(), source.GetHeight()})
+        );
+    }
+
+    BitmapRectangleProvider SliceVertical(const Bitmap &source, int l, int r, int tl, int bl, int t, int b, int tr, int br) {
+        return BitmapRectangleProvider(
+            source.Slice({0, 0, l, tl}),
+            source.Slice({l, 0, r, t}),
+            source.Slice({r, 0, source.GetWidth(), tr}),
+            source.Slice({0, tl, l, bl}),
+            source.Slice({l, t, r, b}),
+            source.Slice({r, tr, source.GetWidth(), br}),
+            source.Slice({0, bl, l, source.GetHeight()}),
+            source.Slice({l, b, r, source.GetHeight()}),
+            source.Slice({r, br, source.GetWidth(), source.GetHeight()})
+        );
+    }
+
 
 } }

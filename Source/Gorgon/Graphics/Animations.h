@@ -80,6 +80,28 @@ namespace Gorgon { namespace Graphics {
 
 	};
     
+    class ImageProvider : public virtual Image, public virtual RectangularAnimation, public virtual RectangularAnimationProvider {
+    public:
+        
+        ImageProvider &CreateAnimation(Gorgon::Animation::ControllerBase &) const override { return const_cast<ImageProvider &>(*this); }
+        
+        ImageProvider &CreateAnimation(bool =false) const override { return const_cast<ImageProvider &>(*this); }
+        
+        /// if used as animation, this object will not be deleted
+        virtual void DeleteAnimation() const override { }
+        
+        using Image::GetSize;
+        using Image::GetWidth;
+        using Image::GetHeight;
+        
+    protected:
+        /// When used as animation, an image is always persistent and it never finishes.
+        bool Progress(unsigned &) override { return true; }
+        
+        int GetDuration() const override { return 0; }
+        
+    };
+    
 } 
 
 namespace Animation { 

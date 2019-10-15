@@ -186,6 +186,8 @@ namespace Gorgon { namespace Graphics {
 
 		/// Empty constructor, rectangle can be instanced even if it is completely empty
 		basic_RectangleProvider() : IRectangleProvider() {}
+		
+		basic_RectangleProvider(const basic_RectangleProvider &) = delete;
 
 		/// Filling constructor
 		basic_RectangleProvider(
@@ -262,6 +264,10 @@ namespace Gorgon { namespace Graphics {
 				delete br;
             }
 		}
+		
+		
+		
+		basic_RectangleProvider &operator =(const basic_RectangleProvider &) = delete;
 
         //types are derived not to type the same code for every class
 		virtual auto MoveOutProvider() -> decltype(*this) override {
@@ -518,6 +524,9 @@ namespace Gorgon { namespace Graphics {
 
 			return{maxl+maxr+(mm ? mm->GetWidth() : 0), maxt+maxb+(mm ? mm->GetHeight() : 0)};
 		}
+		
+        
+        
 
 	private:
 		A_ *tl = nullptr;
@@ -534,9 +543,31 @@ namespace Gorgon { namespace Graphics {
 
 		bool own = false;
 	};
-
-	using RectangleProvider = basic_RectangleProvider<RectangularAnimationProvider>;
+    
+    using RectangleProvider = basic_RectangleProvider<RectangularAnimationProvider>;
+    using TextureRectangleProvider = basic_RectangleProvider<TextureProvider>;
 	using BitmapRectangleProvider = basic_RectangleProvider<Bitmap>;
 	using AnimatedBitmapRectangleProvider = basic_RectangleProvider<BitmapAnimationProvider>;
 
+    
+
+    /// Horizontally slices the given image. t and b slices the image to 3 parts then each part is further sliced by 
+    /// X offset pairs (tl, tr), (l, r), and (bl, br). Currently this works only with bitmaps. This function creates 
+    /// an atlas out of the given image, thus, the source should be kept alive. Currently atlas functionality does not
+    /// work.
+    BitmapRectangleProvider SliceHorizontal(const Bitmap &source, int t, int b, int tl, int tr, int l, int r, int bl, int br);
+    
+    /// Vertically slices the given image. l and r slices the image to 3 parts then each part is further sliced by
+    /// Y offset pairs (tl, bl), (t, b), and (tr, br). Currently this works only with bitmaps. This function creates 
+    /// an atlas out of the given image, thus, the source should be kept alive. Currently atlas functionality does not
+    /// work.
+    BitmapRectangleProvider SliceVertical(const Bitmap &source, int l, int r, int tl, int bl, int t, int b, int tr, int br);
+    
+    /// Slices an image to create a rectangle. Imagine a pound sign (#) slicing the image, center parameter is the central region of the
+    /// pound sign. Currently this works only with bitmaps. This function creates an atlas out of the given image, thus, the source should
+    /// be kept alive. Currently atlas functionality does not work.
+    inline BitmapRectangleProvider Slice(const Bitmap &source, Geometry::Bounds center) {
+        return SliceHorizontal(source, center.Top, center.Bottom, center.Left, center.Right, center.Left, center.Right, center.Left, center.Right);
+    }
+    
 } }

@@ -4,7 +4,6 @@
 #include "../Graphics/FreeType.h"
 #include "../Graphics/BitmapFont.h"
 #include "../Graphics/BlankImage.h"
-#include "../Graphics/Rectangle.h"
 #include "../CGI/Line.h"
 #include "../CGI/Polygon.h"
 #include "../CGI/Circle.h"
@@ -81,7 +80,82 @@ namespace Gorgon { namespace Widgets {
         providers.DeleteAll();
         drawables.DeleteAll();
     }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::NormalBorder() {
+        static Graphics::BitmapRectangleProvider border = makeborder(Border.Color, Background.Regular);
+        
+        return border;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::HoverBorder() {
+        auto c = Background.Regular;
+        c.Blend(Background.Hover);
+        static Graphics::BitmapRectangleProvider border = makeborder(Border.Color, c);
+        
+        return border;
+    }
+    Graphics::BitmapRectangleProvider &SimpleGenerator::DownBorder() {
+        auto c = Background.Regular;
+        c.Blend(Background.Down);
+        static Graphics::BitmapRectangleProvider border = makeborder(Border.Color, c);
+        
+        return border;
+    }
+    
+    Graphics::BitmapRectangleProvider SimpleGenerator::makeborder(Graphics::RGBA border, Graphics::RGBA bg) {
+        int bsize = (Border.Width + Border.Radius + 1) * 2 + 16;
+        float off = (Border.Width + 1) / 2; //round up
+        
+        auto &bi = *new Graphics::Bitmap({bsize, bsize}, Graphics::ColorMode::RGBA);
+        bi.Clear();
+        
+        if(Border.Radius == 0) {
+            CGI::Polyfill(bi.GetData(), {{off,off}, {off, bsize-off}, {bsize-off, bsize-off}, {bsize-off, off}}, CGI::SolidFill<>(bg));
+            
+            CGI::DrawLines(bi.GetData(), {
+                {off, off}, 
+                {off, bsize-off},
+                {bsize-off, bsize-off},
+                {bsize-off, off}, 
+                {off, off}
+            }, Border.Width, CGI::SolidFill<>(border));
+        }
+        else {
+            auto r = Border.Radius;
+            
+            CGI::Polyfill(bi.GetData(), {
+                {off + r, off}, 
+                {off, off + r}, 
+                {off, bsize - off - r}, 
+                {off + r, bsize - off}, 
+                {bsize - off - r, bsize - off},
+                {bsize - off, bsize - off - r},
+                {bsize - off, off + r}, 
+                {bsize - off - r, off}, 
+            }, CGI::SolidFill<>(Background.Regular));
+            
+            CGI::DrawLines(bi.GetData(), {
+                {off + r, off}, 
+                {off, off + r}, 
+                {off, bsize - off - r}, 
+                {off + r, bsize - off}, 
+                {bsize - off - r, bsize - off},
+                {bsize - off, bsize - off - r},
+                {bsize - off, off + r}, 
+                {bsize - off - r, off}, 
+                {off + r, off}
+            }, Border.Width, CGI::SolidFill<>(Border.Color));
+        }
+        
+        drawables.Add(bi);
 
+        Graphics::BitmapRectangleProvider ret = Graphics::Slice(bi, {int(off*2+Border.Radius), int(off*2+Border.Radius), int(bsize-off*2-Border.Radius), int(bsize-off*2-Border.Radius)});
+        ret.Prepare();
+        
+        return ret;
+    }
+    
+    
     UI::Template SimpleGenerator::Button(Geometry::Size defsize) {
 
         UI::Template temp;
@@ -93,14 +167,8 @@ namespace Gorgon { namespace Widgets {
         {
             auto &bg_n = temp.AddContainer(0, UI::ComponentCondition::Always);
             bg_n.SetSizing(UI::ComponentTemplate::Automatic);
-            //assuming border radius = 0
-            auto &ci = *new Graphics::BlankImage({32, 32}, Background.Regular);
-            drawables.Add(ci);
 
-            auto &rect = *new Graphics::RectangleProvider(bi, bi, bi, bi, ci, bi, bi, bi, bi);
-
-            bg_n.Background.SetAnimation(rect);
-            providers.Add(rect);
+            bg_n.Background.SetAnimation(NormalBorder());
             bg_n.SetPadding(Spacing);
             bg_n.AddIndex(1);
             bg_n.AddIndex(2);
@@ -121,16 +189,7 @@ namespace Gorgon { namespace Widgets {
             auto &bg_h = temp.AddContainer(0, UI::ComponentCondition::Hover);
             bg_h.SetSizing(UI::ComponentTemplate::Automatic);
             
-            //assuming border radius = 0
-            auto c = Background.Regular;
-            c.Blend(Background.Hover);
-            auto &ci = *new Graphics::BlankImage({32, 32}, c);
-            drawables.Add(ci);
-
-            auto &rect = *new Graphics::RectangleProvider(bi, bi, bi, bi, ci, bi, bi, bi, bi);
-
-            bg_h.Background.SetAnimation(rect);
-            providers.Add(rect);
+            bg_h.Background.SetAnimation(HoverBorder());
             bg_h.SetPadding(Spacing);
             bg_h.AddIndex(1);
             bg_h.AddIndex(2);
@@ -154,16 +213,7 @@ namespace Gorgon { namespace Widgets {
             auto &bg_d = temp.AddContainer(0, UI::ComponentCondition::Down);
             bg_d.SetSizing(UI::ComponentTemplate::Automatic);
             
-            //assuming border radius = 0
-            auto c = Background.Regular;
-            c.Blend(Background.Down);
-            auto &ci = *new Graphics::BlankImage({32, 32}, c);
-            drawables.Add(ci);
-
-            auto &rect = *new Graphics::RectangleProvider(bi, bi, bi, bi, ci, bi, bi, bi, bi);
-
-            bg_d.Background.SetAnimation(rect);
-            providers.Add(rect);
+            bg_d.Background.SetAnimation(DownBorder());
             bg_d.SetPadding(Spacing);
             bg_d.AddIndex(1);
             bg_d.AddIndex(2);

@@ -241,5 +241,50 @@ namespace Gorgon { namespace Graphics {
 		}
 
 	};
+    
+    
+    class TextureProvider : public virtual TextureImage, public virtual ImageProvider {
+    public:
+        /// Default constructor, creates an empty texture
+        TextureProvider() { }
+        
+        /// Copy constructor
+        TextureProvider(TextureProvider &other) : Texture(other) {
+        }
+        
+        /// Move constructor
+        TextureProvider(TextureProvider &&other) : Texture(std::move(other)) {
+        }
+        
+        /// Regular, full texture constructor
+        TextureProvider(GL::Texture id, ColorMode mode, const Geometry::Size &size) : Texture(id, mode, size) {
+        }
+        
+        /// Atlas constructor, specifies a region of the texture, size is for the entirity of the texture
+        TextureProvider(GL::Texture id, ColorMode mode, const Geometry::Size &size, const Geometry::Bounds &location) : Texture(id, mode, size, location) {
+        }
+        
+        /// This constructor creates a new texture from the given Image
+        TextureProvider(const Containers::Image &image) : Texture(image) {
+        }
+        
+        //types are derived not to type the same code for every class
+        virtual auto MoveOutProvider() -> decltype(*this) override {
+            auto ret = new std::remove_reference<decltype(*this)>::type(std::move(*this));
+            
+            return *ret;
+        }
+        
+        virtual Geometry::Size GetSize() const override {
+            auto diff = coordinates[2] - coordinates[0];
+            
+            return {int(diff.X * size.Width + 0.9999), int(diff.Y * size.Height + 0.9999)};
+        }
+        
+    protected:
+        Geometry::Size getsize() const override {
+            return GetSize();
+        }
+    };
 
 } }

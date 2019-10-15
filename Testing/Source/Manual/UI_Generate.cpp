@@ -38,17 +38,19 @@ int main() {
 	
 	l2.Move(400, 400);
 	Widgets::SimpleGenerator gen(15);
+    gen.Border.Radius=0;
 
 	auto btntemp = gen.Button();
 
 	Widgets::Button btn(btntemp, "Helloo...", []() { std::cout<<"Hello..."<<std::endl; });
+    btn.Move(5,5);
 	
 	app.wind.Add(btn);
 	btn.Focus();
 	
 	Widgets::Button btn2(btntemp, "Exit", [&app]() { app.wind.Quit(); });
 
-	btn2.Move({0, btn.GetSize().Height + 4});
+	btn2.Move({5, btn.GetSize().Height + 10});
 	app.wind.Add(btn2);
     
     auto radtemp = gen.RadioButton();
@@ -100,7 +102,7 @@ int main() {
 	auto lbltemp = gen.Label();
 
 	mainpanel.Add(sub);
-	sub.Move(0, mainpanel.GetLocation().Y + 270);
+	sub.Move(5, mainpanel.GetLocation().Y + 270);
 
 	Widgets::Label valuelabel(lbltemp);
 	sub.Add(valuelabel);

@@ -3,7 +3,7 @@
 #include "../UI/Template.h"
 #include "../Graphics/Color.h"
 #include "../Graphics/Font.h"
-
+#include "../Graphics/Rectangle.h"
 
 namespace Gorgon { namespace Widgets {
 
@@ -71,6 +71,10 @@ namespace Gorgon { namespace Widgets {
             Geometry::Size size = {155, 300}
         ) override;
         
+        Graphics::BitmapRectangleProvider &NormalBorder();
+        Graphics::BitmapRectangleProvider &HoverBorder();
+        Graphics::BitmapRectangleProvider &DownBorder();
+        
 		int Spacing      = 4;
 		int ObjectHeight = 15;
 		int ObjectBorder = 2;
@@ -84,6 +88,7 @@ namespace Gorgon { namespace Widgets {
         
         struct BorderInfo {
             int Width             = 2;
+            int Radius            = 3;
             Graphics::RGBA Color  = Graphics::Color::Charcoal;
         } Border;
         
@@ -102,7 +107,9 @@ namespace Gorgon { namespace Widgets {
         } Forecolor;
 		
 		
-	private:
+    private:
+        Graphics::BitmapRectangleProvider makeborder(Graphics::RGBA border, Graphics::RGBA bg);
+        
 		Graphics::GlyphRenderer *regularrenderer = nullptr;
 		Containers::Collection<Graphics::Drawable> drawables;
 		Containers::Collection<Graphics::AnimationProvider> providers;
