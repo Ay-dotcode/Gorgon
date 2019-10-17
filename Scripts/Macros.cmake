@@ -109,3 +109,23 @@ MACRO(EmbedShaders out for) #inputs
 	get_property(cur SOURCE ${CMAKE_SOURCE_DIR}/${wd}/${for} PROPERTY OBJECT_DEPENDS)
 	set_property(SOURCE ${CMAKE_SOURCE_DIR}/${wd}/${for} APPEND PROPERTY OBJECT_DEPENDS "${cur};${CMAKE_SOURCE_DIR}/${wd}/${out}")
 ENDMACRO()
+
+list(APPEND deps GscriptGenerator)
+
+MACRO(GenerateGscript out) #inputs
+	set(listv)
+	
+	foreach(a ${ARGN})
+		list(APPEND listv ${CMAKE_SOURCE_DIR}/${wd}/${a})
+	endforeach()
+	
+	add_custom_command(
+		OUTPUT ${CMAKE_SOURCE_DIR}/${wd}/${out}
+		COMMAND "${CMAKE_SOURCE_DIR}/Tools/GscriptGenerator/Bin/GscriptGenerator" ${out} ${ARGN}
+		DEPENDS GscriptGenerator ${listv}
+		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/${wd}"
+		COMMENT "Creating Gscript files into ${out}"
+	)
+	
+	list(APPEND Local ${ARGN})
+ENDMACRO()

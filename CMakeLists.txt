@@ -28,6 +28,8 @@ option(GORGON_FAST_ANY "Make any to work fast by removing empty checks. This wil
 
 option(SCRIPTING "Enable scripting module." ON)
 
+option(GSCRIPT_GENERATOR "Create scripting resources." OFF)
+
 option(NO_LOGGING "Disables logger globally. If set, unit tests for logging will fail." OFF)
 
 option(TESTMODE "Enable test mode." OFF)
@@ -51,6 +53,10 @@ set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")
 
 ######################
+
+if(GSCRIPT_GENERATOR)
+    add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Tools/GscriptGenerator")
+endif()
 
 set(ADDITIONAL_CLIENT_FLAGS )
 

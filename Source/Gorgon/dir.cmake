@@ -66,3 +66,10 @@ IF(${UI})
 	)
 ENDIF()
 
+IF(GSCRIPT_GENERATOR)
+    GenerateGscript(Gscripting.cpp)
+    
+    SET(Local
+    	Gscripting.cpp
+    )
+ENDIF()
