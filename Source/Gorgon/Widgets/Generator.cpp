@@ -805,15 +805,22 @@ namespace Gorgon { namespace Widgets {
 		return temp;
 	}
 
-	
     UI::Template SimpleGenerator::BlankPanel(Geometry::Size defsize) {
         UI::Template temp;
         temp.SetSize(defsize);
         
         
         auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
-        bg.SetTag(UI::ComponentTemplate::Contents);
-		
+        //bg.Background.SetAnimation(NormalBorder());
+        bg.AddIndex(1);
+        
+        auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always);
+        cont.SetTag(UI::ComponentTemplate::Contents);
+        cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
+        cont.SetSize(100, 100, UI::Dimension::Percent);
+        cont.SetPositioning(cont.Absolute);
+        cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        cont.SetPosition(0, 0);
         
         return temp;
     }

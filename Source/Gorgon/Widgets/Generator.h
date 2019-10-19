@@ -88,7 +88,7 @@ namespace Gorgon { namespace Widgets {
         
         struct BorderInfo {
             int Width             = 2;
-            int Radius            = 3;
+            int Radius            = 0;
             Graphics::RGBA Color  = Graphics::Color::Charcoal;
         } Border;
         

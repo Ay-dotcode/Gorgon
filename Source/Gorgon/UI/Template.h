@@ -781,7 +781,13 @@ namespace Gorgon {
 			/// Component will be placed relative to the previous component
 			Relative,
 
-			/// Absolute positioning, coordinates will start from the container
+            /// Absolute positioning, coordinates will start from the container,
+            /// percent based movement will move to stay within the container.
+            /// If the component is filling the container, it cannot be moved.
+            AbsoluteSliding,
+            
+			/// Absolute positioning, coordinates will start from the container.
+            /// Percent based movement is relative to the size of the component.
 			Absolute,
             
             /// The given coordinates are polar coordinates, The radius is given 

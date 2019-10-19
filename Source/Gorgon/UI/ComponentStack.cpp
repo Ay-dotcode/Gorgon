@@ -2004,7 +2004,7 @@ realign:
 					comp.location = {int(std::round(r * cos(a) + pcenter.X - center.X)), int(std::round(r * sin(a) + pcenter.Y - center.Y))};
 				}
 				else {
-					auto offset = Convert(pos, maxsize-comp.size, emsize);
+                    auto offset = Convert(pos, (temp.GetPositioning() == temp.AbsoluteSliding ?  maxsize - comp.size : comp.size), emsize);
             
 					if(anch) {
 						anchortoother(comp, temp, offset, margin, *anch, cont.GetOrientation());

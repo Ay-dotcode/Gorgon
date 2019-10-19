@@ -38,7 +38,7 @@ int main() {
 	
 	l2.Move(400, 400);
 	Widgets::SimpleGenerator gen(15);
-    gen.Border.Radius=0;
+    gen.Border.Radius=4;
 
 	auto btntemp = gen.Button();
 
@@ -95,14 +95,14 @@ int main() {
 	mainpanel.Resize(300, 700);
 	app.wind.Add(mainpanel);
 	Widgets::Panel sub(pnltemp);
-	sub.Resize(300, 300);
+	sub.Resize(300, 500);
 	Widgets::Button increase(btntemp);
 	Widgets::Button decrease(btntemp);
 
 	auto lbltemp = gen.Label();
 
 	mainpanel.Add(sub);
-	sub.Move(5, mainpanel.GetLocation().Y + 270);
+	sub.Move(5, 0);
 
 	Widgets::Label valuelabel(lbltemp);
 	sub.Add(valuelabel);
@@ -118,6 +118,10 @@ int main() {
 	
 	sub.Add(increase);
 	sub.Add(decrease);
+    
+    increase.ClickEvent.Register([&]() {
+        sub.ScrollTo(sub.ScrollOffset().Y+5);
+    });
 
 	increase.Move(0,mainpanel.GetLocation().Y+20);
     

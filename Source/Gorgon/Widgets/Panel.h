@@ -16,34 +16,57 @@ namespace Gorgon { namespace Widgets {
         explicit Panel(const UI::Template &temp);
         
 
-		virtual bool Activate() override;
+        virtual bool Activate() override;
 
 
-		virtual bool KeyEvent(Input::Key, float) override;
+        virtual bool KeyEvent(Input::Key, float) override;
 
 
-		virtual bool CharacterEvent(Char) override;
+        virtual bool CharacterEvent(Char) override;
 
 
-		virtual bool IsVisible() const override;
+        virtual bool IsVisible() const override;
 
 
-		virtual Geometry::Size GetInteriorSize() const override;
+        virtual Geometry::Size GetInteriorSize() const override;
 
 
-		virtual bool ResizeInterior(Geometry::Size size) override;
+        virtual bool ResizeInterior(Geometry::Size size) override;
+        
+        /// Scrolls the contents of the panel so that the given location will
+        /// be at the top left.
+        void ScrollTo(Geometry::Point location) {
+            ScrollTo(location.X, location.Y);
+        }
+        
+        /// Scrolls the contents of the panel so that the given location will
+        /// be at the top left.
+        void ScrollTo(int x, int y) {
+            stack.SetValue(x/100.f, y/100.f);
+        }
+        
+        /// Scrolls the contents of the panel so that the given location will
+        /// be at the top.
+        void ScrollTo(int y) {
+            ScrollTo(stack.GetValue()[0]*100, y);
+        }
+        
+        Geometry::Point ScrollOffset() const {
+            auto val = stack.GetValue();
+            return {(int)(val[0]*100), (int)(val[1]*100)};
+        }
 
-	protected:
+    protected:
         virtual bool allowfocus() const override;
         
-		virtual void focused() override;
+        virtual void focused() override;
 
 
-		virtual void focuslost() override;
+        virtual void focuslost() override;
 
 
-		virtual Layer &getlayer() override;
+        virtual Layer &getlayer() override;
 
-	};
+    };
     
 } }
