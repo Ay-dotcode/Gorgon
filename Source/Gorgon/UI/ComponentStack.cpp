@@ -632,6 +632,8 @@ namespace Gorgon { namespace UI {
 	void ComponentStack::update() {
 		if(!stacksizes[0]) return;
         
+        if(beforeupdate_fn)
+            beforeupdate_fn();
 
         get(0).size = size;
         get(0).location = {0,0};
@@ -665,13 +667,19 @@ namespace Gorgon { namespace UI {
 		for(auto &s : storage) 
 			if(s.second->layer)
 				s.second->layer->Hide();
-        
+            
+        if(update_fn)
+            update_fn();
+            
 		//draw everything
 		render(get(0), base, {0,0});
+        
+        if(render_fn)
+            render_fn();
 	}
 
 	void ComponentStack::render(Component &comp, Graphics::Layer &parent, Geometry::Point offset, Graphics::RGBAf color, int ind) {
-		const ComponentTemplate &tempp = comp.GetTemplate();
+        const ComponentTemplate &tempp = comp.GetTemplate();
 		auto tempptr = &tempp;
         std::array<float, 4> val = value;
 
@@ -2142,6 +2150,9 @@ realign:
 	}
 
 	void ComponentStack::Render() {
+        if(frame_fn)
+            frame_fn();
+        
         std::vector<std::pair<ComponentCondition, ComponentCondition>> tobereplaced;
         for(auto iter = transitions.begin(); iter != transitions.end();) {
             auto c = *iter;

@@ -30,7 +30,7 @@ namespace Gorgon { namespace Graphics {
 		using AnimationType = Animation;
         
         /// This function moves this animation provider into a new provider. Ownership of this new object belongs
-        /// to the caller and this object could be destroyed safely.
+        /// to the caller and this object could be destroyed safely using DeleteAnimation.
         virtual AnimationProvider &MoveOutProvider() override = 0;
 
 		/// This function should create a new animation with the given controller and

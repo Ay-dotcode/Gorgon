@@ -314,6 +314,46 @@ namespace Gorgon { namespace UI {
 		const ComponentTemplate &GetTemplate(int ind) const {
 			return get(ind).GetTemplate();
 		}
+		
+		/// Sets a function to be called before update check
+		void SetFrameEvent(std::function<void()> handler) {
+            frame_fn = handler;
+        }
+        
+        /// Sets a function to be called before every update
+        void SetBeforeUpdateEvent(std::function<void()> handler) {
+            beforeupdate_fn = handler;
+        }
+        
+        /// Sets a function to be called after every update before rendering
+        void SetUpdateEvent(std::function<void()> handler) {
+            update_fn = handler;
+        }
+        
+        /// Sets a function to be called after every render
+        void SetRenderEvent(std::function<void()> handler) {
+            render_fn = handler;
+        }
+        
+        /// Removes the function that will be called before update check
+        void RemoveFrameEvent() {
+            frame_fn = std::function<void()>();
+        }
+        
+        /// Removes the function that will be called before every update
+        void RemoveBeforeUpdateEvent() {
+            beforeupdate_fn = std::function<void()>();
+        }
+        
+        /// Removes the function that will be called after every update before rendering
+        void RemoveUpdateEvent() {
+            update_fn = std::function<void()>();
+        }
+        
+        /// Removes the function that will be called after every render
+        void RemoveRenderEvent() {
+            render_fn = std::function<void()>();
+        }
         
         /** @name Mouse Events
          * These function will allow handling mouse events. If the mouse event is originating from a
@@ -522,7 +562,11 @@ namespace Gorgon { namespace UI {
         std::function<void(ComponentTemplate::Tag)> over_fn;
         std::function<void(ComponentTemplate::Tag)> out_fn;
         std::function<void(ComponentTemplate::Tag, Input::Mouse::EventType, Geometry::Point, float)> other_fn; //scroll, zoom, rotate
-		std::function<void()> value_fn;
+        std::function<void()> value_fn;
+        std::function<void()> frame_fn;
+        std::function<void()> beforeupdate_fn;
+        std::function<void()> update_fn;
+        std::function<void()> render_fn;
         
         std::function<std::string(int ind, ComponentTemplate::DataEffect, const std::array<float, 4> &value)> valuetotext;
 	};

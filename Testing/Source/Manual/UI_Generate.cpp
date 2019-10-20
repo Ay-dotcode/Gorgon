@@ -122,6 +122,11 @@ int main() {
     increase.ClickEvent.Register([&]() {
         sub.ScrollTo(sub.ScrollOffset().Y+5);
     });
+    
+    decrease.ClickEvent.Register([&]() {
+        std::cout<<"-"<<std::endl;
+    });
+    decrease.ActivateClickRepeat();
 
 	increase.Move(0,mainpanel.GetLocation().Y+20);
     
