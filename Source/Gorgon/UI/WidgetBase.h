@@ -125,9 +125,13 @@ namespace Gorgon { namespace UI {
 
         /// Called when this widget added to the given container
         virtual void addedto(WidgetContainer &container) {
+            if(parent == &container)
+                return;
+            
             parent = &container;
+            
             if(IsVisible())
-                BoundsChangedEvent();
+                boundschanged();
         }
 
         /// When called, widget should remove itself from the given layer
@@ -137,11 +141,7 @@ namespace Gorgon { namespace UI {
         virtual bool removingfrom() { return true; }
 
         /// Called after this widget is removed from its parent.
-        virtual void removed() {
-            parent = nullptr;
-            if(IsVisible())
-                BoundsChangedEvent(); 
-        }
+        virtual void removed();
 
         /// When called, widget should reorder itself in layer hierarchy
         virtual void setlayerorder(Layer &layer, int order) = 0;
@@ -166,6 +166,9 @@ namespace Gorgon { namespace UI {
             focus = false;
             FocusEvent();
         }
+        
+        /// Call this function when the widget bounds is changed
+        virtual void boundschanged();
         
     private:
         bool visible = true;

@@ -1,12 +1,13 @@
 #pragma once
 
+#include <stdexcept>
+
 #include "WidgetBase.h"
 #include "../Layer.h"
 #include "../Input/Keyboard.h"
+#include "Organizers/Base.h"
 
 namespace Gorgon { namespace UI {
-
-
     /**
     * This class is the base class for all widget containers.
     * All widgets require a layer to be placed on, to allow
@@ -15,39 +16,40 @@ namespace Gorgon { namespace UI {
     * at the same time.
     */
     class WidgetContainer {
+        friend class WidgetBase;
     public:
-		/// Defines focus strategy for the container. Default is Inherit
-		enum FocusStrategy {
-			/// Inherit from the parent. If this container is top level
-			/// then it will be AllowAll
-			Inherit,
+        /// Defines focus strategy for the container. Default is Inherit
+        enum FocusStrategy {
+            /// Inherit from the parent. If this container is top level
+            /// then it will be AllowAll
+            Inherit,
 
-			/// All widgets that can be focused are allowed to receive focus, 
-			/// including buttons but not labels.
-			AllowAll,
+            /// All widgets that can be focused are allowed to receive focus, 
+            /// including buttons but not labels.
+            AllowAll,
 
-			/// Widgets that require input to work or benefit from input
-			/// greatly are allowed to receive focus. Button, listbox, and select
-			/// will loose the ability to receive focus. However, sliders and
-			/// input boxes will receive the focus
-			Selective,
+            /// Widgets that require input to work or benefit from input
+            /// greatly are allowed to receive focus. Button, listbox, and select
+            /// will loose the ability to receive focus. However, sliders and
+            /// input boxes will receive the focus
+            Selective,
 
-			/// Only the widget that will not work without input will receive
-			/// focus. This includes input boxes. This will also disable tab
-			/// switching.
-			Strict,
+            /// Only the widget that will not work without input will receive
+            /// focus. This includes input boxes. This will also disable tab
+            /// switching.
+            Strict,
 
-			/// No widget is allowed focus and this container will not handle
-			/// any keys.
-			Deny
-		};
+            /// No widget is allowed focus and this container will not handle
+            /// any keys.
+            Deny
+        };
 
         WidgetContainer() = default;
         
         WidgetContainer(WidgetContainer &&) = default;
         
         /// Virtual destructor
-        virtual ~WidgetContainer() { }
+        virtual ~WidgetContainer();
         
         WidgetContainer &operator=(WidgetContainer&&) = default;
 
@@ -64,14 +66,14 @@ namespace Gorgon { namespace UI {
         /// the widget will be added at the end.
         bool Insert(WidgetBase &widget, int index);
 
-		/// Removes the given widget from this container. If the
-		/// widget does not exits, this function will return true without
-		/// taking any additional action. If the widget cannot be removed
-		/// from the container, this function will return false.
-		bool Remove(WidgetBase &widget);
+        /// Removes the given widget from this container. If the
+        /// widget does not exits, this function will return true without
+        /// taking any additional action. If the widget cannot be removed
+        /// from the container, this function will return false.
+        bool Remove(WidgetBase &widget);
 
-		/// Forcefully removes the given widget from this container.
-		void ForceRemove(WidgetBase &widget);
+        /// Forcefully removes the given widget from this container.
+        void ForceRemove(WidgetBase &widget);
 
         /// Changes the focus order of the given widget. If the order
         /// is out of bounds, the widget will be moved to the end.
@@ -86,23 +88,23 @@ namespace Gorgon { namespace UI {
         /// Focuses the first widget that accepts focus. If none of the
         /// widgets accept focus or if the currently focused widget blocks
         /// focus transfer then this function will return false.
-		bool FocusFirst();
+        bool FocusFirst();
 
-		/// Focuses the next widget that accepts focus. If no widget 
-		/// other than the currently focused widget accept focus then 
-		/// this function will return false. Additionally, if the currently
-		/// focused widget blocks focus transfer, this function will
-		/// return false.
-		bool FocusNext();
+        /// Focuses the next widget that accepts focus. If no widget 
+        /// other than the currently focused widget accept focus then 
+        /// this function will return false. Additionally, if the currently
+        /// focused widget blocks focus transfer, this function will
+        /// return false.
+        bool FocusNext();
 
-		/// Focuses the previous widget that accepts focus. If no widget 
-		/// other than the currently focused widget accept focus then 
-		/// this function will return false. Additionally, if the currently
-		/// focused widget blocks focus transfer, this function will
-		/// return false.
-		bool FocusPrevious();
+        /// Focuses the previous widget that accepts focus. If no widget 
+        /// other than the currently focused widget accept focus then 
+        /// this function will return false. Additionally, if the currently
+        /// focused widget blocks focus transfer, this function will
+        /// return false.
+        bool FocusPrevious();
 
-		/// Sets the focus to the given widget
+        /// Sets the focus to the given widget
         bool SetFocusTo(WidgetBase &widget);
         
         /// Removes the focus from the focused widget
@@ -111,12 +113,12 @@ namespace Gorgon { namespace UI {
         /// Forcefully removes the focus from the focused widget
         void ForceRemoveFocus();
 
-		/// Returns if this container has a focused widget
-		bool HasFocusedWidget() const { return focusindex != -1; }
+        /// Returns if this container has a focused widget
+        bool HasFocusedWidget() const { return focusindex != -1; }
 
-		/// Returns the focused widget. If no widget is focused, this function
-		/// will throw.
-		WidgetBase &GetFocus() const;
+        /// Returns the focused widget. If no widget is focused, this function
+        /// will throw.
+        WidgetBase &GetFocus() const;
         
         /// Should return whether the container is visible. Due to
         /// different container designs and capabilities, setting
@@ -196,6 +198,26 @@ namespace Gorgon { namespace UI {
         /// change focus to the next widget using tab key
         virtual void SetTabSwitchEnabledState(bool state) { tabswitch = state; }
         
+        /// Returns the begin iterator for the contained widgets
+        auto begin() {
+            return widgets.begin();
+        }
+        
+        /// Returns the begin iterator for the contained widgets
+        auto begin() const {
+            return widgets.begin();
+        }
+        
+        /// Returns the end iterator for the contained widgets
+        auto end() {
+            return widgets.end();
+        }
+        
+        /// Returns the end iterator for the contained widgets
+        auto end() const {
+            return widgets.end();
+        }
+        
         /// Returns the default element of the container. Default widget is
         /// activated when the user presses enter and the focused widget 
         /// does not consume the key or if the user presses ctrl+enter. 
@@ -242,31 +264,73 @@ namespace Gorgon { namespace UI {
         /// Removes the cancel widget of this container.
         virtual void RemoveCancel() { cancel=nullptr; }
 
-		/// Sets the focus strategy, see FocusStrategy
-		void SetFocusStrategy(FocusStrategy value) {
-			focusmode = value;
-		}
+        /// Sets the focus strategy, see FocusStrategy
+        void SetFocusStrategy(FocusStrategy value) {
+            focusmode = value;
+        }
 
-		/// Returns the focus strategy set to this container. Do not use this to determine
-		/// current strategy, use CurrentFocusStrategy instead.
-		FocusStrategy GetFocusStrategy() const {
-			return focusmode;
-		}
+        /// Returns the focus strategy set to this container. Do not use this to determine
+        /// current strategy, use CurrentFocusStrategy instead.
+        FocusStrategy GetFocusStrategy() const {
+            return focusmode;
+        }
 
-		/// Returns the active focus strategy. This function will not return Inherit.
-		FocusStrategy CurrentFocusStrategy() const {
-			if(focusmode == Inherit)
-				return getparentfocusstrategy();
-			else
-				return focusmode;
-		}
+        /// Returns the active focus strategy. This function will not return Inherit.
+        FocusStrategy CurrentFocusStrategy() const {
+            if(focusmode == Inherit)
+                return getparentfocusstrategy();
+            else
+                return focusmode;
+        }
+        
+        /// Creates a new organizer that lives with this container
+        template <class O_, class ...Args_>
+        O_ &CreateOrganizer(Args_ &&... args) {
+            auto &org = *new O_(std::forward<Args_>(args)...);
+            AttachOrganizer(org);
+            
+            ownorganizer = true;
+            
+            return org;
+        }
+        
+        /// Attaches an organizer to this container. Ownership is not
+        /// transferred
+        void AttachOrganizer(Organizers::Base &organizer) {
+            if(this->organizer == &organizer)
+                return;
+            
+            this->organizer = &organizer;
+            
+            organizer.AttachTo(*this);
+            
+            ownorganizer = false;
+        }
+        
+        /// Removes the organizer from this container
+        void RemoveOrganizer();
+        
+        /// Returns if this container has an organizer
+        bool HasOrganizer() const {
+            return organizer != nullptr;
+        }
+        
+        /// Returns the organizer controlling this container. If this container does not have an organizer
+        /// this function will throw
+        Organizers::Base &GetOrganizer() const {
+            if(organizer == nullptr) {
+                throw std::runtime_error("The container does not have an organizer");
+            }
+            
+            return *organizer;
+        }
 
-		/// This function should be called whenever a key is pressed or released.
-		virtual bool KeyEvent(Input::Key key, float state) { return distributekeyevent(key, state, true); }
-		
-		/// This function should be called whenever a character is received from
-		/// operating system.
-		virtual bool CharacterEvent(Char c) { return distributecharevent(c); }
+        /// This function should be called whenever a key is pressed or released.
+        virtual bool KeyEvent(Input::Key key, float state) { return distributekeyevent(key, state, true); }
+        
+        /// This function should be called whenever a character is received from
+        /// operating system.
+        virtual bool CharacterEvent(Char c) { return distributecharevent(c); }
         
 
     protected:
@@ -280,13 +344,13 @@ namespace Gorgon { namespace UI {
         /// This function is called after a widget is added.
         virtual void widgetadded(WidgetBase &) { }
 
-		/// This function is called before removing a widget. Return false
-		/// to prevent that widget from getting removed. This widget is
-		/// guaranteed to be in this container
-		virtual bool removingwidget(WidgetBase &) { return true; }
+        /// This function is called before removing a widget. Return false
+        /// to prevent that widget from getting removed. This widget is
+        /// guaranteed to be in this container
+        virtual bool removingwidget(WidgetBase &) { return true; }
 
-		/// This function is called after a widget is removed
-		virtual void widgetremoved(WidgetBase &) { }
+        /// This function is called after a widget is removed
+        virtual void widgetremoved(WidgetBase &) { }
         
         /// This function is called when the container is to be enabled. This function
         /// will only be called when the container was disabled prior to the call.
@@ -298,37 +362,42 @@ namespace Gorgon { namespace UI {
         /// Return false if this container cannot be disabled.
         virtual bool disable() { return true; }
 
-		/// If this widget is not top level, return the current strategy used by the
-		/// parent. Never return Inherit from this function.
-		virtual FocusStrategy getparentfocusstrategy() const {
-			return AllowAll;
-		}
+        /// If this widget is not top level, return the current strategy used by the
+        /// parent. Never return Inherit from this function.
+        virtual FocusStrategy getparentfocusstrategy() const {
+            return AllowAll;
+        }
 
         /// Returns the layer that will be used to place the contained widgets.
         virtual Layer &getlayer() = 0;
 
-		/// This function is called when the focus is changed
-		virtual void focuschanged() { }
+        /// This function is called when the focus is changed
+        virtual void focuschanged() { }
         
-		/// Performs the standard operations (tab/enter/escape)
-		bool handlestandardkey(Input::Key key);
+        /// Performs the standard operations (tab/enter/escape)
+        bool handlestandardkey(Input::Key key);
 
-		/// Distributes the pressed key to the focused widget. If action not handled and
-		/// and handlestandard is true, this function will also perform standard action.
-		bool distributekeyevent(Input::Key key, float state, bool handlestandard);
+        /// Distributes the pressed key to the focused widget. If action not handled and
+        /// and handlestandard is true, this function will also perform standard action.
+        bool distributekeyevent(Input::Key key, float state, bool handlestandard);
 
-		/// Distributes a pressed character to the focused widget.
-		bool distributecharevent(Char c);
+        /// Distributes a pressed character to the focused widget.
+        bool distributecharevent(Char c);
+        
+        /// The boundary of any of the children is changed
+        virtual void childboundschanged();
 
     private:
-		bool isenabled          = true;
-		bool tabswitch          = true;
-		WidgetBase *def         = nullptr;
-		WidgetBase *cancel      = nullptr;
-		WidgetBase *focused     = nullptr;
-		int focusindex	        = -1;
+        bool isenabled              = true;
+        bool tabswitch              = true;
+        WidgetBase *def             = nullptr;
+        WidgetBase *cancel          = nullptr;
+        WidgetBase *focused         = nullptr;
+        int focusindex	            = -1;
+        Organizers::Base *organizer = nullptr;
+        bool ownorganizer           = false;
 
-		FocusStrategy focusmode = Inherit;
+        FocusStrategy focusmode = Inherit;
     };
     
 } }

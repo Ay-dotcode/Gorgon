@@ -47,5 +47,24 @@ namespace Gorgon { namespace UI {
             visible = value;
         }
     }
-}
-}
+
+    void WidgetBase::boundschanged(){
+        if(parent)
+            parent->childboundschanged();
+        
+        BoundsChangedEvent();
+    }
+
+    void WidgetBase::removed(){
+        if(!parent)
+            return;
+        
+        parent->childboundschanged();
+
+        parent = nullptr;
+        
+        if(IsVisible())
+            boundschanged(); 
+    }
+    
+} }

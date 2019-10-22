@@ -24,7 +24,7 @@ namespace Gorgon { namespace UI {
 			stack.Move(location);
 
 			if(IsVisible() && HasParent())
-				BoundsChangedEvent();
+                boundschanged();
 		}
         
         using WidgetBase::Resize;
@@ -33,7 +33,7 @@ namespace Gorgon { namespace UI {
             stack.Resize(size);
 
 			if(IsVisible() && HasParent())
-				BoundsChangedEvent();
+                boundschanged();
         }
 
 		virtual Geometry::Point GetLocation() const override {
@@ -73,7 +73,7 @@ namespace Gorgon { namespace UI {
 		}
 
 
-		virtual void setlayerorder(Layer &layer, int order) override {
+		virtual void setlayerorder(Layer &, int order) override {
 			stack.PlaceBefore(order);
 		}
 
@@ -82,14 +82,14 @@ namespace Gorgon { namespace UI {
             stack.Show();
 
 			if(HasParent())
-				BoundsChangedEvent();
+                boundschanged();
 		}
         
         virtual void hide() override {
             stack.Hide();
 
 			if(HasParent())
-				BoundsChangedEvent();
+                boundschanged();
 		}
 	};
     

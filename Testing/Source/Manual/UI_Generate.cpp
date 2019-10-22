@@ -9,6 +9,7 @@
 #include <Gorgon/Widgets/Label.h>
 #include <Gorgon/Widgets/Panel.h>
 #include <Gorgon/UI/RadioControl.h>
+#include <Gorgon/UI/Organizers/List.h>
 
 std::string helptext = 
     "Key list:\n"
@@ -111,13 +112,12 @@ int main() {
 	decrease.Resize(30, 30);
 	increase.SetText("+");
 	decrease.SetText("-");
-
-	valuelabel.Move(0, 0);
-	increase.Move(0, valuelabel.GetLocation().Y + 60);
-	decrease.Move(0, increase.GetLocation().Y+50);
 	
 	sub.Add(increase);
 	sub.Add(decrease);
+    sub.CreateOrganizer<Gorgon::UI::Organizers::List>();
+    
+    sub.SetWidth(100);
     
     increase.ClickEvent.Register([&]() {
         sub.ScrollTo(sub.ScrollOffset().Y+5);

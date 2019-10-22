@@ -292,8 +292,8 @@ namespace Gorgon {
 
 			/// Creates a new item and adds to the end of the collection
 			template<typename... Args_>
-			T_ &AddNew(Args_... args) {
-				auto t=new T_(args...);
+			T_ &AddNew(Args_&&... args) {
+				auto t = new T_(std::forward<Args_>(args)...);
 				Add(t);
 
 				return *t;
