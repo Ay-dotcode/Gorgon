@@ -6,6 +6,7 @@ namespace Gorgon { namespace Widgets {
     {
     }
 
+    
 	bool Panel::Activate() {
 		if(!Focus())
 			return false;
@@ -15,21 +16,26 @@ namespace Gorgon { namespace Widgets {
 		return true;
 	}
 
+	
 	bool Panel::KeyEvent(Input::Key key, float state) {
 		return UI::WidgetContainer::KeyEvent(key, state);
 	}
 
+	
 	bool Panel::CharacterEvent(Char c) {
 		return UI::WidgetContainer::CharacterEvent(c);
 	}
 
+	
 	bool Panel::IsVisible() const {
 		return stack.IsVisible();
 	}
 
+	
 	Geometry::Size Panel::GetInteriorSize() const {
 		return stack.TagBounds(UI::ComponentTemplate::Contents).GetSize();
 	}
+	
 
 	bool Panel::ResizeInterior(Geometry::Size size) {
 		auto tb = stack.TagBounds(UI::ComponentTemplate::Contents).GetSize();
@@ -37,6 +43,7 @@ namespace Gorgon { namespace Widgets {
 
 		return stack.TagBounds(UI::ComponentTemplate::Contents).GetSize() == size;
 	}
+	
 	
 	bool Panel::allowfocus() const {
         for(auto &w : widgets) {
@@ -47,17 +54,28 @@ namespace Gorgon { namespace Widgets {
         
         return false;
     }
+    
 
 	void Panel::focused() {
 		FocusFirst();
 	}
+	
 
 	void Panel::focuslost() {
 		RemoveFocus();
 	}
 
+	
 	Gorgon::Layer &Panel::getlayer() {
         return stack.GetLayerOf(stack.IndexOfTag(UI::ComponentTemplate::Contents));
 	}
 
+
+    void Panel::focuschanged() { 
+        if(HasFocusedWidget() && !IsFocused())
+            Focus();
+        else if(!HasFocusedWidget() && IsFocused())
+            RemoveFocus();
+    }
+    
 } }

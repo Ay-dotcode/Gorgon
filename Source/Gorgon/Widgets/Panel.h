@@ -54,7 +54,7 @@ namespace Gorgon { namespace Widgets {
         Geometry::Point ScrollOffset() const {
             auto val = stack.GetValue();
             return {(int)(val[0]*100), (int)(val[1]*100)};
-        }
+        }        
 
     protected:
         virtual bool allowfocus() const override;
@@ -66,6 +66,8 @@ namespace Gorgon { namespace Widgets {
 
 
         virtual Layer &getlayer() override;
+        
+        void focuschanged() override;
 
     };
     

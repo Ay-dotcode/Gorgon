@@ -296,6 +296,8 @@ namespace Gorgon { namespace UI {
 			prevfoc->focuslost();
 
 		widget.focused();
+        
+        focuschanged();
 
 		return true;
 	}
@@ -323,6 +325,8 @@ namespace Gorgon { namespace UI {
         focusindex = -1;
         
         prevfoc->focuslost();
+        
+        focuschanged();
     }
 
 
