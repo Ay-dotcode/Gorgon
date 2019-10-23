@@ -34,26 +34,39 @@ namespace Gorgon { namespace Widgets {
         virtual bool ResizeInterior(Geometry::Size size) override;
         
         /// Scrolls the contents of the panel so that the given location will
-        /// be at the top left.
-        void ScrollTo(Geometry::Point location) {
-            ScrollTo(location.X, location.Y);
+        /// be at the top left. If clip is set, the scroll amount cannot go
+        /// out of the scrolling region.
+        void ScrollTo(Geometry::Point location, bool clip = false) {
+            ScrollTo(location.X, location.Y, clip);
         }
         
         /// Scrolls the contents of the panel so that the given location will
-        /// be at the top left.
-        void ScrollTo(int x, int y) {
-            stack.SetValue(x/100.f, y/100.f);
-        }
+        /// be at the top left. If clip is set, the scroll amount cannot go
+        /// out of the scrolling region.
+        void ScrollTo(int x, int y, bool clip);
         
         /// Scrolls the contents of the panel so that the given location will
         /// be at the top.
-        void ScrollTo(int y) {
-            ScrollTo(stack.GetValue()[0]*100, y);
+        void ScrollTo(int y, bool clip = true) {
+            ScrollTo(stack.GetValue()[0]*100, y, clip);
         }
         
+        /// Returns the current scroll offset
         Geometry::Point ScrollOffset() const {
             auto val = stack.GetValue();
             return {(int)(val[0]*100), (int)(val[1]*100)};
+        }
+        
+        /// Sets the amount of extra scrolling distance after the bottom-most
+        /// widget is completely visible in pixels. Default is 0.
+        void SetOverscroll(int value) {
+            overscroll = value;
+        }
+        
+        /// Returns the amound of extra scrolling distance after the bottom-most
+        /// widget is completely visible in pixels.
+        int GetOverscroll() const {
+            return overscroll;
         }
 
     protected:
@@ -75,6 +88,8 @@ namespace Gorgon { namespace Widgets {
             
             WidgetBase::boundschanged();
         }
+        
+        int overscroll = 0;
     };
     
 } }

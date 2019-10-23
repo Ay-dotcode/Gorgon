@@ -94,6 +94,7 @@ namespace Gorgon { namespace Widgets {
         
         return border;
     }
+    
     Graphics::BitmapRectangleProvider &SimpleGenerator::DownBorder() {
         auto c = Background.Regular;
         c.Blend(Background.Down);
@@ -811,7 +812,8 @@ namespace Gorgon { namespace Widgets {
         
         
         auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
-        //bg.Background.SetAnimation(NormalBorder());
+        bg.SetClip(true);
+        
         bg.AddIndex(1);
         
         auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always);
