@@ -8,8 +8,7 @@ namespace Gorgon { namespace Widgets {
     
     Button::Button(const UI::Template &temp, std::string text) :
         ComponentStackWidget(temp),
-        Text(this), Icon(this),
-        ClickEvent(this), text(text) 
+        Text(this), Icon(this), text(text) 
     {
         stack.SetData(UI::ComponentTemplate::Text, text);
         stack.HandleMouse(Input::Mouse::Button::Left);
@@ -20,21 +19,36 @@ namespace Gorgon { namespace Widgets {
         });
 
         stack.SetMouseDownEvent([this](auto, auto, auto btn) {
-            if(allowfocus() && btn == Input::Mouse::Button::Left)
-                Focus();
-            
-            if(repeaten == repeatstandby) {
-                repeaten = repeatondelay;
-                repeatleft = repeatdelay;
+            if(btn == Input::Mouse::Button::Left) {
+                if(allowfocus()) {
+                    Focus();
+                }
+                
+                PressEvent();
+                
+                if(repeaten == repeatstandby) {
+                    repeaten = repeatondelay;
+                    repeatleft = repeatdelay;
+                }
+                
+                mousedown = true;
             }
         });
 
         stack.SetMouseUpEvent([this](auto, auto, auto btn) {
-            if(btn == Input::Mouse::Button::Left && spacedown)
-                stack.AddCondition(UI::ComponentCondition::Down);
-            
-            repeaten = repeatstandby;
-            repeatleft = -1;
+            if(btn == Input::Mouse::Button::Left) {
+                if(spacedown)
+                    stack.AddCondition(UI::ComponentCondition::Down);
+                else
+                    ReleaseEvent();
+                
+                if(repeaten != repeatdisabled) {
+                    repeaten = repeatstandby;
+                    repeatleft = -1;
+                }
+                
+                mousedown = false;
+            }
         });
     }
 
@@ -117,11 +131,13 @@ namespace Gorgon { namespace Widgets {
     bool Button::KeyEvent(Input::Key key, float state) {
         if(Input::Keyboard::CurrentModifier.IsModified())
             return false;
-        
+       
         namespace Keycodes = Input::Keyboard::Keycodes;
         
         if(key == Keycodes::Enter && state == 1) {
+            PressEvent();
             ClickEvent();
+            ReleaseEvent();
             
             return true;
         }
@@ -130,12 +146,29 @@ namespace Gorgon { namespace Widgets {
                 spacedown = true;
                 stack.AddCondition(UI::ComponentCondition::Down);
                 
+                PressEvent();
+                
+                if(repeaten == repeatstandby) {
+                    repeaten = repeatondelay;
+                    repeatleft = repeatdelay;
+                }
+                
                 return true;
             }
             else if(spacedown) {
                 spacedown  =false;
-                stack.RemoveCondition(UI::ComponentCondition::Down);
-                ClickEvent();
+                if(!mousedown) {
+                    stack.RemoveCondition(UI::ComponentCondition::Down);
+                    
+                    ClickEvent();
+                    
+                    ReleaseEvent();
+                    
+                    if(repeaten != repeatdisabled) {
+                        repeaten = repeatstandby;
+                        repeatleft = -1;
+                    }
+                }
                 
                 return true;
             }

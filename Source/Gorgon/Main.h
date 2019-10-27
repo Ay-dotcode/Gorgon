@@ -56,6 +56,9 @@ namespace Gorgon {
 	/// This method works similar to next frame, however, no delay is done. This function allows an
 	/// application to update the display and perform OS tasks while still continuing operation.
 	inline void UpdateFrame();
+    
+    /// Registers a function to be run at the start of the next frame.
+    void RegisterOnce(std::function<void()> fn);
 	
 	extern Event<> BeforeFrameEvent;
 }

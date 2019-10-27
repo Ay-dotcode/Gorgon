@@ -92,8 +92,10 @@ namespace Gorgon { namespace Widgets {
         TextualProperty<Button, std::string, &Button::GetText, &Button::SetText> Text;
 
         ObjectProperty<Button, const Graphics::Animation, &Button::GetIcon, &Button::SetIcon> Icon;
-
-        Event<Button> ClickEvent;
+        
+        Event<Button> ClickEvent    = Event<Button>(this);
+        Event<Button> PressEvent    = Event<Button>(this);
+        Event<Button> ReleaseEvent  = Event<Button>(this);
         
     private:
         std::string text;
@@ -101,6 +103,7 @@ namespace Gorgon { namespace Widgets {
         const Graphics::AnimationProvider  *iconprov = nullptr;
         bool ownicon    = false;
         bool spacedown  = false;
+        bool mousedown  = false;
         
         enum repeatstate {
             repeatdisabled,

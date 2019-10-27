@@ -40,6 +40,8 @@ DEFINE_GDB_SCRIPT ("Gorgon-gdb.py")
 namespace Gorgon {
 	
 	Event<> BeforeFrameEvent;
+    
+    std::vector<std::function<void()>> once;
 
 	bool exiting = false;
 
@@ -78,6 +80,12 @@ namespace Gorgon {
 		Time::internal::framestart=ctime;
 
 		Animation::Animate();
+        
+        for(auto &fn : once) {
+            fn();
+        }
+        
+        once.clear();
 
 		OS::processmessages();
 	}
@@ -113,4 +121,8 @@ namespace Gorgon {
 
 		OS::processmessages();
 	}
+	
+	void RegisterOnce(std::function<void()> fn) {
+        once.push_back(std::move(fn));
+    }
 }
