@@ -321,6 +321,7 @@ namespace Gorgon { namespace Widgets {
         icon.SetDataEffect(icon.Icon);
         icon.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
         icon.SetSize(100, 100, UI::Dimension::Percent);
+        icon.SetSizing(icon.Fixed);
         icon.SetClip(true);
         
         {

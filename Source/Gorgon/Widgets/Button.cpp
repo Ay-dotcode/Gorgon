@@ -224,4 +224,8 @@ namespace Gorgon { namespace Widgets {
         }
     }
     
+
+void Button::SetIcon(const Graphics::Bitmap& value){
+           SetIcon(dynamic_cast<const Graphics::Animation&>(value));
+       }
 } }

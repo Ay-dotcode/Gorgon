@@ -1167,41 +1167,41 @@ namespace Gorgon {
 
         /// Changes the indent of the component. Indent is added to the margin if the component is at the
         /// edge of the container.
-		void SetIndent(int value, Dimension::Unit unit = Dimension::Pixel) { margin = {{value, unit}}; ChangedEvent(); }
+		void SetIndent(int value, Dimension::Unit unit = Dimension::Pixel) { indent = {{value, unit}}; ChangedEvent(); }
 
         /// Changes the indent of the component. Indent is added to the margin if the component is at the
         /// edge of the container.
-		void SetIndent(int hor, int ver, Dimension::Unit unit = Dimension::Pixel) { margin = {{hor, unit}, {ver, unit}}; ChangedEvent(); }
+        void SetIndent(int hor, int ver, Dimension::Unit unit = Dimension::Pixel) { indent = {{hor, unit}, {ver, unit}}; ChangedEvent(); }
 
         /// Changes the indent of the component. Indent is added to the margin if the component is at the
         /// edge of the container.
 		void SetIndent(int left, int top, int right, int bottom, Dimension::Unit unit = Dimension::Pixel) { 
-            margin = {{left, unit}, {top, unit}, {right, unit}, {bottom, unit}}; 
+            indent = {{left, unit}, {top, unit}, {right, unit}, {bottom, unit}}; 
             ChangedEvent(); 
         }
 
         /// Changes the indent of the component. Indent is added to the margin if the component is at the
         /// edge of the container.
 		void SetIndent(Geometry::Margin value, Dimension::Unit unit = Dimension::Pixel) { 
-            margin = {{value.Left, unit}, {value.Top, unit}, {value.Right, unit}, {value.Bottom, unit}}; 
+            indent = {{value.Left, unit}, {value.Top, unit}, {value.Right, unit}, {value.Bottom, unit}}; 
             ChangedEvent(); 
         }
 
         /// Changes the indent of the component. Indent is added to the margin if the component is at the
         /// edge of the container.
-		void SetIndent(Dimension value) { margin = {value}; ChangedEvent(); }
+        void SetIndent(Dimension value) { indent = {value}; ChangedEvent(); }
 
         /// Changes the indent of the component. Indent is added to the margin if the component is at the
         /// edge of the container.
-		void SetIndent(Dimension hor, Dimension ver) { margin = {hor, ver}; ChangedEvent(); }
+        void SetIndent(Dimension hor, Dimension ver) { indent = {hor, ver}; ChangedEvent(); }
 
         /// Changes the indent of the component. Indent is added to the margin if the component is at the
         /// edge of the container.
-		void SetIndent(Dimension left, Dimension top, Dimension right, Dimension bottom) { margin = {left, top, right, bottom}; ChangedEvent(); }
+        void SetIndent(Dimension left, Dimension top, Dimension right, Dimension bottom) { indent = {left, top, right, bottom}; ChangedEvent(); }
 
         /// Changes the indent of the component. Indent is added to the margin if the component is at the
         /// edge of the container.
-		void SetIndent(Margin value) { margin = value; ChangedEvent(); }
+        void SetIndent(Margin value) { indent = value; ChangedEvent(); }
 
         /// Returns the current indent.
 		Margin GetIndent() const { return indent; }

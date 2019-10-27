@@ -10,6 +10,7 @@
 #include <Gorgon/Widgets/Panel.h>
 #include <Gorgon/UI/RadioControl.h>
 #include <Gorgon/UI/Organizers/List.h>
+#include <Gorgon/Graphics/BlankImage.h>
 
 std::string helptext = 
     "Key list:\n"
@@ -86,7 +87,15 @@ int main() {
 	rad.ChangedEvent.Register([&chk]{ chk.Show(); });
 	chk.FocusEvent.Register([]{ std::cout << "Focus changed." << std::endl; });
 
-	chk.Move(rad.GetLocation() + Gorgon::Geometry::Point(0, rad.GetSize().Height + 4));
+    chk.Move(rad.GetLocation() + Gorgon::Geometry::Point(0, rad.GetSize().Height + 4));
+
+    auto icobtntemp = gen.IconButton();
+    Widgets::Button ib(icobtntemp);
+    auto ico = Graphics::BlankImage({16, 16}, Graphics::Color::Black);
+    //ico.Prepare();
+    ib.OwnIcon(ico);
+    ib.Move(chk.GetLocation() + Gorgon::Geometry::Point(0, chk.GetSize().Height + 4));
+    app.wind.Add(ib);
     
     auto pnltemp = gen.BlankPanel();
     

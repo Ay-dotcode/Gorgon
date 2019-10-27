@@ -1734,11 +1734,17 @@ realign:
 				auto maxsize = parent.innersize - parentmargin;
             
 				if(temp.GetPositioning() != temp.Absolute && temp.GetPositioning() != temp.PolarAbsolute) {
-					if(cont.GetOrientation() == Graphics::Orientation::Horizontal)
+					if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
 						maxsize.Width = spaceleft - parentmargin.TotalX();
-					else
+                        if(maxsize.Width < 0) 
+                            maxsize.Width = 0;
+                    }
+					else {
 						maxsize.Height = spaceleft - parentmargin.TotalY();
-				}
+                        if(maxsize.Height < 0) 
+                            maxsize.Height = 0;
+                    }
+                }
             
 				auto size = temp.GetSize();
             
@@ -2080,7 +2086,7 @@ realign:
 							if(comp.anchorotherside) {
 								rightused = parent.innersize.Width - comp.location.X;
 							}
-							else if(comp.size.Width) {
+							else if(comp.size.Width > 0) {
 								leftused = (   
 									comp.location.X + comp.size.Width + 
 									std::max(temp.GetMargin().Right(parent.innersize.Width, emsize), cont.GetPadding().Right(parent.size.Width, emsize))

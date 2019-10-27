@@ -40,6 +40,11 @@ namespace Gorgon { namespace Widgets {
         /// Returns the text displayed on the button
         std::string GetText() const { return text; }
         
+        /// Changes the icon on the button. The ownership of the bitmap
+        /// is not transferred. If you wish the bitmap to be destroyed
+        /// with the button, use OwnIcon instead.
+        void SetIcon(const Graphics::Bitmap &value);
+        
         /// Changes the icon on the button. The ownership of the animation
         /// is not transferred. If you wish the animation to be destroyed
         /// with the button, use OwnIcon instead.
