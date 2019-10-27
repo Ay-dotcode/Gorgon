@@ -18,6 +18,9 @@ namespace Gorgon { namespace Widgets {
         /// Generates a button template with the given default size.
         virtual UI::Template Button(Geometry::Size size) = 0;
         
+        /// Generates a button template with the given default size.
+        virtual UI::Template IconButton(Geometry::Size size) = 0;
+        
         virtual UI::Template Checkbox(Geometry::Size size) = 0;
         
         virtual UI::Template RadioButton(Geometry::Size size) = 0;
@@ -41,12 +44,17 @@ namespace Gorgon { namespace Widgets {
 		explicit SimpleGenerator(int fontsize = 14, std::string fontname = "");
 
         
-		virtual ~SimpleGenerator();
-
-		virtual UI::Template Button(
-			Geometry::Size size = {70, 32}
-		) override;
-
+        virtual ~SimpleGenerator();
+        
+        virtual UI::Template Button(
+            Geometry::Size size = {70, 32}
+        ) override;
+        
+        
+        virtual UI::Template IconButton(
+            Geometry::Size size = {24, 24}
+        ) override;
+        
 
         virtual UI::Template Checkbox(
             Geometry::Size size = {166, 24}
