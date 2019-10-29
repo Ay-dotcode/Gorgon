@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 2.8)
 
 project(GscriptGenerator)
 
+include(FindEXPAT)
+find_package(EXPAT REQUIRED)
+include_directories(${EXPAT_INCLUDE_DIRS})
+
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/Bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_LIST_DIR}/Bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_LIST_DIR}/Bin)
@@ -34,5 +39,6 @@ if(MSVC)
     ENDFOREACH()
 endif()
 
-add_executable(GscriptGenerator Source/GscriptGenerator.cpp)
+add_executable(${PROJECT_NAME} Source/GscriptGenerator.cpp)
+target_link_libraries(${PROJECT_NAME} ${EXPAT_LIBRARIES})
 
