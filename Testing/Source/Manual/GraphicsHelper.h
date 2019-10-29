@@ -47,12 +47,14 @@ public:
 
 		wind.ClosingEvent.Register([] { exit(0); });
 
+        l.setname("BG");
 		wind.Add(l);
 
 		if(icon.Import("icon.png")) {
 			ico = WM::Icon{icon.GetData()};
 			wind.SetIcon(ico);
 		}
+        wind.setname("Wind");
 
 		bgimage = BGImage(tilesize, tilesize, colmod, colmod*3);
 		bgimage.Prepare();

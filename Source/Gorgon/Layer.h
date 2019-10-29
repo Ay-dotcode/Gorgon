@@ -11,10 +11,13 @@ namespace Gorgon {
     class Layer;
 
 	/// Current layer transformation, only for render and mouse 
-	extern Geometry::Transform3D Transform;
-    
+    extern Geometry::Transform3D Transform;
+
     /// Current clipping size, for mouse and clipping events
     extern Geometry::Bounds        Clip;
+
+    /// Current layer offset from the top left of the window
+    extern Geometry::Point         Offset;
     
     class MouseHandler {
     public:
@@ -161,6 +164,13 @@ namespace Gorgon {
 			
 			Add(*layer);
 		}
+
+        /// For debugging
+        void setname(std::string value) {
+#ifndef NDEBUG
+            name = value;
+#endif
+        }
 		
 		/// Inserts the given layer before the given index. The newly inserted
 		/// layer will be drawn *under* the layer in the given index
@@ -434,7 +444,13 @@ namespace Gorgon {
 
 		/// Whether this layer is visible, invisible layers will not
 		/// be drawn or receive any events
-		bool isvisible =true;
+		bool isvisible =true; 
+
+#ifndef NDEBUG
+        /// For debugging
+        std::string name;
+#endif
+
 	};
 
 }

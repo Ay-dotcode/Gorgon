@@ -6,11 +6,13 @@ namespace Gorgon {
 
 
 	std::vector<Geometry::Transform3D> prev_Transform;
-	std::vector<Geometry::Bounds>      prev_Clip;
+    std::vector<Geometry::Bounds>      prev_Clip;
+    std::vector<Geometry::Point>       prev_Offset;
 
 	extern Geometry::Transform3D Transform;
-	extern Graphics::RGBAf		  LayerColor;
+	extern Graphics::RGBAf		 LayerColor;
 	extern Geometry::Bounds      Clip;
+    extern Geometry::Point       Offset;
 
 	void Layer::Add(Layer &layer) {
 		if(layer.parent)
@@ -83,39 +85,51 @@ namespace Gorgon {
 	void Layer::dotransformandclip(bool inverse) {
 		prev_Transform.push_back(Transform);
 		prev_Clip.push_back(Clip);
+        prev_Offset.push_back(Offset);
+
+        Offset += bounds.TopLeft();
 
 		if(inverse)
 			Transform.Translate(-(Gorgon::Float)bounds.Left, -(Gorgon::Float)bounds.Top, 0);
 		else
 			Transform.Translate((Gorgon::Float)bounds.Left, (Gorgon::Float)bounds.Top, 0);
 
-		if(bounds.Left > 0)
-			Clip.Left += bounds.Left;
 
-		if(bounds.Top > 0)
-			Clip.Top  += bounds.Top;
+        auto curbounds = Geometry::Bounds(Offset, bounds.GetSize());
+        
+        /*std::cout<<name<<"\t";
+        std::cout<<Clip<<"\t\t";*/
 
-		int ebw = bounds.Width();
-		if(bounds.Width() && bounds.Left < 0)
-			ebw += bounds.Left;
+        //Clip = Intersect(Clip, curbounds);
+        if(Clip.Left < curbounds.Left)
+            Clip.Left = curbounds.Left;
 
-		int ebh = bounds.Height();
-		if(bounds.Height() && bounds.Top < 0)
-			ebh += bounds.Top;
+        if(bounds.Width() > 0 && Clip.Right > curbounds.Right)
+            Clip.Right = curbounds.Right;
 
-		if(bounds.Width() && ebw < Clip.Width())
-			Clip.SetWidth(ebw);
+        if(Clip.Top < curbounds.Top)
+            Clip.Top = curbounds.Top;
 
-		if(bounds.Height() && ebh < Clip.Height())
-			Clip.SetHeight(ebh);
+        if(bounds.Height() > 0 && Clip.Bottom > curbounds.Bottom)
+            Clip.Bottom = curbounds.Bottom;
+
+        if(Clip.Left > Clip.Right)
+            Clip.Right = Clip.Left;
+
+        if(Clip.Top > Clip.Bottom)
+            Clip.Bottom = Clip.Top;
+
+        //std::cout<<Clip<<std::endl;
 	}
 
 	void Layer::reverttransformandclip() {
 		Transform = prev_Transform.back();
 		Clip = prev_Clip.back();
+        Offset = prev_Offset.back();
 
 		prev_Transform.pop_back();
 		prev_Clip.pop_back();
+        prev_Offset.pop_back();
 	}
 
     Layer::~Layer() {
@@ -131,8 +145,9 @@ namespace Gorgon {
     }
 
 	Geometry::Transform3D Transform;
-	Graphics::RGBAf		  LayerColor;
-	Geometry::Bounds      Clip;
+    Graphics::RGBAf		  LayerColor;
+    Geometry::Bounds      Clip;
+    Geometry::Point       Offset;
 
 	const Geometry::Bounds Layer::EntireRegion = {0,0,0,0};
 

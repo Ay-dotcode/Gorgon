@@ -63,6 +63,7 @@ namespace Gorgon {
 		}
 		ResetTransform(GetSize());
 		LayerColor = Graphics::RGBAf(1.f);
+        Offset = {0, 0};
 		GL::Clear();
 		ScreenSize = bounds.GetSize();
 		Clip = bounds;
