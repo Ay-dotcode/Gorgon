@@ -106,32 +106,32 @@ namespace Gorgon { namespace Input {
             }
 		}
 		else if(event == Input::Mouse::EventType::Scroll_Vert && vscroll) {
-			vscroll(*this, curlocation, amount);
+			if(vscroll(*this, curlocation, amount)) {
+                handlers.Add(this);
 
-            handlers.Add(this);
-
-			return true;
+                return true;
+            }
 		}
 		else if(event == Input::Mouse::EventType::Scroll_Hor && hscroll) {
-			hscroll(*this, curlocation, amount);
+			if(hscroll(*this, curlocation, amount)) {
+                handlers.Add(this);
 
-            handlers.Add(this);
-
-			return true;
+                return true;
+            }
 		}
 		else if(event == Input::Mouse::EventType::Zoom && zoom) {
-			zoom(*this, curlocation, amount);
+			if(zoom(*this, curlocation, amount)) {
+                handlers.Add(this);
 
-            handlers.Add(this);
-
-			return true;
+                return true;
+            }
 		}
 		else if(event == Input::Mouse::EventType::Rotate && rotate) {
-			rotate(*this, curlocation, amount);
+			if(rotate(*this, curlocation, amount)) {
+                handlers.Add(this);
 
-            handlers.Add(this);
-
-			return true;
+                return true;
+            }
 		}
 		else if(event == Input::Mouse::EventType::Move && move) {
 			move(*this, curlocation);

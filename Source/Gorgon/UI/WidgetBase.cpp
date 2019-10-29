@@ -37,20 +37,20 @@ namespace Gorgon { namespace UI {
 
     void WidgetBase::SetVisible(bool value) {
         if(visible != value) {
+            visible = value;
+            
             if(value)
                 show();
             else {
                 Defocus();
                 hide();
             }
-            
-            visible = value;
         }
     }
 
     void WidgetBase::boundschanged(){
         if(parent)
-            parent->childboundschanged();
+            parent->childboundschanged(this);
         
         BoundsChangedEvent();
     }
@@ -59,7 +59,7 @@ namespace Gorgon { namespace UI {
         if(!parent)
             return;
         
-        parent->childboundschanged();
+        parent->childboundschanged(this);
 
         parent = nullptr;
         

@@ -667,97 +667,97 @@ namespace Gorgon { namespace Input {
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
-			void SetScroll(std::function<void(Layer &, Geometry::Point, float)> fn) {
+			void SetScroll(std::function<bool(Layer &, Geometry::Point, float)> fn) {
 				vscroll = fn;
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
-			void SetScroll(std::function<void(Geometry::Point, float)> fn) {
-				vscroll = [fn](Layer &, Geometry::Point point, float amount) { fn(point, amount); };
+			void SetScroll(std::function<bool(Geometry::Point, float)> fn) {
+				vscroll = [fn](Layer &, Geometry::Point point, float amount) { return fn(point, amount); };
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
 			template<class C_>
-			void SetScroll(C_ &c, void(C_::*fn)(Layer &, Geometry::Point, float)) {
+			void SetScroll(C_ &c, bool(C_::*fn)(Layer &, Geometry::Point, float)) {
 				C_ *my = &c;
-				vscroll = [fn, my](Layer &layer, Geometry::Point point, float amount) { (my->*fn)(layer, point, amount); };
+				vscroll = [fn, my](Layer &layer, Geometry::Point point, float amount) { return (my->*fn)(layer, point, amount); };
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
 			template<class C_>
-			void SetScroll(C_ &c, void(C_::*fn)(Geometry::Point, float)) {
+			void SetScroll(C_ &c, bool(C_::*fn)(Geometry::Point, float)) {
 				C_ *my = &c;
-				vscroll = [fn, my](Layer &, Geometry::Point point, float amount) { (my->*fn)(point, amount); };
+				vscroll = [fn, my](Layer &, Geometry::Point point, float amount) { return (my->*fn)(point, amount); };
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
 			template<class C_>
-			void SetScroll(C_ *my, void(C_::*fn)(Layer &, Geometry::Point, float)) {
-				vscroll = [fn, my](Layer &layer, Geometry::Point point, float amount) { (my->*fn)(layer, point, amount); };
+			void SetScroll(C_ *my, bool(C_::*fn)(Layer &, Geometry::Point, float)) {
+				vscroll = [fn, my](Layer &layer, Geometry::Point point, float amount) { return (my->*fn)(layer, point, amount); };
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
 			template<class C_>
-			void SetScroll(C_ *my, void(C_::*fn)(Geometry::Point, float)) {
-				vscroll = [fn, my](Layer &, Geometry::Point point, float amount) { (my->*fn)(point, amount); };
+			void SetScroll(C_ *my, bool(C_::*fn)(Geometry::Point, float)) {
+				vscroll = [fn, my](Layer &, Geometry::Point point, float amount) { return (my->*fn)(point, amount); };
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
-			void SetScroll(std::function<void(Layer &, float)> fn) {
-				vscroll = [fn](Layer &layer, Geometry::Point, float amount) { fn(layer, amount); };
+			void SetScroll(std::function<bool(Layer &, float)> fn) {
+				vscroll = [fn](Layer &layer, Geometry::Point, float amount) { return fn(layer, amount); };
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
-			void SetScroll(std::function<void(float)> fn) {
-				vscroll = [fn](Layer &, Geometry::Point, float amount) { fn(amount); };
+			void SetScroll(std::function<bool(float)> fn) {
+				vscroll = [fn](Layer &, Geometry::Point, float amount) { return fn(amount); };
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
 			template<class C_>
-			void SetScroll(C_ &c, void(C_::*fn)(Layer &, float)) {
+			void SetScroll(C_ &c, bool(C_::*fn)(Layer &, float)) {
 				C_ *my = &c;
-				vscroll = [fn, my](Layer &layer, Geometry::Point, float amount) { (my->*fn)(layer, amount); };
+				vscroll = [fn, my](Layer &layer, Geometry::Point, float amount) { return (my->*fn)(layer, amount); };
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
 			template<class C_>
-			void SetScroll(C_ &c, void(C_::*fn)(float)) {
+			void SetScroll(C_ &c, bool(C_::*fn)(float)) {
 				C_ *my = &c;
-				vscroll = [fn, my](Layer &, Geometry::Point, float amount) { (my->*fn)(amount); };
+				vscroll = [fn, my](Layer &, Geometry::Point, float amount) { return (my->*fn)(amount); };
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
 			template<class C_>
-			void SetScroll(C_ *my, void(C_::*fn)(Layer &, float)) {
-				vscroll = [fn, my](Layer &layer, Geometry::Point, float amount) { (my->*fn)(layer, amount); };
+			void SetScroll(C_ *my, bool(C_::*fn)(Layer &, float)) {
+				vscroll = [fn, my](Layer &layer, Geometry::Point, float amount) { return (my->*fn)(layer, amount); };
 			}
 
 			/// Sets scroll handler. Scrolling down will give negative number while scrolling up will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained.
 			template<class C_>
-			void SetScroll(C_ *my, void(C_::*fn)(float)) {
-				vscroll = [fn, my](Layer &, Geometry::Point, float amount) { (my->*fn)(amount); };
+			void SetScroll(C_ *my, bool(C_::*fn)(float)) {
+				vscroll = [fn, my](Layer &, Geometry::Point, float amount) { return (my->*fn)(amount); };
 			}
 
 			/// Removes scroll handler
@@ -770,97 +770,97 @@ namespace Gorgon { namespace Input {
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
-			void SetHScroll(std::function<void(Layer &, Geometry::Point, float)> fn) {
+			void SetHScroll(std::function<bool(Layer &, Geometry::Point, float)> fn) {
 				hscroll = fn;
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
-			void SetHScroll(std::function<void(Geometry::Point, float)> fn) {
-				hscroll = [fn](Layer &, Geometry::Point point, float amount) { fn(point, amount); };
+			void SetHScroll(std::function<bool(Geometry::Point, float)> fn) {
+				hscroll = [fn](Layer &, Geometry::Point point, float amount) { return fn(point, amount); };
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
 			template<class C_>
-			void SetHScroll(C_ &c, void(C_::*fn)(Layer &, Geometry::Point, float)) {
+			void SetHScroll(C_ &c, bool(C_::*fn)(Layer &, Geometry::Point, float)) {
 				C_ *my = &c;
-				hscroll = [fn, my](Layer &layer, Geometry::Point point, float amount) { (my->*fn)(layer, point, amount); };
+                hscroll = [fn, my](Layer &layer, Geometry::Point point, float amount) { return (my->*fn)(layer, point, amount); };
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
 			template<class C_>
-			void SetHScroll(C_ &c, void(C_::*fn)(Geometry::Point, float)) {
+			void SetHScroll(C_ &c, bool(C_::*fn)(Geometry::Point, float)) {
 				C_ *my = &c;
-				hscroll = [fn, my](Layer &, Geometry::Point point, float amount) { (my->*fn)(point, amount); };
+                hscroll = [fn, my](Layer &, Geometry::Point point, float amount) { return (my->*fn)(point, amount); };
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
 			template<class C_>
-			void SetHScroll(C_ *my, void(C_::*fn)(Layer &, Geometry::Point, float)) {
-				hscroll = [fn, my](Layer &layer, Geometry::Point point, float amount) { (my->*fn)(layer, point, amount); };
+			void SetHScroll(C_ *my, bool(C_::*fn)(Layer &, Geometry::Point, float)) {
+                hscroll = [fn, my](Layer &layer, Geometry::Point point, float amount) { return (my->*fn)(layer, point, amount); };
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
 			template<class C_>
-			void SetHScroll(C_ *my, void(C_::*fn)(Geometry::Point, float)) {
-				hscroll = [fn, my](Layer &, Geometry::Point point, float amount) { (my->*fn)(point, amount); };
+			void SetHScroll(C_ *my, bool(C_::*fn)(Geometry::Point, float)) {
+                hscroll = [fn, my](Layer &, Geometry::Point point, float amount) { return (my->*fn)(point, amount); };
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
-			void SetHScroll(std::function<void(Layer &, float)> fn) {
-				hscroll = [fn](Layer &layer, Geometry::Point, float amount) { fn(layer, amount); };
+			void SetHScroll(std::function<bool(Layer &, float)> fn) {
+                hscroll = [fn](Layer &layer, Geometry::Point, float amount) { return fn(layer, amount); };
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
-			void SetHScroll(std::function<void(float)> fn) {
-				hscroll = [fn](Layer &, Geometry::Point, float amount) { fn(amount); };
+			void SetHScroll(std::function<bool(float)> fn) {
+                hscroll = [fn](Layer &, Geometry::Point, float amount) { return fn(amount); };
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
 			template<class C_>
-			void SetHScroll(C_ &c, void(C_::*fn)(Layer &, float)) {
+			void SetHScroll(C_ &c, bool(C_::*fn)(Layer &, float)) {
 				C_ *my = &c;
-				hscroll = [fn, my](Layer &layer, Geometry::Point, float amount) { (my->*fn)(layer, amount); };
+                hscroll = [fn, my](Layer &layer, Geometry::Point, float amount) { return (my->*fn)(layer, amount); };
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
 			template<class C_>
-			void SetHScroll(C_ &c, void(C_::*fn)(float)) {
+			void SetHScroll(C_ &c, bool(C_::*fn)(float)) {
 				C_ *my = &c;
-				hscroll = [fn, my](Layer &, Geometry::Point, float amount) { (my->*fn)(amount); };
+                hscroll = [fn, my](Layer &, Geometry::Point, float amount) { return (my->*fn)(amount); };
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
 			template<class C_>
-			void SetHScroll(C_ *my, void(C_::*fn)(Layer &, float)) {
-				hscroll = [fn, my](Layer &layer, Geometry::Point, float amount) { (my->*fn)(layer, amount); };
+			void SetHScroll(C_ *my, bool(C_::*fn)(Layer &, float)) {
+                hscroll = [fn, my](Layer &layer, Geometry::Point, float amount) { return (my->*fn)(layer, amount); };
 			}
 
 			/// Sets horizontal scroll handler. Scrolling right will give negative number while scrolling left will give
 			/// a positive number. 1 means one full scroll. If the device supports smooth scrolling, partial
 			/// values can be obtained. Not all devices support horizontal scrolling.
 			template<class C_>
-			void SetHScroll(C_ *my, void(C_::*fn)(float)) {
-				hscroll = [fn, my](Layer &, Geometry::Point, float amount) { (my->*fn)(amount); };
+			void SetHScroll(C_ *my, bool(C_::*fn)(float)) {
+                hscroll = [fn, my](Layer &, Geometry::Point, float amount) { return (my->*fn)(amount); };
 			}
 
 			/// Removes horizontal scroll handler
@@ -872,86 +872,86 @@ namespace Gorgon { namespace Input {
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
-			void SetZoom(std::function<void(Layer &, Geometry::Point, float)> fn) {
+			void SetZoom(std::function<bool(Layer &, Geometry::Point, float)> fn) {
 				zoom = fn;
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
-			void SetZoom(std::function<void(Geometry::Point, float)> fn) {
-				zoom = [fn](Layer &, Geometry::Point point, float amount) { fn(point, amount); };
+			void SetZoom(std::function<bool(Geometry::Point, float)> fn) {
+                zoom = [fn](Layer &, Geometry::Point point, float amount) { return fn(point, amount); };
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
 			template<class C_>
-			void SetZoom(C_ &c, void(C_::*fn)(Layer &, Geometry::Point, float)) {
+			void SetZoom(C_ &c, bool(C_::*fn)(Layer &, Geometry::Point, float)) {
 				C_ *my = &c;
-				zoom = [fn, my](Layer &layer, Geometry::Point point, float amount) { (my->*fn)(layer, point, amount); };
+                zoom = [fn, my](Layer &layer, Geometry::Point point, float amount) { return (my->*fn)(layer, point, amount); };
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
 			template<class C_>
-			void SetZoom(C_ &c, void(C_::*fn)(Geometry::Point, float)) {
+			void SetZoom(C_ &c, bool(C_::*fn)(Geometry::Point, float)) {
 				C_ *my = &c;
-				zoom = [fn, my](Layer &, Geometry::Point point, float amount) { (my->*fn)(point, amount); };
+                zoom = [fn, my](Layer &, Geometry::Point point, float amount) { return (my->*fn)(point, amount); };
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
 			template<class C_>
-			void SetZoom(C_ *my, void(C_::*fn)(Layer &, Geometry::Point, float)) {
-				zoom = [fn, my](Layer &layer, Geometry::Point point, float amount) { (my->*fn)(layer, point, amount); };
+			void SetZoom(C_ *my, bool(C_::*fn)(Layer &, Geometry::Point, float)) {
+                zoom = [fn, my](Layer &layer, Geometry::Point point, float amount) { return (my->*fn)(layer, point, amount); };
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
 			template<class C_>
-			void SetZoom(C_ *my, void(C_::*fn)(Geometry::Point, float)) {
-				zoom = [fn, my](Layer &, Geometry::Point point, float amount) { (my->*fn)(point, amount); };
+			void SetZoom(C_ *my, bool(C_::*fn)(Geometry::Point, float)) {
+                zoom = [fn, my](Layer &, Geometry::Point point, float amount) { return (my->*fn)(point, amount); };
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
-			void SetZoom(std::function<void(Layer &, float)> fn) {
-				zoom = [fn](Layer &layer, Geometry::Point, float amount) { fn(layer, amount); };
+			void SetZoom(std::function<bool(Layer &, float)> fn) {
+                zoom = [fn](Layer &layer, Geometry::Point, float amount) { return fn(layer, amount); };
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
-			void SetZoom(std::function<void(float)> fn) {
-				zoom = [fn](Layer &, Geometry::Point, float amount) { fn(amount); };
+			void SetZoom(std::function<bool(float)> fn) {
+                zoom = [fn](Layer &, Geometry::Point, float amount) { return fn(amount); };
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
 			template<class C_>
-			void SetZoom(C_ &c, void(C_::*fn)(Layer &, float)) {
+			void SetZoom(C_ &c, bool(C_::*fn)(Layer &, float)) {
 				C_ *my = &c;
-				zoom = [fn, my](Layer &layer, Geometry::Point, float amount) { (my->*fn)(layer, amount); };
+                zoom = [fn, my](Layer &layer, Geometry::Point, float amount) { return (my->*fn)(layer, amount); };
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
 			template<class C_>
-			void SetZoom(C_ &c, void(C_::*fn)(float)) {
+			void SetZoom(C_ &c, bool(C_::*fn)(float)) {
 				C_ *my = &c;
-				zoom = [fn, my](Layer &, Geometry::Point, float amount) { (my->*fn)(amount); };
+                zoom = [fn, my](Layer &, Geometry::Point, float amount) { return (my->*fn)(amount); };
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
 			template<class C_>
-			void SetZoom(C_ *my, void(C_::*fn)(Layer &, float)) {
-				zoom = [fn, my](Layer &layer, Geometry::Point, float amount) { (my->*fn)(layer, amount); };
+			void SetZoom(C_ *my, bool(C_::*fn)(Layer &, float)) {
+                zoom = [fn, my](Layer &layer, Geometry::Point, float amount) { return (my->*fn)(layer, amount); };
 			}
 
 			/// Sets zoom handler. Zoom amount is calculated as a ratio. 2 means, 2x zoom should be performed. 
 			/// Not all devices support zoom gesture.
 			template<class C_>
-			void SetZoom(C_ *my, void(C_::*fn)(float)) {
-				zoom = [fn, my](Layer &, Geometry::Point, float amount) { (my->*fn)(amount); };
+			void SetZoom(C_ *my, bool(C_::*fn)(float)) {
+                zoom = [fn, my](Layer &, Geometry::Point, float amount) { return (my->*fn)(amount); };
 			}
 
 			/// Removes zoom handler
@@ -963,86 +963,86 @@ namespace Gorgon { namespace Input {
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
-			void SetRotate(std::function<void(Layer &, Geometry::Point, float)> fn) {
+			void SetRotate(std::function<bool(Layer &, Geometry::Point, float)> fn) {
 				rotate = fn;
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
-			void SetRotate(std::function<void(Geometry::Point, float)> fn) {
-				rotate = [fn](Layer &, Geometry::Point point, float amount) { fn(point, amount); };
+			void SetRotate(std::function<bool(Geometry::Point, float)> fn) {
+                rotate = [fn](Layer &, Geometry::Point point, float amount) { return fn(point, amount); };
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
 			template<class C_>
-			void SetRotate(C_ &c, void(C_::*fn)(Layer &, Geometry::Point, float)) {
+			void SetRotate(C_ &c, bool(C_::*fn)(Layer &, Geometry::Point, float)) {
 				C_ *my = &c;
-				rotate = [fn, my](Layer &layer, Geometry::Point point, float amount) { (my->*fn)(layer, point, amount); };
+                rotate = [fn, my](Layer &layer, Geometry::Point point, float amount) { return (my->*fn)(layer, point, amount); };
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
 			template<class C_>
-			void SetRotate(C_ &c, void(C_::*fn)(Geometry::Point, float)) {
+			void SetRotate(C_ &c, bool(C_::*fn)(Geometry::Point, float)) {
 				C_ *my = &c;
-				rotate = [fn, my](Layer &, Geometry::Point point, float amount) { (my->*fn)(point, amount); };
+                rotate = [fn, my](Layer &, Geometry::Point point, float amount) { return (my->*fn)(point, amount); };
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
 			template<class C_>
-			void SetRotate(C_ *my, void(C_::*fn)(Layer &, Geometry::Point, float)) {
-				rotate = [fn, my](Layer &layer, Geometry::Point point, float amount) { (my->*fn)(layer, point, amount); };
+			void SetRotate(C_ *my, bool(C_::*fn)(Layer &, Geometry::Point, float)) {
+                rotate = [fn, my](Layer &layer, Geometry::Point point, float amount) { return (my->*fn)(layer, point, amount); };
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
 			template<class C_>
-			void SetRotate(C_ *my, void(C_::*fn)(Geometry::Point, float)) {
-				rotate = [fn, my](Layer &, Geometry::Point point, float amount) { (my->*fn)(point, amount); };
+			void SetRotate(C_ *my, bool(C_::*fn)(Geometry::Point, float)) {
+                rotate = [fn, my](Layer &, Geometry::Point point, float amount) { return (my->*fn)(point, amount); };
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
-			void SetRotate(std::function<void(Layer &, float)> fn) {
-				rotate = [fn](Layer &layer, Geometry::Point, float amount) { fn(layer, amount); };
+			void SetRotate(std::function<bool(Layer &, float)> fn) {
+                rotate = [fn](Layer &layer, Geometry::Point, float amount) { return fn(layer, amount); };
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
-			void SetRotate(std::function<void(float)> fn) {
-				rotate = [fn](Layer &, Geometry::Point, float amount) { fn(amount); };
+			void SetRotate(std::function<bool(float)> fn) {
+                rotate = [fn](Layer &, Geometry::Point, float amount) { return fn(amount); };
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
 			template<class C_>
-			void SetRotate(C_ &c, void(C_::*fn)(Layer &, float)) {
+			void SetRotate(C_ &c, bool(C_::*fn)(Layer &, float)) {
 				C_ *my = &c;
-				rotate = [fn, my](Layer &layer, Geometry::Point, float amount) { (my->*fn)(layer, amount); };
+                rotate = [fn, my](Layer &layer, Geometry::Point, float amount) { return (my->*fn)(layer, amount); };
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
 			template<class C_>
-			void SetRotate(C_ &c, void(C_::*fn)(float)) {
+			void SetRotate(C_ &c, bool(C_::*fn)(float)) {
 				C_ *my = &c;
-				rotate = [fn, my](Layer &, Geometry::Point, float amount) { (my->*fn)(amount); };
+                rotate = [fn, my](Layer &, Geometry::Point, float amount) { return (my->*fn)(amount); };
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
 			template<class C_>
-			void SetRotate(C_ *my, void(C_::*fn)(Layer &, float)) {
-				rotate = [fn, my](Layer &layer, Geometry::Point, float amount) { (my->*fn)(layer, amount); };
+			void SetRotate(C_ *my, bool(C_::*fn)(Layer &, float)) {
+                rotate = [fn, my](Layer &layer, Geometry::Point, float amount) { return (my->*fn)(layer, amount); };
 			}
 
 			/// Sets rotate handler. Rotate amount is given in radians. Positive values should rotate counter clockwise.
 			/// Not all devices support rotation gesture.
 			template<class C_>
-			void SetRotate(C_ *my, void(C_::*fn)(float)) {
-				rotate = [fn, my](Layer &, Geometry::Point, float amount) { (my->*fn)(amount); };
+			void SetRotate(C_ *my, bool(C_::*fn)(float)) {
+                rotate = [fn, my](Layer &, Geometry::Point, float amount) { return (my->*fn)(amount); };
 			}
 
 			/// Removes rotate handler.
@@ -1159,10 +1159,10 @@ namespace Gorgon { namespace Input {
             std::function<void(Layer &, Geometry::Point)> move;
             std::function<void(Layer &)> over;
 			std::function<void(Layer &)> out;
-			std::function<void(Layer &, Geometry::Point, float amount)> vscroll;
-			std::function<void(Layer &, Geometry::Point, float amount)> hscroll;
-			std::function<void(Layer &, Geometry::Point, float amount)> zoom;
-			std::function<void(Layer &, Geometry::Point, float amount)> rotate;
+            std::function<bool(Layer &, Geometry::Point, float amount)> vscroll;
+            std::function<bool(Layer &, Geometry::Point, float amount)> hscroll;
+            std::function<bool(Layer &, Geometry::Point, float amount)> zoom;
+            std::function<bool(Layer &, Geometry::Point, float amount)> rotate;
             
             Geometry::Transform3D mytransform;
             

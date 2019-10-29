@@ -15,6 +15,10 @@ namespace Gorgon { namespace Widgets {
         
         explicit Panel(const UI::Template &temp);
         
+        using WidgetBase::Resize;
+        
+        virtual void Resize(Geometry::Size size) override;
+        
 
         virtual bool Activate() override;
 
@@ -60,15 +64,17 @@ namespace Gorgon { namespace Widgets {
         void ScrollBy(int x, int y, bool clip = true) {
             ScrollTo(ScrollOffset().X + x, ScrollOffset().Y + y, clip);
         }
-
+        
         /// Returns the current scroll offset
         Geometry::Point ScrollOffset() const;
         
+        /// Returns the current maximum scroll offset
+        Geometry::Point MaxScrollOffset() const;
+        
         /// Sets the amount of extra scrolling distance after the bottom-most
-        /// widget is completely visible in pixels. Default is 0.
-        void SetOverscroll(int value) {
-            overscroll = value;
-        }
+        /// widget is completely visible in pixels. Default is 0. Does not
+        /// apply if everything is visible.
+        void SetOverscroll(int value);
         
         /// Returns the amount of extra scrolling distance after the bottom-most
         /// widget is completely visible in pixels.
@@ -89,14 +95,10 @@ namespace Gorgon { namespace Widgets {
         
         void focuschanged() override;
         
-        virtual void boundschanged() override {
-            if(HasOrganizer())
-                GetOrganizer().Reorganize();
-            
-            WidgetBase::boundschanged();
-        }
+        virtual void childboundschanged(WidgetBase *source) override;
         
         int overscroll = 0;
+        bool scrollclipped = true;
     };
     
 } }

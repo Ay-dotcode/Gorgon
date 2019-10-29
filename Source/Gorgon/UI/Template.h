@@ -1013,6 +1013,7 @@ namespace Gorgon {
             ExpandTag,
             ToggleTag,
 			Contents,
+            ViewPort,
         };
         
         /// Some components are repeated along some axis, this property controls how they will be

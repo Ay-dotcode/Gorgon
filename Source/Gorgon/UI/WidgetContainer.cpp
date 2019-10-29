@@ -381,7 +381,7 @@ namespace Gorgon { namespace UI {
         return false;
     }
 
-    void WidgetContainer::childboundschanged() {
+    void WidgetContainer::childboundschanged(WidgetBase *) {
         if(organizer)
             organizer->Reorganize();
     }
@@ -400,6 +400,20 @@ namespace Gorgon { namespace UI {
             delete org;
         
         ownorganizer = false;
+    }
+    
+    void WidgetContainer::AttachOrganizer(Organizers::Base &organizer) {
+        if(this->organizer == &organizer)
+            return;
+        
+        this->organizer = &organizer;
+        
+        organizer.AttachTo(*this);
+        
+        ownorganizer = false;
+        
+        organizer.Reorganize();
+        
     }
 
     WidgetContainer::~WidgetContainer() { 

@@ -296,16 +296,7 @@ namespace Gorgon { namespace UI {
         
         /// Attaches an organizer to this container. Ownership is not
         /// transferred
-        void AttachOrganizer(Organizers::Base &organizer) {
-            if(this->organizer == &organizer)
-                return;
-            
-            this->organizer = &organizer;
-            
-            organizer.AttachTo(*this);
-            
-            ownorganizer = false;
-        }
+        void AttachOrganizer(Organizers::Base &organizer);
         
         /// Removes the organizer from this container
         void RemoveOrganizer();
@@ -384,8 +375,8 @@ namespace Gorgon { namespace UI {
         /// Distributes a pressed character to the focused widget.
         bool distributecharevent(Char c);
         
-        /// The boundary of any of the children is changed
-        virtual void childboundschanged();
+        /// The boundary of any of the children is changed. Source could be nullptr
+        virtual void childboundschanged(WidgetBase *source);
 
     private:
         bool isenabled              = true;

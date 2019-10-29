@@ -14,7 +14,7 @@ namespace Gorgon { namespace UI {
             if(maxindex < temp[i].GetIndex())
                 maxindex = temp[i].GetIndex();
         }
-       
+    
         indices = maxindex + 1;
         
         data = (Component*)malloc(sizeof(Component) * indices * stackcapacity);
@@ -26,52 +26,52 @@ namespace Gorgon { namespace UI {
         addcondition(ComponentCondition::None, ComponentCondition::Always);
         
         mouse.SetOver([this]{
-			if(handlingmouse) {
-				if(IsDisabled()) {
-					disabled.insert(ComponentCondition::Hover);
-				}
-				else {
-					AddCondition(ComponentCondition::Hover);
-				}
-			}
+            if(handlingmouse) {
+                if(IsDisabled()) {
+                    disabled.insert(ComponentCondition::Hover);
+                }
+                else {
+                    AddCondition(ComponentCondition::Hover);
+                }
+            }
                 
             if(over_fn)
                 over_fn(ComponentTemplate::NoTag);
         });
         
-		mouse.SetOut([this] {
-			if(handlingmouse) {
-				RemoveCondition(ComponentCondition::Hover, !IsDisabled());
-				disabled.erase(ComponentCondition::Hover);
-			}
+        mouse.SetOut([this] {
+            if(handlingmouse) {
+                RemoveCondition(ComponentCondition::Hover, !IsDisabled());
+                disabled.erase(ComponentCondition::Hover);
+            }
 
             if(out_fn)
                 out_fn(ComponentTemplate::NoTag);
         });
         
-		mouse.SetDown([this](Geometry::Point location, Input::Mouse::Button btn) {
-			if(handlingmouse) {
-				if(btn && mousebuttonaccepted) {
-					if(IsDisabled()) {
-						disabled.insert(ComponentCondition::Down);
-					}
-					else {
-						AddCondition(ComponentCondition::Down);
-					}
-				}
-			}
+        mouse.SetDown([this](Geometry::Point location, Input::Mouse::Button btn) {
+            if(handlingmouse) {
+                if(btn && mousebuttonaccepted) {
+                    if(IsDisabled()) {
+                        disabled.insert(ComponentCondition::Down);
+                    }
+                    else {
+                        AddCondition(ComponentCondition::Down);
+                    }
+                }
+            }
 
             if(down_fn)
                 down_fn(ComponentTemplate::NoTag, location, btn);
         });
         
-		mouse.SetUp([this](Geometry::Point location, Input::Mouse::Button btn) {
-			if(handlingmouse) {
-				if(btn && mousebuttonaccepted) {
-					RemoveCondition(ComponentCondition::Down, !IsDisabled());
-					disabled.erase(ComponentCondition::Down);
-				}
-			}
+        mouse.SetUp([this](Geometry::Point location, Input::Mouse::Button btn) {
+            if(handlingmouse) {
+                if(btn && mousebuttonaccepted) {
+                    RemoveCondition(ComponentCondition::Down, !IsDisabled());
+                    disabled.erase(ComponentCondition::Down);
+                }
+            }
             
             if(up_fn)
                 up_fn(ComponentTemplate::NoTag, location, btn);
@@ -93,55 +93,55 @@ namespace Gorgon { namespace UI {
             }
         }
 
-		//this is here to simplify the update process, we are making sure that always is
-		//at the top of the stack
-		for(int i=0; i<temp.GetCount(); i++) {
-			const auto &t = temp[i];
+        //this is here to simplify the update process, we are making sure that always is
+        //at the top of the stack
+        for(int i=0; i<temp.GetCount(); i++) {
+            const auto &t = temp[i];
 
-			if(t.GetRepeatMode() != ComponentTemplate::NoRepeat && t.GetCondition() != ComponentCondition::Always) {
-				AddToStack(temp[i], false);
-			}
-		}
+            if(t.GetRepeatMode() != ComponentTemplate::NoRepeat && t.GetCondition() != ComponentCondition::Always) {
+                AddToStack(temp[i], false);
+            }
+        }
 
-		for(int i=0; i<temp.GetCount(); i++) {
-			const auto &t = temp[i];
+        for(int i=0; i<temp.GetCount(); i++) {
+            const auto &t = temp[i];
 
-			if(t.GetRepeatMode() != ComponentTemplate::NoRepeat && t.GetCondition() == ComponentCondition::Always) {
-				AddToStack(temp[i], false);
-			}
-		}
-	}
+            if(t.GetRepeatMode() != ComponentTemplate::NoRepeat && t.GetCondition() == ComponentCondition::Always) {
+                AddToStack(temp[i], false);
+            }
+        }
+    }
 
     void ComponentStack::AddToStack(const ComponentTemplate& temp, bool reversed) {
         int ind = temp.GetIndex();
-		
-		if(stacksizes[ind] == 0 || &get(ind).GetTemplate() != &temp) {
-			int si = stacksizes[ind];
         
-			if(si == stackcapacity) {
-				grow();
-			}
+        if(stacksizes[ind] == 0 || &get(ind).GetTemplate() != &temp) {
+            int si = stacksizes[ind];
         
-			new (data + (ind + si*indices)) Component(temp);
+            if(si == stackcapacity) {
+                grow();
+            }
+        
+            new (data + (ind + si*indices)) Component(temp);
             data[ind + si*indices].reversed = reversed;
-			stacksizes[ind]++;
-		}
-		else {
+            stacksizes[ind]++;
+        }
+        else {
             get(ind).reversed = reversed;
         }
 
-		if(!storage.count(&temp)) {
-			auto storage = new ComponentStorage;
-			this->storage[&temp] = storage;
+        if(!storage.count(&temp)) {
+            auto storage = new ComponentStorage;
+            this->storage[&temp] = storage;
             
             if(temp.GetClip()) {
                 storage->layer = new Graphics::Layer;
-				storage->layer->EnableClipping();
-				storage->layer->Hide();
+                storage->layer->EnableClipping();
+                storage->layer->Hide();
             }
 
-			if(temp.GetType() == ComponentType::Container) {
-				const auto &ctemp = dynamic_cast<const ContainerTemplate&>(temp);
+            if(temp.GetType() == ComponentType::Container) {
+                const auto &ctemp = dynamic_cast<const ContainerTemplate&>(temp);
 
                 Animation::ControllerBase *cnt = &controller;
                 
@@ -150,26 +150,26 @@ namespace Gorgon { namespace UI {
                     cnt = storage->timer;
                 }
                 
-				if(ctemp.Background.HasContent()) {
-					storage->primary = &ctemp.Background.Instantiate(*cnt);
-				}
+                if(ctemp.Background.HasContent()) {
+                    storage->primary = &ctemp.Background.Instantiate(*cnt);
+                }
 
-				if(ctemp.Overlay.HasContent()) {
-					storage->secondary = &ctemp.Overlay.Instantiate(*cnt);
-				}
-			}
-			else if(temp.GetType() == ComponentType::Placeholder) {
-				const auto &ptemp = dynamic_cast<const PlaceholderTemplate&>(temp);
+                if(ctemp.Overlay.HasContent()) {
+                    storage->secondary = &ctemp.Overlay.Instantiate(*cnt);
+                }
+            }
+            else if(temp.GetType() == ComponentType::Placeholder) {
+                const auto &ptemp = dynamic_cast<const PlaceholderTemplate&>(temp);
 
-				if(ptemp.HasTemplate()) {
-					auto s = new ComponentStack(ptemp.GetTemplate(), {0, 0});
-					substacks.Add(&temp, s);
-					if(handlingmouse)
-						s->HandleMouse(mousebuttonaccepted);
-				}
-			}
-			else if(temp.GetType() == ComponentType::Graphics) {
-				const auto &gtemp = dynamic_cast<const GraphicsTemplate&>(temp);
+                if(ptemp.HasTemplate()) {
+                    auto s = new ComponentStack(ptemp.GetTemplate(), {0, 0});
+                    substacks.Add(&temp, s);
+                    if(handlingmouse)
+                        s->HandleMouse(mousebuttonaccepted);
+                }
+            }
+            else if(temp.GetType() == ComponentType::Graphics) {
+                const auto &gtemp = dynamic_cast<const GraphicsTemplate&>(temp);
 
                 Animation::ControllerBase *cnt = &controller;
                 
@@ -178,30 +178,30 @@ namespace Gorgon { namespace UI {
                     cnt = storage->timer;
                 }
                 
-				if(gtemp.Content.HasContent()) {
-					storage->primary = &gtemp.Content.Instantiate(*cnt);
-				}
-			}
-		}
+                if(gtemp.Content.HasContent()) {
+                    storage->primary = &gtemp.Content.Instantiate(*cnt);
+                }
+            }
+        }
 
-		if(temp.GetType() == ComponentType::Placeholder) {
-			const auto &ptemp = dynamic_cast<const PlaceholderTemplate&>(temp);
+        if(temp.GetType() == ComponentType::Placeholder) {
+            const auto &ptemp = dynamic_cast<const PlaceholderTemplate&>(temp);
 
-			if(ptemp.HasTemplate()) {
-				base.Add(substacks[&temp]);
-			}
-		}
-		
-		controller.Reset();
-		
-		//handle repeat storage
-		if(temp.GetRepeatMode() != temp.NoRepeat && !repeated.count(&temp) && temp.GetCondition() == ComponentCondition::Always) {
-			repeated.insert({&temp, {}});
-		}
-		else if(temp.GetRepeatMode() == temp.NoRepeat && repeated.count(&temp)) {
-			//this is for future where a component template will have dynamic effect on stack
-			repeated.erase(&temp);
-		}
+            if(ptemp.HasTemplate()) {
+                base.Add(substacks[&temp]);
+            }
+        }
+        
+        controller.Reset();
+        
+        //handle repeat storage
+        if(temp.GetRepeatMode() != temp.NoRepeat && !repeated.count(&temp) && temp.GetCondition() == ComponentCondition::Always) {
+            repeated.insert({&temp, {}});
+        }
+        else if(temp.GetRepeatMode() == temp.NoRepeat && repeated.count(&temp)) {
+            //this is for future where a component template will have dynamic effect on stack
+            repeated.erase(&temp);
+        }
     }
     
     void ComponentStack::grow() { 
@@ -262,8 +262,8 @@ namespace Gorgon { namespace UI {
             //direct search: perfect fit
             std::set<int> indicesdone;
             for(int i=0; i<temp.GetCount(); i++) {
-				if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
-					continue;
+                if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
+                    continue;
 
                 if(temp[i].GetCondition() == to && !temp[i].IsTransition()) {
                     updatereq = true;
@@ -277,10 +277,10 @@ namespace Gorgon { namespace UI {
             //In this case we should take this non-perfect fit.
             if(!updatereq && hint != ComponentCondition::None) {
                 for(int i=0; i<temp.GetCount(); i++) {
-					if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
-						continue;
+                    if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
+                        continue;
 
-					if(temp[i].GetCondition() == hint && temp[i].GetTargetCondition() == to) {
+                    if(temp[i].GetCondition() == hint && temp[i].GetTargetCondition() == to) {
                         updatereq = true;
                         AddToStack(temp[i], false);
                     }
@@ -289,10 +289,10 @@ namespace Gorgon { namespace UI {
         }
         else {
             for(int i=0; i<temp.GetCount(); i++) {
-				if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
-					continue;
+                if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
+                    continue;
 
-				if(temp[i].GetCondition() == from && temp[i].GetTargetCondition() == to) {
+                if(temp[i].GetCondition() == from && temp[i].GetTargetCondition() == to) {
                     updatereq = true;
                     AddToStack(temp[i], false);
                     break;
@@ -301,10 +301,10 @@ namespace Gorgon { namespace UI {
             
             //search for reversed
             for(int i=0; i<temp.GetCount(); i++) {
-				if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
-					continue;
+                if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
+                    continue;
 
-				if(temp[i].IsReversible() && temp[i].GetCondition() == to && temp[i].GetTargetCondition() == from) {
+                if(temp[i].IsReversible() && temp[i].GetCondition() == to && temp[i].GetTargetCondition() == from) {
                     updatereq = true;
                     AddToStack(temp[i], true);
                     break;
@@ -313,9 +313,9 @@ namespace Gorgon { namespace UI {
         }
         
         if(updatereq)
-			Update();
+            Update();
 
-		ConditionChanged();
+        ConditionChanged();
         
         return updatereq;
     }
@@ -338,34 +338,34 @@ namespace Gorgon { namespace UI {
         if(erased) {
             for(int i=0; i<indices; i++) {
                 for(int j=stacksizes[i]-1; j>=0; j--) {
-					auto &comp = data[i + j*indices];
+                    auto &comp = data[i + j*indices];
                     const auto &temp = comp.GetTemplate();
                     bool remove = false;
 
-					//do not remove repeating components
-					if(temp.GetRepeatMode() != ComponentTemplate::NoRepeat)
-						continue;
+                    //do not remove repeating components
+                    if(temp.GetRepeatMode() != ComponentTemplate::NoRepeat)
+                        continue;
                     
                     if(from == ComponentCondition::Never)
                         remove = temp.GetCondition() == to || temp.GetTargetCondition() == to;
                     else {
-						if(comp.reversed)
-							remove = temp.GetCondition() == to && temp.GetTargetCondition() == from;
-						else
-							remove = temp.GetCondition() == from && temp.GetTargetCondition() == to;
-					}
+                        if(comp.reversed)
+                            remove = temp.GetCondition() == to && temp.GetTargetCondition() == from;
+                        else
+                            remove = temp.GetCondition() == from && temp.GetTargetCondition() == to;
+                    }
                     
                     if(remove) {                            
                         if(j == stacksizes[i]-1) {
                             updatereq = true;
 
-							if(temp.GetType() == ComponentType::Placeholder) {
-								const auto &ptemp = dynamic_cast<const PlaceholderTemplate&>(temp);
+                            if(temp.GetType() == ComponentType::Placeholder) {
+                                const auto &ptemp = dynamic_cast<const PlaceholderTemplate&>(temp);
 
-								if(ptemp.HasTemplate() && substacks[&temp].HasParent()) {
-									substacks[&temp].GetParent().Remove(substacks[&temp]);
-								}
-							}
+                                if(ptemp.HasTemplate() && substacks[&temp].HasParent()) {
+                                    substacks[&temp].GetParent().Remove(substacks[&temp]);
+                                }
+                            }
 
                             get(i, j).~Component();
                             stacksizes[i]--;
@@ -387,7 +387,7 @@ namespace Gorgon { namespace UI {
                 }
             }
         }
-       
+    
         if(to == ComponentCondition::Disabled && handlingmouse) {
             for(auto d : disabled)
                 ReplaceCondition(ComponentCondition::Disabled, d);
@@ -478,176 +478,176 @@ namespace Gorgon { namespace UI {
         }
     }
     
-	void ComponentStack::FinalizeTransitions() { //untested
-		for(auto iter = transitions.begin(); iter != transitions.end();) {
-			auto c = *iter;
+    void ComponentStack::FinalizeTransitions() { //untested
+        for(auto iter = transitions.begin(); iter != transitions.end();) {
+            auto c = *iter;
 
-			if(future_transitions.count(c.first.second)) {
-				removecondition(c.first.first, c.first.second);
-				addcondition(ComponentCondition::None, future_transitions[c.first.second], c.first.first);
-			}
-			else {
-				removecondition(c.first.first, c.first.second);
-				addcondition(ComponentCondition::None, c.first.second, c.first.first);
-			}
-			iter = transitions.erase(iter);
-		}
-	}
+            if(future_transitions.count(c.first.second)) {
+                removecondition(c.first.first, c.first.second);
+                addcondition(ComponentCondition::None, future_transitions[c.first.second], c.first.first);
+            }
+            else {
+                removecondition(c.first.first, c.first.second);
+                addcondition(ComponentCondition::None, c.first.second, c.first.first);
+            }
+            iter = transitions.erase(iter);
+        }
+    }
 
-	void ComponentStack::SetData(ComponentTemplate::DataEffect effect, const Graphics::Drawable &image) {
+    void ComponentStack::SetData(ComponentTemplate::DataEffect effect, const Graphics::Drawable &image) {
         bool wasset = imagedata.Exists(effect);
         imagedata.Add(effect, image);
         
-		bool updatereq = false;
+        bool updatereq = false;
 
-		for(int i=0; i<indices; i++) {
-			if(stacksizes[i] > 0) {
-				const ComponentTemplate &temp = get(i).GetTemplate();
+        for(int i=0; i<indices; i++) {
+            if(stacksizes[i] > 0) {
+                const ComponentTemplate &temp = get(i).GetTemplate();
 
-				if(temp.GetDataEffect() == effect) {
-					updatereq = true;
-				}
-			}
-		}
+                if(temp.GetDataEffect() == effect) {
+                    updatereq = true;
+                }
+            }
+        }
 
-		if(!wasset) {
+        if(!wasset) {
             AddCondition((ComponentCondition)((int)ComponentCondition::DataEffectStart + (int)effect));
         }
         if(updatereq) {
-			Update();
+            Update();
         }
     }
     
-	void ComponentStack::SetData(ComponentTemplate::DataEffect effect, const std::string &text) {
+    void ComponentStack::SetData(ComponentTemplate::DataEffect effect, const std::string &text) {
         bool wasset = stringdata.count(effect);
-		stringdata[effect] = text;
+        stringdata[effect] = text;
 
-		bool updatereq = false;
+        bool updatereq = false;
 
-		for(int i=0; i<indices; i++) {
-			if(stacksizes[i] > 0) {
-				const ComponentTemplate &temp = get(i).GetTemplate();
+        for(int i=0; i<indices; i++) {
+            if(stacksizes[i] > 0) {
+                const ComponentTemplate &temp = get(i).GetTemplate();
 
-				if(temp.GetDataEffect() == effect) {
-					updatereq = true;
-				}
-			}
-		}
+                if(temp.GetDataEffect() == effect) {
+                    updatereq = true;
+                }
+            }
+        }
 
-		if(!wasset) {
+        if(!wasset) {
             AddCondition((ComponentCondition)((int)ComponentCondition::DataEffectStart + (int)effect));
         }
         if(updatereq) {
-			Update();
+            Update();
         }
-	}
+    }
     
-	void ComponentStack::RemoveData(ComponentTemplate::DataEffect effect) {
-		bool update = stringdata.count(effect) || imagedata.Exists(effect);
+    void ComponentStack::RemoveData(ComponentTemplate::DataEffect effect) {
+        bool update = stringdata.count(effect) || imagedata.Exists(effect);
 
-		if(!update)
-			return;
+        if(!update)
+            return;
         
         RemoveCondition((ComponentCondition)((int)ComponentCondition::DataEffectStart + (int)effect));
-		
-		stringdata.erase(effect);
-		imagedata.Remove(effect);
-
-		bool updatereq = false;
-
-		for(int i=0; i<indices; i++) {
-			if(stacksizes[i] > 0) {
-				const ComponentTemplate &temp = get(i).GetTemplate();
-
-				if(temp.GetDataEffect() == effect) {
-					updatereq = true;
-				}
-			}
-		}
-
-		if(updatereq)
-			Update();
-	}
-
-	void ComponentStack::SetValue(float first, float second, float third, float fourth) {
-		if(targetvalue[0] == first && targetvalue[1] == second && targetvalue[2]== third && targetvalue[3] == fourth)
-			return;
-
-		targetvalue = {{first, second, third, fourth}};
-
-		bool changed = false;
-		auto tm = Time::DeltaTime();
-		for(int i=0; i<4; i++) {
-			if(targetvalue[i] != value[i]) {
-				if(valuespeed[i] == 0 || fabs(value[i] - targetvalue[i]) < valuespeed[i] * tm / 1000) {
-					value[i] = targetvalue[i];
-				}
-				else {
-					value[i] += Sign(targetvalue[i] - value[i]) * valuespeed[i] * tm / 1000;
-				}
-
-				changed = true;
-			}
-		}
-
-		if(!changed)
-			return;
         
-		if(value_fn)
-			value_fn();
+        stringdata.erase(effect);
+        imagedata.Remove(effect);
 
-		bool updatereq = false;
+        bool updatereq = false;
 
-		for(int i=0; i<indices; i++) {
-			if(stacksizes[i] > 0) {
-				const ComponentTemplate &temp = get(i).GetTemplate();
+        for(int i=0; i<indices; i++) {
+            if(stacksizes[i] > 0) {
+                const ComponentTemplate &temp = get(i).GetTemplate();
 
-				if(temp.GetValueModification() != temp.NoModification) {
-					updatereq = true;
-				}
-			}
-		}
+                if(temp.GetDataEffect() == effect) {
+                    updatereq = true;
+                }
+            }
+        }
 
-		if(updatereq)
-			Update();
-		else
-			value = targetvalue;
+        if(updatereq)
+            Update();
     }
 
-	void ComponentStack::Update() {
-		updaterequired = true;
-	}
+    void ComponentStack::SetValue(float first, float second, float third, float fourth) {
+        if(targetvalue[0] == first && targetvalue[1] == second && targetvalue[2]== third && targetvalue[3] == fourth)
+            return;
 
-	Component &ComponentStack::get(int ind, ComponentCondition condition) const {
-		ASSERT(stacksizes[ind], String::Concat("Stack for index ", ind, " is empty"));
+        targetvalue = {{first, second, third, fourth}};
 
-		for(int i=stacksizes[ind]-1; i>=0; i--) {
-			if(data[ind + i * indices].GetTemplate().GetCondition() == condition)
-				return data[ind + i * indices];
-		}
+        bool changed = false;
+        auto tm = Time::DeltaTime();
+        for(int i=0; i<4; i++) {
+            if(targetvalue[i] != value[i]) {
+                if(valuespeed[i] == 0 || fabs(value[i] - targetvalue[i]) < valuespeed[i] * tm / 1000) {
+                    value[i] = targetvalue[i];
+                }
+                else {
+                    value[i] += Sign(targetvalue[i] - value[i]) * valuespeed[i] * tm / 1000;
+                }
 
-		return data[ind + (stacksizes[ind]-1) * indices];
-	}
+                changed = true;
+            }
+        }
 
-	void ComponentStack::update() {
-		if(!stacksizes[0]) return;
+        if(!changed)
+            return;
+        
+        if(value_fn)
+            value_fn();
+
+        bool updatereq = false;
+
+        for(int i=0; i<indices; i++) {
+            if(stacksizes[i] > 0) {
+                const ComponentTemplate &temp = get(i).GetTemplate();
+
+                if(temp.GetValueModification() != temp.NoModification) {
+                    updatereq = true;
+                }
+            }
+        }
+
+        if(updatereq)
+            Update();
+        else
+            value = targetvalue;
+    }
+
+    void ComponentStack::Update() {
+        updaterequired = true;
+    }
+
+    Component &ComponentStack::get(int ind, ComponentCondition condition) const {
+        ASSERT(stacksizes[ind], String::Concat("Stack for index ", ind, " is empty"));
+
+        for(int i=stacksizes[ind]-1; i>=0; i--) {
+            if(data[ind + i * indices].GetTemplate().GetCondition() == condition)
+                return data[ind + i * indices];
+        }
+
+        return data[ind + (stacksizes[ind]-1) * indices];
+    }
+
+    void ComponentStack::update() {
+        if(!stacksizes[0]) return;
         
         if(beforeupdate_fn)
             beforeupdate_fn();
 
         get(0).size = size;
         get(0).location = {0,0};
-		get(0).parent = -1;
+        get(0).parent = -1;
 
-		//update repeat counts
-		for(auto &r : repeated) {
-			if(repeats.count(r.first->GetRepeatMode()))
-				r.second.resize(repeats[r.first->GetRepeatMode()].size(), Component(*r.first));
-		}
+        //update repeat counts
+        for(auto &r : repeated) {
+            if(repeats.count(r.first->GetRepeatMode()))
+                r.second.resize(repeats[r.first->GetRepeatMode()].size(), Component(*r.first));
+        }
         
         //calculate common emsize        
-		for(int i=0; i<indices; i++) {
-			if(stacksizes[i] > 0) {
+        for(int i=0; i<indices; i++) {
+            if(stacksizes[i] > 0) {
                 if(get(i).GetTemplate().GetType() == ComponentType::Textholder) {
                     const auto &th = dynamic_cast<const TextholderTemplate&>(get(i).GetTemplate());
                     
@@ -659,42 +659,42 @@ namespace Gorgon { namespace UI {
             }
         }
         
-		update(get(0));
+        update(get(0));
 
-		updaterequired = false;
+        updaterequired = false;
 
         base.Clear();
-		for(auto &s : storage) 
-			if(s.second->layer)
-				s.second->layer->Hide();
+        for(auto &s : storage) 
+            if(s.second->layer)
+                s.second->layer->Hide();
             
         if(update_fn)
             update_fn();
             
-		//draw everything
-		render(get(0), base, {0,0});
+        //draw everything
+        render(get(0), base, {0,0});
         
         if(render_fn)
             render_fn();
-	}
+    }
 
-	void ComponentStack::render(Component &comp, Graphics::Layer &parent, Geometry::Point offset, Graphics::RGBAf color, int ind) {
+    void ComponentStack::render(Component &comp, Graphics::Layer &parent, Geometry::Point offset, Graphics::RGBAf color, int ind) {
         const ComponentTemplate &tempp = comp.GetTemplate();
-		auto tempptr = &tempp;
+        auto tempptr = &tempp;
         std::array<float, 4> val = value;
 
-		if(tempp.GetRepeatMode() != ComponentTemplate::NoRepeat) {
-			ComponentCondition rc = ComponentCondition::Always;
-			if(repeatconditions[tempp.GetRepeatMode()].count(ind))
-				rc = repeatconditions[tempp.GetRepeatMode()][ind];
+        if(tempp.GetRepeatMode() != ComponentTemplate::NoRepeat) {
+            ComponentCondition rc = ComponentCondition::Always;
+            if(repeatconditions[tempp.GetRepeatMode()].count(ind))
+                rc = repeatconditions[tempp.GetRepeatMode()][ind];
 
-			tempptr = &get(tempp.GetIndex(), rc).GetTemplate();
+            tempptr = &get(tempp.GetIndex(), rc).GetTemplate();
             
             val = repeats[tempp.GetRepeatMode()][ind];
             
-		}
+        }
 
-		const auto &temp = *tempptr;
+        const auto &temp = *tempptr;
 
         Graphics::Layer *target = nullptr;
         auto &st = *storage[&temp];
@@ -704,8 +704,8 @@ namespace Gorgon { namespace UI {
             parent.Add(*target);
             target->Resize(comp.size);
             target->Move(comp.location);
-			if(st.layer) {
-				st.layer->Show();
+            if(st.layer) {
+                st.layer->Show();
                 st.layer->Clear();
             }
 
@@ -715,27 +715,27 @@ namespace Gorgon { namespace UI {
             target = &parent;
         }
 
-		if(temp.GetValueModification() == ComponentTemplate::ModifyColor) {
-			if(NumberOfSetBits(temp.GetValueSource()) == 1) {
-				color *= Graphics::RGBAf(calculatevalue(val, 0, comp));
-			}
-			else if(NumberOfSetBits(temp.GetValueSource()) == 2) {
-				color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
-			}
-			else if(NumberOfSetBits(temp.GetValueSource()) == 3) {
-				color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 1.f);
-			}
-			else
-				color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp));
-		}
-		else if(temp.GetValueModification() == ComponentTemplate::ModifyAlpha)
-			color *= Graphics::RGBAf(1.f, calculatevalue(val, 0, comp));
+        if(temp.GetValueModification() == ComponentTemplate::ModifyColor) {
+            if(NumberOfSetBits(temp.GetValueSource()) == 1) {
+                color *= Graphics::RGBAf(calculatevalue(val, 0, comp));
+            }
+            else if(NumberOfSetBits(temp.GetValueSource()) == 2) {
+                color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
+            }
+            else if(NumberOfSetBits(temp.GetValueSource()) == 3) {
+                color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 1.f);
+            }
+            else
+                color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp));
+        }
+        else if(temp.GetValueModification() == ComponentTemplate::ModifyAlpha)
+            color *= Graphics::RGBAf(1.f, calculatevalue(val, 0, comp));
 
-		if(temp.GetType() == ComponentType::Container) {
+        if(temp.GetType() == ComponentType::Container) {
             const auto &cont = dynamic_cast<const ContainerTemplate&>(temp);
             
             offset += cont.GetBorderSize().TopLeft();
-			offset += comp.location;
+            offset += comp.location;
 
             if(st.primary && target) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
@@ -748,17 +748,17 @@ namespace Gorgon { namespace UI {
             for(int i=0; i<cont.GetCount(); i++) {
                 if(cont[i] >= indices) continue;
                 if(stacksizes[cont[i]]) {
-					auto &compparent = get(cont[i]);
-					auto &temp       = compparent.GetTemplate();
-					if(temp.GetRepeatMode() == ComponentTemplate::NoRepeat) {
-						render(compparent, target ? *target : parent, offset, color);
-					}
-					else if(repeats.count(temp.GetRepeatMode())) {
-						int index = 0;
-						for(auto &r : repeated[&temp])
-							render(r, target ? *target : parent, offset, color, index++);
-					}
-				}
+                    auto &compparent = get(cont[i]);
+                    auto &temp       = compparent.GetTemplate();
+                    if(temp.GetRepeatMode() == ComponentTemplate::NoRepeat) {
+                        render(compparent, target ? *target : parent, offset, color);
+                    }
+                    else if(repeats.count(temp.GetRepeatMode())) {
+                        int index = 0;
+                        for(auto &r : repeated[&temp])
+                            render(r, target ? *target : parent, offset, color, index++);
+                    }
+                }
             }
             
             if(st.secondary && target) {
@@ -770,37 +770,37 @@ namespace Gorgon { namespace UI {
             }
             
             offset -= cont.GetBorderSize().TopLeft();
-		}
-		else if(temp.GetType() == ComponentType::Graphics) {
+        }
+        else if(temp.GetType() == ComponentType::Graphics) {
             if(st.primary && target) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
                 const auto &gt = dynamic_cast<const GraphicsTemplate&>(temp);
 
-				auto c = gt.GetColor();
+                auto c = gt.GetColor();
 
-				if(temp.GetValueModification() == temp.BlendColor)  {
-					auto c2 = gt.GetTargetColor();
-					switch(NumberOfSetBits(temp.GetValueSource())) {
-						case 1:
-							c.Blend(c2, calculatevalue(val, 0, comp));
-							break;
+                if(temp.GetValueModification() == temp.BlendColor)  {
+                    auto c2 = gt.GetTargetColor();
+                    switch(NumberOfSetBits(temp.GetValueSource())) {
+                        case 1:
+                            c.Blend(c2, calculatevalue(val, 0, comp));
+                            break;
 
-						case 2:
-							c.Blend(c2, calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
-							break;
+                        case 2:
+                            c.Blend(c2, calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
+                            break;
 
-						case 3:
-							c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 0});
-							break;
+                        case 3:
+                            c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 0});
+                            break;
 
-						case 4:
-							c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp)});
-							break;
+                        case 4:
+                            c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp)});
+                            break;
 
-						default:
-							break;
-					}
-				}
+                        default:
+                            break;
+                    }
+                }
                 
                 if(rectangular && gt.GetFillArea())
                     rectangular->DrawIn(*target, comp.location+offset+gt.GetPadding().TopLeft(), comp.size, color * c);
@@ -811,52 +811,52 @@ namespace Gorgon { namespace UI {
         else if(temp.GetType() == ComponentType::Textholder) {
             const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
 
-			auto c = th.GetColor();
+            auto c = th.GetColor();
 
-			if(temp.GetValueModification() == temp.BlendColor) {
-				auto c2 = th.GetTargetColor();
-				switch(NumberOfSetBits(temp.GetValueSource())) {
-					case 1:
-						c.Blend(c2, calculatevalue(val, 0, comp));
-						break;
+            if(temp.GetValueModification() == temp.BlendColor) {
+                auto c2 = th.GetTargetColor();
+                switch(NumberOfSetBits(temp.GetValueSource())) {
+                    case 1:
+                        c.Blend(c2, calculatevalue(val, 0, comp));
+                        break;
 
-					case 2:
-						c.Blend(c2, calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
-						break;
+                    case 2:
+                        c.Blend(c2, calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
+                        break;
 
-					case 3:
-						c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 0});
-						break;
+                    case 3:
+                        c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 0});
+                        break;
 
-					case 4:
-						c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp)});
-						break;
+                    case 4:
+                        c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp)});
+                        break;
 
-					default:
-						break;
-				}
-			}
+                    default:
+                        break;
+                }
+            }
 
-			target->SetColor(color * c);
+            target->SetColor(color * c);
             if(th.IsReady()) {
                 if(valuetotext && (ind != -1 || !stringdata.count(temp.GetDataEffect())) ) {
                     th.GetRenderer().Print(*target, valuetotext(temp.GetTag(), temp.GetDataEffect(), val), comp.location+offset, comp.size.Width);
                 }
-				else if(stringdata.count(temp.GetDataEffect())) {
-					th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
-				}
+                else if(stringdata.count(temp.GetDataEffect())) {
+                    th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
+                }
             }
-			target->SetColor(1.f);
-		}
+            target->SetColor(1.f);
+        }
         else if(temp.GetType() == ComponentType::Placeholder && comp.size.Area() > 0) {
             const auto &ph = dynamic_cast<const PlaceholderTemplate&>(temp);
             
-			if(ph.HasTemplate()) {
-				auto &stack = substacks[&temp];
-				target->Add(stack);
-				stack.Move(comp.location + offset);
-				stack.Resize(comp.size);
-			}
+            if(ph.HasTemplate()) {
+                auto &stack = substacks[&temp];
+                target->Add(stack);
+                stack.Move(comp.location + offset);
+                stack.Resize(comp.size);
+            }
 
             if(imagedata.Exists(ph.GetDataEffect())) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(&imagedata[ph.GetDataEffect()]);
@@ -868,9 +868,9 @@ namespace Gorgon { namespace UI {
                 }
             }
         }
-	}
+    }
 
-	void anchortoparent(Component &comp, const ComponentTemplate &temp, 
+    void anchortoparent(Component &comp, const ComponentTemplate &temp, 
                         Geometry::Point offset, Geometry::Margin margin, Geometry::Size maxsize) {
         
         Anchor pa = temp.GetContainerAnchor();
@@ -880,47 +880,47 @@ namespace Gorgon { namespace UI {
         
         switch(pa) {
             default:
-			case Anchor::TopLeft:
-				pp = margin.TopLeft();
-				break;
+            case Anchor::TopLeft:
+                pp = margin.TopLeft();
+                break;
 
-			case Anchor::TopCenter:
-				pp = {margin.Left - margin.Right + maxsize.Width / 2, margin.Top};
-				break;
+            case Anchor::TopCenter:
+                pp = {margin.Left - margin.Right + maxsize.Width / 2, margin.Top};
+                break;
 
-			case Anchor::TopRight:
-				pp = { -margin.Right + maxsize.Width, margin.Top};
-				break;
+            case Anchor::TopRight:
+                pp = { -margin.Right + maxsize.Width, margin.Top};
+                break;
 
 
-			case Anchor::MiddleLeft:
-			case Anchor::FirstBaselineLeft:
-				pp = {margin.Left, margin.Top - margin.Bottom + maxsize.Height / 2};
-				break;
+            case Anchor::MiddleLeft:
+            case Anchor::FirstBaselineLeft:
+                pp = {margin.Left, margin.Top - margin.Bottom + maxsize.Height / 2};
+                break;
 
-			case Anchor::MiddleCenter:
-				pp = {margin.Left - margin.Right + maxsize.Width / 2, margin.Top - margin.Bottom + maxsize.Height / 2};
-				break;
+            case Anchor::MiddleCenter:
+                pp = {margin.Left - margin.Right + maxsize.Width / 2, margin.Top - margin.Bottom + maxsize.Height / 2};
+                break;
 
-			case Anchor::MiddleRight:
-			case Anchor::FirstBaselineRight:
-				pp = { -margin.Right + maxsize.Width, margin.Top - margin.Bottom + maxsize.Height / 2};
-				break;
+            case Anchor::MiddleRight:
+            case Anchor::FirstBaselineRight:
+                pp = { -margin.Right + maxsize.Width, margin.Top - margin.Bottom + maxsize.Height / 2};
+                break;
 
         
-			case Anchor::BottomLeft:
+            case Anchor::BottomLeft:
             case Anchor::LastBaselineLeft:
-				pp = {margin.Left, -margin.Bottom + maxsize.Height};
-				break;
+                pp = {margin.Left, -margin.Bottom + maxsize.Height};
+                break;
 
-			case Anchor::BottomCenter:
-				pp = {margin.Left - margin.Right + maxsize.Width / 2, -margin.Bottom + maxsize.Height};
-				break;
+            case Anchor::BottomCenter:
+                pp = {margin.Left - margin.Right + maxsize.Width / 2, -margin.Bottom + maxsize.Height};
+                break;
 
-			case Anchor::BottomRight:
+            case Anchor::BottomRight:
             case Anchor::LastBaselineRight:
-				pp = { -margin.Right + maxsize.Width, -margin.Bottom + maxsize.Height};
-				break;
+                pp = { -margin.Right + maxsize.Width, -margin.Bottom + maxsize.Height};
+                break;
 
         }
         
@@ -958,47 +958,47 @@ namespace Gorgon { namespace UI {
         
         switch(ca) {
             default:
-			case Anchor::TopLeft:
-				cp = {-offset.X, -offset.Y};
-				break;
+            case Anchor::TopLeft:
+                cp = {-offset.X, -offset.Y};
+                break;
 
-			case Anchor::TopCenter:
-				cp = {-offset.X + csize.Width / 2, -offset.Y};
-				break;
+            case Anchor::TopCenter:
+                cp = {-offset.X + csize.Width / 2, -offset.Y};
+                break;
 
-			case Anchor::TopRight:
-				cp = { offset.X + csize.Width, -offset.Y};
-				break;
+            case Anchor::TopRight:
+                cp = { offset.X + csize.Width, -offset.Y};
+                break;
 
 
-			case Anchor::MiddleLeft:
-			case Anchor::FirstBaselineLeft:
-				cp = {-offset.X, csize.Height / 2 - offset.Y};
-				break;
+            case Anchor::MiddleLeft:
+            case Anchor::FirstBaselineLeft:
+                cp = {-offset.X, csize.Height / 2 - offset.Y};
+                break;
 
-			case Anchor::MiddleCenter:
-				cp = {-offset.X + csize.Width / 2, csize.Height / 2 - offset.Y};
-				break;
+            case Anchor::MiddleCenter:
+                cp = {-offset.X + csize.Width / 2, csize.Height / 2 - offset.Y};
+                break;
 
-			case Anchor::MiddleRight:
-			case Anchor::FirstBaselineRight:
-				cp = { offset.X + csize.Width, csize.Height / 2 - offset.Y};
-				break;
+            case Anchor::MiddleRight:
+            case Anchor::FirstBaselineRight:
+                cp = { offset.X + csize.Width, csize.Height / 2 - offset.Y};
+                break;
 
         
-			case Anchor::BottomLeft:
+            case Anchor::BottomLeft:
             case Anchor::LastBaselineLeft:
-				cp = {-offset.X, csize.Height + offset.Y};
-				break;
+                cp = {-offset.X, csize.Height + offset.Y};
+                break;
 
-			case Anchor::BottomCenter:
-				cp = {-offset.X + csize.Width / 2, csize.Height + offset.Y};
-				break;
+            case Anchor::BottomCenter:
+                cp = {-offset.X + csize.Width / 2, csize.Height + offset.Y};
+                break;
 
-			case Anchor::BottomRight:
+            case Anchor::BottomRight:
             case Anchor::LastBaselineRight:
-				cp = { offset.X + csize.Width, csize.Height + offset.Y};
-				break;
+                cp = { offset.X + csize.Width, csize.Height + offset.Y};
+                break;
 
         }
         
@@ -1017,7 +1017,7 @@ namespace Gorgon { namespace UI {
         return ret;
     }
     
-	void anchortoother(Component &comp, const ComponentTemplate &temp, 
+    void anchortoother(Component &comp, const ComponentTemplate &temp, 
                         Geometry::Point offset, Geometry::Margin margin, Component &other, Graphics::Orientation orientation) {
         
         Anchor pa = temp.GetPreviousAnchor();
@@ -1071,52 +1071,52 @@ namespace Gorgon { namespace UI {
                 break;
                 
             default:
-			case Anchor::TopLeft:
-				pp = {-margin.Right,- margin.Bottom};
-				break;
+            case Anchor::TopLeft:
+                pp = {-margin.Right,- margin.Bottom};
+                break;
 
-			case Anchor::TopCenter:
-				pp = {asize.Width / 2, -margin.Bottom};
-				break;
+            case Anchor::TopCenter:
+                pp = {asize.Width / 2, -margin.Bottom};
+                break;
 
-			case Anchor::TopRight:
-				pp = {margin.Left + asize.Width, -margin.Bottom};
-				break;
+            case Anchor::TopRight:
+                pp = {margin.Left + asize.Width, -margin.Bottom};
+                break;
 
 
-			case Anchor::MiddleLeft:
-			case Anchor::FirstBaselineLeft:
-				pp = {-margin.Right, asize.Height / 2};
-				break;
+            case Anchor::MiddleLeft:
+            case Anchor::FirstBaselineLeft:
+                pp = {-margin.Right, asize.Height / 2};
+                break;
 
-			case Anchor::MiddleCenter:
-				pp = {asize.Width / 2, asize.Height / 2};
-				break;
+            case Anchor::MiddleCenter:
+                pp = {asize.Width / 2, asize.Height / 2};
+                break;
 
-			case Anchor::MiddleRight:
-			case Anchor::FirstBaselineRight:
-				pp = {margin.Left + asize.Width, asize.Height / 2};
-				break;
+            case Anchor::MiddleRight:
+            case Anchor::FirstBaselineRight:
+                pp = {margin.Left + asize.Width, asize.Height / 2};
+                break;
 
         
-			case Anchor::BottomLeft:
+            case Anchor::BottomLeft:
             case Anchor::LastBaselineLeft:
-				pp = {-margin.Right, margin.Top + asize.Height};
-				break;
+                pp = {-margin.Right, margin.Top + asize.Height};
+                break;
 
-			case Anchor::BottomCenter:
-				pp = {asize.Width / 2, margin.Top + asize.Height};
-				break;
+            case Anchor::BottomCenter:
+                pp = {asize.Width / 2, margin.Top + asize.Height};
+                break;
 
-			case Anchor::BottomRight:
+            case Anchor::BottomRight:
             case Anchor::LastBaselineRight:
-				pp = {margin.Left + asize.Width, margin.Top + asize.Height};
-				break;
+                pp = {margin.Left + asize.Width, margin.Top + asize.Height};
+                break;
 
         }
         
         auto csize = comp.size;
-       
+    
         if(temp.GetType() == ComponentType::Textholder && 
             (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight || ca == Anchor::LastBaselineLeft || ca == Anchor::LastBaselineRight)
         ) {
@@ -1152,47 +1152,47 @@ namespace Gorgon { namespace UI {
                 break;
                 
             default:
-			case Anchor::TopLeft:
-				cp = {-offset.X, -offset.Y};
-				break;
+            case Anchor::TopLeft:
+                cp = {-offset.X, -offset.Y};
+                break;
 
-			case Anchor::TopCenter:
-				cp = {-offset.X + csize.Width / 2, -offset.Y};
-				break;
+            case Anchor::TopCenter:
+                cp = {-offset.X + csize.Width / 2, -offset.Y};
+                break;
 
-			case Anchor::TopRight:
-				cp = { offset.X + csize.Width, -offset.Y};
-				break;
+            case Anchor::TopRight:
+                cp = { offset.X + csize.Width, -offset.Y};
+                break;
 
 
-			case Anchor::MiddleLeft:
-			case Anchor::FirstBaselineLeft:
-				cp = {-offset.X, csize.Height / 2 - offset.Y};
-				break;
+            case Anchor::MiddleLeft:
+            case Anchor::FirstBaselineLeft:
+                cp = {-offset.X, csize.Height / 2 - offset.Y};
+                break;
 
-			case Anchor::MiddleCenter:
-				cp = {-offset.X + csize.Width / 2, csize.Height / 2 - offset.Y};
-				break;
+            case Anchor::MiddleCenter:
+                cp = {-offset.X + csize.Width / 2, csize.Height / 2 - offset.Y};
+                break;
 
-			case Anchor::MiddleRight:
-			case Anchor::FirstBaselineRight:
-				cp = { offset.X + csize.Width, csize.Height / 2 - offset.Y};
-				break;
+            case Anchor::MiddleRight:
+            case Anchor::FirstBaselineRight:
+                cp = { offset.X + csize.Width, csize.Height / 2 - offset.Y};
+                break;
 
         
-			case Anchor::BottomLeft:
+            case Anchor::BottomLeft:
             case Anchor::LastBaselineLeft:
-				cp = {-offset.X, csize.Height + offset.Y};
-				break;
+                cp = {-offset.X, csize.Height + offset.Y};
+                break;
 
-			case Anchor::BottomCenter:
-				cp = {-offset.X + csize.Width / 2, csize.Height + offset.Y};
-				break;
+            case Anchor::BottomCenter:
+                cp = {-offset.X + csize.Width / 2, csize.Height + offset.Y};
+                break;
 
-			case Anchor::BottomRight:
+            case Anchor::BottomRight:
             case Anchor::LastBaselineRight:
-				cp = { offset.X + csize.Width, csize.Height + offset.Y};
-				break;
+                cp = { offset.X + csize.Width, csize.Height + offset.Y};
+                break;
 
         }
         
@@ -1212,31 +1212,31 @@ namespace Gorgon { namespace UI {
         return {comp->location, comp->size};
     }
 
-	bool ComponentStack::HasLayer(int ind) const {
-		if(stacksizes[ind] == 0)
-			return false;
+    bool ComponentStack::HasLayer(int ind) const {
+        if(stacksizes[ind] == 0)
+            return false;
 
-		try {
-			return storage.at(&get(ind).GetTemplate())->layer != nullptr;
-		}
-		catch(...) {
-			return false;
-		}
-	}
+        try {
+            return storage.at(&get(ind).GetTemplate())->layer != nullptr;
+        }
+        catch(...) {
+            return false;
+        }
+    }
 
-	Layer &ComponentStack::GetLayerOf(int ind) {
-		if(stacksizes[ind] == 0)
-			return *this;
+    Layer &ComponentStack::GetLayerOf(int ind) {
+        if(stacksizes[ind] == 0)
+            return *this;
 
-		if(storage[&get(ind).GetTemplate()]->layer == nullptr) {
-			storage[&get(ind).GetTemplate()]->layer = new Graphics::Layer;
-			update();
-		}
+        if(storage[&get(ind).GetTemplate()]->layer == nullptr) {
+            storage[&get(ind).GetTemplate()]->layer = new Graphics::Layer;
+            update();
+        }
 
-		return *storage[&get(ind).GetTemplate()]->layer;
-	}
+        return *storage[&get(ind).GetTemplate()]->layer;
+    }
 
-	Geometry::Bounds ComponentStack::BoundsOf(int ind) {
+    Geometry::Bounds ComponentStack::BoundsOf(int ind) {
         if(stacksizes[ind] == 0)
             return {0, 0, 0, 0};
         
@@ -1247,18 +1247,18 @@ namespace Gorgon { namespace UI {
         
         auto &comp = get(ind);
 
-		Component *t = &comp;
+        Component *t = &comp;
 
-		Geometry::Point off = {0, 0};
+        Geometry::Point off = {0, 0};
 
-		while(t->parent != -1) {
-			if(stacksizes[t->parent] == 0)
-				break;
+        while(t->parent != -1) {
+            if(stacksizes[t->parent] == 0)
+                break;
 
-			t = &get(t->parent);
+            t = &get(t->parent);
 
-			off += t->location;
-		}
+            off += t->location;
+        }
 
         return {comp.location + off, comp.size};
     }
@@ -1307,16 +1307,16 @@ namespace Gorgon { namespace UI {
         return TransformCoordinates(ind, location);
     }
 
-	int ComponentStack::IndexOfTag(ComponentTemplate::Tag tag) {
-		Component *comp  = gettag(tag);
+    int ComponentStack::IndexOfTag(ComponentTemplate::Tag tag) {
+        Component *comp  = gettag(tag);
 
-		if(!comp)
-			return -1;
+        if(!comp)
+            return -1;
 
-		return comp->GetTemplate().GetIndex();
-	}
+        return comp->GetTemplate().GetIndex();
+    }
 
-	std::array<float, 4> ComponentStack::CoordinateToValue(ComponentTemplate::Tag tag, Geometry::Point location) {
+    std::array<float, 4> ComponentStack::CoordinateToValue(ComponentTemplate::Tag tag, Geometry::Point location) {
         Component *comp  = gettag(tag);
         
         if(!comp)
@@ -1350,7 +1350,7 @@ namespace Gorgon { namespace UI {
                 bounds.Right -= comp->size.Width;
                 bounds.Bottom -= comp->size.Height;
                 
-				int emsize = getemsize(*comp);
+                int emsize = getemsize(*comp);
                 pnt -=  Convert(ct.GetCenter(), comp->size, emsize);
                 
                 val[0] = float(pnt.X) / bounds.Width();
@@ -1369,9 +1369,9 @@ namespace Gorgon { namespace UI {
                 //todo
                 break;
 
-			case ComponentTemplate::ModifySize:
-			case ComponentTemplate::ModifyWidth:
-			case ComponentTemplate::ModifyHeight:
+            case ComponentTemplate::ModifySize:
+            case ComponentTemplate::ModifyWidth:
+            case ComponentTemplate::ModifyHeight:
                 if(IsLeft(ct.GetContainerAnchor())) {
                     val[0] = float(pnt.X);
                 }
@@ -1395,12 +1395,12 @@ namespace Gorgon { namespace UI {
                 val[0] = float(val[0]) / bounds.Width();
                 val[1] = float(val[1]) / bounds.Height();
 
-				if(ct.GetValueModification() == ContainerTemplate::ModifyWidth)
-					val[1] = 0;
-				else if(ct.GetValueModification() == ContainerTemplate::ModifyHeight) {
-					val[0] = val[1];
-					val[1] = 0;
-				}
+                if(ct.GetValueModification() == ContainerTemplate::ModifyWidth)
+                    val[1] = 0;
+                else if(ct.GetValueModification() == ContainerTemplate::ModifyHeight) {
+                    val[0] = val[1];
+                    val[1] = 0;
+                }
 
                 break;
         }
@@ -1501,54 +1501,54 @@ namespace Gorgon { namespace UI {
         return ret;
     }
 
-	int ComponentStack::ComponentAt(Geometry::Point location, Geometry::Bounds &bounds) {
-		if(!stacksizes[0]) return -1;
+    int ComponentStack::ComponentAt(Geometry::Point location, Geometry::Bounds &bounds) {
+        if(!stacksizes[0]) return -1;
 
-		std::vector<std::pair<int, bool>> todo;
-		todo.push_back({0, false});
+        std::vector<std::pair<int, bool>> todo;
+        todo.push_back({0, false});
 
-		Geometry::Point off = {0, 0};
+        Geometry::Point off = {0, 0};
 
-		while(todo.size()) {
-			if(stacksizes[todo.back().first] == 0) {
-				todo.pop_back();
-				continue;
-			}
+        while(todo.size()) {
+            if(stacksizes[todo.back().first] == 0) {
+                todo.pop_back();
+                continue;
+            }
 
-			auto &comp = get(todo.back().first);
-			const auto &temp = comp.GetTemplate();
+            auto &comp = get(todo.back().first);
+            const auto &temp = comp.GetTemplate();
 
-			if(dynamic_cast<const ContainerTemplate *>(&temp) && !todo.back().second) {
-				auto &cont = dynamic_cast<const ContainerTemplate &>(temp);
-				todo.back().second = true;
+            if(dynamic_cast<const ContainerTemplate *>(&temp) && !todo.back().second) {
+                auto &cont = dynamic_cast<const ContainerTemplate &>(temp);
+                todo.back().second = true;
 
-				for(int i=0; i<cont.GetCount(); i++) {
-					if(cont[i] >= indices) continue;
-					if(stacksizes[cont[i]]) {
-						todo.push_back({cont[i], false});
-					}
-				}
+                for(int i=0; i<cont.GetCount(); i++) {
+                    if(cont[i] >= indices) continue;
+                    if(stacksizes[cont[i]]) {
+                        todo.push_back({cont[i], false});
+                    }
+                }
 
-				off += comp.location;
-			}
-			else {
-				if(dynamic_cast<const ContainerTemplate *>(&temp)) {
-					off -= comp.location;
-				}
+                off += comp.location;
+            }
+            else {
+                if(dynamic_cast<const ContainerTemplate *>(&temp)) {
+                    off -= comp.location;
+                }
 
-				Geometry::Bounds b = {comp.location + off, comp.size};
-				if(IsInside(b, location)) {
-					bounds = b;
+                Geometry::Bounds b = {comp.location + off, comp.size};
+                if(IsInside(b, location)) {
+                    bounds = b;
 
-					return temp.GetIndex();
-				}
+                    return temp.GetIndex();
+                }
 
-				todo.pop_back();
-			}
-		}
+                todo.pop_back();
+            }
+        }
 
-		return -1;
-	}
+        return -1;
+    }
     
     int ComponentStack::getemsize(const Component &comp) {
         if(comp.GetTemplate().GetType() == ComponentType::Textholder) {
@@ -1561,12 +1561,12 @@ namespace Gorgon { namespace UI {
         
         return emsize;
     }
-	
-	float ComponentStack::calculatevalue(const std::array<float, 4> &value, int channel, const Component &comp) const {
-		const auto &temp = comp.GetTemplate();
-		int vs = temp.GetValueSource();
+    
+    float ComponentStack::calculatevalue(const std::array<float, 4> &value, int channel, const Component &comp) const {
+        const auto &temp = comp.GetTemplate();
+        int vs = temp.GetValueSource();
 
-		float v = 0;
+        float v = 0;
         
         if(vs == ComponentTemplate::UseTransition) {
             auto dur = this->temp.GetConditionDuration(temp.GetCondition(), temp.GetTargetCondition());
@@ -1641,33 +1641,33 @@ namespace Gorgon { namespace UI {
             }
         }
 
-		return v * temp.GetValueRange(channel) + temp.GetValueMin(channel);
-	}
+        return v * temp.GetValueRange(channel) + temp.GetValueMin(channel);
+    }
 
-	void ComponentStack::checkrepeatupdate(ComponentTemplate::RepeatMode mode) {
-		bool updatereq = false;
+    void ComponentStack::checkrepeatupdate(ComponentTemplate::RepeatMode mode) {
+        bool updatereq = false;
 
-		for(int i=0; i<indices; i++) {
-			if(stacksizes[i] > 0) {
-				const ComponentTemplate &temp = get(i).GetTemplate();
+        for(int i=0; i<indices; i++) {
+            if(stacksizes[i] > 0) {
+                const ComponentTemplate &temp = get(i).GetTemplate();
 
-				if(temp.GetRepeatMode() == mode) {
-					updatereq = true;
-				}
-			}
-		}
+                if(temp.GetRepeatMode() == mode) {
+                    updatereq = true;
+                }
+            }
+        }
 
-		if(updatereq)
-			Update();
-	}
+        if(updatereq)
+            Update();
+    }
 
-	//location depends on the container location
-	void ComponentStack::update(Component &parent) {
-		const ComponentTemplate &ctemp = parent.GetTemplate();
+    //location depends on the container location
+    void ComponentStack::update(Component &parent) {
+        const ComponentTemplate &ctemp = parent.GetTemplate();
 
-		if(ctemp.GetType() != ComponentType::Container) return;
+        if(ctemp.GetType() != ComponentType::Container) return;
 
-		const ContainerTemplate &cont = dynamic_cast<const ContainerTemplate&>(ctemp);
+        const ContainerTemplate &cont = dynamic_cast<const ContainerTemplate&>(ctemp);
         
         parent.innersize = parent.size - cont.GetBorderSize();
         
@@ -1681,104 +1681,104 @@ namespace Gorgon { namespace UI {
 
 realign:
         // first pass for size, second pass will cover the sizes that are percent based.
-		for(int i=0; i<cont.GetCount(); i++) {
+        for(int i=0; i<cont.GetCount(); i++) {
             
-			int ci = cont[i];
+            int ci = cont[i];
 
             if(ci >= indices) continue;
-			if(!stacksizes[ci]) continue;
+            if(!stacksizes[ci]) continue;
 
 
             auto &compparent = get(cont[i]);
 
-			const auto &tempparent = compparent.GetTemplate();
+            const auto &tempparent = compparent.GetTemplate();
             
-			
-			for(int j = 0; tempparent.GetRepeatMode() == tempparent.NoRepeat ? j == 0 : repeats.count(tempparent.GetRepeatMode()) && j < repeats[tempparent.GetRepeatMode()].size(); j++) {
-				Component *compptr;
-				const ComponentTemplate *tempptr;
+            
+            for(int j = 0; tempparent.GetRepeatMode() == tempparent.NoRepeat ? j == 0 : repeats.count(tempparent.GetRepeatMode()) && j < repeats[tempparent.GetRepeatMode()].size(); j++) {
+                Component *compptr;
+                const ComponentTemplate *tempptr;
 
-				const std::array<float, 4> *val;
+                const std::array<float, 4> *val;
 
-				if(tempparent.GetRepeatMode() == tempparent.NoRepeat) {
-					compptr = &compparent;
-					tempptr = &tempparent;
-					val     = &value;
-				}
-				else {
-					compptr = &repeated[&tempparent][j];
-					ComponentCondition rc = ComponentCondition::Always;
+                if(tempparent.GetRepeatMode() == tempparent.NoRepeat) {
+                    compptr = &compparent;
+                    tempptr = &tempparent;
+                    val     = &value;
+                }
+                else {
+                    compptr = &repeated[&tempparent][j];
+                    ComponentCondition rc = ComponentCondition::Always;
 
-					if(repeatconditions[tempparent.GetRepeatMode()].count(j))
-						rc = repeatconditions[tempparent.GetRepeatMode()][j];
+                    if(repeatconditions[tempparent.GetRepeatMode()].count(j))
+                        rc = repeatconditions[tempparent.GetRepeatMode()][j];
 
-					tempptr = &get(ci, rc).GetTemplate();
-					val     = &repeats[tempparent.GetRepeatMode()][j];
-				}
+                    tempptr = &get(ci, rc).GetTemplate();
+                    val     = &repeats[tempparent.GetRepeatMode()][j];
+                }
 
-				auto &comp = *compptr;
-				const auto &temp = *tempptr;
+                auto &comp = *compptr;
+                const auto &temp = *tempptr;
 
-				comp.parent = cont.GetIndex();
+                comp.parent = cont.GetIndex();
 
-				//check if textholder and if so use emsize from the font
-				int emsize = getemsize(comp);
-           
-				auto parentmargin = Convert(
+                //check if textholder and if so use emsize from the font
+                int emsize = getemsize(comp);
+        
+                auto parentmargin = Convert(
                         temp.GetMargin(), parent.innersize, emsize
                     ).CombinePadding(
                         Convert(cont.GetPadding(), parent.size, emsize)
                     ) + 
                     Convert(temp.GetIndent(), parent.innersize, emsize);
             
-				auto maxsize = parent.innersize - parentmargin;
+                auto maxsize = parent.innersize - parentmargin;
             
-				if(temp.GetPositioning() != temp.Absolute && temp.GetPositioning() != temp.PolarAbsolute) {
-					if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-						maxsize.Width = spaceleft - parentmargin.TotalX();
+                if(temp.GetPositioning() != temp.Absolute && temp.GetPositioning() != temp.PolarAbsolute) {
+                    if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
+                        maxsize.Width = spaceleft - parentmargin.TotalX();
                         if(maxsize.Width < 0) 
                             maxsize.Width = 0;
                     }
-					else {
-						maxsize.Height = spaceleft - parentmargin.TotalY();
+                    else {
+                        maxsize.Height = spaceleft - parentmargin.TotalY();
                         if(maxsize.Height < 0) 
                             maxsize.Height = 0;
                     }
                 }
             
-				auto size = temp.GetSize();
+                auto size = temp.GetSize();
             
             
-				if(temp.GetValueModification() == temp.ModifySize) {
-					if(NumberOfSetBits(temp.GetValueSource()) == 1) {
-						if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-							size = {
+                if(temp.GetValueModification() == temp.ModifySize) {
+                    if(NumberOfSetBits(temp.GetValueSource()) == 1) {
+                        if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
+                            size = {
                                 {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, 
                                 size.Height
                             };
-						}
-						else {
-							size = {
+                        }
+                        else {
+                            size = {
                                 size.Width, 
                                 {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}
                             };
-						}
-					}
-					else {
-						size ={
+                        }
+                    }
+                    else {
+                        size ={
                             {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, 
                             {int(calculatevalue(*val, 1, comp)*10000), Dimension::BasisPoint}
                         };
-					}
-				}
-				else if(temp.GetValueModification() == temp.ModifyWidth) {
-					size ={{int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, size.Height};
-				}
-				else if(temp.GetValueModification() == temp.ModifyHeight) {
-					size ={size.Width, {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}};
-				}
-				
-				if(temp.GetValueModification() == temp.ModifySize && NumberOfSetBits(temp.GetValueSource()) > 1) {
+                    }
+                }
+                else if(temp.GetValueModification() == temp.ModifyWidth) {
+                    size ={{int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, size.Height};
+                }
+                else if(temp.GetValueModification() == temp.ModifyHeight) {
+                    size ={size.Width, {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}};
+                }
+                
+                if(temp.GetValueModification() == temp.ModifySize && NumberOfSetBits(temp.GetValueSource()) > 1) {
                     auto minimum = Convert(temp.GetSize(), maxsize, emsize);
                     
                     comp.size = Convert(size, maxsize - minimum, emsize) + minimum;
@@ -1793,264 +1793,268 @@ realign:
                                         
                     comp.size = Convert(size, {maxsize.Width, maxsize.Height - minimum.Height}, emsize) + Geometry::Size(0, minimum.Height);
                 }
+                else if(tagsizes.count(temp.GetTag())) {
+                    comp.size = tagsizes[temp.GetTag()];
+                }
                 else {
                     comp.size = Convert(size, maxsize, emsize);
                 }
                 
-				if(temp.GetPositioning() == temp.Relative && (
-					(cont.GetOrientation() == Graphics::Orientation::Horizontal && 
-						(size.Width.GetUnit() == Dimension::Percent || size.Width.GetUnit() == Dimension::BasisPoint)) ||
-					(cont.GetOrientation() == Graphics::Orientation::Vertical && 
-						(size.Height.GetUnit() == Dimension::Percent || size.Height.GetUnit() == Dimension::BasisPoint))
-				))
-					requiresrepass = true;
+                if(temp.GetPositioning() == temp.Relative && (
+                    (cont.GetOrientation() == Graphics::Orientation::Horizontal && 
+                        (size.Width.GetUnit() == Dimension::Percent || size.Width.GetUnit() == Dimension::BasisPoint)) ||
+                    (cont.GetOrientation() == Graphics::Orientation::Vertical && 
+                        (size.Height.GetUnit() == Dimension::Percent || size.Height.GetUnit() == Dimension::BasisPoint))
+                ))
+                    requiresrepass = true;
                 
-				if((temp.GetHorizontalSizing() != temp.Fixed || temp.GetVerticalSizing() != temp.Fixed) &&
-				   !(temp.GetValueModification() == temp.ModifySize &&  NumberOfSetBits(temp.GetValueSource()) > 1)
-				) {
-					auto &st = *storage[&temp];
+                if(!(tagsizes.count(temp.GetTag())) && 
+                    (temp.GetHorizontalSizing() != temp.Fixed || temp.GetVerticalSizing() != temp.Fixed) &&
+                   !(temp.GetValueModification() == temp.ModifySize &&  NumberOfSetBits(temp.GetValueSource()) > 1)
+                ) {
+                    auto &st = *storage[&temp];
 
-					auto orgsize = comp.size;
+                    auto orgsize = comp.size;
 
-					if(temp.GetType() == ComponentType::Container) {
-						comp.size = {0, 0};
-						update(comp);
-					}
-					else if(temp.GetType() == ComponentType::Graphics) {
-						if(st.primary) {
-							auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
-							if(rectangular)
-								comp.size = rectangular->GetSize() + dynamic_cast<const GraphicsTemplate&>(temp).GetPadding();
-						}
-						else {
-							comp.size = dynamic_cast<const GraphicsTemplate&>(temp).GetPadding().Total();
-						}
-					}
-					else if(temp.GetType() == ComponentType::Textholder) {
-						const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
+                    if(temp.GetType() == ComponentType::Container) {
+                        comp.size = {0, 0};
+                        update(comp);
+                    }
+                    else if(temp.GetType() == ComponentType::Graphics) {
+                        if(st.primary) {
+                            auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
+                            if(rectangular)
+                                comp.size = rectangular->GetSize() + dynamic_cast<const GraphicsTemplate&>(temp).GetPadding();
+                        }
+                        else {
+                            comp.size = dynamic_cast<const GraphicsTemplate&>(temp).GetPadding().Total();
+                        }
+                    }
+                    else if(temp.GetType() == ComponentType::Textholder) {
+                        const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
 
-						if(th.IsReady() && stringdata[temp.GetDataEffect()] != "") {
-							auto s = size.Width(maxsize.Width, emsize);
+                        if(th.IsReady() && stringdata[temp.GetDataEffect()] != "") {
+                            auto s = size.Width(maxsize.Width, emsize);
 
-							if(s > 0)
-								comp.size = th.GetRenderer().GetSize(stringdata[temp.GetDataEffect()], s);
-							else
-								comp.size = th.GetRenderer().GetSize(stringdata[temp.GetDataEffect()]);
+                            if(s > 0)
+                                comp.size = th.GetRenderer().GetSize(stringdata[temp.GetDataEffect()], s);
+                            else
+                                comp.size = th.GetRenderer().GetSize(stringdata[temp.GetDataEffect()]);
 
-						}
-					}
-					else if(temp.GetType() == ComponentType::Placeholder) {
-						const auto &ph = dynamic_cast<const PlaceholderTemplate&>(temp);
+                        }
+                    }
+                    else if(temp.GetType() == ComponentType::Placeholder) {
+                        const auto &ph = dynamic_cast<const PlaceholderTemplate&>(temp);
 
-						if(imagedata.Exists(ph.GetDataEffect())) {
-							auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(&imagedata[ph.GetDataEffect()]);
-							if(rectangular) {
-								comp.size = rectangular->GetSize();
-							}
-						}
-						else {
-							comp.size = {0, 0};
-						}
-					}
+                        if(imagedata.Exists(ph.GetDataEffect())) {
+                            auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(&imagedata[ph.GetDataEffect()]);
+                            if(rectangular) {
+                                comp.size = rectangular->GetSize();
+                            }
+                        }
+                        else {
+                            comp.size = {0, 0};
+                        }
+                    }
 
-					if(temp.GetHorizontalSizing() == ComponentTemplate::GrowOnly) {
-						if(comp.size.Width < orgsize.Width)
-							comp.size.Width = orgsize.Width;
-					}
-					else if(temp.GetHorizontalSizing() == ComponentTemplate::ShrinkOnly) {
-						if(comp.size.Width > orgsize.Width)
-							comp.size.Width = orgsize.Width;
-					}
+                    if(temp.GetHorizontalSizing() == ComponentTemplate::GrowOnly) {
+                        if(comp.size.Width < orgsize.Width)
+                            comp.size.Width = orgsize.Width;
+                    }
+                    else if(temp.GetHorizontalSizing() == ComponentTemplate::ShrinkOnly) {
+                        if(comp.size.Width > orgsize.Width)
+                            comp.size.Width = orgsize.Width;
+                    }
 
-					if(temp.GetHorizontalSizing() == ComponentTemplate::GrowOnly) {
-						if(comp.size.Height < orgsize.Height)
-							comp.size.Height = orgsize.Height;
-					}
-					else if(temp.GetHorizontalSizing() == ComponentTemplate::ShrinkOnly) {
-						if(comp.size.Height > orgsize.Height)
-							comp.size.Height = orgsize.Height;
-					}
+                    if(temp.GetHorizontalSizing() == ComponentTemplate::GrowOnly) {
+                        if(comp.size.Height < orgsize.Height)
+                            comp.size.Height = orgsize.Height;
+                    }
+                    else if(temp.GetHorizontalSizing() == ComponentTemplate::ShrinkOnly) {
+                        if(comp.size.Height > orgsize.Height)
+                            comp.size.Height = orgsize.Height;
+                    }
 
-					if(temp.GetValueModification() == temp.ModifySize) {
-						if(cont.GetOrientation() == Graphics::Orientation::Horizontal)
-							comp.size.Width = orgsize.Width;
-						else
-							comp.size.Height = orgsize.Height;
-					}
-					else if(temp.GetValueModification() == temp.ModifyWidth) {
-						comp.size.Width = orgsize.Width;
-					}
-					else if(temp.GetValueModification() == temp.ModifyHeight) {
-						comp.size.Height = orgsize.Height;
-					}
+                    if(temp.GetValueModification() == temp.ModifySize) {
+                        if(cont.GetOrientation() == Graphics::Orientation::Horizontal)
+                            comp.size.Width = orgsize.Width;
+                        else
+                            comp.size.Height = orgsize.Height;
+                    }
+                    else if(temp.GetValueModification() == temp.ModifyWidth) {
+                        comp.size.Width = orgsize.Width;
+                    }
+                    else if(temp.GetValueModification() == temp.ModifyHeight) {
+                        comp.size.Height = orgsize.Height;
+                    }
 
-					if(
-						(cont.GetOrientation() == Graphics::Orientation::Horizontal &&
-						(size.Width.GetUnit() == Dimension::Percent || size.Width.GetUnit() == Dimension::BasisPoint)) ||
-						 (cont.GetOrientation() == Graphics::Orientation::Vertical &&
-						 (size.Height.GetUnit() == Dimension::Percent || size.Height.GetUnit() == Dimension::BasisPoint))
-						)
-					{
-						if(maxsize.Width == 0)
-							comp.size.Width = 0;
-						if(maxsize.Height == 0)
-							comp.size.Height = 0;
-					}
+                    if(
+                        (cont.GetOrientation() == Graphics::Orientation::Horizontal &&
+                        (size.Width.GetUnit() == Dimension::Percent || size.Width.GetUnit() == Dimension::BasisPoint)) ||
+                        (cont.GetOrientation() == Graphics::Orientation::Vertical &&
+                        (size.Height.GetUnit() == Dimension::Percent || size.Height.GetUnit() == Dimension::BasisPoint))
+                        )
+                    {
+                        if(maxsize.Width == 0)
+                            comp.size.Width = 0;
+                        if(maxsize.Height == 0)
+                            comp.size.Height = 0;
+                    }
 
-					if(comp.size.Width < 0)
-						comp.size.Width = 0;
-					if(comp.size.Height < 0)
-						comp.size.Height = 0;
-				}
-			}
+                    if(comp.size.Width < 0)
+                        comp.size.Width = 0;
+                    if(comp.size.Height < 0)
+                        comp.size.Height = 0;
+                }
+            }
         }
 
-		Component *prev = nullptr, *next = nullptr;
+        Component *prev = nullptr, *next = nullptr;
 
         //second pass will align everything
-		for(int i=0; i<cont.GetCount(); i++) {
+        for(int i=0; i<cont.GetCount(); i++) {
             
-			int ci = cont[i];
+            int ci = cont[i];
 
             if(ci >= indices) continue;
-			if(!stacksizes[ci]) continue;
+            if(!stacksizes[ci]) continue;
 
 
             auto &compparent = get(cont[i]);
             
             const auto &temp = compparent.GetTemplate();
 
-			for(int j = 0; temp.GetRepeatMode() == temp.NoRepeat ? j == 0 : repeats.count(temp.GetRepeatMode()) && j < repeats[temp.GetRepeatMode()].size(); j++) {
-				Component *compptr;
-				const std::array<float, 4> *val;
+            for(int j = 0; temp.GetRepeatMode() == temp.NoRepeat ? j == 0 : repeats.count(temp.GetRepeatMode()) && j < repeats[temp.GetRepeatMode()].size(); j++) {
+                Component *compptr;
+                const std::array<float, 4> *val;
 
-				if(temp.GetRepeatMode() == temp.NoRepeat) {
-					compptr = &compparent;
-					val     = &value;
-				}
-				else {
-					compptr = &repeated[&temp][j];
-					val     = &repeats[temp.GetRepeatMode()][j];
-				}
+                if(temp.GetRepeatMode() == temp.NoRepeat) {
+                    compptr = &compparent;
+                    val     = &value;
+                }
+                else {
+                    compptr = &repeated[&temp][j];
+                    val     = &repeats[temp.GetRepeatMode()][j];
+                }
 
-				auto &comp = *compptr;
+                auto &comp = *compptr;
 
-				//check if textholder and if so use emsize from the font
-				int emsize = getemsize(comp);
+                //check if textholder and if so use emsize from the font
+                int emsize = getemsize(comp);
             
-				//check anchor object by observing temp.GetPreviousAnchor and direction
-				Component *anch = nullptr;
+                //check anchor object by observing temp.GetPreviousAnchor and direction
+                Component *anch = nullptr;
             
             
-				//if absolute, nothing to anchor to but to parent
-				if(temp.GetPositioning() == temp.Relative && temp.GetPreviousAnchor() != Anchor::None) {
-					if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-						if((IsLeft(temp.GetPreviousAnchor()) && IsRight(temp.GetMyAnchor())) || 
-							(temp.GetPreviousAnchor() == Anchor::None && IsRight(temp.GetContainerAnchor()))) 
-						{
-							anch = prev;
-							comp.anchorotherside = true;
-						}
-						else {
-							anch = next;
-						}
-					}
-					else {
-						if((IsTop(temp.GetPreviousAnchor()) && IsBottom(temp.GetMyAnchor())) || 
-							(temp.GetPreviousAnchor() == Anchor::None && IsBottom(temp.GetContainerAnchor()))) 
-						{
-							anch = prev;
-							comp.anchorotherside = true;
-						}
-						else {
-							anch = next;
-						}
-					}
-				}
+                //if absolute, nothing to anchor to but to parent
+                if(temp.GetPositioning() == temp.Relative && temp.GetPreviousAnchor() != Anchor::None) {
+                    if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
+                        if((IsLeft(temp.GetPreviousAnchor()) && IsRight(temp.GetMyAnchor())) || 
+                            (temp.GetPreviousAnchor() == Anchor::None && IsRight(temp.GetContainerAnchor()))) 
+                        {
+                            anch = prev;
+                            comp.anchorotherside = true;
+                        }
+                        else {
+                            anch = next;
+                        }
+                    }
+                    else {
+                        if((IsTop(temp.GetPreviousAnchor()) && IsBottom(temp.GetMyAnchor())) || 
+                            (temp.GetPreviousAnchor() == Anchor::None && IsBottom(temp.GetContainerAnchor()))) 
+                        {
+                            anch = prev;
+                            comp.anchorotherside = true;
+                        }
+                        else {
+                            anch = next;
+                        }
+                    }
+                }
             
-				auto parentmargin = Convert(temp.GetMargin(), parent.innersize, emsize).CombinePadding(Convert(cont.GetPadding(), parent.size, emsize)) + Convert(temp.GetIndent(), parent.innersize, emsize);
+                auto parentmargin = Convert(temp.GetMargin(), parent.innersize, emsize).CombinePadding(Convert(cont.GetPadding(), parent.size, emsize)) + Convert(temp.GetIndent(), parent.innersize, emsize);
             
-				Geometry::Margin margin;
+                Geometry::Margin margin;
             
-				if(anch) {
-					margin = Convert(temp.GetMargin(), parent.innersize, emsize).CombineMargins(Convert(anch->GetTemplate().GetMargin(), parent.innersize, emsize));
-				}
-				else {
-					margin = parentmargin;
-				}
+                if(anch) {
+                    margin = Convert(temp.GetMargin(), parent.innersize, emsize).CombineMargins(Convert(anch->GetTemplate().GetMargin(), parent.innersize, emsize));
+                }
+                else {
+                    margin = parentmargin;
+                }
             
-				auto maxsize = parent.innersize - parentmargin;
+                auto maxsize = parent.innersize - parentmargin;
             
-				auto pos = temp.GetPosition();
+                auto pos = temp.GetPosition();
             
-				if(temp.GetValueModification() == temp.ModifyPosition) {
-					if(NumberOfSetBits(temp.GetValueSource()) == 1) {
-						if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-							pos = {{int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, pos.Y};
-						}
-						else {
-							pos = {pos.X, {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}};
-						}
-					}
-					else {
-						pos ={{int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, {int(calculatevalue(*val, 1, comp)*10000), Dimension::BasisPoint}};
-					}
-				}
-				else if(temp.GetValueModification() == temp.ModifyX) {
-					pos = {{int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, pos.Y};
-				}
-				else if(temp.GetValueModification() == temp.ModifyY) {
-					pos = {pos.X, {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}};
-				}
+                if(temp.GetValueModification() == temp.ModifyPosition) {
+                    if(NumberOfSetBits(temp.GetValueSource()) == 1) {
+                        if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
+                            pos = {{int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, pos.Y};
+                        }
+                        else {
+                            pos = {pos.X, {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}};
+                        }
+                    }
+                    else {
+                        pos ={{int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, {int(calculatevalue(*val, 1, comp)*10000), Dimension::BasisPoint}};
+                    }
+                }
+                else if(temp.GetValueModification() == temp.ModifyX) {
+                    pos = {{int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, pos.Y};
+                }
+                else if(temp.GetValueModification() == temp.ModifyY) {
+                    pos = {pos.X, {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}};
+                }
                 
-				if(temp.GetPositioning() == temp.PolarAbsolute) {
-					auto pcenter = Geometry::Pointf(cont.GetCenter().X.CalculateFloat((float)maxsize.Width, (float)emsize), cont.GetCenter().Y.CalculateFloat((float)maxsize.Height, (float)emsize));
-					auto center  = Geometry::Pointf(temp.GetCenter().X.CalculateFloat((float)comp.size.Width, (float)emsize), temp.GetCenter().Y.CalculateFloat((float)comp.size.Height, (float)emsize));
+                if(temp.GetPositioning() == temp.PolarAbsolute) {
+                    auto pcenter = Geometry::Pointf(cont.GetCenter().X.CalculateFloat((float)maxsize.Width, (float)emsize), cont.GetCenter().Y.CalculateFloat((float)maxsize.Height, (float)emsize));
+                    auto center  = Geometry::Pointf(temp.GetCenter().X.CalculateFloat((float)comp.size.Width, (float)emsize), temp.GetCenter().Y.CalculateFloat((float)comp.size.Height, (float)emsize));
 
-					pcenter += parentmargin.TopLeft();
+                    pcenter += parentmargin.TopLeft();
 
-					auto r = pos.X.CalculateFloat(Geometry::Point(maxsize).Distance()/(float)sqrt(2), (float)emsize);
+                    auto r = pos.X.CalculateFloat(Geometry::Point(maxsize).Distance()/(float)sqrt(2), (float)emsize);
 
-					auto a = pos.Y.CalculateFloat(360, PI);
+                    auto a = pos.Y.CalculateFloat(360, PI);
 
-					a *= PI / 180.0f;
+                    a *= PI / 180.0f;
 
-					comp.location = {int(std::round(r * cos(a) + pcenter.X - center.X)), int(std::round(r * sin(a) + pcenter.Y - center.Y))};
-				}
-				else {
+                    comp.location = {int(std::round(r * cos(a) + pcenter.X - center.X)), int(std::round(r * sin(a) + pcenter.Y - center.Y))};
+                }
+                else {
                     auto offset = Convert(pos, (temp.GetPositioning() == temp.AbsoluteSliding ?  maxsize - comp.size : comp.size), emsize);
             
-					if(anch) {
-						anchortoother(comp, temp, offset, margin, *anch, cont.GetOrientation());
-					}
-					else {
-						anchortoparent(comp, temp, offset, margin, parent.innersize);
-					}
-				}
+                    if(anch) {
+                        anchortoother(comp, temp, offset, margin, *anch, cont.GetOrientation());
+                    }
+                    else {
+                        anchortoparent(comp, temp, offset, margin, parent.innersize);
+                    }
+                }
 
-				//Which anchor side is to be changed
-				if(temp.GetPositioning() == temp.Relative) {
-					if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-						if(IsRight(temp.GetMyAnchor())) {
-							prev = &comp;
-						}
-						else {
-							next = &comp;
-						}
-					}
-					else {
-						if(IsBottom(temp.GetMyAnchor())) {
-							prev = &comp;
-						}
-						else {
-							next = &comp;
-						}
-					}
-				}
-			}
-		}//for indices
-		
-		if(requiresrepass && !repassdone) {
+                //Which anchor side is to be changed
+                if(temp.GetPositioning() == temp.Relative) {
+                    if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
+                        if(IsRight(temp.GetMyAnchor())) {
+                            prev = &comp;
+                        }
+                        else {
+                            next = &comp;
+                        }
+                    }
+                    else {
+                        if(IsBottom(temp.GetMyAnchor())) {
+                            prev = &comp;
+                        }
+                        else {
+                            next = &comp;
+                        }
+                    }
+                }
+            }
+        }//for indices
+        
+        if(requiresrepass && !repassdone) {
             if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
                 int rightused = 0, leftused = 0;
                 
@@ -2064,37 +2068,37 @@ realign:
                     auto &compparent = get(cont[i]);
                     const auto &temp = compparent.GetTemplate();
 
-					for(int j = 0; temp.GetRepeatMode() == temp.NoRepeat ? j == 0 : repeats.count(temp.GetRepeatMode()) && j < repeats[temp.GetRepeatMode()].size(); j++) {
-						Component *compptr;
-						const std::array<float, 4> *val;
+                    for(int j = 0; temp.GetRepeatMode() == temp.NoRepeat ? j == 0 : repeats.count(temp.GetRepeatMode()) && j < repeats[temp.GetRepeatMode()].size(); j++) {
+                        Component *compptr;
+                        const std::array<float, 4> *val;
 
-						if(temp.GetRepeatMode() == temp.NoRepeat) {
-							compptr = &compparent;
-							val     = &value;
-						}
-						else {
-							compptr = &repeated[&temp][j];
-							val     = &repeats[temp.GetRepeatMode()][j];
-						}
+                        if(temp.GetRepeatMode() == temp.NoRepeat) {
+                            compptr = &compparent;
+                            val     = &value;
+                        }
+                        else {
+                            compptr = &repeated[&temp][j];
+                            val     = &repeats[temp.GetRepeatMode()][j];
+                        }
 
-						auto &comp = *compptr;
+                        auto &comp = *compptr;
 
-						//check if textholder and if so use emsize from the font
-						int emsize = getemsize(comp);
+                        //check if textholder and if so use emsize from the font
+                        int emsize = getemsize(comp);
 
-						if(temp.GetPositioning() != temp.Absolute && temp.GetPositioning() != temp.PolarAbsolute) {
-							if(comp.anchorotherside) {
-								rightused = parent.innersize.Width - comp.location.X;
-							}
-							else if(comp.size.Width > 0) {
-								leftused = (   
-									comp.location.X + comp.size.Width + 
-									std::max(temp.GetMargin().Right(parent.innersize.Width, emsize), cont.GetPadding().Right(parent.size.Width, emsize))
+                        if(temp.GetPositioning() != temp.Absolute && temp.GetPositioning() != temp.PolarAbsolute) {
+                            if(comp.anchorotherside) {
+                                rightused = parent.innersize.Width - comp.location.X;
+                            }
+                            else if(comp.size.Width > 0) {
+                                leftused = (   
+                                    comp.location.X + comp.size.Width + 
+                                    std::max(temp.GetMargin().Right(parent.innersize.Width, emsize), cont.GetPadding().Right(parent.size.Width, emsize))
                                 
-								);
-							}
-						}
-					}
+                                );
+                            }
+                        }
+                    }
                 }
                 
                 spaceleft = parent.innersize.Width - rightused - leftused;
@@ -2137,25 +2141,25 @@ realign:
         }
 
 
-		for(int i=0; i<cont.GetCount(); i++) {
+        for(int i=0; i<cont.GetCount(); i++) {
 
-			int ci = cont[i];
+            int ci = cont[i];
 
-			if(ci >= indices) continue;
-			if(!stacksizes[ci]) continue;
+            if(ci >= indices) continue;
+            if(!stacksizes[ci]) continue;
 
 
-			auto &comp = get(cont[i]);
+            auto &comp = get(cont[i]);
 
-			const auto &temp = comp.GetTemplate();
+            const auto &temp = comp.GetTemplate();
 
-			if(temp.GetType() == ComponentType::Container) {
-				update(comp);
-			}
-		}
-	}
+            if(temp.GetType() == ComponentType::Container) {
+                update(comp);
+            }
+        }
+    }
 
-	void ComponentStack::Render() {
+    void ComponentStack::Render() {
         if(frame_fn)
             frame_fn();
         
@@ -2189,82 +2193,87 @@ realign:
             }
         }
 
-		bool changed = false;
-		auto tm = Time::DeltaTime();
-		for(int i=0; i<4; i++) {
-			if(targetvalue[i] != value[i]) {
-				if(valuespeed[i] == 0 || fabs(value[i] - targetvalue[i]) < valuespeed[i] * tm / 1000) {
-					value[i] = targetvalue[i];
-				}
-				else {
-					value[i] += Sign(targetvalue[i] - value[i]) * valuespeed[i] * tm / 1000;
-				}
+        bool changed = false;
+        auto tm = Time::DeltaTime();
+        for(int i=0; i<4; i++) {
+            if(targetvalue[i] != value[i]) {
+                if(valuespeed[i] == 0 || fabs(value[i] - targetvalue[i]) < valuespeed[i] * tm / 1000) {
+                    value[i] = targetvalue[i];
+                }
+                else {
+                    value[i] += Sign(targetvalue[i] - value[i]) * valuespeed[i] * tm / 1000;
+                }
 
-				changed = true;
-			}
-		}
+                changed = true;
+            }
+        }
 
-		if(changed) {
-			updaterequired = true;
+        if(changed) {
+            updaterequired = true;
 
-			if(!returntarget && value_fn)
-				value_fn();
-		}
+            if(!returntarget && value_fn)
+                value_fn();
+        }
 
         
         for(auto it : tobereplaced)
             ReplaceCondition(it.first, it.second);
         
-		if(updaterequired)
-			update();
+        if(updaterequired)
+            update();
         
         for(int i=0; i<indices; i++)  {
             if(!stacksizes[i]) continue;
             
             if(storage[&get(i).GetTemplate()]->timer) {
-               storage[&get(i).GetTemplate()]->timer->SetProgress(nextafter(1.0f, 0.0f) * calculatevalue(0, get(i))); 
+                storage[&get(i).GetTemplate()]->timer->SetProgress(nextafter(1.0f, 0.0f) * calculatevalue(0, get(i))); 
             }
         }
 
-		Gorgon::Layer::Render();
-	}
-	
-	void ComponentStack::HandleMouse(Input::Mouse::Button accepted) {
-		mousebuttonaccepted=accepted;
+        Gorgon::Layer::Render();
+    }
+    
+    void ComponentStack::HandleMouse(Input::Mouse::Button accepted) {
+        mousebuttonaccepted=accepted;
 
-		for(auto s : substacks)
-			s.second.HandleMouse(mousebuttonaccepted);
+        for(auto s : substacks)
+            s.second.HandleMouse(mousebuttonaccepted);
 
-		handlingmouse = true;
+        handlingmouse = true;
     }
 
-	void ComponentStack::SetOtherMouseEvent(std::function<void(ComponentTemplate::Tag, Input::Mouse::EventType, Geometry::Point, float)> handler) {
-		other_fn = handler;
+    void ComponentStack::SetOtherMouseEvent(std::function<bool(ComponentTemplate::Tag, Input::Mouse::EventType, Geometry::Point, float)> handler) {
+        other_fn = handler;
 
-		mouse.SetScroll([this](Geometry::Point location, float amount) {
-			if(other_fn)
-				other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Scroll_Vert, location, amount);
-		});
+        mouse.SetScroll([this](Geometry::Point location, float amount) {
+            if(other_fn)
+                return other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Scroll_Vert, location, amount);
+            
+            return false;
+        });
 
-		mouse.SetHScroll([this](Geometry::Point location, float amount) {
-			if(other_fn)
-				other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Scroll_Hor, location, amount);
-		});
+        mouse.SetHScroll([this](Geometry::Point location, float amount) {
+            if(other_fn)
+                return other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Scroll_Hor, location, amount);
+            return false;
+        });
 
-		mouse.SetRotate([this](Geometry::Point location, float amount) {
-			if(other_fn)
-				other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Rotate, location, amount);
-		});
+        mouse.SetRotate([this](Geometry::Point location, float amount) {
+            if(other_fn)
+                return other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Rotate, location, amount);
+            return false;
+        });
 
-		mouse.SetZoom([this](Geometry::Point location, float amount) {
-			if(other_fn)
-				other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Zoom, location, amount);
-		});
+        mouse.SetZoom([this](Geometry::Point location, float amount) {
+            if(other_fn)
+                return other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Zoom, location, amount);
+            return false;
+        });
 
-		for(auto stack : substacks) {
-			stack.second.SetOtherMouseEvent([stack, this](ComponentTemplate::Tag tag, Input::Mouse::EventType type, Geometry::Point point, float amount) {
-				other_fn(stack.first->GetTag() == ComponentTemplate::NoTag ? ComponentTemplate::UnknownTag : stack.first->GetTag(), type, point, amount);
-			});
-		}
-	}
+        for(auto stack : substacks) {
+            stack.second.SetOtherMouseEvent([stack, this](ComponentTemplate::Tag tag, Input::Mouse::EventType type, Geometry::Point point, float amount) {
+                return other_fn(stack.first->GetTag() == ComponentTemplate::NoTag ? ComponentTemplate::UnknownTag : stack.first->GetTag(), type, point, amount);
+            });
+        }
+    }
 } }

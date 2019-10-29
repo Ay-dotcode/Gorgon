@@ -74,10 +74,14 @@ namespace Gorgon { namespace Widgets {
 		) override;
 		
 	
-		
+        
         virtual UI::Template BlankPanel(
             Geometry::Size size = {155, 300}
         ) override;
+        
+        virtual UI::Template Panel(
+            Geometry::Size size = {155, 300}
+        ) ;
         
         Graphics::BitmapRectangleProvider &NormalBorder();
         Graphics::BitmapRectangleProvider &HoverBorder();
