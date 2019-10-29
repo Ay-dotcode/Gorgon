@@ -44,18 +44,25 @@ namespace Gorgon { namespace Widgets {
         /// be at the top left. If clip is set, the scroll amount cannot go
         /// out of the scrolling region.
         void ScrollTo(int x, int y, bool clip);
-        
+
         /// Scrolls the contents of the panel so that the given location will
         /// be at the top.
         void ScrollTo(int y, bool clip = true) {
-            ScrollTo(stack.GetValue()[0]*100, y, clip);
+            ScrollTo(ScrollOffset().X, y, clip);
         }
-        
+
+        /// Scrolls the contents an additional amount.
+        void ScrollBy(int y, bool clip = true) {
+            ScrollTo(ScrollOffset().X, ScrollOffset().Y + y, clip);
+        }
+
+        /// Scrolls the contents an additional amount.
+        void ScrollBy(int x, int y, bool clip = true) {
+            ScrollTo(ScrollOffset().X + x, ScrollOffset().Y + y, clip);
+        }
+
         /// Returns the current scroll offset
-        Geometry::Point ScrollOffset() const {
-            auto val = stack.GetValue();
-            return {(int)(val[0]*100), (int)(val[1]*100)};
-        }
+        Geometry::Point ScrollOffset() const;
         
         /// Sets the amount of extra scrolling distance after the bottom-most
         /// widget is completely visible in pixels. Default is 0.
@@ -63,7 +70,7 @@ namespace Gorgon { namespace Widgets {
             overscroll = value;
         }
         
-        /// Returns the amound of extra scrolling distance after the bottom-most
+        /// Returns the amount of extra scrolling distance after the bottom-most
         /// widget is completely visible in pixels.
         int GetOverscroll() const {
             return overscroll;

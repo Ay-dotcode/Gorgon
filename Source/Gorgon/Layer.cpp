@@ -119,6 +119,9 @@ namespace Gorgon {
 	}
 
     Layer::~Layer() {
+        for(auto &l : children)
+            Remove(l);
+
         for(auto &win : Window::Windows)
             win.deleting(this);
 

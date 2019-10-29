@@ -4,6 +4,13 @@ namespace Gorgon { namespace Widgets {
     Panel::Panel(const UI::Template &temp) : 
     UI::ComponentStackWidget(temp) 
     {
+        stack.SetOtherMouseEvent([this](UI::ComponentTemplate::Tag tag, Input::Mouse::EventType type, Geometry::Point, float amount) {
+            if(type == Input::Mouse::EventType::Scroll_Vert) {
+                ScrollBy((int)amount*15);
+            }
+        });
+
+        stack.SetValueTransitionSpeed({1, 1, 0, 0});
     }
 
     
@@ -85,4 +92,12 @@ namespace Gorgon { namespace Widgets {
     }
     
     
-} }
+    Geometry::Point Panel::ScrollOffset() const {
+        auto b = stack.TagBounds(UI::ComponentTemplate::Contents);
+        auto val = stack.GetValue();
+
+        return {(int)(val[0]*b.Width()), (int)(val[1]*b.Height())};
+    }
+
+}
+}

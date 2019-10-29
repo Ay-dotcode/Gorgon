@@ -77,13 +77,13 @@ namespace Gorgon { namespace Widgets {
         ownicon = false;
     }
     
-    void Button::SetIcon(const Graphics::AnimationProvider &value) {
+    void Button::SetIconProvider(const Graphics::AnimationProvider &value) {
         auto &anim = value.CreateAnimation(true);
         
         OwnIcon(anim);
     }
     
-    void Button::SetIcon(Graphics::AnimationProvider &&provider) {
+    void Button::SetIconProvider(Graphics::AnimationProvider &&provider) {
         iconprov = &(provider.MoveOutProvider());
         auto &anim = iconprov->CreateAnimation(true);
         

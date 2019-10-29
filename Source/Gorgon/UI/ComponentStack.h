@@ -89,7 +89,8 @@ namespace Gorgon { namespace UI {
 		void SetValue(Graphics::RGBA color) { SetValue((Graphics::RGBAf)color); }
 
 		/// Changes the value transition speed. A speed of 0 will disable smooth transition.
-		void SetValueTransitionSpeed(std::array<float, 4> val) {
+        /// The unit is values per second
+        void SetValueTransitionSpeed(std::array<float, 4> val) {
 			valuespeed = val;
 		}
 

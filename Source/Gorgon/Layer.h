@@ -180,6 +180,7 @@ namespace Gorgon {
 			
 			removed(layer);
 			layer.located(nullptr);
+            layer.parent = nullptr;
 		}
 		
 		/// Removes the given layer

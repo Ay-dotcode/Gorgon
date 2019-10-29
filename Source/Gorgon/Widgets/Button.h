@@ -52,11 +52,11 @@ namespace Gorgon { namespace Widgets {
         
         /// Changes the icon on the button. This will create a new animation
         /// from the given provider and will own the resultant animation.
-        void SetIcon(const Graphics::AnimationProvider &value);
+        void SetIconProvider(const Graphics::AnimationProvider &value);
         
         /// Changes the icon on the button. This will move in the provider,
         /// create a new animation and own both the provider and the animation
-        void SetIcon(Graphics::AnimationProvider &&provider);
+        void SetIconProvider(Graphics::AnimationProvider &&provider);
 
         /// Removes the icon on the button
         void RemoveIcon();

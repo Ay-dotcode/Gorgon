@@ -93,7 +93,7 @@ int main() {
     Widgets::Button ib(icobtntemp);
     auto ico = Graphics::BlankImage({16, 16}, Graphics::Color::Black);
     //ico.Prepare();
-    ib.OwnIcon(ico);
+    ib.SetIcon(ico);
     ib.Move(chk.GetLocation() + Gorgon::Geometry::Point(0, chk.GetSize().Height + 4));
     app.wind.Add(ib);
     
@@ -129,10 +129,11 @@ int main() {
     sub.SetWidth(100);
     
     increase.ClickEvent.Register([&]() {
-        sub.ScrollTo(sub.ScrollOffset().Y+5);
+        sub.ScrollBy(100);
     });
     
     decrease.ClickEvent.Register([&]() {
+        sub.ScrollBy(-100);
         std::cout<<"-"<<std::endl;
     });
     decrease.ActivateClickRepeat();
