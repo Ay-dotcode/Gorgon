@@ -81,7 +81,47 @@ namespace Gorgon { namespace Widgets {
         int GetOverscroll() const {
             return overscroll;
         }
-
+        
+        /// Sets the horizontal scroll distance per click in pixels. Default is 45px.
+        void SetScrollDistance(int vert) {
+            scrolldist.Y = vert;
+        }
+        
+        /// Sets the scroll distance per click in pixels. Default is 80, 45px.
+        void SetScrollDistance(int hor, int vert) {
+            SetScrollDistance({hor, vert});
+        }
+        
+        /// Sets the scroll distance per click in pixels. Default is 80, 45px.
+        void SetScrollDistance(Geometry::Point dist) {
+            scrolldist = dist;
+        }
+        
+        /// Returns the scroll distance per click
+        Geometry::Point GetScrollDistance() const {
+            return scrolldist;
+        }
+        
+        /// Disables smooth scrolling of the panel
+        void DisableSmoothScroll() {
+            SetSmoothScrollSpeed(0);
+        }
+        
+        /// Adjusts the smooth scrolling speed of the panel. Given value is
+        /// in pixels per second, default value is 250.
+        void SetSmoothScrollSpeed(int value);
+        
+        /// Returns the smooth scrolling speed of the panel. If smooth scroll
+        /// is disabled, this value will be 0.
+        int GetSmoothScrollSpeed() const {
+            return scrollspeed;
+        }
+        
+        /// Returns if the smooth scroll is enabled.
+        bool IsSmoothScrollEnabled() const {
+            return scrollspeed != 0;
+        }
+        
     protected:
         virtual bool allowfocus() const override;
         
@@ -97,8 +137,14 @@ namespace Gorgon { namespace Widgets {
         
         virtual void childboundschanged(WidgetBase *source) override;
         
+        void updatecontent();
+        
+        bool updaterequired = false;
+        
         int overscroll = 0;
         bool scrollclipped = true;
+        Geometry::Point scrolldist = {80, 45};
+        int scrollspeed = 250;
     };
     
 } }

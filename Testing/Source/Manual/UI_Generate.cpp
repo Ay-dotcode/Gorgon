@@ -126,6 +126,7 @@ int main() {
     sub.CreateOrganizer<Gorgon::UI::Organizers::List>();
     
     sub.SetWidth(100);
+    sub.SetOverscroll(200);
     
     increase.ClickEvent.Register([&]() {
         sub.ScrollBy(100);
@@ -136,7 +137,6 @@ int main() {
         std::cout<<"-"<<std::endl;
     });
     decrease.ActivateClickRepeat();
-    decrease.Hide();
     
     Widgets::Checkbox chk1(chktemp, "Sugar?");
     

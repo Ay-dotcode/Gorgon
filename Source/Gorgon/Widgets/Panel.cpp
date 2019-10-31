@@ -1,4 +1,5 @@
 #include "Panel.h"
+#include "../Main.h"
 
 namespace Gorgon { namespace Widgets {
     Panel::Panel(const UI::Template &temp) : 
@@ -12,7 +13,7 @@ namespace Gorgon { namespace Widgets {
                 if(amount>0 && ScrollOffset().Y <= 0)
                     return false;
                 
-                ScrollBy(-(int)amount*15);
+                ScrollBy(-(int)amount*scrolldist.Y);
                 return true;
             }
             
@@ -23,14 +24,14 @@ namespace Gorgon { namespace Widgets {
                 if(amount>0 && ScrollOffset().X <= 0)
                     return false;
                 
-                ScrollBy(0, -(int)amount*15);
+                ScrollBy(0, -(int)amount*scrolldist.X);
                 return true;
             }
             
             return false;
         });
 
-        stack.SetValueTransitionSpeed({1, 1, 0, 0});
+        SetSmoothScrollSpeed(scrollspeed);
     }
 
     
@@ -72,11 +73,19 @@ namespace Gorgon { namespace Widgets {
 
     bool Panel::ResizeInterior(Geometry::Size size) {
         auto tb = stack.TagBounds(UI::ComponentTemplate::Contents).GetSize();
-        stack.Resize(size + stack.GetSize() - tb);
+        Resize(size + stack.GetSize() - tb);
 
         return stack.TagBounds(UI::ComponentTemplate::Contents).GetSize() == size;
     }
     
+    void Panel::Resize(Geometry::Size size) { 
+        ComponentStackWidget::Resize(size);
+        
+        if(HasOrganizer())
+            GetOrganizer().Reorganize();
+        
+        childboundschanged(nullptr);
+    }
     
     bool Panel::allowfocus() const {
         for(auto &w : widgets) {
@@ -148,6 +157,14 @@ namespace Gorgon { namespace Widgets {
     void Panel::childboundschanged(WidgetBase *source) {
         WidgetContainer::childboundschanged(source);
         
+        if(updaterequired)
+            return;
+        
+        updaterequired = true;
+        Gorgon::RegisterOnce(std::bind(&Panel::updatecontent, this));
+    }
+    
+    void Panel::updatecontent() {
         int maxx = 0, maxy = 0;
         for(auto &c : widgets) {
             if(!c.IsVisible()) 
@@ -167,9 +184,13 @@ namespace Gorgon { namespace Widgets {
         //clip scroll
         if(scrollclipped)
             ScrollTo(ScrollOffset());
+        
+        SetSmoothScrollSpeed(scrollspeed);
+        
+        updaterequired = false;
     }
     
-
+    
     void Panel::SetOverscroll(int value) {
         overscroll = value;
         
@@ -198,10 +219,15 @@ namespace Gorgon { namespace Widgets {
         return {xscroll, yscroll};
     }
 
-    void Panel::Resize(Geometry::Size size) { 
-        ComponentStackWidget::Resize(size);
+
+    void Panel::SetSmoothScrollSpeed(int value){
+        auto s = stack.TagBounds(UI::ComponentTemplate::Contents).GetSize();
         
-        if(HasOrganizer())
-            GetOrganizer().Reorganize();
+        scrollspeed = value;
+        
+        if(s.Area() == 0) 
+            stack.SetValueTransitionSpeed({0, 0, 0, 0});
+        else
+            stack.SetValueTransitionSpeed({(float)value / s.Width, (float)value / s.Height, 0, 0});
     }
 } }
