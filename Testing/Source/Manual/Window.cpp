@@ -376,6 +376,8 @@ int main() {
 
 	il.SetScroll([](Point location, float amount) {
 		std::cout<<"Scrolled "<<amount<<" times at "<<location<<std::endl;
+
+        return true;
 	});
 	
 	auto p = std::chrono::high_resolution_clock::now();
