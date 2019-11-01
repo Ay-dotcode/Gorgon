@@ -29,33 +29,57 @@ namespace Gorgon { namespace Widgets {
 		stack.SetData(UI::ComponentTemplate::Text, text);
 	}
 
-
-	void Label::SetIcon(const Graphics::Animation &value) {
-		if(ownicon)
-			delete icon;
-
-		icon = &value;
-		stack.SetData(UI::ComponentTemplate::Icon, *icon);
-
-		ownicon = false;
-	}
-
-	void Label::RemoveIcon() {
-		if(ownicon)
-			delete icon;
-
-		icon = nullptr;
-
-		stack.RemoveData(UI::ComponentTemplate::Icon);
-	}
-
-
-	void Label::OwnIcon() {
-		ownicon = true;
-	}
-
 	
-	void Label::OwnIcon(const Graphics::Animation &value) {
+	void Label::SetIcon(const Graphics::Animation &value) {
+        if(ownicon) {
+            icon->DeleteAnimation();;
+        }
+        delete iconprov;
+        
+        icon = &value;
+        iconprov = nullptr;
+        stack.SetData(UI::ComponentTemplate::Icon, *icon);
+        
+        ownicon = false;
+    }
+    
+    
+    void Label::SetIcon(const Graphics::Bitmap& value){
+        SetIcon(dynamic_cast<const Graphics::Animation&>(value));
+    }
+    
+    
+    void Label::SetIconProvider(const Graphics::AnimationProvider &value) {
+        auto &anim = value.CreateAnimation(true);
+        
+        OwnIcon(anim);
+    }
+    
+    void Label::SetIconProvider(Graphics::AnimationProvider &&provider) {
+        iconprov = &(provider.MoveOutProvider());
+        auto &anim = iconprov->CreateAnimation(true);
+        
+        OwnIcon(anim);
+    }
+    
+    void Label::RemoveIcon() {
+        if(ownicon) {
+            icon->DeleteAnimation();
+        }
+        delete iconprov;
+        
+        icon = nullptr;
+        
+        stack.RemoveData(UI::ComponentTemplate::Icon);
+    }
+    
+    
+    void Label::OwnIcon() {
+        ownicon = true;
+    }
+    
+    
+    void Label::OwnIcon(const Graphics::Animation &value) {
         SetIcon(value);
         
         ownicon = true;

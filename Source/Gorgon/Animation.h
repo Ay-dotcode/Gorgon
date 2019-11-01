@@ -284,12 +284,13 @@ namespace Gorgon {
 		public:
 			using AnimationType = Base;
             
+            
+            /// Virtual destructor
+            virtual ~Provider() { }
+            
             /// This function moves this animation provider into a new provider. Ownership of this new object belongs
             /// to the caller and this object could be destroyed safely.
             virtual Provider &MoveOutProvider() = 0;
-
-			/// Virtual destructor
-			virtual ~Provider() { }
 		
 			/// This function should create a new animation with the given controller
 			virtual Base &CreateAnimation(ControllerBase &timer) const = 0;
@@ -328,9 +329,6 @@ namespace Gorgon {
 					SetController(*timer);
 				}
 			}
-		
-			/// Virtual destructor
-			virtual ~Base();
 
 			/// Sets the controller to the given controller.
 			virtual void SetController(ControllerBase &controller) {
@@ -382,8 +380,10 @@ namespace Gorgon {
 				delete this; 
 			}
 
-		protected:
-
+        protected:
+            /// Virtual destructor
+            virtual ~Base();
+            
 			/// Controller of this animation
 			ControllerBase *controller = nullptr;
 		};

@@ -88,6 +88,8 @@ namespace Gorgon { namespace Widgets {
         /// minimum time between the repeats.
         void ActivateClickRepeat(int delay = 500, int repeat = 400, int accelerationtime = 2000, int minrepeat = 200);
         
+        
+        /// Deactivates click repeat.
         void DeactivateClickRepeat();
         
         virtual bool Activate() override;

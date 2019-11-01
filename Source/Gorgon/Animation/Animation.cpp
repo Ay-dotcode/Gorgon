@@ -90,7 +90,8 @@ namespace Gorgon { namespace Animation {
 	void ControllerBase::Delete(Base &animation) {
 		auto item=animations.Find(animation);
 		if(item.IsValid()) {
-			item.Delete();
+            item->DeleteAnimation();
+			item.Remove();
 		}
 	}
 

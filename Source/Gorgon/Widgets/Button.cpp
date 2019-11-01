@@ -67,15 +67,22 @@ namespace Gorgon { namespace Widgets {
 
     void Button::SetIcon(const Graphics::Animation &value) {
         if(ownicon) {
-            delete icon;
+            icon->DeleteAnimation();;
         }
         delete iconprov;
         
         icon = &value;
+        iconprov = nullptr;
         stack.SetData(UI::ComponentTemplate::Icon, *icon);
 
         ownicon = false;
     }
+    
+    
+    void Button::SetIcon(const Graphics::Bitmap& value){
+        SetIcon(dynamic_cast<const Graphics::Animation&>(value));
+    }
+    
     
     void Button::SetIconProvider(const Graphics::AnimationProvider &value) {
         auto &anim = value.CreateAnimation(true);
@@ -92,7 +99,7 @@ namespace Gorgon { namespace Widgets {
     
     void Button::RemoveIcon() {
         if(ownicon) {
-            delete icon;
+            icon->DeleteAnimation();
         }
         delete iconprov;
         
@@ -224,8 +231,5 @@ namespace Gorgon { namespace Widgets {
         }
     }
     
-
-void Button::SetIcon(const Graphics::Bitmap& value){
-           SetIcon(dynamic_cast<const Graphics::Animation&>(value));
-       }
+    
 } }
