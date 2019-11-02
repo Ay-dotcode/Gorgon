@@ -28,25 +28,25 @@ int carryOn = 1;
 //XML start function
 static void XMLCALL
 start(void *data, const XML_Char *el, const XML_Char **attr){
-    
+    //Opening file
     std::ofstream file;
     file.open(fileOut, std::ios_base::app);
-//     std::cout<< "----\tfile open..."<< std::endl;
     
     int i;
     (void) data;
-//     std::cout<< "\tvariables created..."<< std::endl;
-//     for (i = 0; i < Depth; i++)
-//         file << "  ";
+    //initial indentation
+    for (i = 0; i < Depth; i++)
+        file << "  ";
     
-//     std::cout<< "\tmaybe space added..."<< std::endl;
-//     file << el;
-//     std::cout<< "\telement added..."<< std::endl;
-//     for (i = 0; attr[i]; i += 2){
-//         file << " %" << attr[i] << "='%" << attr[i + 1] << "'"; 
-//     }
-//     std::cout<< "\tother stuff added..."<< std::endl;
-//     file << std::endl;
+    //Reading in the current element as a comment
+    file << "//" << el;
+    //Reading in the attributes of the element
+    for (i = 0; attr[i]; i += 2){
+        file << "//" << " %" << attr[i] << "='%" << attr[i + 1] << "'"; 
+    }
+    
+    //Moving to the next lline for the next element
+    file << "\n";
     Depth++;
     file.close();
 }
@@ -60,21 +60,24 @@ end(void *data, const XML_Char *el){
     Depth--;
 }
 
+//Main
 int main(int argc, char* argv[]){
     
     if(argc != 2) {
         std::cout<<"Usage: "<<argv[0]<<" file"<<std::endl;
         return 1;
     }
+    //File creation and initialization
     fileOut = argv[1];
     std::ofstream file;
     file.open(fileOut);
+    std::string fileName = "Time";
     
-    
-    file << "#include <iostream>\n#include \"Time.h\"\n#include \"Gorgon/Scripting/Embedding.h\"\n#include \"Gorgon/Scripting/Reflection.h\"\n#include \"Gorgon/Scripting.h\"\n\n using namespace std;\n\nint main(int argc, char* argv[])\n{\n\tcout << \"Gscript Generator\"; \n\nreturn 0;\n} ";
+    file << "#include \"Time.h\"\n#include \"Gorgon/Scripting/Embedding.h\"\n#include \"Gorgon/Scripting/Reflection.h\"\n#include \"Gorgon/Scripting.h\"\n\n namespace Gorgon { namespace Time {\n\tScripting::Library LibTime(\"Time\",\"Data types under " << fileName <<" module and their member functions and operators\");  \n\t}\n} ";
     
     file.close();
     
+    //Start of parsing
     std::cout<< "Starting...\n";
     XML_Parser p = XML_ParserCreate(NULL);
     std::cout<< "p = " << p << std::endl;;
@@ -128,5 +131,4 @@ int main(int argc, char* argv[]){
     XML_ParserFree(p);
     std::cout<< "Finished Parsing!!\n";
     return 0;
-    
 }
