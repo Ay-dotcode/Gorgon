@@ -126,6 +126,7 @@ int main() {
     sub.CreateOrganizer<Gorgon::UI::Organizers::List>();
     
     sub.SetWidth(100);
+    sub.SetScrollDistance(15);
     sub.SetOverscroll(200);
     
     increase.ClickEvent.Register([&]() {

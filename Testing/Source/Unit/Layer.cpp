@@ -7,6 +7,8 @@
 #include <Gorgon/Layer.h>
 #include <Gorgon/Window.h>
 #include <Gorgon/Graphics/Layer.h>
+#include <Gorgon/Audio.h>
+#include <Gorgon/Input/Layer.h>
 
 using namespace Gorgon;
 using namespace Gorgon::Geometry;
@@ -256,4 +258,101 @@ TEST_CASE("Window", "[Layer]") {
 	l1.Insert(l4, 1);
 
 	REQUIRE(l4.GetOrder() == 1);
+}
+
+
+TEST_CASE("Input", "[Layer]") {
+    
+    //Initialize("Unittestlayer");
+    
+    
+    INFO("Make sure the mouse is out of the window frame.");
+
+    int a = 0, b = 0;
+    Geometry::Point t1, t2;
+    Input::Mouse::Button tbtn;
+    Window l1({200, 300}, "Test");
+    
+    MouseHandler m;
+    Clip = l1.GetBounds();
+    REQUIRE_FALSE(l1.propagate_mouseevent(Input::Mouse::EventType::Click, {10, 10}, Input::Mouse::Button::Left, 1, m));
+    
+    Input::Layer l2;
+    l2.SetClick([&] (auto &l, auto pnt, auto btn) {
+        if(pnt != t1) {
+            Utils::ASSERT_FALSE("", 1, 10);
+        }
+        REQUIRE(pnt == t1);
+        REQUIRE(btn == tbtn);
+        a++;
+        
+        return true;
+    });
+    
+    l1.Add(l2);
+    
+    tbtn = Input::Mouse::Button::Left;
+    t1 = {10, 10};
+    
+    m.Clear();
+    Clip = l1.GetBounds();
+    (l1.propagate_mouseevent(Input::Mouse::EventType::HitCheck, {10, 10}, tbtn, 1, m));
+    m.Clear();
+    Clip = l1.GetBounds();
+    REQUIRE(l1.propagate_mouseevent(Input::Mouse::EventType::Click, {10, 10}, tbtn, 1, m));
+    REQUIRE(a == 1);
+    
+    l2.Move(10, 10);
+    
+    tbtn = Input::Mouse::Button::Left;
+    t1 = {0, 0};
+    
+    m.Clear();
+    Clip = l1.GetBounds();
+    (l1.propagate_mouseevent(Input::Mouse::EventType::HitCheck, {10, 10}, tbtn, 1, m));
+    Clip = l1.GetBounds();
+    REQUIRE(l1.propagate_mouseevent(Input::Mouse::EventType::Click, {10, 10}, tbtn, 1, m));
+    REQUIRE(a == 2);
+    
+    l2.Move(-10, -10);
+    
+    tbtn = Input::Mouse::Button::Left;
+    t1 = {20, 20};
+    
+    m.Clear();
+    Clip = l1.GetBounds();
+    (l1.propagate_mouseevent(Input::Mouse::EventType::HitCheck, {10, 10}, tbtn, 1, m));
+    Clip = l1.GetBounds();
+    REQUIRE(l1.propagate_mouseevent(Input::Mouse::EventType::Click, {10, 10}, tbtn, 1, m));
+    REQUIRE(a == 3);
+    
+    l2.Resize(20, 20);
+    l2.Move(-10, -10);
+    
+    tbtn = Input::Mouse::Button::Left;
+    t1 = {15, 15};
+    
+    m.Clear();
+    Clip = l1.GetBounds();
+    (l1.propagate_mouseevent(Input::Mouse::EventType::HitCheck, {5, 5}, tbtn, 1, m));
+    Clip = l1.GetBounds();
+    REQUIRE(l1.propagate_mouseevent(Input::Mouse::EventType::Click, {5, 5}, tbtn, 1, m));
+    REQUIRE(a == 4);
+    
+    m.Clear();
+    Clip = l1.GetBounds();
+    (l1.propagate_mouseevent(Input::Mouse::EventType::HitCheck, {11, 11}, tbtn, 1, m));
+    Clip = l1.GetBounds();
+    REQUIRE_FALSE(l1.propagate_mouseevent(Input::Mouse::EventType::Click, {11, 11}, tbtn, 1, m));
+    REQUIRE(a == 4);
+    
+    l2.Move(0, 290);
+    
+    m.Clear();
+    Clip = l1.GetBounds();
+    (l1.propagate_mouseevent(Input::Mouse::EventType::HitCheck, {10, 301}, tbtn, 1, m));
+    Clip = l1.GetBounds();
+    REQUIRE_FALSE(l1.propagate_mouseevent(Input::Mouse::EventType::Click, {10, 301}, tbtn, 1, m));
+    REQUIRE(a == 4);
+    
 }

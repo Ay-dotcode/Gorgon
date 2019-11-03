@@ -352,6 +352,11 @@ namespace Gorgon { namespace Audio {
 		tempdevices.clear();
 		
 		auto pa_op = pa_context_get_sink_info_list(pa_ctx, pa_sinklist_cb, nullptr);
+        
+        if(!pa_op) {
+            Log << "Probe failed: " << pa_strerror(pa_context_errno(pa_ctx));
+            return;
+        }
 
 		bool finished = wait_pa_op(pa_op
 #ifdef PA_TIMEOUT

@@ -322,9 +322,29 @@ namespace Gorgon {
 		
 		/// Returns the size of the layer
 		Geometry::Size GetSize() const {
-			return bounds.GetSize();
-		}
-
+            return bounds.GetSize();
+        }
+        
+        /// Returns the size of the layer. If any dimension size is
+        /// 0, it means the layer will span its parent, this function
+        /// will perform necessary calculation to get parent size.
+        Geometry::Size GetCalculatedSize() const {
+            if(!parent)
+                return bounds.GetSize();
+            
+            auto ps = parent->GetCalculatedSize();
+            auto s = GetSize();
+            auto p = GetLocation();
+            
+            if(s == Geometry::Size(0, 0)) {
+                s = ps;
+                s.Width  -= p.X;
+                s.Height -= p.Y;
+            }
+            
+            return s;
+        }
+        
 		/// Returns the width of the layer
 		int GetWidth() const {
 			return bounds.Width();

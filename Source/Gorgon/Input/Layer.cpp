@@ -26,19 +26,17 @@ namespace Gorgon { namespace Input {
 
 		auto curlocation = mytransform * location;
         
+        auto size = GetCalculatedSize();
+        
         if(needsclip(event)) {
-			dotransformandclip(true);
-
             bool out = false;
             if(
                 curlocation.X < 0 || 
                 curlocation.Y < 0 || 
-                curlocation.X >= Clip.Width() || 
-                curlocation.Y >= Clip.Height()
+                curlocation.X >= size.Width || 
+                curlocation.Y >= size.Height
             )
                 out = true;
-                
-			reverttransformandclip();
             
             if(out) return false;
         }

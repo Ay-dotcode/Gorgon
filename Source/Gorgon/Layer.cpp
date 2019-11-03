@@ -1,10 +1,16 @@
 #include "Layer.h"
 #include "Window.h"
 #include "Graphics/Color.h"
+#include "Input/Mouse.h"
 
 namespace Gorgon {
 
-
+    namespace Input {
+        
+        bool needsclip(Input::Mouse::EventType event);
+        
+    }
+    
 	std::vector<Geometry::Transform3D> prev_Transform;
     std::vector<Geometry::Bounds>      prev_Clip;
     std::vector<Geometry::Point>       prev_Offset;
@@ -59,7 +65,29 @@ namespace Gorgon {
 		bool ret = false;
 
 		dotransformandclip(true);
-
+        
+        auto curlocation = Transform * location;
+        
+        auto size = GetCalculatedSize();
+        
+        if(Input::needsclip(event)) {
+            bool out = false;
+            if(
+                curlocation.X < 0 || 
+                curlocation.Y < 0 || 
+                curlocation.X >= size.Width || 
+                curlocation.Y >= size.Height
+            )
+                out = true;
+                
+                if(out) {
+                    reverttransformandclip();
+                    
+                    return false;
+                }
+        }
+        
+        
         if(event == Input::Mouse::EventType::Out) {
             throw std::logic_error("Regular layers cannot handle mouse events.");
         }
@@ -96,11 +124,7 @@ namespace Gorgon {
 
 
         auto curbounds = Geometry::Bounds(Offset, bounds.GetSize());
-        
-        /*std::cout<<name<<"\t";
-        std::cout<<Clip<<"\t\t";*/
 
-        //Clip = Intersect(Clip, curbounds);
         if(Clip.Left < curbounds.Left)
             Clip.Left = curbounds.Left;
 
@@ -118,9 +142,7 @@ namespace Gorgon {
 
         if(Clip.Top > Clip.Bottom)
             Clip.Bottom = Clip.Top;
-
-        //std::cout<<Clip<<std::endl;
-	}
+    }
 
 	void Layer::reverttransformandclip() {
 		Transform = prev_Transform.back();
