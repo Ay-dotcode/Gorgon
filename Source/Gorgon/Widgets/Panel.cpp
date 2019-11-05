@@ -61,7 +61,7 @@ namespace Gorgon { namespace Widgets {
 
     
     Geometry::Size Panel::GetInteriorSize() const {
-        auto size = stack.TagBounds(UI::ComponentTemplate::ViewPort).GetSize();
+        auto size = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize();
         
         if(size.Width==0 && size.Height==0) {
             size = stack.GetSize();
@@ -72,10 +72,10 @@ namespace Gorgon { namespace Widgets {
     
 
     bool Panel::ResizeInterior(Geometry::Size size) {
-        auto tb = stack.TagBounds(UI::ComponentTemplate::Contents).GetSize();
+        auto tb = stack.TagBounds(UI::ComponentTemplate::ContentsTag).GetSize();
         Resize(size + stack.GetSize() - tb);
 
-        return stack.TagBounds(UI::ComponentTemplate::Contents).GetSize() == size;
+        return stack.TagBounds(UI::ComponentTemplate::ContentsTag).GetSize() == size;
     }
     
     void Panel::Resize(Geometry::Size size) { 
@@ -109,7 +109,7 @@ namespace Gorgon { namespace Widgets {
 
     
     Gorgon::Layer &Panel::getlayer() {
-        return stack.GetLayerOf(stack.IndexOfTag(UI::ComponentTemplate::Contents));
+        return stack.GetLayerOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag));
     }
 
 
@@ -122,7 +122,7 @@ namespace Gorgon { namespace Widgets {
     
 
     void Panel::ScrollTo(int x, int y, bool clip){
-        auto b = stack.TagBounds(UI::ComponentTemplate::Contents);
+        auto b = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
         
         if(clip) {
             auto max = MaxScrollOffset();
@@ -147,7 +147,7 @@ namespace Gorgon { namespace Widgets {
     
     
     Geometry::Point Panel::ScrollOffset() const {
-        auto b = stack.TagBounds(UI::ComponentTemplate::Contents);
+        auto b = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
         auto val = stack.GetValue();
 
         return {(int)(-val[0]*b.Width()), (int)(-val[1]*b.Height())};
@@ -179,7 +179,7 @@ namespace Gorgon { namespace Widgets {
                 maxy = b.Bottom;
         }
         
-        stack.SetTagSize(UI::ComponentTemplate::Contents, {maxx, maxy});
+        stack.SetTagSize(UI::ComponentTemplate::ContentsTag, {maxx, maxy});
         
         //clip scroll
         if(scrollclipped)
@@ -199,7 +199,7 @@ namespace Gorgon { namespace Widgets {
     }
 
     Geometry::Point Panel::MaxScrollOffset() const {
-        auto cont = stack.TagBounds(UI::ComponentTemplate::Contents);
+        auto cont = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
         auto size = GetInteriorSize();
         
         int xscroll = cont.Width() - size.Width;
@@ -221,7 +221,7 @@ namespace Gorgon { namespace Widgets {
 
 
     void Panel::SetSmoothScrollSpeed(int value){
-        auto s = stack.TagBounds(UI::ComponentTemplate::Contents).GetSize();
+        auto s = stack.TagBounds(UI::ComponentTemplate::ContentsTag).GetSize();
         
         scrollspeed = value;
         

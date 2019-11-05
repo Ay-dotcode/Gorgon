@@ -906,7 +906,7 @@ namespace Gorgon { namespace Widgets {
         bg.AddIndex(1);
         
         auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always);
-        cont.SetTag(UI::ComponentTemplate::Contents);
+        cont.SetTag(UI::ComponentTemplate::ContentsTag);
         cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
         cont.SetSize(100, 100, UI::Dimension::Percent);
         cont.SetPositioning(cont.Absolute);
@@ -928,7 +928,7 @@ namespace Gorgon { namespace Widgets {
         bg.AddIndex(1);
         
         auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always);
-        cont.SetTag(UI::ComponentTemplate::Contents);
+        cont.SetTag(UI::ComponentTemplate::ContentsTag);
         cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
         cont.SetSize(100, 100, UI::Dimension::Percent);
         cont.SetPositioning(cont.Absolute);

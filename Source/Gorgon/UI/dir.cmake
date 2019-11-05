@@ -8,6 +8,7 @@ SET(Local
 	Template.h
 	Template.cpp
 	TwoStateControl.h
+	Validators.h
 	WidgetBase.h
 	WidgetBase.cpp
 	WidgetContainer.h

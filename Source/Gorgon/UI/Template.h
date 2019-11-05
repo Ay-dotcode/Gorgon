@@ -15,6 +15,16 @@ namespace Gorgon {
         class TextRenderer;
     }
     
+    /**
+     * @page ui User interface
+     *
+     * @subpage components
+     * 
+     * @subpage boxmodel
+     * 
+     * @subpage validators
+     */
+    
     /// This namespace contains User interface related functionality. This namespace
     /// does not contain the actual widgets that can be used. For that purpose, use
     /// Gorgon::Widgets namespace.
@@ -92,7 +102,7 @@ namespace Gorgon {
 	 * 
 	 * ###See also:
 	 * 
-	 * @subpage boxmodel
+	 * @ref boxmodel
 	 */
 
 
@@ -1012,8 +1022,10 @@ namespace Gorgon {
             BottomTag,
             ExpandTag,
             ToggleTag,
-			Contents,
-            ViewPort,
+            ContentsTag,
+            ViewPortTag,
+            SelectionTag,
+            CaretTag,
         };
         
         /// Some components are repeated along some axis, this property controls how they will be
