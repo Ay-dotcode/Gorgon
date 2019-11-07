@@ -2,6 +2,9 @@
 #include <fstream>
 #include <expat.h>
 #include <string>
+#include <cstring>
+#include <memory>
+//#include <cstdlib>
 
 #ifdef XML_LARGE_SIZE
 # if defined(XML_USE_MSC_EXTENSIONS) && _MSC_VER < 1400
@@ -24,6 +27,7 @@
 int Depth;
 std::string fileOut;
 int carryOn = 1;
+static char *xmlData;
 
 //XML start function
 static void XMLCALL
@@ -33,30 +37,48 @@ start(void *data, const XML_Char *el, const XML_Char **attr){
     file.open(fileOut, std::ios_base::app);
     
     int i;
-    (void) data;
-    //initial indentation
-    for (i = 0; i < Depth; i++)
-        file << "  ";
+    if(std::string(el) == "highlight"){
+        //initial indentation
+        for (i = 0; i < Depth; i++)
+            file << "  ";
     
-    //Reading in the current element as a comment
-    file << "//" << el;
-    //Reading in the attributes of the element
-    for (i = 0; attr[i]; i += 2){
-        file << "//" << " %" << attr[i] << "='%" << attr[i + 1] << "'"; 
+        //Reading in the current element as a comment
+    
+        file << "/* " << el << " */";
+        
+        //Reading in the attributes of the element
+        for (i = 0; attr[i]; i += 2){
+            file << " /* attr: " << attr[i] << "='%" << attr[i + 1] << " */"; 
+        }
+        
+        file << "\t /* element =" << xmlData << " */";
+    
+        //Moving to the next lline for the next element
+    
+        file << "\n";
+        Depth++;
     }
-    
-    //Moving to the next lline for the next element
-    file << "\n";
-    Depth++;
     file.close();
+}
+
+//XML Data function
+static void XMLCALL
+fileData(void *data, const char* content, int len){
+    
+    std::string temp;
+    
+    temp = content;
+    temp = temp + '\0';
+    xmlData = (char*) temp.c_str();
+    
 }
 
 //XML end function
 static void XMLCALL 
 end(void *data, const XML_Char *el){
+    
     (void)data;
     (void)el;
-    
     Depth--;
 }
 
@@ -73,7 +95,7 @@ int main(int argc, char* argv[]){
     file.open(fileOut);
     std::string fileName = "Time";
     
-    file << "#include \"Time.h\"\n#include \"Gorgon/Scripting/Embedding.h\"\n#include \"Gorgon/Scripting/Reflection.h\"\n#include \"Gorgon/Scripting.h\"\n\n namespace Gorgon { namespace Time {\n\tScripting::Library LibTime(\"Time\",\"Data types under " << fileName <<" module and their member functions and operators\");  \n\t}\n} ";
+    file << "#include \"Time.h\"\n#include \"Gorgon/Scripting/Embedding.h\"\n#include \"Gorgon/Scripting/Reflection.h\"\n#include \"Gorgon/Scripting.h\"\n\n namespace Gorgon { namespace Time {\n\tScripting::Library LibTime(\"Time\",\"Data types under " << fileName <<" module and their member functions and operators\");  \n\t}\n} \n";
     
     file.close();
     
@@ -87,6 +109,7 @@ int main(int argc, char* argv[]){
     }
     
     XML_SetElementHandler(p, start, end);
+    XML_SetCharacterDataHandler(p, fileData);
     
     while(carryOn){
         int done;
