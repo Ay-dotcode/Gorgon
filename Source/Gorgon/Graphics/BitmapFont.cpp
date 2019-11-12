@@ -466,7 +466,7 @@ namespace Gorgon { namespace Graphics {
         linegap = float(height + spacing * 2);
 
 		if(options.automatickerning)
-			AutoKern();
+			AutoKern(64, options.automatickerningreduction);
         
         if(options.pack)
             Pack();
@@ -740,7 +740,7 @@ namespace Gorgon { namespace Graphics {
         linegap = float(height + spacing * 2);
 
 		if(options.automatickerning)
-			AutoKern();
+            AutoKern(64, options.automatickerningreduction);
         
         if(expand) {
             if(options.pack)

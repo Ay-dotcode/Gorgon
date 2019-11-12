@@ -582,6 +582,17 @@ namespace Gorgon {
             
             return 3; //replacement: 0xfffd
         }
+        
+        inline int UnicodeGlyphCount(const std::string &s) {
+            int i = 0;
+            int count = 0;
+            while(i < s.length()) {
+                count++;
+                i += UTF8Bytes(s[i]);
+            }
+            
+            return count;
+        }
 		
 		/// Appends a unicode code point to the string. If the given char
 		/// is valid, this function will return true. Otherwise, it will place

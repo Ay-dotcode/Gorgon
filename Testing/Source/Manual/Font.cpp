@@ -1,6 +1,5 @@
 //Copy Resources/Testing/Victoria to Testing/Runtime (in VS you need to fix running directory)
 
-#include <Gorgon/Window.h>
 #include <Gorgon/Main.h>
 #include "Gorgon/Graphics/Bitmap.h"
 #include "Gorgon/Graphics/Layer.h"
@@ -8,46 +7,22 @@
 #include <Gorgon/Resource/Font.h>
 #include "Gorgon/Graphics/BitmapFont.h"
 
+#include "GraphicsHelper.h"
 
-using Gorgon::Window;
-using Gorgon::Geometry::Point;
-namespace Graphics = Gorgon::Graphics;
-namespace Input = Gorgon::Input;
-namespace Resource = Gorgon::Resource;
+
+
+std::string helptext = 
+"Key list:\n"
+"esc\tClose\n"
+;
 
 
 int main() {
-	
-	Gorgon::Initialize("Font-test");
-
-    system("pwd");
-    system("cd");
+    Application app("generictest", "Test", helptext, 25, 0x20);
     
-        
-	Window wind({800, 600}, "windowtest", "Font Test");
-	Graphics::Initialize();
-
-	wind.DestroyedEvent.Register([]{
-		exit(0);
-	});
-
-	Graphics::Layer l;
-	wind.Add(l);
-
-    //Background
-	Graphics::Bitmap img3({50, 50}, Graphics::ColorMode::Grayscale);
-
-	for(int x = 0; x<img3.GetWidth(); x++)
-		for(int y = 0; y<img3.GetHeight(); y++) {
-			if((x/(img3.GetWidth()/2)) != (y/(img3.GetHeight()/2)))
-				img3({x, y}, 0) = 0x10;
-			else
-				img3({x, y}, 0) = 0x30;
-		}
-
-	img3.Prepare();
-	img3.DrawIn(l);
-
+    Graphics::Layer l;
+    app.wind.Add(l);
+    
     //destruction tests
     {
         Graphics::BitmapFont fnt;
@@ -116,30 +91,40 @@ int main() {
 	sty.UseFlatShadow({0.f, 1.0f}, {1.f, 1.f});
 	sty.SetColor({0.6f, 1.f, 1.f});
 	sty.JustifyLeft();
+    sty.SetParagraphSpacing(5);
     
-	sty.Print(l, "\xf0\x90\x8d\x88Lor|em ipsum\xe2\x80\xa8""folor sit amet, consecteturadipiscingelitseddoeiusmoftemporincididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", 0, 0, 300);
+    sty.Print(l, "\xf0\x90\x8d\x88Lor|em ipsum\xe2\x80\xa8""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris pellentesque, urna ac congue euismod, orci justo imperdiet odio, eget facilisis diam metus eget tortor. Cras fermentum, quam id consectetur varius, dolornullaiaculisodioetaliquetelitipsumatmaurisCrasmalesuadamolestielibero, at mattis eros efficitur vitae. Nulla commodo, elit at consequat luctus, ex dui euismod ante, sed lacinia nisi mauris at ex. Maecenas bibendum nulla eget nulla rhoncus tristique. Duis venenatis urna dui, varius congue risus consectetur eget. Maecenas scelerisque mattis elit ut imperdiet.\nProin aliquam, eros eu posuere rutrum, erat nisl porttitor sapien, a auctor velit purus sed justo. Etiam id imperdiet neque. Pellentesque ultricies dictum enim sit amet tempus. Curabitur id tortor finibus purus vehicula sodales. Mauris faucibus dolor leo, ut condimentum velit aliquet ac. Nulla placerat lacinia libero non ullamcorper. Mauris pulvinar dictum augue sit amet ultricies.\nPellentesque neque massa, ornare vitae ipsum id, sagittis luctus est. Etiam commodo viverra justo sed efficitur. Proin nec felis sed enim feugiat condimentum id laoreet dui. Nulla fringilla, neque eu gravida tincidunt, felis enim vulputate nisl, quis porta diam mauris et diam. Integer luctus fermentum dictum. Aenean ut massa eget nibh dapibus rhoncus. Nunc luctus porta turpis, vel viverra libero volutpat id. Donec non dui eu libero porta imperdiet blandit nec ex. Suspendisse ullamcorper tellus nisi. Integer pharetra condimentum facilisis. Sed vel varius dui. In fringilla nec ipsum ac hendrerit.", 0, 0, 300);
     
     sty.Underline();
-	sty.Print(l, "Name\tSurname\nMarvin\tthe Robot\nMe\tMyself", 250, 200);
+	sty.Print(l, "Name\tSurname\nMarvin\tthe Robot\nMe\tMyself", 325, 200);
     
+    int ind, ind2;
     sty.SetUnderline(false);
 	sty.DisableShadow();
     sty.SetColor({1.f, 0.4f, 0.4f});
-	sty.Print(l, "First text should be justified.\nPrevious text should have tabs and underlined.\nThis text should not have shadow and should be red.", 250, 240);
+	sty.Print(l, "First text should be justified.\nPrevious text should have tabs and underlined.\nThis text should not have shadow and should be red.", 325, 250);
+    ind = sty.GetCharacterIndex("First text should be justified.\nPrevious text should have tabs and underlined.\nThis text should not have shadow and should be red.", {20, 11});
+    ind2 = sty.GetCharacterIndex("First text should be justified.\nPrevious text should have tabs and underlined.\nThis text should not have shadow and should be red.", {60, 0});
+    
+    std::cout<<ind<<" == 35 "<<ind2<<" == 11"<<std::endl;
     
     Graphics::BitmapFont fixedsize_original;
     Graphics::BitmapFont::ImportOptions options;
     options.converttoalpha = Gorgon::YesNoAuto::Auto;
     std::cout<<"Imported "<<fixedsize_original.ImportAtlas("fixed-font.bmp", {7, 9}, 0x20, false, options)<<" glyphs."<<std::endl;
     fixedsize_original.Print(l, "Hello!, fixed sized import is working.\nKerning example: Ta, T.", 350, 2);
+    ind = fixedsize_original.GetCharacterIndex("Hello!, fixed sized import is working.\nKerning example: Ta, T.", {20, 11});
+    ind2 = fixedsize_original.GetCharacterIndex("Hello!, fixed sized import is working.\nKerning example: Ta, T.", {60, 0});
+    std::cout<<ind<<" == 41 "<<ind2<<" == 10"<<std::endl;
     
     Graphics::BitmapFont fixedsize_repack;
+    options.automatickerningreduction = 0;
     std::cout<<"Imported "<<fixedsize_repack.ImportAtlas("fixed-font.bmp", {7, 9}, 0x20, true, options)<<" glyphs."<<std::endl;
     fixedsize_repack.Print(l, "Hello!, fixed sized import is working.\nKerning example: Ta, T.", 350, 6+fixedsize_original.GetLineGap() * 2);
     
     Graphics::BitmapFont auto_repack;
     options.spacing = 0;
-    options.automatickerning = false;
+    //options.automatickerning = false;
     std::cout<<"Imported "<<auto_repack.ImportAtlas("boxy_bold.png", {0, 0}, 0x20, true, options)<<" glyphs."<<std::endl;
     auto_repack.Print(l, "Hello!, auto detect import is working.\nKerning example: Ta, T.", 350, 10+fixedsize_original.GetLineGap() * 4);
     

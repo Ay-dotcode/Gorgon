@@ -120,6 +120,11 @@ namespace Gorgon { namespace Graphics {
             /// Whether to apply automatic kerning after import is completed.
             bool automatickerning = true;
             
+            /// If automatic kerning is applied, this value will be used to reduce the kerning
+            /// amount. Removing kerning reduction will cause tighter kerning, increasing it
+            /// will reduce the effect of kerning.
+            int automatickerningreduction = 1;
+            
             ///Spaces between characters, -1 activates auto detection.
             int spacing = -1;
         };
