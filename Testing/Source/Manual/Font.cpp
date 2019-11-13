@@ -1,17 +1,19 @@
 //Copy Resources/Testing/Victoria to Testing/Runtime (in VS you need to fix running directory)
 
 #include <Gorgon/Main.h>
-#include "Gorgon/Graphics/Bitmap.h"
-#include "Gorgon/Graphics/Layer.h"
+#include <Gorgon/Graphics/Bitmap.h>
+#include <Gorgon/Graphics/Layer.h>
 #include <Gorgon/Resource/File.h>
 #include <Gorgon/Resource/Font.h>
-#include "Gorgon/Graphics/BitmapFont.h"
+#include <Gorgon/Graphics/BitmapFont.h>
+#include <Gorgon/Input/Layer.h>
 
 #include "GraphicsHelper.h"
 
 
 
 std::string helptext = 
+"Try selecting the text on the top left, it should print the selected text to stdout\n"
 "Key list:\n"
 "esc\tClose\n"
 ;
@@ -93,7 +95,20 @@ int main() {
 	sty.JustifyLeft();
     sty.SetParagraphSpacing(5);
     
-    sty.Print(l, "\xf0\x90\x8d\x88Lor|em ipsum\xe2\x80\xa8""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris pellentesque, urna ac congue euismod, orci justo imperdiet odio, eget facilisis diam metus eget tortor. Cras fermentum, quam id consectetur varius, dolornullaiaculisodioetaliquetelitipsumatmaurisCrasmalesuadamolestielibero, at mattis eros efficitur vitae. Nulla commodo, elit at consequat luctus, ex dui euismod ante, sed lacinia nisi mauris at ex. Maecenas bibendum nulla eget nulla rhoncus tristique. Duis venenatis urna dui, varius congue risus consectetur eget. Maecenas scelerisque mattis elit ut imperdiet.\nProin aliquam, eros eu posuere rutrum, erat nisl porttitor sapien, a auctor velit purus sed justo. Etiam id imperdiet neque. Pellentesque ultricies dictum enim sit amet tempus. Curabitur id tortor finibus purus vehicula sodales. Mauris faucibus dolor leo, ut condimentum velit aliquet ac. Nulla placerat lacinia libero non ullamcorper. Mauris pulvinar dictum augue sit amet ultricies.\nPellentesque neque massa, ornare vitae ipsum id, sagittis luctus est. Etiam commodo viverra justo sed efficitur. Proin nec felis sed enim feugiat condimentum id laoreet dui. Nulla fringilla, neque eu gravida tincidunt, felis enim vulputate nisl, quis porta diam mauris et diam. Integer luctus fermentum dictum. Aenean ut massa eget nibh dapibus rhoncus. Nunc luctus porta turpis, vel viverra libero volutpat id. Donec non dui eu libero porta imperdiet blandit nec ex. Suspendisse ullamcorper tellus nisi. Integer pharetra condimentum facilisis. Sed vel varius dui. In fringilla nec ipsum ac hendrerit.", 0, 0, 300);
+    std::string parag = "Lor|em ipsum""Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris pellentesque, urna ac congue euismod, orci justo imperdiet odio, eget facilisis diam metus eget tortor. Cras fermentum, quam id consectetur varius, ""dolornullaiaculisodioetaliquetelitipsumatmaurisCrasmalesuadamolestielibero, at mattis eros efficitur vitae. Nulla commodo, elit at consequat luctus, ex dui euismod ante, sed lacinia nisi mauris at ex. Maecenas bibendum nulla eget nulla rhoncus tristique. Duis venenatis urna dui, varius congue risus consectetur eget. Maecenas scelerisque mattis elit ut imperdiet.\nProin aliquam, eros eu posuere rutrum, erat nisl porttitor sapien, a auctor velit purus sed justo. Etiam id imperdiet neque. Pellentesque ultricies dictum enim sit amet tempus. Curabitur id tortor finibus purus vehicula sodales. Mauris faucibus dolor leo, ut condimentum velit aliquet ac. Nulla placerat lacinia libero non ullamcorper. Mauris pulvinar dictum augue sit amet ultricies.\nPellentesque neque massa, ornare vitae ipsum id, sagittis luctus est. Etiam commodo viverra justo sed efficitur. Proin nec felis sed enim feugiat condimentum id laoreet dui. Nulla fringilla, neque eu gravida tincidunt, felis enim vulputate nisl, quis porta diam mauris et diam. Integer luctus fermentum dictum. Aenean ut massa eget nibh dapibus rhoncus. Nunc luctus porta turpis, vel viverra libero volutpat id. Donec non dui eu libero porta imperdiet blandit nec ex. Suspendisse ullamcorper tellus nisi. Integer pharetra condimentum facilisis. Sed vel varius dui. In fringilla nec ipsum ac hendrerit.";
+    
+    sty.Print(l, parag, 0, 0, 300);
+    
+    Gorgon::Input::Layer mouselayer;
+    app.wind.Add(mouselayer);
+    int startind = 0;
+    mouselayer.SetDown([&](Geometry::Point pnt) {
+        startind = sty.GetCharacterIndex(parag, 300, pnt);
+    });
+    mouselayer.SetUp([&](Geometry::Point pnt) {
+        int endind = sty.GetCharacterIndex(parag, 300, pnt);
+        std::cout<<parag.substr(startind, endind-startind)<<std::endl;
+    });
     
     sty.Underline();
 	sty.Print(l, "Name\tSurname\nMarvin\tthe Robot\nMe\tMyself", 325, 200);
@@ -112,7 +127,7 @@ int main() {
     Graphics::BitmapFont::ImportOptions options;
     options.converttoalpha = Gorgon::YesNoAuto::Auto;
     std::cout<<"Imported "<<fixedsize_original.ImportAtlas("fixed-font.bmp", {7, 9}, 0x20, false, options)<<" glyphs."<<std::endl;
-    fixedsize_original.Print(l, "Hello!, fixed sized import is working.\nKerning example: Ta, T.", 350, 2);
+    fixedsize_original.Print(l, "Hello!, fixed sized import is working.\nKerning example: Ta, T.", 350, 100);
     ind = fixedsize_original.GetCharacterIndex("Hello!, fixed sized import is working.\nKerning example: Ta, T.", {20, 11});
     ind2 = fixedsize_original.GetCharacterIndex("Hello!, fixed sized import is working.\nKerning example: Ta, T.", {60, 0});
     std::cout<<ind<<" == 41 "<<ind2<<" == 10"<<std::endl;
@@ -120,13 +135,13 @@ int main() {
     Graphics::BitmapFont fixedsize_repack;
     options.automatickerningreduction = 0;
     std::cout<<"Imported "<<fixedsize_repack.ImportAtlas("fixed-font.bmp", {7, 9}, 0x20, true, options)<<" glyphs."<<std::endl;
-    fixedsize_repack.Print(l, "Hello!, fixed sized import is working.\nKerning example: Ta, T.", 350, 6+fixedsize_original.GetLineGap() * 2);
+    fixedsize_repack.Print(l, "Hello!, fixed sized import is working.\nKerning example: Ta, T.", 350, 6+fixedsize_original.GetLineGap() * 2+100);
     
     Graphics::BitmapFont auto_repack;
     options.spacing = 0;
     //options.automatickerning = false;
     std::cout<<"Imported "<<auto_repack.ImportAtlas("boxy_bold.png", {0, 0}, 0x20, true, options)<<" glyphs."<<std::endl;
-    auto_repack.Print(l, "Hello!, auto detect import is working.\nKerning example: Ta, T.", 350, 10+fixedsize_original.GetLineGap() * 4);
+    auto_repack.Print(l, "Hello!, auto detect import is working.\nKerning example: Ta, T.", 350, 10+fixedsize_original.GetLineGap() * 4+100);
     
 
 	while(true) {

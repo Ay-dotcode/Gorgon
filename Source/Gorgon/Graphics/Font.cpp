@@ -436,7 +436,7 @@ namespace Gorgon { namespace Graphics {
                         }
 
                         totw = x;
-                        lastbreak = (int)acc.size();
+                        lastbreak = (int)acc.size()-1;
                     }
                     else { //regular break
                         acc.push_back({x, g});
@@ -583,7 +583,7 @@ namespace Gorgon { namespace Graphics {
                         }
                         
                         totw = x;
-                        lastbreak = (int)acc.size();
+                        lastbreak = (int)acc.size()-1;
                     }
                     else { //regular break
                         acc.push_back({x, g});
@@ -666,7 +666,7 @@ namespace Gorgon { namespace Graphics {
             }
             
             if(!acc.empty()) {
-                !doline(-1, acc.begin(), acc.end(), x, skipped);
+                doline(-1, acc.begin(), acc.end(), x, skipped);
             }
         }
 
@@ -753,6 +753,55 @@ namespace Gorgon { namespace Graphics {
                 if(cur.Y > location.Y && bestind != -1)
                     done = true;
             }
+        );
+        
+        return bestind;
+    }
+    
+    int BasicFont::GetCharacterIndex(const std::string& text, int w, Geometry::Point location) const { 
+        if(renderer->NeedsPrepare())
+            renderer->Prepare(text);
+        
+        auto y   = 0;
+        auto tot = w;
+        int ind = 0;
+        int bestind = 0;
+        int ploc = 0;
+
+        internal::boundedprint(
+            *renderer, text.begin(), text.end(), tot,
+
+            [&](Glyph, internal::markvecit begin, internal::markvecit end, int w) {
+                auto off = 0;
+
+                if(defaultalign == TextAlignment::Center) {
+                    off += (int)std::round((tot - w) / 2.f);
+                }
+                else if(defaultalign == TextAlignment::Right) {
+                    off += tot - w;
+                }
+
+                for(auto it = begin; it != end; ++it) {
+                    if(it->location + off < location.X + (it->location + off - ploc) / 2) {
+                        bestind = ind;
+                    }
+                    
+                    ploc = it->location + off;
+                    ind++;
+                }
+
+                y += (int)renderer->GetLineGap();
+                
+                if(y > location.Y) {
+                    return false;
+                }
+                
+                return true;
+            },
+
+            [&](Glyph prev, Glyph next) { return int(renderer->KerningDistance(prev, next).X); },
+            [&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
+            std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetMaxWidth() * 8)
         );
         
         return bestind;
@@ -937,8 +986,131 @@ namespace Gorgon { namespace Graphics {
     }
     
     int StyledRenderer::GetCharacterIndex(const std::string &text, int width, Geometry::Point location) const {
+        if(renderer->NeedsPrepare())
+            renderer->Prepare(text);
         
-        return 0;
+        auto y      = 0;
+        int tot     = width;
+        int bestind = 0;
+        int ind = 0;
+
+        internal::boundedlayout(
+            *renderer, text.begin(), text.end(), tot,
+
+            [&](Glyph g, internal::markvecit begin, internal::markvecit end, int w, int skip) {
+                auto off = 0;
+                int ploc = 0;
+
+                if(justify && g == 0) {
+                    //count spaces and letters
+                    int sps = 0;
+                    int letters = 0;
+                    Glyph prev = 0;
+
+                    for(auto it=begin; it!=end; ++it) {
+                        if(internal::isadjustablespace(it->g))
+                            sps++;
+
+                        //ignore before and after tabs
+                        if(it->g == '\t') {
+                            prev = 0;
+                        }
+                        else {
+                            if(prev && internal::isspaced(prev))
+                                letters++;
+
+                            prev = it->g;
+                        }
+                    }
+
+                    auto target = tot - w;
+                    int gs = 0; //glyph spacing
+                    int spsp = 0; //space spacing
+                    int extraspsp = 0; //extra spaced spaces
+
+                    if(letters && target/letters >= 1) { //we can increase glyph spacing
+                        gs = target/letters;
+                        if(gs > 1 && gs > renderer->GetHeight()/3) //1 is always usable
+                            gs = renderer->GetHeight()/3;
+
+                        target -= gs*letters;
+                    }
+
+                    if(sps > 0) {
+                        spsp = target/sps;
+
+                        //max 2em
+                        if(spsp > renderer->GetHeight() * 4) {
+                            spsp = renderer->GetHeight() * 4;
+                            target -= spsp*sps;
+                        }
+                        else {
+                            target -= spsp*sps;
+
+                            extraspsp = target;
+                            target = 0;
+                        }
+                    }
+
+                    if(target == 0) {
+                        //go over all glyphs and set widths
+                        int off = 0;
+                        for(auto it=begin; it!=end; ++it) {
+                            it->location += off;
+
+                            if(internal::isadjustablespace(it->g)) {
+                                off += spsp;
+
+                                if(extraspsp-->0)
+                                    off++;
+                            }
+
+                            if(it->g != '\t' && internal::isspaced(it->g)) {
+                                off += gs;
+                            }
+                        }
+
+                        w = tot - target;
+                    }
+                }
+
+                if(defaultalign == TextAlignment::Center) {
+                    off += (int)std::round((tot - w) / 2.f);
+                }
+                else if(defaultalign == TextAlignment::Right) {
+                    off += tot - w;
+                }
+                
+                ind += skip;
+
+                for(auto it=begin; it!=end; ++it) {
+                    if(it->location + off < location.X + (it->location + off - ploc) / 2) {
+                        bestind = ind;
+                    }
+                    
+                    ploc = it->location + off;
+                    ind++;
+                }
+
+
+                y += (int)std::round(renderer->GetLineGap() * vspace);
+
+                if(g != 0)
+                    y += pspace;
+                
+                if(y > location.Y) {
+                    return false;
+                }
+                
+                return true;
+            },
+
+            [&](Glyph prev, Glyph next) { return int(hspace + renderer->KerningDistance(prev, next).X); }, //modify this system to allow horizontal kerning
+            [&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
+            std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth ? tabwidth : 16)
+        );
+        
+        return bestind;
     }
     
     void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align_override) const {
