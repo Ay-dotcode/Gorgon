@@ -18,7 +18,7 @@ namespace Gorgon {
 	/// good for enums mostly, its ok to use with POD structs
 	/// for direct assignment but better not to use it with 
 	/// complex data types.
-	template<class C_, class T_, T_(C_::*Getter_)() const, void(C_::*Setter_)(const T_ &)>
+	template<class C_, class T_, T_(C_::*Getter_)() const = &C_::get, void(C_::*Setter_)(const T_ &) = &C_::set>
 	class Property {
 	public:
 		using Type = T_;

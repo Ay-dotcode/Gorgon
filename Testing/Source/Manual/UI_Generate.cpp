@@ -8,6 +8,7 @@
 #include <Gorgon/Widgets/RadioButtons.h>
 #include <Gorgon/Widgets/Label.h>
 #include <Gorgon/Widgets/Panel.h>
+#include <Gorgon/Widgets/Inputbox.h>
 #include <Gorgon/UI/RadioControl.h>
 #include <Gorgon/UI/Organizers/List.h>
 #include <Gorgon/Graphics/BlankImage.h>
@@ -154,6 +155,10 @@ int main() {
     
     Widgets::Label lbl(lbltemp, "This is a label");
     Widgets::Label error(errortemp, "This is an Error label");
+    
+    Widgets::Inputbox<int, UI::EmptyValidator<int>, NumericProperty> inp(lbltemp);
+    inp++;
+    sub.Add(inp);
     
     pnl.Add(lbl);
     pnl.Add(error);
