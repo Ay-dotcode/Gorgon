@@ -773,9 +773,9 @@ namespace Gorgon {
         std::vector<Event<ComponentTemplate>::Token> tokens;
         std::map<std::pair<ComponentCondition, ComponentCondition>, int> durations;
 
-		SizeMode xsizing, ysizing;
+		SizeMode xsizing = Free, ysizing = Free;
 		Geometry::Size size;
-		Geometry::Size additional;
+		Geometry::Size additional = {0, 0};
 	};
 
 	/// Defines an object according to the Box Model.

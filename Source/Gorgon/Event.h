@@ -160,6 +160,7 @@ namespace Gorgon {
 		
 		/// Move constructor
 		Event(Event &&event) : source(nullptr) {
+			fire.clear();
 			Swap(event);
 #ifndef NDEBUG
 			event.movedout = true;
@@ -192,9 +193,8 @@ namespace Gorgon {
 			handlers.Destroy();
 
 			source=nullptr;
-			Swap(other);
-
 			fire.clear();
+			Swap(other);
 		}
 
 		/// Swaps two Events, used for move semantics

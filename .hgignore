@@ -35,5 +35,7 @@ Docs/xml
 *.orig
 *.backup
 
+CMakeSettings.json
+.vs
 syntax: regexp
 .*\.kdev4(_.*)?

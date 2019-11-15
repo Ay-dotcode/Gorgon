@@ -80,20 +80,9 @@ namespace Gorgon {
 		
 		/// @cond
 
-#ifdef _MSC_VER
-#	define decltype(...) std::identity<decltype(__VA_ARGS__)>::type
-#	define decltypetype(...) typename decltype(__VA_ARGS__)
-#	define ISENUMUPGRADED enumupgradedhelper<T_>::value
-	template<class T_>
-	struct enumupgradedhelper {
-		enum {
-			value = decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum,
-		};
-	};
-#else
-#	define decltypetype(...) decltype(__VA_ARGS__)
+
 #	define ISENUMUPGRADED	decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum
-#endif
+
 		template <class T_>
 		typename std::enable_if<std::is_constructible<T_, std::string>::value, T_>::type
 		To(const std::string &value) {
@@ -518,7 +507,7 @@ namespace Gorgon {
 			};
 
 			template<class TT>
-			static one test(decltypetype(((std::ostream*)nullptr)->operator<<((TT*)nullptr)))  { return one(); }
+			static one test(decltype(((std::ostream*)nullptr)->operator<<((TT*)nullptr)))  { return one(); }
 			
 			static two test(...)  { return two();  }
 						
@@ -838,11 +827,4 @@ namespace Gorgon {
 	}
 }
 
-#ifdef _MSC_VER
-#	undef decltype
-#	undef decltypetype
 #	undef ISENUMUPGRADED
-#else
-#	undef decltypetype
-#	undef ISENUMUPGRADED
-#endif

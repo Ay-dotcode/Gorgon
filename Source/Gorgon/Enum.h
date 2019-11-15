@@ -8,13 +8,6 @@
 #include <vector>
 #include "String/Exceptions.h"
 
-#ifdef _MSC_VER
-#	define decltype(...) std::identity<decltype(__VA_ARGS__)>::type
-#	define decltypetype(...) typename decltype(__VA_ARGS__)
-#else
-#	define decltypetype(...) decltype(__VA_ARGS__)
-#endif
-
 /// @cond INTERNAL
 class gorgon__no_enum_trait {
 public:
@@ -147,7 +140,7 @@ namespace Gorgon {
 		}
 		
 	private:
-		const decltypetype(gorgon__enum_tr_loc(T_())) traits;
+		const decltype(gorgon__enum_tr_loc(T_())) traits;
 		std::map<std::string, T_> reversemapping;
 		std::vector<T_> listing;
 	};
@@ -367,10 +360,3 @@ namespace std {
 		return in;
 	}
 }
-
-#ifdef _MSC_VER
-#	undef decltype
-#	undef decltypetype
-#else
-#	undef decltypetype
-#endif
