@@ -789,7 +789,7 @@ namespace Gorgon {
 		/// @return Extracted string. Does not contain the marker. Quotes will not be removed
 		inline std::string Extract_UseQuotes(std::string &original, char marker, QuoteType quotetype=QuoteType::Both) {
 			int inquotes=0;
-			int pos=0;
+			std::size_t pos=0;
 			
 			for(auto &c : original) {
 				if(inquotes==1) {

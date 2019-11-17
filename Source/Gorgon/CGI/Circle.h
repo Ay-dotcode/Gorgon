@@ -40,7 +40,7 @@ namespace Gorgon { namespace CGI {
             }
         }
         else {
-            Float s2 = sqrt(2.0);
+            Float s2 = sqrt(2.0f);
             Float ri2 = (radius-s2/2) * (radius-s2/2);
             Float ro  = (radius+s2/2);
             Float ro2 = ro * ro;
@@ -111,7 +111,7 @@ namespace Gorgon { namespace CGI {
             }
         }
         else {
-            Float s2 = sqrt(2.0);
+            Float s2 = sqrt(2.0f);
             Float ri = (inner-s2/2);
             Float ri2 = ri * ri;
             Float ro  = (inner+s2/2);

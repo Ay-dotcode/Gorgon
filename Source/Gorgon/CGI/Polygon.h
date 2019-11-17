@@ -140,7 +140,7 @@ namespace Gorgon { namespace CGI {
             }*/
             
             //fill
-            fn(y, xpoints);
+            fn((Float)y, xpoints);
         }
     
         
@@ -176,7 +176,7 @@ namespace Gorgon { namespace CGI {
         const std::vector<Geometry::PointList<P_>> &points = *pp;
         
         
-        Float ymin = int(target.GetHeight()*S_ - 1);
+        Float ymin = (Float)int(target.GetHeight()*S_ - 1);
         Float ymax = 0;
         int xmin = int(target.GetWidth()*S_ - 1);
         int xmax = 0;
@@ -236,7 +236,7 @@ namespace Gorgon { namespace CGI {
                             if(cnts[x]) {
                                 Graphics::RGBA prevcol = target.GetRGBAAt(int(x+xmin), (int)cy);
                                 
-                                auto col = fill({floorf(x), floorf(cy-yminint)}, {int(x + xmin), (int)cy}, prevcol, a * cnts[x]);
+                                auto col = fill({(Float)x, (Float)floor(cy-yminint)}, {x + xmin, (int)cy}, prevcol, a * cnts[x]);
                                 
                                 target.SetRGBAAt(int(x + xmin), int(cy),  col);
                             }
@@ -246,7 +246,7 @@ namespace Gorgon { namespace CGI {
                     //reset
                     memset(&cnts[0], 0, cnts.size()*sizeof(int));
                     
-                    cy = int(y/S_);
+                    cy = (Float)int(y/S_);
                 }
                 
                 int wind = 0;
@@ -272,8 +272,8 @@ namespace Gorgon { namespace CGI {
                         if(W_ == 0 ? (wind == 0) : (wind%2==0)) {
                             Float e = floor(xpoints[i].first)/S_;
                             
-                            FitInto<Float>(s, xmin, xmax+1);
-                            FitInto<Float>(e, xmin, xmax+1);
+                            FitInto<Float>(s, (Float)xmin, (Float)xmax+1);
+                            FitInto<Float>(e, (Float)xmin, (Float)xmax+1);
                             if(s < e) {
                                 for(Float x=s; x<e; x+=1.f/S_) {
                                     cnts[(int)x-xmin]++;
@@ -331,7 +331,7 @@ namespace Gorgon { namespace CGI {
                             FitInto(e, 0, target.GetWidth());
                             if(s < e) {
                                 for(int x=s; x<e; x++) {
-                                    target.SetRGBAAt(x, y, fill({float(x-xmin), float(y-ymin)}, {(int)x, (int)y}, target.GetRGBAAt(x, y), 1.f));
+                                    target.SetRGBAAt(x, (int)y, fill({float(x-xmin), float(y-ymin)}, {(int)x, (int)y}, target.GetRGBAAt(x, (int)y), 1.f));
                                 }
                             }
                             
@@ -397,13 +397,13 @@ namespace Gorgon { namespace CGI {
         
         ymax++;
         
-        Gorgon::FitInto<Float>(ymin, 0, target.GetHeight()-1);
-        Gorgon::FitInto<Float>(ymax, 0, target.GetHeight());
+        Gorgon::FitInto<Float>(ymin, 0, (Float)target.GetHeight()-1);
+        Gorgon::FitInto<Float>(ymax, 0, (Float)target.GetHeight());
         
         auto xrange = std::minmax_element(points.begin(), points.end(), [](auto l, auto r) { return l.X < r.X; });
         
-        int xmin = xrange.first->X;
-        int xmax = xrange.second->X;
+        int xmin = (int)xrange.first->X;
+        int xmax = (int)ceil(xrange.second->X);
         
         Gorgon::FitInto(xmin, 0, target.GetWidth()-1);
         Gorgon::FitInto(xmax, 0, target.GetWidth()-1);
@@ -421,16 +421,16 @@ namespace Gorgon { namespace CGI {
             
             float a = 1.f / (S_ * S_);
             
-            internal::findpolylinestofill(Containers::Collection<const Geometry::PointList<P_>>({points}), yminint, (int)ceil(ymax*S_)+1, [&](float y, auto &xpoints) {
+            internal::findpolylinestofill(Containers::Collection<const Geometry::PointList<P_>>({points}), yminint, (int)ceil(ymax*S_)+1, [&](Float y, auto &xpoints) {
                 if(int(cy) != int(y/S_)) {
                     if(y != yminint) { //transfer
                         for(int x=0; x<ew; x++) {
                             if(cnts[x]) {
                                 Graphics::RGBA prevcol = target.GetRGBAAt(int(x+xmin), (int)cy);
                                 
-                                auto col = fill({floorf(x), floorf(cy-yminint)}, {int(x + xmin), (int)cy}, prevcol, a * cnts[x]);
+                                auto col = fill({floorf((float)x), floorf((float)cy-yminint)}, {int(x + xmin), (int)cy}, prevcol, a * cnts[x]);
                                 
-                                target.SetRGBAAt(x + xmin, cy,  col);
+                                target.SetRGBAAt(x + xmin, (int)cy,  col);
                             }
                         }
                     }
@@ -438,7 +438,7 @@ namespace Gorgon { namespace CGI {
                     //reset
                     memset(&cnts[0], 0, cnts.size()*sizeof(int));
                     
-                    cy = int(y/S_);
+                    cy = (Float)int(y/S_);
                 }
                 
 
@@ -465,8 +465,8 @@ namespace Gorgon { namespace CGI {
                         if(W_ == 0 ? (wind == 0) : (wind%2==0)) {
                             Float e = floor(xpoints[i].first)/S_;
                             
-                            FitInto<Float>(s, xmin, xmax+1);
-                            FitInto<Float>(e, xmin, xmax+1);
+                            FitInto<Float>(s, (Float)xmin, (Float)xmax+1);
+                            FitInto<Float>(e, (Float)xmin, (Float)xmax+1);
                             if(s < e) {
                                 for(Float x=s; x<e; x+=1.f/S_) {
                                     cnts[(int)x-xmin]++;
@@ -524,7 +524,7 @@ namespace Gorgon { namespace CGI {
                             FitInto(e, 0, target.GetWidth());
                             if(s < e) {
                                 for(int x=s; x<e; x++) {
-                                    target.SetRGBAAt(x, y, fill({float(x-xmin), float(y-ymin)}, {(int)x, (int)y}, target.GetRGBAAt(x, y), 1.f));
+                                    target.SetRGBAAt(x, (int)y, fill({float(x-xmin), float(y-ymin)}, {(int)x, (int)y}, target.GetRGBAAt(x, (int)y), 1.f));
                                 }
                             }
                             

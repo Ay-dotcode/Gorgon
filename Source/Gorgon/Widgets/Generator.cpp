@@ -105,7 +105,7 @@ namespace Gorgon { namespace Widgets {
     
     Graphics::BitmapRectangleProvider SimpleGenerator::makeborder(Graphics::RGBA border, Graphics::RGBA bg) {
         int bsize = (Border.Width + Border.Radius + 1) * 2 + 16;
-        float off = (Border.Width + 1) / 2; //round up
+        float off = (float)(Border.Width + 1) / 2; //round up
         
         auto &bi = *new Graphics::Bitmap({bsize, bsize}, Graphics::ColorMode::RGBA);
         bi.Clear();
@@ -119,7 +119,7 @@ namespace Gorgon { namespace Widgets {
                 {bsize-off, bsize-off},
                 {bsize-off, off}, 
                 {off, off}
-            }, Border.Width, CGI::SolidFill<>(border));
+            }, (float)Border.Width, CGI::SolidFill<>(border));
         }
         else {
             auto r = Border.Radius;
@@ -145,7 +145,7 @@ namespace Gorgon { namespace Widgets {
                 {bsize - off, off + r}, 
                 {bsize - off - r, off}, 
                 {off + r, off}
-            }, Border.Width, CGI::SolidFill<>(Border.Color));
+            }, (float)Border.Width, CGI::SolidFill<>(Border.Color));
         }
         
         drawables.Add(bi);
@@ -394,15 +394,15 @@ namespace Gorgon { namespace Widgets {
                 {ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
                 {ObjectBorder/2.f, ObjectBorder/2.f},
             };
-            CGI::DrawLines(icon, border, ObjectBorder, CGI::SolidFill<>(color));
-            CGI::DrawLines(icon2, border, ObjectBorder, CGI::SolidFill<>(color));
+            CGI::DrawLines(icon, border, (float)ObjectBorder, CGI::SolidFill<>(color));
+            CGI::DrawLines(icon2, border, (float)ObjectBorder, CGI::SolidFill<>(color));
             
             Geometry::PointList<Geometry::Pointf> tick ={
                 {ObjectBorder*2.f, ObjectHeight/2.f},
                 {ObjectHeight/2.f, ObjectHeight-ObjectBorder*2.f},
                 {ObjectHeight-ObjectBorder*2.f, ObjectBorder*2.f}
             };
-            CGI::DrawLines(icon2, tick, ObjectBorder, CGI::SolidFill<>(color));
+            CGI::DrawLines(icon2, tick, (float)ObjectBorder, CGI::SolidFill<>(color));
             icon.Prepare();
             drawables.Add(icon);
             icon2.Prepare();
@@ -451,15 +451,15 @@ namespace Gorgon { namespace Widgets {
                 {ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
                 {ObjectBorder/2.f, ObjectBorder/2.f},
             };
-            CGI::DrawLines(icon, border, ObjectBorder, CGI::SolidFill<>(color));
-            CGI::DrawLines(icon2, border, ObjectBorder, CGI::SolidFill<>(color));
+            CGI::DrawLines(icon, border, (float)ObjectBorder, CGI::SolidFill<>(color));
+            CGI::DrawLines(icon2, border, (float)ObjectBorder, CGI::SolidFill<>(color));
             
             Geometry::PointList<Geometry::Pointf> tick ={
                 {ObjectBorder*2.f, ObjectHeight/2.f},
                 {ObjectHeight/2.f, ObjectHeight-ObjectBorder*2.f},
                 {ObjectHeight-ObjectBorder*2.f, ObjectBorder*2.f}
             };
-            CGI::DrawLines(icon2, tick, ObjectBorder, CGI::SolidFill<>(color));
+            CGI::DrawLines(icon2, tick, (float)ObjectBorder, CGI::SolidFill<>(color));
             icon.Prepare();
             drawables.Add(icon);
             icon2.Prepare();
@@ -508,15 +508,15 @@ namespace Gorgon { namespace Widgets {
                 {ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
                 {ObjectBorder/2.f, ObjectBorder/2.f},
             };
-            CGI::DrawLines(icon, border, ObjectBorder, CGI::SolidFill<>(color));
-            CGI::DrawLines(icon2, border, ObjectBorder, CGI::SolidFill<>(color));
+            CGI::DrawLines(icon, border, (float)ObjectBorder, CGI::SolidFill<>(color));
+            CGI::DrawLines(icon2, border, (float)ObjectBorder, CGI::SolidFill<>(color));
             
             Geometry::PointList<Geometry::Pointf> tick ={
                 {ObjectBorder*2.f, ObjectHeight/2.f},
                 {ObjectHeight/2.f, ObjectHeight-ObjectBorder*2.f},
                 {ObjectHeight-ObjectBorder*2.f, ObjectBorder*2.f}
             };
-            CGI::DrawLines(icon2, tick, ObjectBorder, CGI::SolidFill<>(color));
+            CGI::DrawLines(icon2, tick, (float)ObjectBorder, CGI::SolidFill<>(color));
             icon.Prepare();
             drawables.Add(icon);
             icon2.Prepare();

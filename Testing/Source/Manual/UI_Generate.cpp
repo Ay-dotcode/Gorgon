@@ -158,7 +158,7 @@ int main() {
     
     Widgets::Inputbox<int, UI::EmptyValidator<int>, NumericProperty> inp(lbltemp);
     inp++;
-    sub.Add(inp);
+    pnl.Add(inp);
     
     pnl.Add(lbl);
     pnl.Add(error);

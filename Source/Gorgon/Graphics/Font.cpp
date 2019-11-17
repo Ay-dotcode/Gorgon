@@ -703,7 +703,7 @@ namespace Gorgon { namespace Graphics {
         internal::boundedprint(
             *renderer, text.begin(), text.end(), tot,
 
-            [&](Glyph, internal::markvecit begin, internal::markvecit end, int w) {			
+            [&](Glyph, internal::markvecit begin, internal::markvecit end, int w) {
                 y += (int)renderer->GetLineGap();
             },
 
@@ -781,13 +781,27 @@ namespace Gorgon { namespace Graphics {
                     off += tot - w;
                 }
 
-                for(auto it = begin; it != end; ++it) {
-                    if(it->location + off < location.X + (it->location + off - ploc) / 2) {
-                        bestind = ind;
-                    }
+
+                //at the start
+                if(location.X <= off || begin == end) {
+                    bestind = ind;
+                    ind += int(end-begin);
+                }
+                //at the end
+                else if(location.X > ((end-1)->location + w) / 2 + off) {
+                    ind+=end-begin;
+                    bestind = ind;
+                }
+                //in the middle
+                else {
+                    for(auto it = begin; it != end; ++it) {
+                        if(it->location + off < location.X + (it->location + off - ploc) / 2) {
+                            bestind = ind;
+                        }
                     
-                    ploc = it->location + off;
-                    ind++;
+                        ploc = it->location + off;
+                        ind++;
+                    }
                 }
 
                 y += (int)renderer->GetLineGap();
@@ -864,7 +878,8 @@ namespace Gorgon { namespace Graphics {
         print(target, text, location, color, strikecolor, underlinecolor);
     }
 
-    void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Pointf location, RGBAf color, RGBAf strikecolor, RGBAf underlinecolor) const {
+    void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Pointf location, 
+                               RGBAf color, RGBAf strikecolor, RGBAf underlinecolor) const {
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
@@ -929,7 +944,7 @@ namespace Gorgon { namespace Graphics {
 
         internal::boundedprint(
             *renderer, text.begin(), text.end(), tot,
-            [&](Glyph, internal::markvecit begin, internal::markvecit end, int width) {			
+            [&](Glyph, internal::markvecit begin, internal::markvecit end, int width) {            
                 y += (int)std::round(renderer->GetLineGap() * vspace + pspace);
                 if(width > maxx)
                     maxx = width;
@@ -1083,15 +1098,27 @@ namespace Gorgon { namespace Graphics {
                 
                 ind += skip;
 
-                for(auto it=begin; it!=end; ++it) {
-                    if(it->location + off < location.X + (it->location + off - ploc) / 2) {
-                        bestind = ind;
-                    }
-                    
-                    ploc = it->location + off;
-                    ind++;
+                //at the start
+                if(location.X <= off || begin == end) {
+                    bestind = ind;
+                    ind += int(end-begin);
                 }
-
+                //at the end
+                else if(location.X > ((end-1)->location + w) / 2 + off) {
+                    ind+=end-begin;
+                    bestind = ind;
+                }
+                //in the middle
+                else {
+                    for(auto it=begin; it!=end; ++it) {
+                        if(it->location + off < location.X + (it->location + off - ploc) / 2) {
+                            bestind = ind;
+                        }
+                    
+                        ploc = it->location + off;
+                        ind++;
+                    }
+                }
 
                 y += (int)std::round(renderer->GetLineGap() * vspace);
 
@@ -1124,7 +1151,8 @@ namespace Gorgon { namespace Graphics {
         print(target, text, location, align_override, color, strikecolor, underlinecolor);
     }
 
-    void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, TextAlignment align, RGBAf color, RGBAf strikecolor, RGBAf underlinecolor) const {
+    void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, 
+                               TextAlignment align, RGBAf color, RGBAf strikecolor, RGBAf underlinecolor) const {
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         

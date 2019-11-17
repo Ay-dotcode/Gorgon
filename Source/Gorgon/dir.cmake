@@ -1,5 +1,6 @@
 SET(Local
 	Animation
+	CGI
 	Containers
 	Encoding
 	External

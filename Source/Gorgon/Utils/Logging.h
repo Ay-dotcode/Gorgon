@@ -24,8 +24,8 @@ namespace Gorgon { namespace Utils {
 			friend class Logger;
 			
 			Logger *parent;
-			int shift;
-			bool extraenter;
+			int shift = 0;
+			bool extraenter = false;
 			
 			helper() : parent(nullptr) { }
 			
