@@ -768,10 +768,10 @@ namespace Gorgon { namespace Graphics {
         int bestind = 0;
         int ploc = 0;
 
-        internal::boundedprint(
+        internal::boundedlayout(
             *renderer, text.begin(), text.end(), tot,
 
-            [&](Glyph, internal::markvecit begin, internal::markvecit end, int w) {
+            [&](Glyph, internal::markvecit begin, internal::markvecit end, int w, int skip) {
                 auto off = 0;
 
                 if(defaultalign == TextAlignment::Center) {
@@ -781,6 +781,7 @@ namespace Gorgon { namespace Graphics {
                     off += tot - w;
                 }
 
+                ind += skip;
 
                 //at the start
                 if(location.X <= off || begin == end) {
@@ -819,6 +820,122 @@ namespace Gorgon { namespace Graphics {
         );
         
         return bestind;
+    }
+
+    Geometry::Rectangle BasicFont::GetPosition(const std::string& text, int index) const { 
+        if(renderer->NeedsPrepare())
+            renderer->Prepare(text);
+        
+        auto cur = Geometry::Point(0, 0);
+
+        Geometry::Point pos {std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
+        Geometry::Size  size{0, 0};
+
+        int pcurx = 0;
+
+        if(index < 0)
+            return {pos, size};
+
+        internal::simplelayout(
+            *renderer, text.begin(), text.end(),
+            [&](Glyph prev, Glyph next) { return (int)renderer->KerningDistance(prev, next).X; },
+            [&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
+            [&](Glyph g, int poff, float off) {
+                if(index == 0) {
+                    pos = cur;
+                    if(renderer->Exists(g))
+                        size = {renderer->GetSize(g).Width, renderer->GetHeight()};
+
+                    return false;
+                }
+
+                pcurx = cur.X;
+                cur.X += poff;
+                cur.X += (int)off;
+
+                index--;
+                
+                return true;
+            },
+            std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), renderer->GetMaxWidth() * 8),
+            [&](Glyph g) {
+                if(g == 0)
+                    return;
+
+                cur.Y += (int)renderer->GetLineGap(); 
+                cur.X = 0; 
+            }
+        );
+
+        if(index == 0) {
+            pos = cur;
+        }
+
+        return {pos, size};
+    }
+
+    Geometry::Rectangle BasicFont::GetPosition(const std::string& text, int w, int index) const { 
+        if(renderer->NeedsPrepare())
+            renderer->Prepare(text);
+        
+        auto y   = 0;
+        auto tot = w;
+        int ploc = 0;
+
+        Geometry::Point pos{std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
+        Geometry::Size  size{0, 0};
+
+        int pcurx = 0;
+
+        if(index < 0)
+            return {pos, size};
+
+        internal::boundedlayout(
+            *renderer, text.begin(), text.end(), tot,
+
+            [&](Glyph, internal::markvecit begin, internal::markvecit end, int w, int skip) {
+                auto off = 0;
+
+                if(defaultalign == TextAlignment::Center) {
+                    off += (int)std::round((tot - w) / 2.f);
+                }
+                else if(defaultalign == TextAlignment::Right) {
+                    off += tot - w;
+                }
+
+                index -= skip;
+
+                for(auto it = begin; it != end; ++it) {
+                    if(index == 0) {
+                        pos = {it->location + off, y};
+                        if(renderer->Exists(it->g))
+                            size ={renderer->GetSize(it->g).Width, renderer->GetHeight()};
+
+                        return false;
+                    }
+                    
+                    index--;
+                }
+
+                pos ={off+w, y};
+                if(index == 0) {
+                    return false;
+                }
+
+                y += (int)renderer->GetLineGap();
+                
+                return true;
+            },
+
+            [&](Glyph prev, Glyph next) { return int(renderer->KerningDistance(prev, next).X); },
+            [&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
+            std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetMaxWidth() * 8)
+        );
+
+        if(index > 0)
+            pos = {std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
+
+        return {pos, size};
     }
     
     void BasicFont::print(TextureTarget& target, const std::string& text, Geometry::Point location, RGBAf color) const {
@@ -1140,6 +1257,148 @@ namespace Gorgon { namespace Graphics {
         return bestind;
     }
     
+    Geometry::Rectangle StyledRenderer::GetPosition(const std::string& text, int w, int index) const {
+         if(renderer->NeedsPrepare())
+            renderer->Prepare(text);
+        
+        auto y   = 0;
+        auto tot = w;
+        int ploc = 0;
+
+        Geometry::Point pos{std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
+        Geometry::Size  size{0, 0};
+
+        int pcurx = 0;
+
+        if(index < 0)
+            return {pos, size};
+
+        internal::boundedlayout(
+            *renderer, text.begin(), text.end(), tot,
+
+            [&](Glyph g, internal::markvecit begin, internal::markvecit end, int w, int skip) {
+                auto off = 0;
+
+
+                if(justify && g == 0) {
+                    //count spaces and letters
+                    int sps = 0;
+                    int letters = 0;
+                    Glyph prev = 0;
+
+                    for(auto it=begin; it!=end; ++it) {
+                        if(internal::isadjustablespace(it->g))
+                            sps++;
+
+                        //ignore before and after tabs
+                        if(it->g == '\t') {
+                            prev = 0;
+                        }
+                        else {
+                            if(prev && internal::isspaced(prev))
+                                letters++;
+
+                            prev = it->g;
+                        }
+                    }
+
+                    auto target = tot - w;
+                    int gs = 0; //glyph spacing
+                    int spsp = 0; //space spacing
+                    int extraspsp = 0; //extra spaced spaces
+
+                    if(letters && target/letters >= 1) { //we can increase glyph spacing
+                        gs = target/letters;
+                        if(gs > 1 && gs > renderer->GetHeight()/3) //1 is always usable
+                            gs = renderer->GetHeight()/3;
+
+                        target -= gs*letters;
+                    }
+
+                    if(sps > 0) {
+                        spsp = target/sps;
+
+                        //max 2em
+                        if(spsp > renderer->GetHeight() * 4) {
+                            spsp = renderer->GetHeight() * 4;
+                            target -= spsp*sps;
+                        }
+                        else {
+                            target -= spsp*sps;
+
+                            extraspsp = target;
+                            target = 0;
+                        }
+                    }
+
+                    if(target == 0) {
+                        //go over all glyphs and set widths
+                        int off = 0;
+                        for(auto it=begin; it!=end; ++it) {
+                            it->location += off;
+
+                            if(internal::isadjustablespace(it->g)) {
+                                off += spsp;
+
+                                if(extraspsp-->0)
+                                    off++;
+                            }
+
+                            if(it->g != '\t' && internal::isspaced(it->g)) {
+                                off += gs;
+                            }
+                        }
+
+                        w = tot - target;
+                    }
+                }
+
+                if(defaultalign == TextAlignment::Center) {
+                    off += (int)std::round((tot - w) / 2.f);
+                }
+                else if(defaultalign == TextAlignment::Right) {
+                    off += tot - w;
+                }
+                
+                index -= skip;
+
+                for(auto it = begin; it != end; ++it) {
+                    if(index == 0) {
+                        pos = {it->location + off, y};
+                        if(renderer->Exists(it->g))
+                            size ={renderer->GetSize(it->g).Width, renderer->GetHeight()};
+
+                        return false;
+                    }
+                    
+                    index--;
+                }
+
+                pos ={off+w, y};
+                if(index == 0) {
+                    return false;
+                }
+
+
+                y += (int)std::round(renderer->GetLineGap() * vspace);
+
+                if(g != 0)
+                    y += pspace;
+
+                return true;
+            },
+            
+            [&](Glyph prev, Glyph next) { return int(hspace + renderer->KerningDistance(prev, next).X); }, //modify this system to allow horizontal kerning
+            [&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
+            std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth ? tabwidth : 16)
+        );
+
+        if(index > 0)
+            pos = {std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
+
+        return {pos, size};
+   }
+
     void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align_override) const {
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);

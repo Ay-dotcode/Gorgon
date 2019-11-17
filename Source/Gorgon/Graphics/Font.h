@@ -203,10 +203,12 @@ namespace Gorgon { namespace Graphics {
         /// Returns the character index of glyph immediately after the given location. This function is Unicode aware.
         virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location) const = 0;
         
-        /// Returns the position of the glyph at the character index.
+        /// Returns the position of the glyph at the character index. If the character is not found, this will return
+        /// std::numeric_limit<int>::min for x and y position. Size could be 0 if it cannot be determined.
         virtual Geometry::Rectangle GetPosition(const std::string &text, int index) const = 0;
         
-        /// Returns the position of the glyph at the character index.
+        /// Returns the position of the glyph at the character index. If the character is not found, this will return
+        /// std::numeric_limit<int>::min for x and y position. Size could be 0 if it cannot be determined.
         virtual Geometry::Rectangle GetPosition(const std::string &text, int w, int index) const = 0;
 
     protected:
@@ -305,9 +307,9 @@ namespace Gorgon { namespace Graphics {
         
         virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location) const override;
         
-        virtual Geometry::Rectangle GetPosition(const std::string &text, int index) const override { return {0, 0, 0, 0}; }
+        virtual Geometry::Rectangle GetPosition(const std::string& text, int index) const override;
         
-        virtual Geometry::Rectangle GetPosition(const std::string &text, int w, int index) const override { return {0, 0, 0, 0}; }
+        virtual Geometry::Rectangle GetPosition(const std::string& text, int w, int index) const override;
         
     protected:
         virtual void print(TextureTarget &target, const std::string &text, Geometry::Point location) const override {
@@ -665,7 +667,7 @@ namespace Gorgon { namespace Graphics {
 
         virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location) const override;
 
-        virtual Geometry::Rectangle GetPosition(const std::string &text, int w, int index) const override { return{0, 0, 0, 0}; }
+        virtual Geometry::Rectangle GetPosition(const std::string &text, int w, int index) const override;
 
     protected:
         virtual void print(TextureTarget &target, const std::string &text, Geometry::Point location) const override;

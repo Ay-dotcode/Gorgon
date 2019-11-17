@@ -6,6 +6,7 @@
 #include <Gorgon/Resource/File.h>
 #include <Gorgon/Resource/Font.h>
 #include <Gorgon/Graphics/BitmapFont.h>
+#include <Gorgon/Graphics/BlankImage.h>
 #include <Gorgon/Input/Layer.h>
 
 #include "GraphicsHelper.h"
@@ -21,9 +22,13 @@ std::string helptext =
 
 int main() {
     Application app("generictest", "Test", helptext, 25, 0x20);
-    
+
     Graphics::Layer l;
     app.wind.Add(l);
+    Graphics::Layer l2;
+    app.wind.Add(l2);
+
+    Graphics::BlankImage bmp(1, 15, Graphics::Color::Red);
     
     //destruction tests
     {
@@ -123,19 +128,61 @@ int main() {
     
     std::cout<<ind<<" == 35 "<<ind2<<" == 11"<<std::endl;
     
+    auto importmsg = "Hello!, fixed sized import is working.\nKerning example: Ta, T.";
     Graphics::BitmapFont fixedsize_original;
     Graphics::BitmapFont::ImportOptions options;
     options.converttoalpha = Gorgon::YesNoAuto::Auto;
     std::cout<<"Imported "<<fixedsize_original.ImportAtlas("fixed-font.bmp", {7, 9}, 0x20, false, options)<<" glyphs."<<std::endl;
-    fixedsize_original.Print(l, "Hello!, fixed sized import is working.\nKerning example: Ta, T.", 350, 100);
-    ind = fixedsize_original.GetCharacterIndex("Hello!, fixed sized import is working.\nKerning example: Ta, T.", {20, 11});
-    ind2 = fixedsize_original.GetCharacterIndex("Hello!, fixed sized import is working.\nKerning example: Ta, T.", {60, 0});
+    fixedsize_original.Print(l, importmsg, 350, 100);
+    ind = fixedsize_original.GetCharacterIndex(importmsg, {20, 11});
+    ind2 = fixedsize_original.GetCharacterIndex(importmsg, {60, 0});
     std::cout<<ind<<" == 41 "<<ind2<<" == 10"<<std::endl;
+
+    int curind = 0;
+
+    app.wind.KeyEvent.Register([&](Input::Keyboard::Char c, float amount) {
+
+        bool ret = false;
+
+        namespace Keycodes = Input::Keyboard::Keycodes;
+
+        if(c == Keycodes::Left && amount == 1) {
+            ret = true;
+            curind--;
+        }
+        else if(c == Keycodes::Right && amount == 1) {
+            ret = true;
+            curind++;
+        }
+        else if(c == Keycodes::Up && amount == 1) {
+            ret = true;
+            curind -= 10;
+        }
+        else if(c == Keycodes::Down && amount == 1) {
+            ret = true;
+            curind += 10;
+        }
+        else if(c == Keycodes::Home && amount == 1) {
+            ret = true;
+            curind = 0;
+        }
+        else if(c == Keycodes::End && amount == 1) {
+            ret = true;
+            curind = String::UnicodeGlyphCount(parag);
+        }
+
+        l2.Clear();
+
+        auto rect = sty.GetPosition(parag, 300, curind);
+        bmp.DrawIn(l2, rect.TopLeft() + Geometry::Point(0 - 1, 0), 1, sty.GetEMSize());
+
+        return ret;
+    });
     
     Graphics::BitmapFont fixedsize_repack;
     options.automatickerningreduction = 0;
     std::cout<<"Imported "<<fixedsize_repack.ImportAtlas("fixed-font.bmp", {7, 9}, 0x20, true, options)<<" glyphs."<<std::endl;
-    fixedsize_repack.Print(l, "Hello!, fixed sized import is working.\nKerning example: Ta, T.", 350, 6+fixedsize_original.GetLineGap() * 2+100);
+    fixedsize_repack.Print(l, importmsg, 350, 6+fixedsize_original.GetLineGap() * 2+100);
     
     Graphics::BitmapFont auto_repack;
     options.spacing = 0;
