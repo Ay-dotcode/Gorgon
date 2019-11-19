@@ -663,7 +663,7 @@ namespace Gorgon { namespace Graphics {
 
         virtual int GetCharacterIndex(const std::string &text, Geometry::Point location) const override;
 
-        virtual Geometry::Rectangle GetPosition(const std::string &text, int index) const override { return{0, 0, 0, 0}; }
+        virtual Geometry::Rectangle GetPosition(const std::string& text, int index) const override;
 
         virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location) const override;
 

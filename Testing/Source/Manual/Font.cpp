@@ -16,6 +16,7 @@
 std::string helptext = 
 "Try selecting the text on the top left, it should print the selected text to stdout\n"
 "Key list:\n"
+"Arrow keys, home/end to move caret\n"
 "esc\tClose\n"
 ;
 

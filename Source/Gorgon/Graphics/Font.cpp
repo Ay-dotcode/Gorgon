@@ -790,7 +790,7 @@ namespace Gorgon { namespace Graphics {
                 }
                 //at the end
                 else if(location.X > ((end-1)->location + w) / 2 + off) {
-                    ind+=end-begin;
+                    ind += int(end-begin);
                     bestind = ind;
                 }
                 //in the middle
@@ -1044,7 +1044,7 @@ namespace Gorgon { namespace Graphics {
             [&](Glyph prev, Glyph next) { return int(hspace + renderer->KerningDistance(prev, next).X); },
             [&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
             [&](Glyph g, int poff, float off) { cur.X += poff; cur.X += (int)off; },
-            std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), tabwidth),
+            std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), tabwidth ? tabwidth : 16),
             [&](Glyph) { cur.Y += (int)std::round(renderer->GetLineGap() * vspace + pspace); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
         );
 
@@ -1068,7 +1068,7 @@ namespace Gorgon { namespace Graphics {
             },
             [&](Glyph prev, Glyph next) { return int(hspace + renderer->KerningDistance(prev, next).X); },
             [&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
-            std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth)
+            std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth ? tabwidth : 16)
         );
 
         return {std::min(width, maxx > 0 ? maxx + 1 : 0), y};
@@ -1104,7 +1104,7 @@ namespace Gorgon { namespace Graphics {
                 
                 return true;
             },
-            std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), tabwidth),
+            std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), tabwidth ? tabwidth : 16),
             [&](Glyph) {
                 cur.Y += (int)std::round(renderer->GetLineGap() * vspace + pspace);
                 cur.X = 0; 
@@ -1115,6 +1115,58 @@ namespace Gorgon { namespace Graphics {
         );
         
         return bestind;
+    }
+
+    Geometry::Rectangle StyledRenderer::GetPosition(const std::string& text, int index) const { 
+        if(renderer->NeedsPrepare())
+            renderer->Prepare(text);
+        
+        auto cur = Geometry::Point(0, 0);
+
+        Geometry::Point pos {std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
+        Geometry::Size  size{0, 0};
+
+        int pcurx = 0;
+
+        if(index < 0)
+            return {pos, size};
+
+        internal::simplelayout(
+            *renderer, text.begin(), text.end(),
+            [&](Glyph prev, Glyph next) { return (int)renderer->KerningDistance(prev, next).X; },
+            [&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
+            [&](Glyph g, int poff, float off) {
+                if(index == 0) {
+                    pos = cur;
+                    if(renderer->Exists(g))
+                        size = {renderer->GetSize(g).Width, renderer->GetHeight()};
+
+                    return false;
+                }
+
+                pcurx = cur.X;
+                cur.X += poff;
+                cur.X += (int)off;
+
+                index--;
+                
+                return true;
+            },
+            std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), tabwidth ? tabwidth : 16),
+            [&](Glyph g) {
+                if(g == 0) //we are done, dont move to the next line
+                    return;
+
+                cur.Y += (int)std::round(renderer->GetLineGap() * vspace + pspace);
+                cur.X = 0; 
+            }
+        );
+
+        if(index == 0) {
+            pos = cur;
+        }
+
+        return {pos, size};
     }
     
     int StyledRenderer::GetCharacterIndex(const std::string &text, int width, Geometry::Point location) const {
@@ -1222,7 +1274,7 @@ namespace Gorgon { namespace Graphics {
                 }
                 //at the end
                 else if(location.X > ((end-1)->location + w) / 2 + off) {
-                    ind+=end-begin;
+                    ind += int(end-begin);
                     bestind = ind;
                 }
                 //in the middle
