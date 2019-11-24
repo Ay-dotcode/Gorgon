@@ -14,8 +14,9 @@ namespace Gorgon { namespace Widgets {
 		stack.HandleMouse(Input::Mouse::Button::Left);
 
 		stack.SetClickEvent([this](auto, auto, auto btn) {
-            if(btn == Input::Mouse::Button::Left && HasParent())
-				GetParent().FocusNext();
+            if(btn == Input::Mouse::Button::Left && HasParent()) {
+				GetParent().FocusNext(*this);
+            }
 		});
 	}
 

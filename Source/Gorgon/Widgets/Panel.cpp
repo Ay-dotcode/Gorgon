@@ -99,12 +99,15 @@ namespace Gorgon { namespace Widgets {
     
 
     void Panel::focused() {
-        FocusFirst();
+        if(!HasFocusedWidget())
+            FocusFirst();
+        WidgetBase::focused();
     }
     
 
     void Panel::focuslost() {
         RemoveFocus();
+        WidgetBase::focuslost();
     }
 
     

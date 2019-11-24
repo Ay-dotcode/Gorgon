@@ -912,7 +912,7 @@ namespace Gorgon { namespace Widgets {
         cont.SetPositioning(cont.Absolute);
         cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
         cont.SetPosition(0, 0);
-        //cont.Background.SetAnimation(NormalBorder());
+        //bg.Background.SetAnimation(NormalBorder());
         
         return temp;
     }

@@ -79,8 +79,8 @@ int main() {
         std::cout<<(state ? "with sugar" : "without sugar")<<std::endl;
     });
 
-    chk.Hide();
-    app.wind.Add(chk);
+    //chk.Hide();
+    //app.wind.Add(chk);
 
     chk.BoundsChangedEvent.Register([] { 
         std::cout << "Bounds changed" << std::endl; 
@@ -142,7 +142,7 @@ int main() {
     
     Widgets::Checkbox chk1(chktemp, "Sugar?");
     
-    app.wind.Add(chk1);
+    //app.wind.Add(chk1);
     chk1.Move(300, 0);
     
     
@@ -162,13 +162,19 @@ int main() {
     
     pnl.Add(lbl);
     pnl.Add(error);
-    
-    lbl.Move(chk.GetLocation() + Gorgon::Geometry::Point(0, chk.GetSize().Height + 4));
-    error.Move(lbl.GetLocation().X,lbl.GetLocation().Y + 25);
+    pnl.Add(rad);
+    pnl.Add(ib);
+    pnl.SetHeight(500);
+    mainpanel.Resize(100, 500);
+
+    pnl.CreateOrganizer<Gorgon::UI::Organizers::List>();
+
+
+    //lbl.Move(chk.GetLocation() + Gorgon::Geometry::Point(0, chk.GetSize().Height + 4));
+    //error.Move(lbl.GetLocation().X,lbl.GetLocation().Y + 25);
     lbl.OwnIcon(prep(*new Graphics::Bitmap(Triangle(8, 8))));
     
     app.wind.Run();
 
     return 0;
 }
-

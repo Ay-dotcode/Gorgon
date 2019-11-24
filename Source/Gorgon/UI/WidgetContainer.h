@@ -80,6 +80,8 @@ namespace Gorgon { namespace UI {
         /// You may use the functions in the widget to manage focus order.
         void ChangeFocusOrder(WidgetBase &widget, int order);
 
+        int GetFocusOrder(const WidgetBase &widget) const;
+
         /// Changes the z-order of the widget. If the order is out of
         /// bounds, the widget will be drawn on top. You may use the
         /// functions in the widget to manage z-order.
@@ -97,12 +99,45 @@ namespace Gorgon { namespace UI {
         /// return false.
         bool FocusNext();
 
+        /// Focuses the next widget that accepts focus starting from the given
+        /// focus index. If no widget other than the currently focused widget 
+        /// accept focus then this function will return false. Additionally, 
+        /// if the currently focused widget blocks focus transfer, this function 
+        /// will return false.
+        bool FocusNext(int after);
+
+        /// Focuses the next widget that accepts focus starting from the given
+        /// focus index. If no widget other than the currently focused widget 
+        /// accept focus then this function will return false. Additionally, 
+        /// if the currently focused widget blocks focus transfer, this function 
+        /// will return false.
+        bool FocusNext(const WidgetBase &widget) { return FocusNext(GetFocusOrder(widget)); }
+
+        /// Focuses the last widget in the container. If none of the
+        /// widgets accept focus or if the currently focused widget blocks
+        /// focus transfer then this function will return false.
+        bool FocusLast() { return FocusPrevious(widgets.GetSize()); }
+
         /// Focuses the previous widget that accepts focus. If no widget 
         /// other than the currently focused widget accept focus then 
         /// this function will return false. Additionally, if the currently
         /// focused widget blocks focus transfer, this function will
         /// return false.
-        bool FocusPrevious();
+        bool FocusPrevious() { return FocusPrevious(focusindex); }
+
+        /// Focuses the previous widget that accepts focus. If no widget 
+        /// other than the currently focused widget accept focus then 
+        /// this function will return false. Additionally, if the currently
+        /// focused widget blocks focus transfer, this function will
+        /// return false.
+        bool FocusPrevious(const WidgetBase& widget) { return FocusNext(GetFocusOrder(widget)); }
+
+        /// Focuses the previous widget that accepts focus. If no widget 
+        /// other than the currently focused widget accept focus then 
+        /// this function will return false. Additionally, if the currently
+        /// focused widget blocks focus transfer, this function will
+        /// return false.
+        bool FocusPrevious(int before);
 
         /// Sets the focus to the given widget
         bool SetFocusTo(WidgetBase &widget);

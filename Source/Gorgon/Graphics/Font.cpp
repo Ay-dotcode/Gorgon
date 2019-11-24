@@ -1061,17 +1061,22 @@ namespace Gorgon { namespace Graphics {
 
         internal::boundedprint(
             *renderer, text.begin(), text.end(), tot,
-            [&](Glyph, internal::markvecit begin, internal::markvecit end, int width) {            
+            [&](Glyph eol, internal::markvecit begin, internal::markvecit end, int width) {            
                 y += (int)std::round(renderer->GetLineGap() * vspace + pspace);
                 if(width > maxx)
                     maxx = width;
+
+                if(justify && eol == 0) {
+                    if(maxx < width)
+                        maxx = width;
+                }
             },
             [&](Glyph prev, Glyph next) { return int(hspace + renderer->KerningDistance(prev, next).X); },
             [&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
             std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth ? tabwidth : 16)
         );
 
-        return {std::min(width, maxx > 0 ? maxx + 1 : 0), y};
+        return {maxx > 0 ? maxx + 1 : 0, y};
     }
     
     int StyledRenderer::GetCharacterIndex(const std::string &text, Geometry::Point location) const{ 
