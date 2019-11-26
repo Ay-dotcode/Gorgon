@@ -315,18 +315,30 @@ namespace Gorgon { namespace UI {
         const ComponentTemplate &GetTemplate(int ind) const {
             return get(ind).GetTemplate();
         }
-        
+
         /// Set a fixed size for a tagged component
         void SetTagSize(ComponentTemplate::Tag tag, Geometry::Size size) {
             tagsizes[tag] = size;
             Update();
         }
-        
+
         /// Removes the fixed size for a set tagged component
         void RemoveTagSize(ComponentTemplate::Tag tag) {
             tagsizes.erase(tag);
         }
-        
+
+
+        /// Set a fixed location for a tagged component
+        void SetTagLocation(ComponentTemplate::Tag tag, Geometry::Point location) {
+            taglocations[tag] = location;
+            Update();
+        }
+
+        /// Removes the fixed location for a set tagged component
+        void RemoveTagLocation(ComponentTemplate::Tag tag) {
+            taglocations.erase(tag);
+        }
+
         /// Sets a function to be called before update check
         void SetFrameEvent(std::function<void()> handler) {
             frame_fn = handler;
@@ -561,6 +573,7 @@ namespace Gorgon { namespace UI {
         std::map<const ComponentTemplate*, ComponentStorage*> storage;
         std::map<const ComponentTemplate*, std::vector<Component>> repeated;
         std::map<ComponentTemplate::Tag, Geometry::Size> tagsizes;
+        std::map<ComponentTemplate::Tag, Geometry::Point> taglocations;
 
         Animation::Timer controller;
         

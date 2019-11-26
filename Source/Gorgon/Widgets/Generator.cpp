@@ -999,6 +999,7 @@ namespace Gorgon { namespace Widgets {
             txt_n.SetColor(Forecolor.Regular);
             txt_n.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             txt_n.SetDataEffect(UI::ComponentTemplate::Text);
+            txt_n.SetTag(txt_n.ContentsTag);
             txt_n.SetClip(true);
             txt_n.SetSize(100, 100, UI::Dimension::Percent);
             txt_n.SetSizing(UI::ComponentTemplate::ShrinkOnly);
@@ -1011,6 +1012,7 @@ namespace Gorgon { namespace Widgets {
             caret.Content.SetDrawable(img);
             caret.SetPosition(0, 0, UI::Dimension::Pixel);
             caret.SetPositioning(caret.Absolute);
+            caret.SetTag(caret.CaretTag);
         }
         
         return temp;

@@ -2006,6 +2006,9 @@ realign:
                 else if(temp.GetValueModification() == temp.ModifyY) {
                     pos = {pos.X, {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}};
                 }
+                else if(taglocations.count(temp.GetTag())) {
+                    pos = {taglocations[temp.GetTag()]};
+                }
                 
                 if(temp.GetPositioning() == temp.PolarAbsolute) {
                     auto pcenter = Geometry::Pointf(cont.GetCenter().X.CalculateFloat((float)maxsize.Width, (float)emsize), cont.GetCenter().Y.CalculateFloat((float)maxsize.Height, (float)emsize));

@@ -158,8 +158,9 @@ int main() {
     
     auto inptemp = gen.Inputbox();
     Widgets::Inputbox<int, UI::EmptyValidator<int>, NumericProperty> inp(inptemp);
-    inp++;
+    inp+=11;
     pnl.Add(inp);
+    inp.SelectAll();
     
     pnl.Add(lbl);
     pnl.Add(error);

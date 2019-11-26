@@ -169,7 +169,35 @@ namespace Gorgon { namespace Widgets {
         
         /// updates the selection display
         void updateselection() {
-            
+            //for font
+            int idx = stack.IndexOfTag(UI::ComponentTemplate::ContentsTag);
+
+            //no contents??!!
+            if(idx == -1)
+                return;
+
+            //contents is not a textholder
+            auto &temp = stack.GetTemplate(idx);
+            if(temp.GetType() != UI::ComponentType::Textholder)
+                return;
+
+            auto &textt = dynamic_cast<const UI::TextholderTemplate&>(temp);
+
+            //no renderer is set or renderer is not in valid state
+            if(!textt.IsReady())
+                return;
+
+            auto &renderer = textt.GetRenderer();
+
+            auto pos = selstart;
+
+            if(sellen == -1)
+                pos = (int)display.length();
+            else
+                pos += sellen;
+
+            auto location = renderer.GetPosition(display, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), pos);
+            stack.SetTagLocation(UI::ComponentTemplate::CaretTag, location.TopLeft());
         }
         
         /// updates the value display
