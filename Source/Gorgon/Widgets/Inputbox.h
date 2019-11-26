@@ -47,8 +47,8 @@ namespace Gorgon { namespace Widgets {
         using Type     = T_;
         using PropType = P_<internal::prophelper<Inputbox<T_, V_, P_>, T_>, T_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::get_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::set_>;
 
-		friend class PropType;
-		template<class T_, class V_ = UI::EmptyValidator<T_>, template<class C_, class PT_, PT_(C_::*Getter_)() const, void(C_::*Setter_)(const PT_&)> class P_ = Gorgon::Property>
+        friend class P_<internal::prophelper<Inputbox<T_, V_, P_>, T_>, T_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::get_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::set_>;
+		template<class T1_, class V1_, template<class C_, class PT_, PT_(C_::*Getter_)() const, void(C_::*Setter_)(const PT_&)> class P1_>
 		friend class Inputbox;
 		friend struct internal::prophelper<Inputbox<T_, V_, P_>, T_>;
         
@@ -56,6 +56,14 @@ namespace Gorgon { namespace Widgets {
         explicit Inputbox(const UI::Template &temp, T_ value = T_()) : 
         ComponentStackWidget(temp), PropType(&helper), value(value), display(validator.ToString(value))
         {
+            
+            stack.HandleMouse(Input::Mouse::Button::Left);
+            
+            stack.SetMouseDownEvent([this](auto, auto, auto btn) {
+                if(allowfocus() && btn == Input::Mouse::Button::Left)
+                    Focus();
+            });
+            
             updatevalue();
             updateselection();
         }
@@ -141,7 +149,6 @@ namespace Gorgon { namespace Widgets {
             return Focus();
         }
         
-        /// 
         bool CharacterEvent(Gorgon::Char c) override  {
             display.push_back(c);
             
@@ -198,7 +205,7 @@ namespace Gorgon { namespace Widgets {
         int selstart = 0;
         int sellen   = 0;
 
-		struct internal::prophelper<Inputbox<T_, V_, P_>, T_> helper = struct internal::prophelper<Inputbox<T_, V_, P_>, T_>(this);
+		struct internal::prophelper<Inputbox<T_, V_, P_>, T_> helper = internal::prophelper<Inputbox<T_, V_, P_>, T_>(this);
     };
     
 } }

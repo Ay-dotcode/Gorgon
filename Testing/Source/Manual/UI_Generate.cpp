@@ -156,7 +156,8 @@ int main() {
     Widgets::Label lbl(lbltemp, "This is a label");
     Widgets::Label error(errortemp, "This is an Error label");
     
-    Widgets::Inputbox<int, UI::EmptyValidator<int>, NumericProperty> inp(lbltemp);
+    auto inptemp = gen.Inputbox();
+    Widgets::Inputbox<int, UI::EmptyValidator<int>, NumericProperty> inp(inptemp);
     inp++;
     pnl.Add(inp);
     

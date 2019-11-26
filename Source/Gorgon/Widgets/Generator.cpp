@@ -87,6 +87,12 @@ namespace Gorgon { namespace Widgets {
         return border;
     }
     
+    Graphics::BitmapRectangleProvider &SimpleGenerator::NormalEditBorder() {
+        static Graphics::BitmapRectangleProvider border = makeborder(Border.Color, Background.Edit);
+        
+        return border;
+    }
+    
     Graphics::BitmapRectangleProvider &SimpleGenerator::HoverBorder() {
         auto c = Background.Regular;
         c.Blend(Background.Hover);
@@ -938,4 +944,77 @@ namespace Gorgon { namespace Widgets {
         
         return temp;
     }
+    
+    UI::Template SimpleGenerator::Inputbox(Geometry::Size defsize) {
+        UI::Template temp;
+        temp.SetSize(defsize);
+        
+        auto &bi = *new Graphics::BlankImage({Border.Width, Border.Width}, Border.Color);
+        drawables.Add(bi);
+        
+        {
+            auto &bg_n = temp.AddContainer(0, UI::ComponentCondition::Always);
+            bg_n.SetPadding(Spacing);
+            bg_n.AddIndex(1);
+            bg_n.AddIndex(2);
+            bg_n.AddIndex(3);
+            bg_n.Background.SetAnimation(NormalEditBorder());
+        }
+        
+        {
+            auto &foc = temp.AddContainer(1, UI::ComponentCondition::Focused);
+            
+            auto &ci = Graphics::EmptyImage::Instance();
+            
+            
+            auto &hi = *new Graphics::Bitmap({2, Focus.Width});
+            hi.Clear();
+            for(auto i=0; i<Focus.Width; i++)
+                hi.SetRGBAAt(0, i, Focus.Color);
+            hi.Prepare();
+            drawables.Add(hi);
+            
+            auto &vi = *new Graphics::Bitmap({Focus.Width, 2});
+            vi.Clear();
+            for(auto i=0; i<Focus.Width; i++)
+                vi.SetRGBAAt(i, 0, Focus.Color);
+            vi.Prepare();
+            drawables.Add(vi);
+            
+            auto &cri = *new Graphics::BlankImage(Focus.Width, Focus.Width, Focus.Color);
+            
+            auto &rect = *new Graphics::RectangleProvider(cri, hi, cri, vi, ci, vi, cri, hi, cri);
+            
+            foc.Background.SetAnimation(rect);
+            providers.Add(rect);
+            foc.SetMargin(Spacing / 2);
+            foc.SetSize(100, 100, UI::Dimension::Percent);
+            foc.SetPositioning(foc.Absolute);
+            foc.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+        }
+        
+        {
+            auto &txt_n = temp.AddTextholder(2, UI::ComponentCondition::Always);
+            txt_n.SetRenderer(RegularFont);
+            txt_n.SetColor(Forecolor.Regular);
+            txt_n.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+            txt_n.SetDataEffect(UI::ComponentTemplate::Text);
+            txt_n.SetClip(true);
+            txt_n.SetSize(100, 100, UI::Dimension::Percent);
+            txt_n.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        }
+        
+        {
+            auto &img = *new Graphics::BlankImage(Border.Width, RegularFont.GetGlyphRenderer().GetHeight(), Border.Color);
+            drawables.Add(img);
+            auto &caret = temp.AddGraphics(3, UI::ComponentCondition::Focused);
+            caret.Content.SetDrawable(img);
+            caret.SetPosition(0, 0, UI::Dimension::Pixel);
+            caret.SetPositioning(caret.Absolute);
+        }
+        
+        return temp;
+    }
+
+    
 }}

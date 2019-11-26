@@ -27,9 +27,13 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template Label(Geometry::Size size) = 0;
 		
-		virtual UI::Template ErrorLabel(Geometry::Size size) = 0;
-		        
+        virtual UI::Template ErrorLabel(Geometry::Size size) = 0;
+        
+        virtual UI::Template Panel(Geometry::Size size) = 0;
+        
         virtual UI::Template BlankPanel(Geometry::Size size) = 0;
+        
+        virtual UI::Template Inputbox(Geometry::Size size) = 0;
     };
     
     /**
@@ -81,9 +85,14 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template Panel(
             Geometry::Size size = {155, 300}
-        ) ;
+        ) override;
+        
+        virtual UI::Template Inputbox(
+            Geometry::Size size = {166, 32}
+        ) override;
         
         Graphics::BitmapRectangleProvider &NormalBorder();
+        Graphics::BitmapRectangleProvider &NormalEditBorder();
         Graphics::BitmapRectangleProvider &HoverBorder();
         Graphics::BitmapRectangleProvider &DownBorder();
         
@@ -109,6 +118,7 @@ namespace Gorgon { namespace Widgets {
             Graphics::RGBA Hover   = {Graphics::Color::White, 0.2};
             Graphics::RGBA Down    = {Graphics::Color::Crimson, 0.2};
             
+            Graphics::RGBA Edit    = {Graphics::Color::White};
         } Background;
         
         struct ForecolorInfo {
