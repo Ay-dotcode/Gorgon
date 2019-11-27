@@ -133,7 +133,7 @@ namespace Keyboard {
 		constexpr Key Numpad_Minus  = 0b101101111;
     
 		/// Keycodes that are transported from OS.
-		constexpr Key OSTransport   = 0b1000000000;
+		constexpr Key OSTransport   = 0b100000000000;
 
 		/// Returns if the key is an enter key
 		inline constexpr bool IsEnter(Key key) {

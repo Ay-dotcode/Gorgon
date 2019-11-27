@@ -28,12 +28,12 @@ namespace Gorgon { namespace Input {
         /// Lists the mouse button constants
 		ENUMCLASS Button {
             None   = 0 ,
-			Left   = 1 ,
-			Right  = 2 ,
-			Middle = 4 ,
-			X1	   = 8 ,
-			X2	   = 16,
-			All    = 31,
+			Left   = 0b1000000001 ,
+			Right  = 0b1000000010 ,
+			Middle = 0b1000000100 ,
+			X1	   = 0b1000001000 ,
+			X2	   = 0b1000010000 ,
+			All    = 0b1000011111,
 		};
         
         inline Button operator |(Button l, Button r) {

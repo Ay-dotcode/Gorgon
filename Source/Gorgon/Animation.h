@@ -370,7 +370,7 @@ namespace Gorgon {
             
             /// Returns the duration of the animation if it is a known apriori. If the animation can be progressed
             /// infinitely, if it is possible to derive optimal duration, it should be returned. In case when it
-            /// is impossible to determine the duration, 
+            /// is impossible to determine the duration, return 0.
             virtual int GetDuration() const = 0;
 
 			/// Deletes this animation. Please note that some animations are also the animation provider. In these

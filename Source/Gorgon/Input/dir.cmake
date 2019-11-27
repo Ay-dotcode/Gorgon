@@ -7,5 +7,7 @@ SET(Local
 	Layer.cpp
 	Keyboard.h
 	Keyboard.cpp
+	KeyRepeater.h
+	KeyRepeater.cpp
 	Mouse.h
 )

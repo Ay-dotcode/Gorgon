@@ -211,19 +211,19 @@ namespace Gorgon { namespace Widgets {
         
         repeatcur += (float)repeatdiff * time / repeatacc;
         
-        if(repeatleft < time) {
+        if(repeatleft < (int)time) {
             ClickEvent();
             
             if(repeaten == repeatondelay) {
                 repeaten = repeating;
-                repeatcur = repeatinit;
-                repeatleft = repeatcur;
+                repeatcur = (float)repeatinit;
+                repeatleft = (int)repeatcur;
             }
             else {
                 if(repeatdiff > 0 ? repeatcur >= repeatfin : repeatcur <= repeatfin)
-                    repeatcur = repeatfin;
+                    repeatcur = (float)repeatfin;
                 
-                repeatleft = repeatcur;
+                repeatleft = (int)repeatcur;
             }
         }
         else {
