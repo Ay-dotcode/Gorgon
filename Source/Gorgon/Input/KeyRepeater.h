@@ -79,11 +79,11 @@ namespace Gorgon { namespace Input {
         /// UnregisteredFrom before the event is destroyed.
         template<class E_>
         void RegisterTo(E_ &event, bool ignoremodified = false) {
-            Unregister();
+            UnregisterFrom();
             
             token = new internal::eventunregisterer<E_>(
                 event,
-                event.Register(this, &KeyEvent)
+                event.Register(this, &KeyRepeater::KeyEvent)
             );
         }
         
