@@ -34,7 +34,7 @@ namespace Gorgon {
 				}
 				
 				/// Returns the value of the GID as a character array
-				constexpr const char *AsChars() const {
+				const char *AsData() const {
 					return (const char*)&value;
 				}
 				
