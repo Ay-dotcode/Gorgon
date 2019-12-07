@@ -159,17 +159,23 @@ namespace Gorgon { namespace Graphics {
 		   GetMode()!=Graphics::ColorMode::Alpha)
 			throw std::runtime_error("Unsupported color mode");
 
+        if(data->GetSize().Cells() == 0)
+            return false;
+
 		std::ofstream file(filename, std::ios::binary);
 		if(!file.is_open())
 			return false;
 
-		Encoding::Png.Encode(*data, file);
+        Encoding::Png.Encode(*data, file);
 
 		return true;
 	}
 
 	bool Bitmap::ExportPNG(std::ostream &out) {
 		ASSERT(data, "Image data does not exists");
+
+        if(data->GetSize().Cells() == 0)
+            return false;
 
 		if(GetMode()!=Graphics::ColorMode::RGB				&&
 		   GetMode()!=Graphics::ColorMode::RGBA				&&
@@ -178,7 +184,7 @@ namespace Gorgon { namespace Graphics {
 		   GetMode()!=Graphics::ColorMode::Alpha)
 			throw std::runtime_error("Unsupported color mode");
 
-		Encoding::Png.Encode(*data, out);
+        Encoding::Png.Encode(*data, out);
 
 		return true;
 	}
@@ -186,11 +192,17 @@ namespace Gorgon { namespace Graphics {
 	bool Bitmap::ExportBMP(const std::string &filename) {
 		ASSERT(data, "Image data does not exists");
 
+        if(data->GetSize().Cells() == 0)
+            return false;
+            
 		return data->ExportBMP(filename);
 	}
 
 	bool Bitmap::ExportBMP(std::ostream &out) {
 		ASSERT(data, "Image data does not exists");
+
+        if(data->GetSize().Cells() == 0)
+            return false;
 
 		return data->ExportBMP(out);
 	}
@@ -204,6 +216,9 @@ namespace Gorgon { namespace Graphics {
 		
 		if(quality < 0 || quality > 100)
 			throw std::runtime_error("Unsupported quality");
+
+        if(data->GetSize().Cells() == 0)
+            return false;
 
 		std::ofstream file(filename, std::ios::binary);
 		if(!file.is_open())
@@ -220,6 +235,9 @@ namespace Gorgon { namespace Graphics {
 		if(GetMode()!=Graphics::ColorMode::RGB &&
 		   GetMode()!=Graphics::ColorMode::Grayscale)
 			throw std::runtime_error("Unsupported color mode");
+
+        if(data->GetSize().Cells() == 0)
+            return false;
 
 		if(quality < 0 || quality > 100)
 			throw std::runtime_error("Unsupported quality");
