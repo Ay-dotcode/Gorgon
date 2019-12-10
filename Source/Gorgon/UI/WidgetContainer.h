@@ -253,6 +253,21 @@ namespace Gorgon { namespace UI {
             return widgets.end();
         }
         
+        /// Returns the number of widgets in this container
+        int GetCount() const {
+            return (int)widgets.GetCount();
+        }
+        
+        /// Returns the widget at the given index
+        const WidgetBase &operator [](int ind) const {
+            return widgets[ind];
+        }
+        
+        /// Returns the widget at the given index
+        WidgetBase &operator [](int ind) {
+            return widgets[ind];
+        }
+        
         /// Returns the default element of the container. Default widget is
         /// activated when the user presses enter and the focused widget 
         /// does not consume the key or if the user presses ctrl+enter. 
