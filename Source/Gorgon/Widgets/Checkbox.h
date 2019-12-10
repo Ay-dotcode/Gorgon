@@ -46,6 +46,8 @@ namespace Gorgon { namespace Widgets {
         Checkbox &operator =(Checkbox &&) = default;
         
         Checkbox &operator =(bool value) { SetState(value); return *this; }
+        
+        operator bool() { return GetState(); }
 
 		virtual ~Checkbox();
 
