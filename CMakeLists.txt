@@ -154,13 +154,13 @@ add_library(Gorgon STATIC ${All})
 
 set_property(TARGET Gorgon PROPERTY CXX_STANDARD 14)
 
-if(WIN32)
+#if(WIN32)
 	set_target_properties(Gorgon PROPERTIES 
 		DEBUG_OUTPUT_NAME Gorgon_d
 		RELWITHDEBINFO_OUTPUT_NAME Gorgon_rd
 		MINSIZEREL_OUTPUT_NAME Gorgon_min
 	)
-endif()
+#endif()
 
 if(NOT ${deps} STREQUAL "")
 	add_dependencies(Gorgon ${deps})

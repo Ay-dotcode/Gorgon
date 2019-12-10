@@ -3,10 +3,7 @@
 namespace Gorgon { namespace Input {
     
 
-    template<class E_>
-    KeyRepeater::KeyRepeater(E_ &event, const std::initializer_list<Key> &keys, int delay){ 
-        RegisterTo(event);
-        
+    KeyRepeater::KeyRepeater(const std::initializer_list<Key> &keys, int delay) : Base(true) {
         for(auto key : keys)
             Register(key);
         
@@ -38,11 +35,14 @@ namespace Gorgon { namespace Input {
                 
                 if(acceleration && accelerationstart < p.second.count) {
                     if(p.second.count < accelerationstart + accelerationcount) {
-                        p.second.delay = delay - acceleration * p.second.count;
+                        p.second.delay = delay - acceleration * (p.second.count - accelerationstart);
                     }
                     else {
                         p.second.delay = delay - acceleration * accelerationcount;
                     }
+                }
+                else {
+                    p.second.delay = delay;
                 }
             }
             
@@ -92,7 +92,13 @@ namespace Gorgon { namespace Input {
     
 
     void KeyRepeater::SetupAcceleration(int startdelay, int finaldelay, int rampup) { 
+        SetDelay(startdelay);
+        SetAccelerationStart(0);
+        int c = (int)std::round( (2.0 * rampup - startdelay + finaldelay) / 
+                                        (startdelay + finaldelay));
         
+        SetAccelerationCount(c);
+        SetAcceleration((startdelay - finaldelay) / c);
     }
     
     

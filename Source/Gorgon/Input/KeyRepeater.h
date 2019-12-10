@@ -55,11 +55,14 @@ namespace Gorgon { namespace Input {
     public:
 
         /// Default constructor
-        KeyRepeater() = default;
+        KeyRepeater() : Base(true) { }
         
         /// Registers this repeater to the given event and registers the given keys
         template<class E_>
         KeyRepeater(E_ &event, const std::initializer_list<Key> &keys, int delay = 100);
+
+        /// Registers this repeater to the given event and registers the given keys
+        KeyRepeater(const std::initializer_list<Key> &keys, int delay = 100);
 
         /// Disable copy constructor
         KeyRepeater(const KeyRepeater &) = delete;
@@ -231,7 +234,7 @@ namespace Gorgon { namespace Input {
         bool KeyEvent(Key &key, float amount);
         
         /// Press event that is called everytime a key is pressed.
-        Event<KeyRepeater, Key> Repeat;
+        Event<KeyRepeater, Key> Repeat = Event<KeyRepeater, Key>{this};
 
     private:
         
@@ -263,6 +266,17 @@ namespace Gorgon { namespace Input {
         
         unsigned lastprogress = 0;
     };
+
+    template<class E_>
+    KeyRepeater::KeyRepeater(E_ &event, const std::initializer_list<Key> &keys, int delay) : Base(true) { 
+        RegisterTo(event);
+        
+        for(auto key : keys)
+            Register(key);
+        
+        SetDelay(delay);
+    }
+
 
 } }
 

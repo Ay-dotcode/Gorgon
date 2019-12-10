@@ -27,6 +27,7 @@ SET(UnitTests
 	GarbageCollection
 	Geometry
 	Hashmap
+	KeyRepeater
 	Layer
 	Logging
 	EncodingImage
