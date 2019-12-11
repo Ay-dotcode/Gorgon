@@ -17,6 +17,10 @@ namespace Gorgon { namespace Widgets {
         
         using WidgetBase::Resize;
         
+        using WidgetBase::Remove;
+        
+        using WidgetContainer::Remove;
+        
         virtual void Resize(Geometry::Size size) override;
         
 
