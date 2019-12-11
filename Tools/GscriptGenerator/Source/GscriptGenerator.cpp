@@ -4,6 +4,7 @@
 #include <string>
 #include <cstring>
 #include <memory>
+#include <algorithm>
 //#include <cstdlib>
 
 #ifdef XML_LARGE_SIZE
@@ -22,12 +23,16 @@
 # define XML_FMT_STR "s"
 #endif
 
-#define BUFFSIZE        8192
-
 int Depth;
 std::string fileOut;
 int carryOn = 1;
-static char *xmlData;
+//static char *xmlData;
+std::string xmlData;
+std::string attrG;
+std::string attrValG;
+bool accept;
+
+bool printData;
 
 //XML start function
 static void XMLCALL
@@ -35,29 +40,28 @@ start(void *data, const XML_Char *el, const XML_Char **attr){
     //Opening file
     std::ofstream file;
     file.open(fileOut, std::ios_base::app);
-    
+
     int i;
-    if(std::string(el) == "highlight"){
-        //initial indentation
-        for (i = 0; i < Depth; i++)
-            file << "  ";
     
-        //Reading in the current element as a comment
+    //initial indentation
+    //for (i = 0; i < Depth; i++)
+        //file << "  ";
     
-        file << "/* " << el << " */";
+    //Reading in the current element as a comment
+    
+    //file << "/* " << el << " */";
         
-        //Reading in the attributes of the element
-        for (i = 0; attr[i]; i += 2){
-            file << " /* attr: " << attr[i] << "='%" << attr[i + 1] << " */"; 
-        }
-        
-        file << "\t /* element =" << xmlData << " */";
-    
-        //Moving to the next lline for the next element
-    
-        file << "\n";
-        Depth++;
+    //Reading in the attributes of the element
+    for (i = 0; attr[i]; i += 2){
+        //file << " /* attr: " << attr[i] << "='%" << attr[i + 1] << " */ \n";
+        attrG = attr[i];
+        attrValG = attr[i+1];
     }
+    
+    //if(el == "includedby")
+    
+    Depth++;
+    
     file.close();
 }
 
@@ -66,19 +70,47 @@ static void XMLCALL
 fileData(void *data, const char* content, int len){
     
     std::string temp;
-    
-    temp = content;
-    temp = temp + '\0';
-    xmlData = (char*) temp.c_str();
+    std::string info;
+        
+    temp = content ;
+    info = temp.substr(0,len);
+    xmlData = info;
     
 }
 
 //XML end function
 static void XMLCALL 
 end(void *data, const XML_Char *el){
+    //Opening file
+    std::ofstream file;
+    file.open(fileOut, std::ios_base::app);
+    int i;
+    for (i = 0; i < Depth; i++){
+        file << " ";
+    }
+    std::string info = xmlData;
+    std::string attr = attrG;
     
-    (void)data;
-    (void)el;
+    if(strcmp(el,"compoundname")==0)
+        file << "\n#include \"" << info << "\"\n";
+    
+    if(strcmp(el,"innernamespace")==0)
+        file << "namespace " << info << " {";
+    
+    //carry on from here
+    //if(strcmp(el,"codeline") && attrG == "lineno" && attrValG == "12")
+        //accept = true;
+    
+    if(strcmp(el,"highlight") && attrG == "class" && attrValG == "normal" && accept){
+        file << "\n// " << info;
+        accept = false;
+    }
+        
+        
+    //used to see all data    
+    //file << "/* Data of "  << el << " = " << info << " */\n";
+    file.close();
+    
     Depth--;
 }
 
@@ -93,16 +125,16 @@ int main(int argc, char* argv[]){
     fileOut = argv[1];
     std::ofstream file;
     file.open(fileOut);
-    std::string fileName = "Time";
+    //std::string fileName = "Time";
     
-    file << "#include \"Time.h\"\n#include \"Gorgon/Scripting/Embedding.h\"\n#include \"Gorgon/Scripting/Reflection.h\"\n#include \"Gorgon/Scripting.h\"\n\n namespace Gorgon { namespace Time {\n\tScripting::Library LibTime(\"Time\",\"Data types under " << fileName <<" module and their member functions and operators\");  \n\t}\n} \n";
+    file << "//Some Random Information";
+    file << "\n#include \"Gorgon/Scripting/Embedding.h\"\n#include \"Gorgon/Scripting/Reflection.h\"\n#include \"Gorgon/Scripting.h\"\n\n";
     
-    file.close();
     
     //Start of parsing
     std::cout<< "Starting...\n";
     XML_Parser p = XML_ParserCreate(NULL);
-    std::cout<< "p = " << p << std::endl;;
+    std::cout<< "Parser Created" << std::endl;;
     if (!p){
         std::cout<< "Couldn't allocate memory for parser\n";
         exit(-1);
@@ -152,6 +184,13 @@ int main(int argc, char* argv[]){
     }
     
     XML_ParserFree(p);
+    
+    std::ofstream file1;
+    file1.open(fileOut, std::ios_base::app);
+    file1 << " \n\t}\n}";
+    //file1 << "\n\n namespace Gorgon { namespace Time {\n\tScripting::Library LibTime(\"Time\",\"Data types under Time.h module and their member functions and operators\");  \n\t}\n} \n ";
+    file1.close();
+    
     std::cout<< "Finished Parsing!!\n";
     return 0;
 }
