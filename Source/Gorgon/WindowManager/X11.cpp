@@ -1,6 +1,6 @@
 #include "../WindowManager.h"
 #include <thread>
-#include <Gorgon/Geometry/Margin.h>
+#include "../Geometry/Margin.h"
 #include <limits.h>
 #include "../Window.h"
 #include "../Time.h"
