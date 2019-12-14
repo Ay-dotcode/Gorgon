@@ -31,6 +31,14 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template Panel(Geometry::Size size) = 0;
         
+        virtual UI::Template TopPanel(Geometry::Size size) = 0;
+        
+        virtual UI::Template LeftPanel(Geometry::Size size) = 0;
+        
+        virtual UI::Template BottomPanel(Geometry::Size size) = 0;
+        
+        virtual UI::Template RightPanel(Geometry::Size size) = 0;
+        
         virtual UI::Template BlankPanel(Geometry::Size size) = 0;
         
         virtual UI::Template Inputbox(Geometry::Size size) = 0;
@@ -87,11 +95,28 @@ namespace Gorgon { namespace Widgets {
             Geometry::Size size = {155, 300}
         ) override;
         
+        virtual UI::Template TopPanel(
+            Geometry::Size size = {155, 300}
+        ) override;
+        
+        virtual UI::Template LeftPanel(
+            Geometry::Size size = {155, 300}
+        ) override;
+        
+        virtual UI::Template RightPanel(
+            Geometry::Size size = {155, 300}
+        ) override;
+        
+        virtual UI::Template BottomPanel(
+            Geometry::Size size = {155, 300}
+        ) override;
+        
         virtual UI::Template Inputbox(
             Geometry::Size size = {166, 32}
         ) override;
         
         Graphics::BitmapRectangleProvider &NormalBorder();
+        Graphics::BitmapRectangleProvider &PanelBorder();
         Graphics::BitmapRectangleProvider &NormalEditBorder();
         Graphics::BitmapRectangleProvider &HoverBorder();
         Graphics::BitmapRectangleProvider &DownBorder();
@@ -119,13 +144,14 @@ namespace Gorgon { namespace Widgets {
             Graphics::RGBA Down    = {Graphics::Color::Crimson, 0.2};
             
             Graphics::RGBA Edit    = {Graphics::Color::White};
+            Graphics::RGBA Panel   = {Graphics::Color::Grey, Graphics::Color::Ivory, 0.5};
         } Background;
         
         struct ForecolorInfo {
             Graphics::RGBA Regular = Graphics::Color::Charcoal;
             Graphics::RGBA Hover   = Graphics::Color::Black;
             Graphics::RGBA Down    = Graphics::Color::Black;
-			Graphics::RGBA Error = Graphics::Color::Red;
+			Graphics::RGBA Error   = Graphics::Color::Red;
         } Forecolor;
 		
 		

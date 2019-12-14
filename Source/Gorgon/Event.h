@@ -183,7 +183,7 @@ namespace Gorgon {
 		Event &operator =(const Event &) = delete;
 
 		/// Move assignment, should be called synchronized
-		Event &operator =(const Event &&other) {
+		Event &operator =(Event &&other) {
 			if(&other==this) return *this;
 
 			std::lock_guard<std::mutex> g(access);
@@ -195,6 +195,8 @@ namespace Gorgon {
 			source=nullptr;
 			fire.clear();
 			Swap(other);
+            
+            return *this;
 		}
 
 		/// Swaps two Events, used for move semantics

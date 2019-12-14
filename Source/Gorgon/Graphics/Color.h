@@ -110,6 +110,19 @@ namespace Gorgon { namespace Graphics {
 
 		/// Copy constructor with new alpha value
 		RGBA(const RGBA &other, float newalpha) : R(other.R), G(other.G), B(other.B), A(Byte(255*newalpha)) {}
+		
+		/// Blending constructor
+		RGBA(const RGBA &first, const RGBA &second, float alpha = 1.0f) : RGBA(first) {
+            Blend(second, alpha);
+        }
+        
+		/// Blending constructor
+		RGBA(const RGBA &first, const RGBA &second, double alpha) : RGBA(first) {
+            Blend(second, (float)alpha);
+        }
+        
+		/// Blending constructor
+		RGBA(const RGBA &first, const RGBA &second, int alpha) : RGBA(first, second, alpha/255.f) { }
 
 		/// Filling constructor
 		RGBA(Byte r, Byte g, Byte b, Byte a=255) : R(r), G(g), B(b), A(a) {}
@@ -344,6 +357,22 @@ namespace Gorgon { namespace Graphics {
 		}
 		return in;
 	}
+	
+	/// Blends two colors together, you do not need to use namespace if
+	/// calling on an RGBA object
+	inline RGBA Blend(RGBA first, const RGBA &second) {
+        first.Blend(second);
+        
+        return first;
+    }
+	
+	/// Blends two colors together, you do not need to use namespace if
+	/// calling on an RGBA object
+	inline RGBA Blend(RGBA first, const RGBA &second, float alpha) {
+        first.Blend(second, alpha);
+        
+        return first;
+    }
 
 	/// Represents a four channel 32 bit float per channel color information. 
 	class RGBAf {

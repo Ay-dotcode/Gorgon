@@ -72,8 +72,14 @@ namespace Gorgon { namespace Widgets {
     
 
     bool Panel::ResizeInterior(Geometry::Size size) {
-        auto tb = stack.TagBounds(UI::ComponentTemplate::ContentsTag).GetSize();
-        Resize(size + stack.GetSize() - tb);
+        Geometry::Size border = {0, 0};
+        
+        auto innersize = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize();
+        
+        if(innersize.Area() != 0)
+            border = GetSize() - innersize;
+        
+        Resize(size + border);
 
         return stack.TagBounds(UI::ComponentTemplate::ContentsTag).GetSize() == size;
     }

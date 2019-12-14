@@ -617,6 +617,8 @@ namespace Gorgon {
         }
 
 		Template(Template &&) = default;
+        
+        Template &operator =(Template &&) = default;
 
         /// Destructor
         ~Template() {

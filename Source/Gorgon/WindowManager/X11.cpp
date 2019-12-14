@@ -25,6 +25,7 @@
 #include <X11/extensions/Xinerama.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include <GL/glx.h>
 
@@ -298,6 +299,8 @@ namespace Gorgon {
 			xinerama=xinerama && (bool)XineramaIsActive(display);
 			
 			Monitor::Refresh(true);
+            
+            setenv("__GL_YIELD", "USLEEP", 1);
 		}
 
         std::string GetAtomName(Atom atom) {

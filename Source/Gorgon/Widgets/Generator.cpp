@@ -87,6 +87,12 @@ namespace Gorgon { namespace Widgets {
         return border;
     }
     
+    Graphics::BitmapRectangleProvider &SimpleGenerator::PanelBorder() {
+        static Graphics::BitmapRectangleProvider border = makeborder(Border.Color, Background.Panel);
+        
+        return border;
+    }
+    
     Graphics::BitmapRectangleProvider &SimpleGenerator::NormalEditBorder() {
         static Graphics::BitmapRectangleProvider border = makeborder(Border.Color, Background.Edit);
         
@@ -929,6 +935,37 @@ namespace Gorgon { namespace Widgets {
         
         
         auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
+        bg.SetPadding(Border.Width+Border.Radius);
+        bg.Background.SetAnimation(PanelBorder());
+        bg.AddIndex(1);
+        
+        auto &vp = temp.AddContainer(1, UI::ComponentCondition::Always);
+        vp.SetTag(UI::ComponentTemplate::ViewPortTag);
+        vp.SetSize(100, 100, UI::Dimension::Percent);
+        vp.SetPositioning(vp.Absolute);
+        vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        vp.SetPosition(0, 0);
+        vp.SetClip(true);
+        vp.AddIndex(2);
+        
+        auto &cont = temp.AddContainer(2, UI::ComponentCondition::Always);
+        cont.SetTag(UI::ComponentTemplate::ContentsTag);
+        cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
+        cont.SetSize(100, 100, UI::Dimension::Percent);
+        cont.SetPositioning(cont.Absolute);
+        cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        cont.SetPosition(0, 0);
+        
+        return temp;
+    }
+    
+    //TODO: fix me
+    UI::Template SimpleGenerator::TopPanel(Geometry::Size defsize) {
+        UI::Template temp;
+        temp.SetSize(defsize);
+        
+        
+        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
         bg.SetClip(true);
         
         bg.AddIndex(1);
@@ -940,7 +977,73 @@ namespace Gorgon { namespace Widgets {
         cont.SetPositioning(cont.Absolute);
         cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
         cont.SetPosition(0, 0);
-        cont.Background.SetAnimation(DownBorder());
+        cont.Background.SetAnimation(PanelBorder());
+        
+        return temp;
+    }
+    
+    UI::Template SimpleGenerator::LeftPanel(Geometry::Size defsize) {
+        UI::Template temp;
+        temp.SetSize(defsize);
+        
+        
+        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
+        bg.SetClip(true);
+        
+        bg.AddIndex(1);
+        
+        auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always);
+        cont.SetTag(UI::ComponentTemplate::ContentsTag);
+        cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
+        cont.SetSize(100, 100, UI::Dimension::Percent);
+        cont.SetPositioning(cont.Absolute);
+        cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        cont.SetPosition(0, 0);
+        cont.Background.SetAnimation(PanelBorder());
+        
+        return temp;
+    }
+    
+    UI::Template SimpleGenerator::RightPanel(Geometry::Size defsize) {
+        UI::Template temp;
+        temp.SetSize(defsize);
+        
+        
+        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
+        bg.SetClip(true);
+        
+        bg.AddIndex(1);
+        
+        auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always);
+        cont.SetTag(UI::ComponentTemplate::ContentsTag);
+        cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
+        cont.SetSize(100, 100, UI::Dimension::Percent);
+        cont.SetPositioning(cont.Absolute);
+        cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        cont.SetPosition(0, 0);
+        cont.Background.SetAnimation(PanelBorder());
+        
+        return temp;
+    }
+    
+    UI::Template SimpleGenerator::BottomPanel(Geometry::Size defsize) {
+        UI::Template temp;
+        temp.SetSize(defsize);
+        
+        
+        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
+        bg.SetClip(true);
+        
+        bg.AddIndex(1);
+        
+        auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always);
+        cont.SetTag(UI::ComponentTemplate::ContentsTag);
+        cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
+        cont.SetSize(100, 100, UI::Dimension::Percent);
+        cont.SetPositioning(cont.Absolute);
+        cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        cont.SetPosition(0, 0);
+        cont.Background.SetAnimation(PanelBorder());
         
         return temp;
     }

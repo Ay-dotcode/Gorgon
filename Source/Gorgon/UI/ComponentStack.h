@@ -220,7 +220,7 @@ namespace Gorgon { namespace UI {
         /// Returns the template used by this stack
         const Template &GetTemplate() const {
             return temp;
-        }		
+        }
 
         /// Updates the layout of the component stack
         virtual void Update() override;

@@ -101,6 +101,7 @@ namespace Gorgon {
 
 		auto ctime=Time::GetTime();
 		auto currentdelta=ctime-Time::FrameStart();
+        
 		if(currentdelta<16) {
 			std::this_thread::sleep_for(std::chrono::duration<unsigned long, std::milli>(15-currentdelta));
 		}
