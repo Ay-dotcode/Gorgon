@@ -73,11 +73,12 @@ namespace Gorgon { namespace UI {
                 }
             }
             
+            if(click_fn)
+                click_fn(ComponentTemplate::NoTag, location, btn);
+            
             if(up_fn)
                 up_fn(ComponentTemplate::NoTag, location, btn);
             
-            if(click_fn)
-                click_fn(ComponentTemplate::NoTag, location, btn);
         });
         
         Resize(size);
