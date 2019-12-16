@@ -5,6 +5,7 @@
 #include <cstring>
 #include <memory>
 #include <algorithm>
+#include <vector>
 //#include <cstdlib>
 
 #ifdef XML_LARGE_SIZE
@@ -26,43 +27,33 @@
 int Depth;
 std::string fileOut;
 int carryOn = 1;
-//static char *xmlData;
+std::vector<std::string> cell; 
 std::string xmlData;
-std::string attrG;
-std::string attrValG;
 bool accept;
 
-bool printData;
+
+
+static void addToFile(std::string data){
+    std::ofstream file;
+    file.open(fileOut, std::ios_base::app);
+    file << data;
+    file.close();
+}
 
 //XML start function
 static void XMLCALL
 start(void *data, const XML_Char *el, const XML_Char **attr){
-    //Opening file
-    std::ofstream file;
-    file.open(fileOut, std::ios_base::app);
-
+    
     int i;
     
-    //initial indentation
-    //for (i = 0; i < Depth; i++)
-        //file << "  ";
-    
-    //Reading in the current element as a comment
-    
-    //file << "/* " << el << " */";
-        
     //Reading in the attributes of the element
     for (i = 0; attr[i]; i += 2){
-        //file << " /* attr: " << attr[i] << "='%" << attr[i + 1] << " */ \n";
-        attrG = attr[i];
-        attrValG = attr[i+1];
+        cell.push_back(attr[i]);
+        cell.push_back(attr[i+1]);
     }
-    
-    //if(el == "includedby")
     
     Depth++;
     
-    file.close();
 }
 
 //XML Data function
@@ -81,35 +72,19 @@ fileData(void *data, const char* content, int len){
 //XML end function
 static void XMLCALL 
 end(void *data, const XML_Char *el){
-    //Opening file
-    std::ofstream file;
-    file.open(fileOut, std::ios_base::app);
+    
     int i;
     for (i = 0; i < Depth; i++){
-        file << " ";
+        addToFile(" ");
     }
     std::string info = xmlData;
-    std::string attr = attrG;
     
     if(strcmp(el,"compoundname")==0)
-        file << "\n#include \"" << info << "\"\n";
+        addToFile( "\n#include \"" + info + "\"\n");
     
     if(strcmp(el,"innernamespace")==0)
-        file << "namespace " << info << " {";
+        addToFile("namespace " + info + " {");
     
-    //carry on from here
-    //if(strcmp(el,"codeline") && attrG == "lineno" && attrValG == "12")
-        //accept = true;
-    
-    if(strcmp(el,"highlight") && attrG == "class" && attrValG == "normal" && accept){
-        file << "\n// " << info;
-        accept = false;
-    }
-        
-        
-    //used to see all data    
-    //file << "/* Data of "  << el << " = " << info << " */\n";
-    file.close();
     
     Depth--;
 }
