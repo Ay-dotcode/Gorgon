@@ -297,6 +297,7 @@ namespace Gorgon { namespace Widgets {
             bg.Background.SetDrawable(im);
             bg.AddIndex(1);
             bg.AddIndex(2);
+            bg.AddIndex(3);
         }
         
         {
@@ -312,6 +313,7 @@ namespace Gorgon { namespace Widgets {
             bg.Background.SetDrawable(im);
             bg.AddIndex(1);
             bg.AddIndex(2);
+            bg.AddIndex(3);
         }
         
         {
@@ -327,14 +329,29 @@ namespace Gorgon { namespace Widgets {
             bg.Background.SetDrawable(im);
             bg.AddIndex(1);
             bg.AddIndex(2);
+            bg.AddIndex(3);
         }
         
         auto &icon = temp.AddPlaceholder(1, UI::ComponentCondition::Always);
         icon.SetDataEffect(icon.Icon);
         icon.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
         icon.SetSize(100, 100, UI::Dimension::Percent);
+        icon.SetPositioning(icon.Absolute);
         icon.SetSizing(icon.Fixed);
         icon.SetClip(true);
+
+        {
+            auto &txt_n = temp.AddTextholder(3, UI::ComponentCondition::Always);
+            txt_n.SetRenderer(RegularFont);
+            txt_n.SetColor(Forecolor.Regular);
+            txt_n.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+            txt_n.SetDataEffect(UI::ComponentTemplate::Text);
+            txt_n.SetClip(true);
+            txt_n.SetSize(100, 100, UI::Dimension::Percent);
+            txt_n.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+            txt_n.SetPositioning(txt_n.Absolute);
+        }
+
         
         {
             auto &foc = temp.AddContainer(2, UI::ComponentCondition::Focused);
