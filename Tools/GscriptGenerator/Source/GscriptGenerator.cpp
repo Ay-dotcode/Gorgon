@@ -6,7 +6,6 @@
 #include <memory>
 #include <algorithm>
 #include <vector>
-//#include <cstdlib>
 
 #ifdef XML_LARGE_SIZE
 # if defined(XML_USE_MSC_EXTENSIONS) && _MSC_VER < 1400
@@ -24,39 +23,64 @@
 # define XML_FMT_STR "s"
 #endif
 
+struct Element{
+  std::string name;
+  std::string atrName;
+  std::string value;
+  std::string data;
+  Element():name("Empty Name"),atrName("Empty atrName"),value("Empty value"),data("Empty Data"){};
+  Element(std::string n,std::string a, std::string v):name(n),atrName(a),value(v),data("null"){};
+  void addData(std::string data){this->data=data;};
+};
+
 int Depth;
 std::string fileOut;
 int carryOn = 1;
-std::vector<std::string> cell; 
+std::vector<Element> elements; 
+std::string name;
+std::string atr;
+std::string atrVal;
 std::string xmlData;
 bool accept;
 
 
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////
 static void addToFile(std::string data){
     std::ofstream file;
-    file.open(fileOut, std::ios_base::app);
-    file << data;
+    //file.open(fileOut, std::ios_base::app);
+    //file << data;
     file.close();
 }
 
-//XML start function
+//XML start function/////////////////////////////////////////////////////////////////////////////////////
 static void XMLCALL
 start(void *data, const XML_Char *el, const XML_Char **attr){
     
     int i;
-    
+    std::cout << "About to start\n"; 
     //Reading in the attributes of the element
-    for (i = 0; attr[i]; i += 2){
-        cell.push_back(attr[i]);
-        cell.push_back(attr[i+1]);
+    if(strcmp(el,"innernamespace")==0){
+        for (i = 0; attr[i]; i += 2){
+            atr = attr[i];
+            atrVal = attr[i+1];
+            Element e =  *new Element(el,attr[i],attr[i+1]);
+            elements.push_back(e);
+        }
+         
     }
-    
+    else if(strcmp(el,"highlight")==0){
+        std::cout << "Here is true\n";    
+        if(strcmp(attr[0],"class")==0 && strcmp(attr[1],"normal")==0){
+                Element e =  *new Element(el,attr[0],attr[1]);
+                elements.push_back(e);
+            }
+         
+    }
     Depth++;
     
 }
 
-//XML Data function
+//XML Data function//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static void XMLCALL
 fileData(void *data, const char* content, int len){
     
@@ -69,7 +93,7 @@ fileData(void *data, const char* content, int len){
     
 }
 
-//XML end function
+//XML end function////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static void XMLCALL 
 end(void *data, const XML_Char *el){
     
@@ -77,19 +101,30 @@ end(void *data, const XML_Char *el){
     for (i = 0; i < Depth; i++){
         addToFile(" ");
     }
-    std::string info = xmlData;
+    std::cout << "there is a problem here\n";
+    std::string info = xmlData + "...|";
+    info = info + "...";
+    std::cout << "\t\t\t " << info << "\n";
     
-    if(strcmp(el,"compoundname")==0)
+    elements.back().addData(info);
+    //elements.back().addData(info);
+    //if(strcmp(el,"compoundname")==0)
+    
+    /*if(strcmp(el,"compoundname")==0)
         addToFile( "\n#include \"" + info + "\"\n");
     
     if(strcmp(el,"innernamespace")==0)
         addToFile("namespace " + info + " {");
-    
-    
-    Depth--;
+    */
+//    for(auto e : elements){
+//         std::cout << e.name << " -> " << e.atrName << " = " << e.value << " DATA -> " << e.data << std::endl;
+//     }
+//     std::cout << "This is in cells\n\n";
+//     
+//     Depth--;
 }
 
-//Main
+//Main///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char* argv[]){
     
     if(argc != 2) {
@@ -104,7 +139,7 @@ int main(int argc, char* argv[]){
     
     file << "//Some Random Information";
     file << "\n#include \"Gorgon/Scripting/Embedding.h\"\n#include \"Gorgon/Scripting/Reflection.h\"\n#include \"Gorgon/Scripting.h\"\n\n";
-    
+    file.close();
     
     //Start of parsing
     std::cout<< "Starting...\n";
@@ -117,6 +152,9 @@ int main(int argc, char* argv[]){
     
     XML_SetElementHandler(p, start, end);
     XML_SetCharacterDataHandler(p, fileData);
+    
+    Element job;
+    elements.push_back(job);
     
     while(carryOn){
         int done;
@@ -161,9 +199,9 @@ int main(int argc, char* argv[]){
     XML_ParserFree(p);
     
     std::ofstream file1;
-    file1.open(fileOut, std::ios_base::app);
-    file1 << " \n\t}\n}";
-    //file1 << "\n\n namespace Gorgon { namespace Time {\n\tScripting::Library LibTime(\"Time\",\"Data types under Time.h module and their member functions and operators\");  \n\t}\n} \n ";
+    
+    std::string t1 = "\n\n namespace Gorgon { namespace Time {\n\tScripting::Library LibTime(\"Time\",\"Data types under Time.h module and their member functions and operators\");  \n\t}\n} \n ";
+    file1 << t1;
     file1.close();
     
     std::cout<< "Finished Parsing!!\n";
