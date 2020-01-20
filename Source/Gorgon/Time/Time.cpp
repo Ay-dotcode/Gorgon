@@ -275,7 +275,8 @@ namespace Gorgon { namespace Time {
 		using std::setw;
 		
 		std::stringstream ss;
-		ss<<Hour<<":"<<Minute;
+		ss<<std::setfill('0');
+		ss<<Hour<<":"<<setw(2)<<Minute;
 		
 		return ss.str();
 	}
