@@ -23,36 +23,39 @@ namespace Gorgon { namespace Widgets {
 
     SimpleGenerator::SimpleGenerator(int fontsize, std::string fontname) {
 #ifdef WIN32
-        fontname = Filesystem::Join(OS::GetEnvVar("WINDIR"), "Fonts/tahoma.ttf");
+        if(fontname.find_last_of('.') == fontname.npos)
+            fontname = Filesystem::Join(Filesystem::Join(OS::GetEnvVar("WINDIR"), "Fonts"), fontname == "" ? "tahoma.ttf" : fontname + ".ttf");
 #else
-        bool found = false;
-        
-        try {
-            std::streambuf *buf;
-            OS::Start("fc-match", buf, {"-v", fontname == "" ? "sans" : fontname});
+        if(fontname.find_last_of('.') == fontname.npos) {
+            bool found = false;
+            
+            try {
+                std::streambuf *buf;
+                OS::Start("fc-match", buf, {"-v", fontname == "" ? "sans" : fontname});
 
-            if(buf) {
-                std::istream in(buf);
-                std::string line;
-                while(getline(in, line)) {
-                    line = String::Trim(line);
-                    auto name = String::Extract(line, ':', true);
-                    if(name == "file") {
-                        String::Extract(line, '"', true);
-                        auto fname = String::Extract(line, '"', true);
-                        fontname = fname;
-                        found = true;
-                        break;
+                if(buf) {
+                    std::istream in(buf);
+                    std::string line;
+                    while(getline(in, line)) {
+                        line = String::Trim(line);
+                        auto name = String::Extract(line, ':', true);
+                        if(name == "file") {
+                            String::Extract(line, '"', true);
+                            auto fname = String::Extract(line, '"', true);
+                            fontname = fname;
+                            found = true;
+                            break;
+                        }
                     }
                 }
             }
-        }
-        catch(...) {
-            found = false;
-        }
+            catch(...) {
+                found = false;
+            }
 
-        if(!found)
-            fontname = "/usr/share/fonts/gnu-free/FreeSans.ttf";
+            if(!found)
+                fontname = "/usr/share/fonts/gnu-free/FreeSans.ttf";
+        }
 #endif
 
         auto &regular = *new Graphics::FreeType();
