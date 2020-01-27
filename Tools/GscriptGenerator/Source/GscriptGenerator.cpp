@@ -68,10 +68,24 @@ start(void *data, const XML_Char *el, const XML_Char **attr){
         }
          
     }
-    else if(strcmp(el,"highlight")==0){
-        std::cout << "Here is true\n";    
-        if(strcmp(attr[0],"class")==0 && strcmp(attr[1],"normal")==0){
+    else if(strcmp(el,"highlight")==0){  
+        if(strcmp(attr[0],"class")==0 && strcmp(attr[1],"keywordtype")==0){
                 Element e =  *new Element(el,attr[0],attr[1]);
+                elements.push_back(e);
+            }
+    }
+    else if(strcmp(el,"ref")==0){
+        std::cout << "Here is true\n";    
+        if(strcmp(attr[2],"kindref")==0 && strcmp(attr[3],"member")==0){
+                Element e =  *new Element(el,attr[2],attr[3]);
+                elements.push_back(e);
+            }
+         
+    }
+    else if(strcmp(el,"ref")==0){
+        std::cout << "Here is true\n";    
+        if(strcmp(attr[2],"kindref")==0 && strcmp(attr[3],"compound")==0){
+                Element e =  *new Element(el,attr[2],attr[3]);
                 elements.push_back(e);
             }
          
@@ -91,6 +105,7 @@ fileData(void *data, const char* content, int len){
     info = temp.substr(0,len);
     xmlData = info;
     
+    elements.back().data = info;
 }
 
 //XML end function////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,27 +116,23 @@ end(void *data, const XML_Char *el){
     for (i = 0; i < Depth; i++){
         addToFile(" ");
     }
-    std::cout << "there is a problem here\n";
     std::string info = xmlData + "...|";
     info = info + "...";
     std::cout << "\t\t\t " << info << "\n";
     
-    elements.back().addData(info);
+    //elements.back().addData(info);
     //elements.back().addData(info);
     //if(strcmp(el,"compoundname")==0)
     
-    /*if(strcmp(el,"compoundname")==0)
+    if(strcmp(el,"compoundname")==0)
         addToFile( "\n#include \"" + info + "\"\n");
     
     if(strcmp(el,"innernamespace")==0)
-        addToFile("namespace " + info + " {");
-    */
-//    for(auto e : elements){
-//         std::cout << e.name << " -> " << e.atrName << " = " << e.value << " DATA -> " << e.data << std::endl;
-//     }
-//     std::cout << "This is in cells\n\n";
-//     
-//     Depth--;
+        addToFile("namespace hell " + info + " {");
+    
+    
+    
+    Depth--;
 }
 
 //Main///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -203,6 +214,12 @@ int main(int argc, char* argv[]){
     std::string t1 = "\n\n namespace Gorgon { namespace Time {\n\tScripting::Library LibTime(\"Time\",\"Data types under Time.h module and their member functions and operators\");  \n\t}\n} \n ";
     file1 << t1;
     file1.close();
+    int count = 1;
+    for(auto e : elements){
+        std::cout << count++ << ")- "<< e.name << " -> " << e.atrName << " = " << e.value << " |DATA -> " << e.data << std::endl;
+       
+    }
+    std::cout << "This is in cells\n\n";
     
     std::cout<< "Finished Parsing!!\n";
     return 0;
