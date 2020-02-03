@@ -157,8 +157,8 @@ int main() {
     Widgets::Label error(errortemp, "This is an Error label");
     
     auto inptemp = gen.Inputbox();
-    Widgets::Inputbox<int, UI::EmptyValidator<int>, NumericProperty> inp(inptemp);
-    inp+=11;
+    Widgets::Inputbox<std::string, UI::EmptyValidator<std::string>, TextualProperty> inp(inptemp);
+    inp="aabb";
     pnl.Add(inp);
     inp.SelectAll();
     

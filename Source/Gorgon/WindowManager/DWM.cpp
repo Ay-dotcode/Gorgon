@@ -518,7 +518,7 @@ namespace Gorgon {
 					break;
 
 					case WM_DESTROYCLIPBOARD:
-						WindowManager::clipbuffers.empty();
+						WindowManager::clipbuffers.clear();
 						WindowManager::clipboard_entries.clear();
 
 						break;

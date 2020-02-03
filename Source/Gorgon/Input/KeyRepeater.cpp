@@ -101,5 +101,19 @@ namespace Gorgon { namespace Input {
         SetAcceleration((startdelay - finaldelay) / c);
     }
     
+    bool KeyRepeater::KeyEvent(Key &key, float amount) {
+        if(registeredkeys.count(key)) {
+            if(amount) {
+                Press(key);
+            }
+            else {
+                Release(key);
+            }
+
+            return true;
+        }
+
+        return false;
+    }
     
 } }

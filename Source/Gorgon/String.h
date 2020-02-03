@@ -593,7 +593,7 @@ namespace Gorgon {
             }
 
             int bytes = UnicodeUTF8Bytes(c);
-            s.resize(bytes);
+            s.resize(s.size() + bytes);
             
             auto it = s.rbegin();
             int cur = 0;
