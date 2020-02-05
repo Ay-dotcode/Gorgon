@@ -15,7 +15,7 @@ namespace Gorgon { namespace Widgets {
     namespace internal {
         template<class I_, class T_>
         struct prophelper {
-			prophelper(I_ *obj) : obj(obj) {}
+            prophelper(I_ *obj) : obj(obj) {}
 
             ~prophelper() { 
                 
@@ -28,54 +28,192 @@ namespace Gorgon { namespace Widgets {
                 return obj->get();
             }
 
-			I_ *obj;
+            I_ *obj;
+        };
+        
+        class Inputbox_base : public UI::ComponentStackWidget {
+        protected:
+            Inputbox_base(const UI::Template &temp) : UI::ComponentStackWidget(temp) { }
+            
+            //for keeping selection both in bytes and glyphs
+            struct glyphbyte {
+                int glyph, byte;
+
+                glyphbyte &operator +=(const glyphbyte &other) {
+                    glyph += other.glyph;
+                    byte += other.byte;
+
+                    return *this;
+                }
+
+                glyphbyte operator +(const glyphbyte &other) const {
+                    return {glyph + other.glyph, byte + other.byte};
+                }
+            };
+                
+            static constexpr int allselected = std::numeric_limits<int>::max();
+
+            
+        public:
+                
+            /// Returns the length of the text in this inputbox. This value is in glyphs and takes time to calculate.
+            int Length() const {
+                return glyphcount;
+            }
+            
+            /// Returns the current text in the inputbox. Use Get() to obtain the value of
+            /// the inputbox, this function exists for special uses.
+            std::string GetText() const {
+                return display;
+            }
+            
+            std::string GetSelectedText() const {
+                if(sellen.byte < 0)
+                    return display.substr(selstart.byte + sellen.byte, -sellen.byte);
+                else if(sellen.byte > 0)
+                    return display.substr(selstart.byte, sellen.byte);
+                else
+                    return "";
+            }
+            
+            /// @name Selection
+            /// @{
+            
+            /// Selects the entire contents of this inputbox
+            void SelectAll() {
+                selstart = {0, 0};
+                sellen = {allselected, allselected};
+                updateselection();
+            }
+            
+            /// Removes any selection, does not move the start of the
+            /// cursor.
+            void SelectNone() {
+                sellen = {0, 0};
+                updateselection();
+            }
+            
+            /// Returns the start of the selection in glyphs.
+            int SelectionStart() const {
+                return selstart.glyph;
+            }
+            
+            /// Returns the length of the selection in glyphs. Selection length could be 
+            /// negative denoting the selection is backwards.
+            int SelectionLength() const {
+                return sellen.glyph;
+            }
+            
+            /// Returns the location of the caret. It is always at the end of the selection.
+            int CaretLocation() const {
+                return selstart.glyph + sellen.glyph;
+            }
+            
+            /// @}
+                
+            
+            bool Activate() override {
+                return Focus();
+            }
+            
+            bool CharacterEvent(Gorgon::Char c) override;
+            
+            virtual bool KeyEvent(Input::Key key, float state) override;
+            
+            
+        protected:
+            
+                
+            /// updates the selection display
+            void updateselection();
+            
+            /// updates the value display
+            virtual void updatevalue() = 0;
+            
+            /// updates the value display
+            virtual void updatevaluedisplay(bool updatedisplay = true) = 0;
+            
+            void moveselleft() {
+                if(selstart.glyph > 0) {
+                    selstart.glyph--;
+                    selstart.byte--;
+
+                    //if previous byte is unicode continuation point, go further before
+                    while(selstart.byte && (display[selstart.byte] & 0b11000000) == 0b10000000)
+                        selstart.byte--;
+                }
+            }
+
+            void moveselright() {
+                if(selstart.glyph < glyphcount) {
+                    selstart.glyph++;
+                    selstart.byte += String::UTF8Bytes(display[selstart.byte]);
+                }
+            }
+
+            void eraseselected() {
+                if(sellen.byte < 0) {
+                    int pos = selstart.byte + sellen.byte;
+
+                    display.erase(pos, -sellen.byte);
+
+                    glyphcount += sellen.glyph;
+                    selstart += sellen;
+                    sellen = {0, 0};
+                }
+                else if(sellen.byte > 0) {
+                    int pos = selstart.byte;
+
+                    display.erase(pos, sellen.byte);
+
+                    glyphcount -= sellen.glyph;
+                    sellen = {0, 0};
+
+                    updatevaluedisplay(false);
+                    updateselection();
+                }
+            }
+
+            
+            std::string display;
+
+            glyphbyte selstart = {0, 0};
+            glyphbyte sellen   = {0, 0};
+            int glyphcount = 0;
+        
+            Input::KeyRepeater repeater;
+            
         };
     }
     /// @endcond
     
     /**
-     * This class allows users to enter any value to an inputbox. This
-     * class is specialized as Textbox and Numberbox. It is possible to
-     * supply a validator to a specific inputbox. Inputbox is designed
-     * for value objects that can be copied and serialized to string.
-     */
+    * This class allows users to enter any value to an inputbox. This
+    * class is specialized as Textbox and Numberbox. It is possible to
+    * supply a validator to a specific inputbox. Inputbox is designed
+    * for value objects that can be copied and serialized to string.
+    */
     template<class T_, class V_ = UI::EmptyValidator<T_>, template<class C_, class PT_, PT_(C_::*Getter_)() const, void(C_::*Setter_)(const PT_ &)> class P_ = Gorgon::Property>
     class Inputbox : 
-        public UI::ComponentStackWidget, 
+        public internal::Inputbox_base, 
         public P_<internal::prophelper<Inputbox<T_, V_, P_>, T_>, T_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::get_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::set_> {
 
-        //for keeping selection both in bytes and glyphs
-        struct glyphbyte {
-            int glyph, byte;
 
-            glyphbyte &operator +=(const glyphbyte &other) {
-                glyph += other.glyph;
-                byte += other.byte;
-
-                return *this;
-            }
-
-            glyphbyte operator +(const glyphbyte &other) const {
-                return {glyph + other.glyph, byte + other.byte};
-            }
-        };
-
-        static constexpr int allselected = std::numeric_limits<int>::max();
-
-	public:
+    public:
         
         using Type     = T_;
         using PropType = P_<internal::prophelper<Inputbox<T_, V_, P_>, T_>, T_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::get_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::set_>;
 
         friend class P_<internal::prophelper<Inputbox<T_, V_, P_>, T_>, T_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::get_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::set_>;
-		template<class T1_, class V1_, template<class C_, class PT_, PT_(C_::*Getter_)() const, void(C_::*Setter_)(const PT_&)> class P1_>
-		friend class Inputbox;
-		friend struct internal::prophelper<Inputbox<T_, V_, P_>, T_>;
+        template<class T1_, class V1_, template<class C_, class PT_, PT_(C_::*Getter_)() const, void(C_::*Setter_)(const PT_&)> class P1_>
+        friend class Inputbox;
+        friend struct internal::prophelper<Inputbox<T_, V_, P_>, T_>;
         
         /// Initializes the inputbox
         explicit Inputbox(const UI::Template &temp, T_ value = T_()) : 
-        ComponentStackWidget(temp), PropType(&helper), value(value), display(validator.ToString(value))
+        internal::Inputbox_base(temp), PropType(&helper), value(value)
         {
+            display = validator.ToString(value);
             
             stack.HandleMouse(Input::Mouse::Button::Left);
             
@@ -84,7 +222,7 @@ namespace Gorgon { namespace Widgets {
                     Focus();
             });
             
-            updatevalue();
+            updatevaluedisplay();
             updateselection();
 
             repeater.Register(Input::Keyboard::Keycodes::Left);
@@ -198,153 +336,6 @@ namespace Gorgon { namespace Widgets {
             return value;
         }
         
-        /// Returns the length of the text in this inputbox. This value is in glyphs and takes time to calculate.
-        int Length() const {
-            return glyphcount;
-        }
-        
-        /// Returns the current text in the inputbox. Use Get() to obtain the value of
-        /// the inputbox, this function exists for special uses.
-        std::string GetText() const {
-            return display;
-        }
-        
-        /// @name Selection
-        /// @{
-        
-        /// Selects the entire contents of this inputbox
-        void SelectAll() {
-            selstart = {0, 0};
-            sellen = {allselected, allselected};
-            updateselection();
-        }
-        
-        /// Removes any selection, does not move the start of the
-        /// cursor.
-        void SelectNone() {
-            sellen = {0, 0};
-            updateselection();
-        }
-        
-        /// Returns the start of the selection in glyphs.
-        int SelectionStart() const {
-            return selstart.glyph;
-        }
-        
-        /// Returns the length of the selection in glyphs. Selection length could be 
-        /// negative denoting the selection is backwards.
-        int SelectionLength() const {
-            return sellen.glyph;
-        }
-        
-        /// Returns the location of the caret. It is always at the end of the selection.
-        int CaretLocation() const {
-            return selstart.glyph + sellen.glyph;
-        }
-        
-        /// @}
-        
-        bool Activate() override {
-            return Focus();
-        }
-        
-        bool CharacterEvent(Gorgon::Char c) override {
-            if(sellen.byte != 0) {
-                if(sellen.byte == allselected) {
-                    selstart.byte += (int)display.length();
-                    selstart.glyph += Length();
-                }
-                else {
-                    selstart += sellen;
-                }
-            }
-
-            String::AppendUnicode(display, c);
-            glyphcount++;
-
-            selstart.glyph++;
-            selstart.byte += String::UnicodeUTF8Bytes(c);
-
-            sellen = {0, 0};
-            
-            value = validator.From(display);
-            updatevalue(false);
-            updateselection();
-            
-            return true;
-        }
-
-        virtual bool KeyEvent(Input::Key key, float state) override { 
-            namespace Keycodes = Input::Keyboard::Keycodes;
-
-            if(repeater.KeyEvent(key, state))
-                return true;
-
-            if(state) {
-                if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::None) {
-                    switch(key) {
-                    case Keycodes::Home:
-                        selstart = {0, 0};
-                        sellen = {0, 0};
-                        updateselection();
-
-                        return true;
-
-                    case Keycodes::End:
-                        selstart = {Length(), (int)display.size()};
-                        sellen = {0, 0};
-                        updateselection();
-
-                        return true;
-
-                    case Keycodes::Backspace:
-                        if(sellen.byte == 0) {
-                            if(selstart.glyph != 0) {
-                                moveselleft();
-                                
-                                display.erase(selstart.byte, String::UTF8Bytes(display[selstart.byte]));
-                                glyphcount--;
-
-                                updatevalue(false);
-                                updateselection();
-                            }
-
-                        }
-                        else {
-                            eraseselected();
-                        }
-
-                         return true;
-                    case Keycodes::Delete: 
-                        if(sellen.byte == 0) {
-                            if(selstart.glyph < glyphcount) {
-                                display.erase(selstart.byte, String::UTF8Bytes(display[selstart.byte]));
-                                glyphcount--;
-
-                                updatevalue(false);
-                            }
-                        }
-                        else {
-                            eraseselected();
-                        }
-
-                        return true;
-                    }
-                }
-                else if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::Ctrl) {
-                    switch(key) {
-                    case Keycodes::A:
-                        SelectAll();
-
-                        return true;
-
-                    }
-                }
-            }
-
-            return false;
-        }
-        
         /// Fired after the value of the inputbox is changed. Parameter is the previous 
         /// value before the change. If the user is typing, this event will be fired
         /// after typing stops for a set amount of time. ChangedEvent will be fired
@@ -353,51 +344,6 @@ namespace Gorgon { namespace Widgets {
         
         
     protected:
-        
-        /// updates the selection display
-        void updateselection() {
-            //for font
-            int idx = stack.IndexOfTag(UI::ComponentTemplate::ContentsTag);
-
-            //no contents??!!
-            if(idx == -1)
-                return;
-
-            //contents is not a textholder
-            auto &temp = stack.GetTemplate(idx);
-            if(temp.GetType() != UI::ComponentType::Textholder)
-                return;
-
-            auto &textt = dynamic_cast<const UI::TextholderTemplate&>(temp);
-
-            //no renderer is set or renderer is not in valid state
-            if(!textt.IsReady())
-                return;
-
-            auto &renderer = textt.GetRenderer();
-
-            auto pos = selstart.glyph;
-
-            if(sellen.glyph == allselected)
-                pos = (int)display.length(); //this is ok, bytelen >= glyphlen
-            else
-                pos += sellen.glyph;
-
-            std::cout<<selstart.glyph<<"\t"<<selstart.byte<<"\t|\t"<<sellen.glyph<<"\t"<<sellen.byte<<"\t|\t"<<pos<<std::endl;
-
-            auto location = renderer.GetPosition(display, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), pos);
-            stack.SetTagLocation(UI::ComponentTemplate::CaretTag, location.TopLeft());
-        }
-        
-        /// updates the value display
-        void updatevalue(bool updatedisplay = true) {
-            if(updatedisplay) {
-                display = validator.ToString(value);
-                glyphcount = String::UnicodeGlyphCount(display);
-            }
-            
-            stack.SetData(UI::ComponentTemplate::Text, display);
-        }
         
         /// Returns the value in the box
         T_ get() const {
@@ -411,67 +357,32 @@ namespace Gorgon { namespace Widgets {
             
             value = val;
             
-            updatevalue();
+            updatevaluedisplay();
             updateselection();
         }
 
-        Input::KeyRepeater repeater;
+        void updatevalue() override {
+            value = validator.From(display);
+            
+            ChangedEvent(value);
+        }
+            
+        /// updates the value display
+        void updatevaluedisplay(bool updatedisplay = true) override {
+            if(updatedisplay) {
+                display = validator.ToString(value);
+                glyphcount = String::UnicodeGlyphCount(display);
+            }
+            
+            stack.SetData(UI::ComponentTemplate::Text, display);
+        }
         
         
     private:
-        void moveselleft() {
-            if(selstart.glyph > 0) {
-                selstart.glyph--;
-                selstart.byte--;
-
-                //if previous byte is unicode continuation point, go further before
-                while(selstart.byte && (display[selstart.byte] & 0b11000000) == 0b10000000)
-                    selstart.byte--;
-            }
-        }
-
-        void moveselright() {
-            if(selstart.glyph < glyphcount) {
-                selstart.glyph++;
-                selstart.byte += String::UTF8Bytes(display[selstart.byte]);
-            }
-        }
-
-        void eraseselected() {
-            if(sellen.byte < 0) {
-                int pos = selstart.byte + sellen.byte;
-
-                display.erase(pos, -sellen.byte);
-
-                glyphcount -= sellen.glyph;
-                selstart += sellen;
-                sellen = {0, 0};
-
-                updatevalue(false);
-                updateselection();
-            }
-            else if(sellen.byte > 0) {
-                int pos = selstart.byte;
-
-                display.erase(pos, sellen.byte);
-
-                glyphcount -= sellen.glyph;
-                sellen = {0, 0};
-
-                updatevalue(false);
-                updateselection();
-            }
-        }
-
         V_ validator;
         T_ value;
-        std::string display;
 
-        glyphbyte selstart = {0, 0};
-        glyphbyte sellen   = {0, 0};
-        int glyphcount = 0;
-
-		struct internal::prophelper<Inputbox<T_, V_, P_>, T_> helper = internal::prophelper<Inputbox<T_, V_, P_>, T_>(this);
+        struct internal::prophelper<Inputbox<T_, V_, P_>, T_> helper = internal::prophelper<Inputbox<T_, V_, P_>, T_>(this);
     };
     
 } }

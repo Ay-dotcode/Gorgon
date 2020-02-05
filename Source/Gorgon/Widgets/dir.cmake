@@ -9,6 +9,7 @@ SET(Local
 	Generator.cpp
 	
 	Inputbox.h
+	Inputbox.cpp
 	
 	Label.h
 	Label.cpp
