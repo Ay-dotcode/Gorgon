@@ -173,6 +173,8 @@ namespace Gorgon { namespace Widgets {
                     updateselection();
                 }
             }
+            
+            void focused() override;
 
             
             std::string display;

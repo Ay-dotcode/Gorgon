@@ -178,7 +178,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
         auto pos = selstart.glyph;
 
         if(sellen.glyph == allselected)
-            pos = (int)display.length(); //this is ok, bytelen >= glyphlen
+            pos = glyphcount;
         else
             pos += sellen.glyph;
 
@@ -193,6 +193,32 @@ namespace Gorgon { namespace Widgets { namespace internal {
             location = renderer.GetPosition(display, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), pos).TopLeft();
         }
         stack.SetTagLocation(UI::ComponentTemplate::CaretTag, location);
+        
+        if(stack.IndexOfTag(UI::ComponentTemplate::SelectionTag) != -1) {
+            auto selbounds = stack.TagBounds(UI::ComponentTemplate::SelectionTag);
+            if(sellen.byte == 0) {
+                stack.SetTagSize(UI::ComponentTemplate::SelectionTag, {0, selbounds.Height()});
+            }
+            else {
+                auto srclocation = renderer.GetPosition(display, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), selstart.glyph).BottomLeft();
+                
+                if(srclocation.X < location.X) {
+                    stack.SetTagLocation(UI::ComponentTemplate::SelectionTag, {srclocation.X, 0});
+                    stack.SetTagSize(UI::ComponentTemplate::SelectionTag, {location.X - srclocation.X, selbounds.Height()});
+                }
+                else {
+                    stack.SetTagLocation(UI::ComponentTemplate::SelectionTag, {location.X, 0});
+                    stack.SetTagSize(UI::ComponentTemplate::SelectionTag, {srclocation.X - location.X, selbounds.Height()});
+                }
+            }
+        }
+    }
+
+
+    void Inputbox_base::focused() {
+        UI::ComponentStackWidget::focused();
+        
+        updateselection();
     }
 
 } } }

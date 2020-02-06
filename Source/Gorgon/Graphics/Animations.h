@@ -27,6 +27,8 @@ namespace Gorgon { namespace Graphics {
 	/// A regular drawable animation provider
 	class AnimationProvider : public virtual Gorgon::Animation::Provider {
 	public:
+        virtual ~AnimationProvider() { }
+        
 		using AnimationType = Animation;
         
         /// This function moves this animation provider into a new provider. Ownership of this new object belongs

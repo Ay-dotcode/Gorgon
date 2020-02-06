@@ -4,6 +4,7 @@
 #include "../Graphics/FreeType.h"
 #include "../Graphics/BitmapFont.h"
 #include "../Graphics/BlankImage.h"
+#include "../Graphics/Animations.h"
 #include "../CGI/Line.h"
 #include "../CGI/Polygon.h"
 #include "../CGI/Circle.h"
@@ -1081,6 +1082,7 @@ namespace Gorgon { namespace Widgets {
             bg_n.AddIndex(1);
             bg_n.AddIndex(2);
             bg_n.AddIndex(3);
+            bg_n.AddIndex(4);
             bg_n.Background.SetAnimation(NormalEditBorder());
         }
         
@@ -1129,13 +1131,46 @@ namespace Gorgon { namespace Widgets {
         }
         
         {
-            auto &img = *new Graphics::BlankImage(Border.Width, RegularFont.GetGlyphRenderer().GetHeight(), Border.Color);
+            auto &anim = *new Graphics::BitmapAnimationProvider();
+            int h = RegularFont.GetGlyphRenderer().GetHeight();
+            auto &img = *new Graphics::Bitmap({std::min(Border.Width/2, 1), h});
+            img.ForAllPixels([&img, this, h](int x, int y) {
+                img(x, y, 0) = Border.Color.R;
+                img(x, y, 1) = Border.Color.G;
+                img(x, y, 2) = Border.Color.B;
+                img(x, y, 3) = (y >= h/6 && y <= 5*h/6) * Border.Color.A;
+            });
             drawables.Add(img);
+            img.Prepare();
+            auto &img2 = *new Graphics::Bitmap({std::min(Border.Width/2, 1), RegularFont.GetGlyphRenderer().GetHeight()});
+            img2.Clear();
+            img2.Prepare();
+            drawables.Add(img2);
+            
+            anim.Add(img, 700);
+            anim.Add(img2, 300);
+            providers.Add(anim);
+            
             auto &caret = temp.AddGraphics(3, UI::ComponentCondition::Focused);
-            caret.Content.SetDrawable(img);
+            caret.Content.SetAnimation(anim);
             caret.SetPosition(0, 0, UI::Dimension::Pixel);
             caret.SetPositioning(caret.Absolute);
             caret.SetTag(caret.CaretTag);
+        }
+        
+        {
+            auto &img = *new Graphics::BlankImage(8, 8, Background.Selected);
+            
+            int h = RegularFont.GetGlyphRenderer().GetHeight();
+            
+            auto &selection = temp.AddGraphics(4, UI::ComponentCondition::Focused);
+            selection.Content.SetDrawable(img);
+            selection.SetPosition(0, 0, UI::Dimension::Pixel);
+            selection.SetPositioning(selection.Absolute);
+            selection.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+            selection.SetTag(selection.SelectionTag);
+            selection.SetSize(10, 4*h/6+1);
+            selection.SetSizing(UI::ComponentTemplate::Fixed);
         }
         
         return temp;

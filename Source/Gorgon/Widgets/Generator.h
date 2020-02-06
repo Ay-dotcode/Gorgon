@@ -145,6 +145,8 @@ namespace Gorgon { namespace Widgets {
             
             Graphics::RGBA Edit    = {Graphics::Color::White};
             Graphics::RGBA Panel   = {Graphics::Color::Grey, Graphics::Color::Ivory, 0.5};
+            
+            Graphics::RGBA Selected= {Graphics::Color::Charcoal, 0.4};
         } Background;
         
         struct ForecolorInfo {
