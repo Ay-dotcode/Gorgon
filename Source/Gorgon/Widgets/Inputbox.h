@@ -33,7 +33,7 @@ namespace Gorgon { namespace Widgets {
         
         class Inputbox_base : public UI::ComponentStackWidget {
         protected:
-            Inputbox_base(const UI::Template &temp) : UI::ComponentStackWidget(temp) { }
+            Inputbox_base(const UI::Template &temp);
             
             //for keeping selection both in bytes and glyphs
             struct glyphbyte {
@@ -175,6 +175,12 @@ namespace Gorgon { namespace Widgets {
             }
             
             void focused() override;
+            
+            void mousedown(UI::ComponentTemplate::Tag tag, Geometry::Point location, Input::Mouse::Button button);
+            
+            void mouseup(UI::ComponentTemplate::Tag tag, Geometry::Point location, Input::Mouse::Button button);
+            
+            void mousemove(UI::ComponentTemplate::Tag tag, Geometry::Point location);
 
             
             std::string display;
@@ -182,6 +188,9 @@ namespace Gorgon { namespace Widgets {
             glyphbyte selstart = {0, 0};
             glyphbyte sellen   = {0, 0};
             int glyphcount = 0;
+            int pglyph;
+            
+            bool ismousedown = false;
         
             Input::KeyRepeater repeater;
             
@@ -217,94 +226,9 @@ namespace Gorgon { namespace Widgets {
         {
             display = validator.ToString(value);
             
-            stack.HandleMouse(Input::Mouse::Button::Left);
-            
-            stack.SetMouseDownEvent([this](auto, auto, auto btn) {
-                if(allowfocus() && btn == Input::Mouse::Button::Left)
-                    Focus();
-            });
-            
             updatevaluedisplay();
             updateselection();
 
-            repeater.Register(Input::Keyboard::Keycodes::Left);
-            repeater.Register(Input::Keyboard::Keycodes::Right);
-
-            repeater.SetRepeatOnPress(true);
-
-            repeater.Repeat.Register([this](Input::Key key) {
-                if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::Shift) {
-                    if(sellen.byte == allselected) {
-                        sellen.byte  = (int)display.size() - selstart.byte;
-                        sellen.glyph = glyphcount - selstart.glyph;
-                    }
-
-                    if(key == Input::Keyboard::Keycodes::Left) {
-                        if(sellen.glyph + selstart.glyph > 0) {
-                            sellen.glyph--;
-                            sellen.byte--;
-
-                            //if previous byte is unicode continuation point, go further before
-                            while((sellen.byte + selstart.byte) && (display[sellen.byte + selstart.byte] & 0b11000000) == 0b10000000)
-                                sellen.byte--;
-                        }
-
-                        updateselection();
-                    }
-                    else if(key == Input::Keyboard::Keycodes::Right) {
-                        if(sellen.glyph + selstart.glyph < glyphcount) {
-                            sellen.glyph++;
-                            sellen.byte += String::UTF8Bytes(display[selstart.byte + sellen.byte]);
-                        }
-
-                        updateselection();
-                    }
-                }
-                else if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::None) {
-                    if(sellen.byte == allselected) {
-                        sellen = {0, 0};
-
-                        if(key == Input::Keyboard::Keycodes::Left) {
-                            selstart = {0, 0};
-                        }
-                        else if(key == Input::Keyboard::Keycodes::Right) {
-                            selstart = {Length(), (int)display.size()};
-                        }
-
-                        updateselection();
-                    }
-                    else if(sellen.byte != 0) {
-                        if(key == Input::Keyboard::Keycodes::Left) {
-                            if(sellen.byte < 0) {
-                                selstart += sellen;
-
-                                moveselleft();
-                            }
-                        }
-                        else if(key == Input::Keyboard::Keycodes::Right) {
-                            if(sellen.byte > 0) {
-                                selstart += sellen;
-
-                                moveselright();
-                            }
-                        }
-
-                        sellen = {0, 0};
-
-                        updateselection();
-                    }
-                    else {
-                        if(key == Input::Keyboard::Keycodes::Left) {
-                            moveselleft();
-                            updateselection();
-                        }
-                        else if(key == Input::Keyboard::Keycodes::Right) {
-                            moveselright();
-                            updateselection();
-                        }
-                    }
-                }
-            });
         }
         
         /// Initializes the inputbox

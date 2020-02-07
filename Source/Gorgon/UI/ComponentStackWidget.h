@@ -48,11 +48,13 @@ namespace Gorgon { namespace UI {
         mutable ComponentStack stack;
 
 		virtual void focused() override {
+            WidgetBase::focused();
 			stack.AddCondition(ComponentCondition::Focused);
 			FocusEvent();
 		}
 
 		virtual void focuslost() override {
+            WidgetBase::focuslost();
 			stack.RemoveCondition(ComponentCondition::Focused);
 			FocusEvent();
 		}
