@@ -531,6 +531,7 @@ namespace Gorgon { namespace UI {
 
                 if(temp.GetDataEffect() == effect) {
                     updatereq = true;
+                    break;
                 }
             }
         }
@@ -841,10 +842,16 @@ namespace Gorgon { namespace UI {
             target->SetColor(color * c);
             if(th.IsReady()) {
                 if(valuetotext && (ind != -1 || !stringdata.count(temp.GetDataEffect())) ) {
-                    th.GetRenderer().Print(*target, valuetotext(temp.GetTag(), temp.GetDataEffect(), val), comp.location+offset, comp.size.Width);
+                    if(tagnowrap.count(temp.GetTag()))
+                        th.GetRenderer().PrintNoWrap(*target, valuetotext(temp.GetTag(), temp.GetDataEffect(), val), comp.location+offset, comp.size.Width);
+                    else
+                        th.GetRenderer().Print(*target, valuetotext(temp.GetTag(), temp.GetDataEffect(), val), comp.location+offset, comp.size.Width);
                 }
                 else if(stringdata.count(temp.GetDataEffect())) {
-                    th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
+                    if(tagnowrap.count(temp.GetTag()))
+                        th.GetRenderer().PrintNoWrap(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
+                    else
+                        th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
                 }
             }
             target->SetColor(1.f);
@@ -1836,6 +1843,9 @@ realign:
 
                         if(th.IsReady() && stringdata[temp.GetDataEffect()] != "") {
                             auto s = size.Width(maxsize.Width, emsize);
+                            
+                            if(tagnowrap.count(temp.GetTag()))
+                                s = 0;
 
                             if(s > 0)
                                 comp.size = th.GetRenderer().GetSize(stringdata[temp.GetDataEffect()], s);

@@ -116,13 +116,54 @@ namespace Gorgon { namespace Widgets {
                 return Focus();
             }
             
+            bool Done() override;
+            
             bool CharacterEvent(Gorgon::Char c) override;
             
             virtual bool KeyEvent(Input::Key key, float state) override;
             
             
-        protected:
+            /// Controls if the inputbox will be auto selected recieving focus
+            /// or right after the user is done with editing. Default is false.
+            void SetAutoSelectAll(const bool &value) {
+                autoselectall = value;
+                if(!IsFocused() && value) {
+                    SelectAll();
+                }
+            }
             
+            /// Controls if the inputbox will be auto selected recieving focus
+            /// or right after the user is done with editing. Default is false.
+            bool GetAutoSelectAll() const {
+                return autoselectall;
+            }
+            
+            /// When set to true, pressing enter on this widget will block default
+            /// button to recieve it. Default is false.
+            void SetBlockEnterKey(const bool &value) {
+                blockenter = value;
+            }
+            
+            /// When set to true, pressing enter on this widget will block default
+            /// button to recieve it. Default is false.
+            bool GetBlockEnterKey() const {
+                return blockenter;
+            }
+            
+            /// Controls if the inputbox will be auto selected recieving focus
+            /// or right after the user is done with editing. Default is false.
+            BooleanProperty< Inputbox_base, bool, 
+                            &Inputbox_base::GetAutoSelectAll, 
+                            &Inputbox_base::SetAutoSelectAll> AutoSelectAll;
+            
+            /// When set to true, pressing enter on this widget will block default
+            /// button to recieve it. Default is false.
+            BooleanProperty< Inputbox_base, bool, 
+                            &Inputbox_base::GetAutoSelectAll, 
+                            &Inputbox_base::SetAutoSelectAll> BlockEnterKey;
+                            
+            
+        protected:
                 
             /// updates the selection display
             void updateselection();
@@ -132,6 +173,8 @@ namespace Gorgon { namespace Widgets {
             
             /// updates the value display
             virtual void updatevaluedisplay(bool updatedisplay = true) = 0;
+            
+            virtual void changed() = 0;
             
             void moveselleft() {
                 if(selstart.glyph > 0) {
@@ -174,6 +217,8 @@ namespace Gorgon { namespace Widgets {
                 }
             }
             
+            void focuslost() override;
+            
             void focused() override;
             
             void mousedown(UI::ComponentTemplate::Tag tag, Geometry::Point location, Input::Mouse::Button button);
@@ -189,14 +234,57 @@ namespace Gorgon { namespace Widgets {
             glyphbyte sellen   = {0, 0};
             int glyphcount = 0;
             int pglyph;
+            int scrolloffset = 0;
             
             bool ismousedown = false;
+            bool autoselectall = false;
+            bool blockenter = false;
         
             Input::KeyRepeater repeater;
             
         };
     }
     /// @endcond
+    
+    /*template<class V_>
+    struct validatorextras {
+    protected:
+        void transfer(V_ &) {
+        }
+    };
+    
+    class StringValidator {
+    public:
+        
+        void SetMaxChars(int value) {
+            maxchars = value;
+        }
+        
+        
+    private:
+        int maxchars = 0;
+    };
+    
+    template<>
+    struct validatorextras<StringValidor> {
+        void SetMaxChars(int value) {
+            maxchars = value;
+        }
+        
+        int GetMaxChars() const {
+            return maxchars;
+        }
+    
+    protected:
+        void transfer(V_ &validator) {
+            validator.SetMaxChars(maxchars);
+        }
+        
+    private:
+        int maxchars = 0;
+    };
+    //derive from validator extras and class transfer
+    */
     
     /**
     * This class allows users to enter any value to an inputbox. This
@@ -264,9 +352,15 @@ namespace Gorgon { namespace Widgets {
         
         /// Fired after the value of the inputbox is changed. Parameter is the previous 
         /// value before the change. If the user is typing, this event will be fired
-        /// after typing stops for a set amount of time. ChangedEvent will be fired
-        /// immediately when a value is pasted to the box.
+        /// after the user hits enter or if enabled, after a set amount of time. This
+        /// function will be called even if the value is not actually changed since the
+        /// the last call.
         Event<Inputbox, const T_ &> ChangedEvent = Event<Inputbox, const T_ &>{this};
+        
+        /// Fired after the value of in the inputbox is edited. This event will be called
+        /// even if the user not done with editing. The value is updated before this event
+        /// is called.
+        Event<Inputbox> EditedEvent = Event<Inputbox>{this};
         
         
     protected:
@@ -290,6 +384,10 @@ namespace Gorgon { namespace Widgets {
         void updatevalue() override {
             value = validator.From(display);
             
+            EditedEvent();
+        }
+        
+        void changed() override {
             ChangedEvent(value);
         }
             

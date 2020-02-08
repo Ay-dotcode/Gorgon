@@ -103,9 +103,14 @@ namespace Gorgon { namespace UI {
         /// This function should be called whenever a character is received from
         /// operating system.
         virtual bool CharacterEvent(Char) { return false; }
+        
+        /// For widgets that supports it, this will trigger finalization the user
+        /// interaction. This may cause widget fire change event or reorganize
+        /// itself.
+        virtual bool Done() { return true; }
 
         /// This event will be fired when the widget receives or looses focus.
-        Event<WidgetBase> FocusEvent		 = Event<WidgetBase>{*this};
+        Event<WidgetBase> FocusEvent = Event<WidgetBase>{*this};
 
         /// This event will be fired when the area that the widget occupies on
         /// its container is changed. It will be fired when the widget is hidden

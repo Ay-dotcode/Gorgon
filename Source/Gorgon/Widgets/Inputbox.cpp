@@ -5,8 +5,12 @@
 
 namespace Gorgon { namespace Widgets { namespace internal {
     
-    Inputbox_base::Inputbox_base(const UI::Template& temp) : UI::ComponentStackWidget(temp) {
-            
+    Inputbox_base::Inputbox_base(const UI::Template& temp) : 
+        UI::ComponentStackWidget(temp),
+        AutoSelectAll(this),
+        BlockEnterKey(this)
+    {
+        stack.DisableTagWrap(UI::ComponentTemplate::ContentsTag);
         stack.HandleMouse(Input::Mouse::Button::Left);
             
         stack.SetMouseUpEvent([this](auto tag, auto location, auto button) { mouseup(tag, location, button); });
@@ -99,6 +103,19 @@ namespace Gorgon { namespace Widgets { namespace internal {
         });
     }
 
+    bool Inputbox_base::Done() { 
+        updatevaluedisplay();
+        
+        if(autoselectall) {
+            SelectAll();
+        }
+        else {
+            updateselection();
+        }    
+        
+        return true;
+    }
+
     bool Inputbox_base::KeyEvent(Input::Key key, float state) {
         namespace Keycodes = Input::Keyboard::Keycodes;
 
@@ -145,6 +162,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
                     }
 
                     return true;
+                    
                 case Keycodes::Delete:
                     if(sellen.byte == 0) {
                         if(selstart.glyph < glyphcount) {
@@ -164,6 +182,13 @@ namespace Gorgon { namespace Widgets { namespace internal {
                     }
 
                     return true;
+                    
+                case Keycodes::Enter:
+                    Done();
+                    
+                    changed();
+                    
+                    return blockenter;
                 }
             }
             else if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::Ctrl) {
@@ -279,14 +304,41 @@ namespace Gorgon { namespace Widgets { namespace internal {
         //std::cout<<selstart.glyph<<"\t"<<selstart.byte<<"\t|\t"<<sellen.glyph<<"\t"<<sellen.byte<<"\t|\t"<<glyphcount<<std::endl;
 
         Geometry::Point location;
+        auto textsize = renderer.GetSize(display);
+        
+        Geometry::Size targetsize;
+        int viewportidx = stack.IndexOfTag(UI::ComponentTemplate::ViewPortTag);
+        if(viewportidx == -1) {
+            targetsize = stack.TagBounds(UI::ComponentTemplate::ContentsTag).GetSize();
+        }
+        else {
+            targetsize = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize();
+        }
+        
+        if(targetsize.Width > textsize.Width) {
+            scrolloffset = 0;
+        }
         
         if(display == "") {
             location = {0, 0};
         }
         else {
-            location = renderer.GetPosition(display, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), pos).TopLeft();
+            location = renderer.GetPosition(display, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), pos, false).TopLeft();
         }
-        stack.SetTagLocation(UI::ComponentTemplate::CaretTag, location);
+        
+        //scroll
+        if(location.X < -scrolloffset) {
+            scrolloffset = -location.X;
+            
+            stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, {scrolloffset, 0});
+        }
+        else if(location.X > targetsize.Width - scrolloffset) {
+            scrolloffset = targetsize.Width - location.X;
+            
+            stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, {scrolloffset, 0});
+        }
+
+        stack.SetTagLocation(UI::ComponentTemplate::CaretTag, {location.X + scrolloffset, location.Y});
         
         if(stack.IndexOfTag(UI::ComponentTemplate::SelectionTag) != -1) {
             auto selbounds = stack.TagBounds(UI::ComponentTemplate::SelectionTag);
@@ -294,14 +346,14 @@ namespace Gorgon { namespace Widgets { namespace internal {
                 stack.SetTagSize(UI::ComponentTemplate::SelectionTag, {0, selbounds.Height()});
             }
             else {
-                auto srclocation = renderer.GetPosition(display, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), selstart.glyph).BottomLeft();
+                auto srclocation = renderer.GetPosition(display, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), selstart.glyph, false).BottomLeft();
                 
                 if(srclocation.X < location.X) {
-                    stack.SetTagLocation(UI::ComponentTemplate::SelectionTag, {srclocation.X, 0});
+                    stack.SetTagLocation(UI::ComponentTemplate::SelectionTag, {srclocation.X + scrolloffset, 0});
                     stack.SetTagSize(UI::ComponentTemplate::SelectionTag, {location.X - srclocation.X, selbounds.Height()});
                 }
                 else {
-                    stack.SetTagLocation(UI::ComponentTemplate::SelectionTag, {location.X, 0});
+                    stack.SetTagLocation(UI::ComponentTemplate::SelectionTag, {location.X + scrolloffset, 0});
                     stack.SetTagSize(UI::ComponentTemplate::SelectionTag, {srclocation.X - location.X, selbounds.Height()});
                 }
             }
@@ -312,9 +364,19 @@ namespace Gorgon { namespace Widgets { namespace internal {
     void Inputbox_base::focused() {
         UI::ComponentStackWidget::focused();
         
-        updateselection();
+        if(autoselectall)
+            SelectAll();
+        else
+            updateselection();
     }
 
+    
+
+    void Inputbox_base::focuslost() { 
+        UI::ComponentStackWidget::focuslost();
+        
+        Done();
+    }
 
     
     void Inputbox_base::mousedown(UI::ComponentTemplate::Tag, Geometry::Point location, Input::Mouse::Button button) { 
@@ -348,7 +410,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
         
         location -= bounds.TopLeft();
         
-        selstart.glyph = renderer.GetCharacterIndex(display, bounds.Width(), location);
+        selstart.glyph = renderer.GetCharacterIndex(display, bounds.Width(), location, false);
         selstart.byte  = 0;
         int g = selstart.glyph;
         pglyph = g;
@@ -392,7 +454,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
         
         location -= bounds.TopLeft();
         
-        int glyph = renderer.GetCharacterIndex(display, bounds.Width(), location);
+        int glyph = renderer.GetCharacterIndex(display, bounds.Width(), location, false);
         
         if(glyph == pglyph)
             return;
@@ -417,5 +479,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
             ismousedown = false;
         }
     }
-    
+
+
+
 } } }

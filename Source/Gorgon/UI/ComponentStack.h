@@ -326,6 +326,16 @@ namespace Gorgon { namespace UI {
         void RemoveTagSize(ComponentTemplate::Tag tag) {
             tagsizes.erase(tag);
         }
+        
+        /// Disables text wrapping on a specific tag, default is enabled.
+        void DisableTagWrap(ComponentTemplate::Tag tag) {
+            tagnowrap.insert(tag);
+        }
+
+        /// Enables text wrapping on a specific tag, default is enabled.
+        void EnableTagWrap(ComponentTemplate::Tag tag) {
+            tagnowrap.erase(tag);
+        }
 
 
         /// Set a fixed location for a tagged component
@@ -574,6 +584,7 @@ namespace Gorgon { namespace UI {
         std::map<const ComponentTemplate*, std::vector<Component>> repeated;
         std::map<ComponentTemplate::Tag, Geometry::Size> tagsizes;
         std::map<ComponentTemplate::Tag, Geometry::Point> taglocations;
+        std::set<ComponentTemplate::Tag> tagnowrap;
 
         Animation::Timer controller;
         

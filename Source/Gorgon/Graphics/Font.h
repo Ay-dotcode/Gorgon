@@ -134,7 +134,7 @@ namespace Gorgon { namespace Graphics {
         
         /// Notifies glyph renderer about a text to be rendered. If renderers require modification
         /// to their internal structures, they should mark them 
-        virtual void Prepare(const std::string &text) const { }
+        virtual void Prepare(const std::string &) const { }
     };
 
     /**
@@ -160,7 +160,7 @@ namespace Gorgon { namespace Graphics {
         void Print(TextureTarget &target, const std::string &text, int x, int y) const {
             print(target, text, {x, y});
         }
-                
+        
         void Print(TextureTarget &target, const std::string &text, Geometry::Point location, int w, TextAlignment align_override) const {
             print(target, text, {location, w, 0}, align_override);
         }
@@ -175,6 +175,22 @@ namespace Gorgon { namespace Graphics {
         
         void Print(TextureTarget &target, const std::string &text, int x, int y, int w) const {
             print(target, text, {x, y, w, 0});
+        }
+
+        void PrintNoWrap(TextureTarget &target, const std::string &text, Geometry::Point location, int w, TextAlignment align_override) const {
+            printnowrap(target, text, {location, w, 0}, align_override);
+        }
+        
+        void PrintNoWrap(TextureTarget &target, const std::string &text, Geometry::Point location, int w) const {
+            printnowrap(target, text, {location, w, 0});
+        }
+                
+        void PrintNoWrap(TextureTarget &target, const std::string &text, int x, int y, int w, TextAlignment align_override) const {
+            printnowrap(target, text, {x, y, w, 0}, align_override);
+        }
+        
+        void PrintNoWrap(TextureTarget &target, const std::string &text, int x, int y, int w) const {
+            printnowrap(target, text, {x, y, w, 0});
         }
 
         void Print(TextureTarget &target, const std::string &text) {
@@ -201,7 +217,7 @@ namespace Gorgon { namespace Graphics {
         virtual int GetCharacterIndex(const std::string &text, Geometry::Point location) const = 0;
         
         /// Returns the character index of glyph immediately after the given location. This function is Unicode aware.
-        virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location) const = 0;
+        virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location, bool wrap = true) const = 0;
         
         /// Returns the position of the glyph at the character index. If the character is not found, this will return
         /// std::numeric_limit<int>::min for x and y position. Size could be 0 if it cannot be determined.
@@ -209,7 +225,7 @@ namespace Gorgon { namespace Graphics {
         
         /// Returns the position of the glyph at the character index. If the character is not found, this will return
         /// std::numeric_limit<int>::min for x and y position. Size could be 0 if it cannot be determined.
-        virtual Geometry::Rectangle GetPosition(const std::string &text, int w, int index) const = 0;
+        virtual Geometry::Rectangle GetPosition(const std::string &text, int w, int index, bool wrap = true) const = 0;
 
     protected:
         virtual void print(TextureTarget &target, const std::string &text, Geometry::Point location) const = 0;
@@ -224,6 +240,16 @@ namespace Gorgon { namespace Graphics {
 
         virtual void print(TextureTarget &target, const std::string &text,
                         Geometry::Rectangle location) const = 0;
+
+        /// Should print the given text to the specified location and color. Width should be used to 
+        /// align the text. Automatic wrapping should not be used.
+        virtual void printnowrap(TextureTarget &target, const std::string &text,
+                        Geometry::Rectangle location) const = 0;
+
+        /// Should print the given text to the specified location and color. Width should be used to 
+        /// align the text. Automatic wrapping should not be used.
+        virtual void printnowrap(TextureTarget &target, const std::string &text,
+                        Geometry::Rectangle location, TextAlignment align_override) const = 0;
     };
     
     /**
@@ -267,6 +293,22 @@ namespace Gorgon { namespace Graphics {
             print(target, text, {x, y, w, 0}, color);
         }
 
+        void PrintNoWrap(TextureTarget &target, const std::string &text, Geometry::Point location, int w, TextAlignment align_override, RGBAf color) const {
+            printnowrap(target, text, {location, w, 0}, align_override, color);
+        }
+
+        void PrintNoWrap(TextureTarget &target, const std::string &text, Geometry::Point location, int w, RGBAf color) const {
+            printnowrap(target, text, {location, w, 0}, color);
+        }
+        
+        void PrintNoWrap(TextureTarget &target, const std::string &text, int x, int y, int w, TextAlignment align_override, RGBAf color) const {
+            printnowrap(target, text, {x, y, w, 0}, align_override, color);
+        }
+
+        void PrintNoWrap(TextureTarget &target, const std::string &text, int x, int y, int w, RGBAf color) const {
+            printnowrap(target, text, {x, y, w, 0}, color);
+        }
+
         /// Changes the default alignment. It is possible to override default alignment through TextRenderer interface.
         void SetDefaultAlignment(TextAlignment value) {
             defaultalign = value;
@@ -305,11 +347,11 @@ namespace Gorgon { namespace Graphics {
         
         virtual int GetCharacterIndex(const std::string &text, Geometry::Point location) const override;
         
-        virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location) const override;
+        virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location, bool wrap = true) const override;
         
         virtual Geometry::Rectangle GetPosition(const std::string& text, int index) const override;
         
-        virtual Geometry::Rectangle GetPosition(const std::string& text, int w, int index) const override;
+        virtual Geometry::Rectangle GetPosition(const std::string& text, int w, int index, bool wrap = true) const override;
         
     protected:
         virtual void print(TextureTarget &target, const std::string &text, Geometry::Point location) const override {
@@ -326,6 +368,14 @@ namespace Gorgon { namespace Graphics {
         virtual void print(TextureTarget &target, const std::string &text,
                         Geometry::Rectangle location, TextAlignment align, RGBAf color) const;
 
+        virtual void printnowrap(TextureTarget &target, const std::string &text,
+                        Geometry::Rectangle location, TextAlignment align, RGBAf color) const;
+
+        virtual void printnowrap(TextureTarget &target, const std::string &text,
+                        Geometry::Rectangle location, TextAlignment align) const override {
+            printnowrap(target, text, location, align, color);
+        }
+
         virtual void print(TextureTarget &target, const std::string &text,
                         Geometry::Rectangle location) const override {
             print(target, text, location, defaultalign);
@@ -334,6 +384,16 @@ namespace Gorgon { namespace Graphics {
         virtual void print(TextureTarget &target, const std::string &text,
                         Geometry::Rectangle location, RGBAf color) const {
             print(target, text, location, defaultalign, color);
+        }
+
+        virtual void printnowrap(TextureTarget &target, const std::string &text,
+                        Geometry::Rectangle location) const override {
+            printnowrap(target, text, location, defaultalign);
+        }
+
+        virtual void printnowrap(TextureTarget &target, const std::string &text,
+                        Geometry::Rectangle location, RGBAf color) const {
+            printnowrap(target, text, location, defaultalign, color);
         }
 
         /// Default alignment if none is specified
@@ -665,9 +725,9 @@ namespace Gorgon { namespace Graphics {
 
         virtual Geometry::Rectangle GetPosition(const std::string& text, int index) const override;
 
-        virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location) const override;
+        virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location, bool wrap = true) const override;
 
-        virtual Geometry::Rectangle GetPosition(const std::string &text, int w, int index) const override;
+        virtual Geometry::Rectangle GetPosition(const std::string &text, int w, int index, bool wrap = true) const override;
 
     protected:
         virtual void print(TextureTarget &target, const std::string &text, Geometry::Point location) const override;
@@ -676,9 +736,18 @@ namespace Gorgon { namespace Graphics {
             print(target, text, location, defaultalign);
         }
 
+        virtual void printnowrap(TextureTarget &target, const std::string &text,
+                        Geometry::Rectangle location, TextAlignment align) const override;
+
         virtual void print(TextureTarget &target, const std::string &text, 
                         Geometry::Rectangle location, TextAlignment align_override) const override;
 
+
+
+        virtual void printnowrap(TextureTarget &target, const std::string &text,
+                        Geometry::Rectangle location) const override {
+            printnowrap(target, text, location, defaultalign);
+        }
 
     private:
         //internal, float to facilitate shadow offset

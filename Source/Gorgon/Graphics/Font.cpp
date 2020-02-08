@@ -419,7 +419,7 @@ namespace Gorgon { namespace Graphics {
                     prev = g;
                 }
 
-                if(x + cur_spacing + prev_gw > width) {
+                if(width > 0 && x + cur_spacing + prev_gw > width) {
                     int totw = 0;
 
                     if(lastbreak == 0) {
@@ -566,7 +566,7 @@ namespace Gorgon { namespace Graphics {
                     prev = g;
                 }
                 
-                if(x + cur_spacing + prev_gw > width) {
+                if(width && x + cur_spacing + prev_gw > width) {
                     int totw = 0;
                     
                     if(lastbreak == 0) {
@@ -758,12 +758,12 @@ namespace Gorgon { namespace Graphics {
         return bestind;
     }
     
-    int BasicFont::GetCharacterIndex(const std::string& text, int w, Geometry::Point location) const { 
+    int BasicFont::GetCharacterIndex(const std::string& text, int width, Geometry::Point location, bool wrap) const { 
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
         auto y   = 0;
-        auto tot = w;
+        auto tot = wrap ? width : 0;
         int ind = 0;
         int bestind = 0;
         int ploc = 0;
@@ -775,10 +775,10 @@ namespace Gorgon { namespace Graphics {
                 auto off = 0;
 
                 if(defaultalign == TextAlignment::Center) {
-                    off += (int)std::round((tot - w) / 2.f);
+                    off += (int)std::round((width - w) / 2.f);
                 }
                 else if(defaultalign == TextAlignment::Right) {
-                    off += tot - w;
+                    off += width - w;
                 }
 
                 ind += skip;
@@ -874,12 +874,12 @@ namespace Gorgon { namespace Graphics {
         return {pos, size};
     }
 
-    Geometry::Rectangle BasicFont::GetPosition(const std::string& text, int w, int index) const { 
+    Geometry::Rectangle BasicFont::GetPosition(const std::string& text, int width, int index, bool wrap) const { 
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
         auto y   = 0;
-        auto tot = w;
+        auto tot = wrap ? width : 0;
         int ploc = 0;
 
         Geometry::Point pos{std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
@@ -897,10 +897,10 @@ namespace Gorgon { namespace Graphics {
                 auto off = 0;
 
                 if(defaultalign == TextAlignment::Center) {
-                    off += (int)std::round((tot - w) / 2.f);
+                    off += (int)std::round((width - w) / 2.f);
                 }
                 else if(defaultalign == TextAlignment::Right) {
-                    off += tot - w;
+                    off += width - w;
                 }
 
                 index -= skip;
@@ -1174,12 +1174,12 @@ namespace Gorgon { namespace Graphics {
         return {pos, size};
     }
     
-    int StyledRenderer::GetCharacterIndex(const std::string &text, int width, Geometry::Point location) const {
+    int StyledRenderer::GetCharacterIndex(const std::string &text, int width, Geometry::Point location, bool wrap) const {
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
         auto y      = 0;
-        int tot     = width;
+        int tot     = wrap ? width : 0;
         int bestind = 0;
         int ind = 0;
 
@@ -1212,7 +1212,7 @@ namespace Gorgon { namespace Graphics {
                         }
                     }
 
-                    auto target = tot - w;
+                    auto target = width - w;
                     int gs = 0; //glyph spacing
                     int spsp = 0; //space spacing
                     int extraspsp = 0; //extra spaced spaces
@@ -1259,15 +1259,15 @@ namespace Gorgon { namespace Graphics {
                             }
                         }
 
-                        w = tot - target;
+                        w = width - target;
                     }
                 }
 
                 if(defaultalign == TextAlignment::Center) {
-                    off += (int)std::round((tot - w) / 2.f);
+                    off += (int)std::round((width - w) / 2.f);
                 }
                 else if(defaultalign == TextAlignment::Right) {
-                    off += tot - w;
+                    off += width - w;
                 }
                 
                 ind += skip;
@@ -1314,12 +1314,12 @@ namespace Gorgon { namespace Graphics {
         return bestind;
     }
     
-    Geometry::Rectangle StyledRenderer::GetPosition(const std::string& text, int w, int index) const {
+    Geometry::Rectangle StyledRenderer::GetPosition(const std::string& text, int width, int index, bool wrap) const {
          if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
         auto y   = 0;
-        auto tot = w;
+        auto tot = wrap ? width : 0;
         int ploc = 0;
 
         Geometry::Point pos{std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
@@ -1359,7 +1359,7 @@ namespace Gorgon { namespace Graphics {
                         }
                     }
 
-                    auto target = tot - w;
+                    auto target = width - w;
                     int gs = 0; //glyph spacing
                     int spsp = 0; //space spacing
                     int extraspsp = 0; //extra spaced spaces
@@ -1406,15 +1406,15 @@ namespace Gorgon { namespace Graphics {
                             }
                         }
 
-                        w = tot - target;
+                        w = width - target;
                     }
                 }
 
                 if(defaultalign == TextAlignment::Center) {
-                    off += (int)std::round((tot - w) / 2.f);
+                    off += (int)std::round((width - w) / 2.f);
                 }
                 else if(defaultalign == TextAlignment::Right) {
-                    off += tot - w;
+                    off += width - w;
                 }
                 
                 index -= skip;
@@ -1457,9 +1457,9 @@ namespace Gorgon { namespace Graphics {
    }
 
     void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align_override) const {
-        if(renderer->NeedsPrepare())
+        /*if(renderer->NeedsPrepare())
             renderer->Prepare(text);
-        
+        */
         if(shadow.type == TextShadow::Flat) {
             print(target, text, Geometry::Rectanglef(location) + shadow.offset, align_override, shadow.color, shadow.color, shadow.color);
         }
@@ -1590,6 +1590,46 @@ namespace Gorgon { namespace Graphics {
             [&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
             std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth ? tabwidth : 16)
         );
+    }
+
+
+    void BasicFont::printnowrap(TextureTarget& target, const std::string& text, Geometry::Rectangle location, TextAlignment align, RGBAf color) const {
+        switch(align) {
+        case TextAlignment::Left:
+            print(target, text, {location.TopLeft(), 0, location.Height}, align, color);
+
+            break;
+
+        case TextAlignment::Center:
+            print(target, text, {location.X + location.Width / 2, location.Y, 0, location.Height}, align, color);
+
+            break;
+
+        case TextAlignment::Right:
+            print(target, text, {location.X + location.Width, location.Y, 0, location.Height}, align, color);
+
+            break;
+        }
+    }
+
+
+    void StyledRenderer::printnowrap(TextureTarget& target, const std::string& text, Geometry::Rectangle location, TextAlignment align) const {
+        switch(align) {
+        case TextAlignment::Left:
+            print(target, text, {location.TopLeft(), 0, location.Height}, align);
+
+            break;
+
+        case TextAlignment::Center:
+            print(target, text, {location.X + location.Width / 2, location.Y, 0, location.Height}, align);
+
+            break;
+
+        case TextAlignment::Right:
+            print(target, text, {location.X + location.Width, location.Y, 0, location.Height}, align);
+
+            break;
+        }
     }
 
 } }

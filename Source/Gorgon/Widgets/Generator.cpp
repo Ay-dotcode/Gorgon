@@ -75,6 +75,8 @@ namespace Gorgon { namespace Widgets {
         else {
             regularrenderer = &regular;
         }
+        
+        RegularFont.AlignRight();
     }
 
     SimpleGenerator::~SimpleGenerator() {
@@ -1079,10 +1081,12 @@ namespace Gorgon { namespace Widgets {
         {
             auto &bg_n = temp.AddContainer(0, UI::ComponentCondition::Always);
             bg_n.SetPadding(Spacing);
+            //bg_n.SetTag(UI::ComponentTemplate::ViewPortTag);
             bg_n.AddIndex(1);
             bg_n.AddIndex(2);
             bg_n.AddIndex(3);
             bg_n.AddIndex(4);
+            bg_n.SetClip(true); //!Shadow
             bg_n.Background.SetAnimation(NormalEditBorder());
         }
         
@@ -1125,9 +1129,8 @@ namespace Gorgon { namespace Widgets {
             txt_n.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             txt_n.SetDataEffect(UI::ComponentTemplate::Text);
             txt_n.SetTag(txt_n.ContentsTag);
-            txt_n.SetClip(true);
-            txt_n.SetSize(100, 100, UI::Dimension::Percent);
-            txt_n.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+            txt_n.SetSize({100, UI::Dimension::Percent}, RegularFont.GetGlyphRenderer().GetHeight()*5/6);
+            txt_n.SetSizing(UI::ComponentTemplate::Fixed);
         }
         
         {
