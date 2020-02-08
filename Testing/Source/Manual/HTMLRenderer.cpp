@@ -7,6 +7,7 @@
 #include "Gorgon/Graphics/Font.h"
 #include "Gorgon/Graphics/Layer.h"
 #include "Gorgon/Graphics/EmptyImage.h"
+#include "Gorgon/Graphics/BlankImage.h"
 
 #include "Gorgon/Graphics/HTMLRenderer.h"
 
