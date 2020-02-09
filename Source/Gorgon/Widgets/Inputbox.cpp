@@ -171,6 +171,8 @@ namespace Gorgon { namespace Widgets { namespace internal {
 
                             updatevalue();
                             updatevaluedisplay(false);
+                            
+                            updateselection();
                         }
                     }
                     else {

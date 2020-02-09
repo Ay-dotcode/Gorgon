@@ -8,6 +8,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 #include <stdexcept>
 #include <algorithm>
 #include "String/Exceptions.h"
@@ -188,17 +189,23 @@ namespace Gorgon {
 
         template <>
         inline float To<float>(const std::string &value) {
-            return (float)std::atof(value.c_str());
+            if(value=="") return 0;
+            
+            return (float)std::stof(value);
         }
 
         template <>
         inline double To<double>(const std::string &value) {
-            return std::atof(value.c_str());
+            if(value=="") return 0;
+            
+            return std::stod(value);
         }
 
         template <>
         inline long double To<long double>(const std::string &value) {
-            return std::atof(value.c_str());
+            if(value=="") return 0;
+            
+            return std::stold(value);
         }
         
         template <>
@@ -468,15 +475,37 @@ namespace Gorgon {
         }
         
         inline std::string From(float value) {
-            return std::to_string(value);
+            std::stringstream ss;
+            if(value > 1e7) {
+                ss<<std::fixed<<std::setprecision(0)<<value;
+            }
+            else {
+                ss<<std::setprecision(7)<<value;
+            }
+            
+            return ss.str();
         }
         
         inline std::string From(double value) {
-            return std::to_string(value);
+            std::stringstream ss;
+            if(value > 1e14) {
+                ss<<std::fixed<<std::setprecision(0)<<value;
+            }
+            else {
+                ss<<std::setprecision(14)<<value;
+            }
+            return ss.str();
         }
         
         inline std::string From(long double value) {
-            return std::to_string(value);
+            std::stringstream ss;
+            if(value > 1e28l) {
+                ss<<std::fixed<<std::setprecision(0)<<value;
+            }
+            else {
+                ss<<std::setprecision(28)<<value;
+            }
+            return ss.str();
         }
         
         inline std::string From(std::string value) {

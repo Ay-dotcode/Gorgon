@@ -8,7 +8,9 @@
 #include <Gorgon/Widgets/RadioButtons.h>
 #include <Gorgon/Widgets/Label.h>
 #include <Gorgon/Widgets/Panel.h>
-#include <Gorgon/Widgets/Inputbox.h>
+#include <Gorgon/Widgets/Textbox.h>
+#include <Gorgon/Widgets/Numberbox.h>
+#include <Gorgon/Widgets/GeometryBoxes.h>
 #include <Gorgon/UI/RadioControl.h>
 #include <Gorgon/UI/Organizers/List.h>
 #include <Gorgon/Graphics/BlankImage.h>
@@ -157,8 +159,8 @@ int main() {
     Widgets::Label error(errortemp, "This is an Error label");
     
     auto inptemp = gen.Inputbox();
-    Widgets::Inputbox<std::string, UI::EmptyValidator<std::string>, TextualProperty> inp(inptemp);
-    inp="aabb";
+    Widgets::Pointbox inp(inptemp);
+    inp={5, 2};
     pnl.Add(inp);
     inp.SelectAll();
     

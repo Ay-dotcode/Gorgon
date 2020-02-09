@@ -42,7 +42,7 @@ namespace Gorgon { namespace UI {
      * Accepts all input and tries to convert using in-library functions
      */
     template<class T_>
-    class EmptyValidator {
+    class ConversionValidator {
     public:
         using Type = T_;
         

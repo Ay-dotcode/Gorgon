@@ -10,6 +10,8 @@ SET(Local
 	
 	Inputbox.h
 	Inputbox.cpp
+	Textbox.h
+	Inputbox.h
 	
 	Label.h
 	Label.cpp

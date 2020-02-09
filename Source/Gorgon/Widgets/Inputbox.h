@@ -292,7 +292,7 @@ namespace Gorgon { namespace Widgets {
     * supply a validator to a specific inputbox. Inputbox is designed
     * for value objects that can be copied and serialized to string.
     */
-    template<class T_, class V_ = UI::EmptyValidator<T_>, template<class C_, class PT_, PT_(C_::*Getter_)() const, void(C_::*Setter_)(const PT_ &)> class P_ = Gorgon::Property>
+    template<class T_, class V_ = UI::ConversionValidator<T_>, template<class C_, class PT_, PT_(C_::*Getter_)() const, void(C_::*Setter_)(const PT_ &)> class P_ = Gorgon::Property>
     class Inputbox : 
         public internal::Inputbox_base, 
         public P_<internal::prophelper<Inputbox<T_, V_, P_>, T_>, T_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::get_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::set_> {
@@ -408,5 +408,6 @@ namespace Gorgon { namespace Widgets {
 
         struct internal::prophelper<Inputbox<T_, V_, P_>, T_> helper = internal::prophelper<Inputbox<T_, V_, P_>, T_>(this);
     };
+    
     
 } }
