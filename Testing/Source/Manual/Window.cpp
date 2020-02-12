@@ -222,6 +222,8 @@ int main() {
 
 		namespace Keycodes = Gorgon::Input::Keyboard::Keycodes;
         
+        std::cout<<Keycodes::GetName(key)<<": "<<state<<std::endl;
+        
 		if (!state && (key == Keycodes::Escape))
 			exit(0);
 
@@ -282,8 +284,6 @@ int main() {
 
 		else if(key == Keycodes::P)
 			wind.Pointers.Reset(ptrtoken);
-        
-        std::cout<<Keycodes::GetName(key)<<std::endl;
 
 		return false;
 	});

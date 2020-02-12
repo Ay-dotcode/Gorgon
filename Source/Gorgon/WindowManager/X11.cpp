@@ -51,6 +51,7 @@ namespace Gorgon {
             Geometry::Point ppoint = {INT_MIN, INT_MIN};
 			
 			std::map<Input::Key, ConsumableEvent<Window, Input::Key, bool>::Token> handlers;
+            std::set<KeySym> pressed;
             
             struct xdnddata {
                 bool filelist = false;
@@ -1179,6 +1180,8 @@ failsafe: //this should use X11 screen as monitor
 					EnterWindowMask |
 					LeaveWindowMask |
 					PropertyChangeMask |
+					OwnerGrabButtonMask |
+					
 					SubstructureRedirectMask //??
 		;
 		
@@ -1622,6 +1625,162 @@ failsafe: //this should use X11 screen as monitor
         }
         return keycode + Input::Keyboard::Keycodes::OSTransport;
     }
+    
+    void assertkeys(Window &wind, internal::windowdata *data) {
+        char keys[32];
+        XQueryKeymap(WindowManager::display, keys);
+        
+        for(auto it=data->pressed.begin(); it!=data->pressed.end(); ++it) {
+            auto key = *it;
+            KeyCode kc = XKeysymToKeycode(WindowManager::display, key);
+            if((keys[kc >> 3] & (1 << (kc & 7))) == 0) {
+                auto ggekey = mapx11key(key, kc);
+                it = data->pressed.erase(it);
+                
+                //modifiers
+                switch(key) {
+                    case XK_Shift_L:
+                    case XK_Shift_R:
+                        Input::Keyboard::CurrentModifier.Remove(Input::Keyboard::Modifier::Shift);
+                        break;
+                        
+                    case XK_Control_L:
+                    case XK_Control_R:
+                        Input::Keyboard::CurrentModifier.Remove(Input::Keyboard::Modifier::Ctrl);
+                        break;
+                        
+                    case XK_Alt_L:
+                        Input::Keyboard::CurrentModifier.Remove(Input::Keyboard::Modifier::Alt);
+                        break;
+                        
+                    case XK_Alt_R:
+                        Input::Keyboard::CurrentModifier.Remove(Input::Keyboard::Modifier::Alt);
+                        break;
+                        
+                    case XK_Super_L:
+                    case XK_Super_R:
+                        Input::Keyboard::CurrentModifier.Remove(Input::Keyboard::Modifier::Meta);
+                        break;
+                }
+                
+                
+                if(data->handlers.count(ggekey)>0 && data->handlers[ggekey] != wind.KeyEvent.EmptyToken) {
+                    wind.KeyEvent.FireFor(data->handlers[ggekey], ggekey, 0.f);
+                    data->handlers[ggekey] = wind.KeyEvent.EmptyToken;
+                }
+                else {
+                    wind.KeyEvent(ggekey, 0.f);
+                }
+            }
+        }
+    }
+        
+    std::string xeventname(XEvent &event) {
+        switch (event.type) {
+
+        case KeyPress: 
+            return "KeyPress";
+
+        case KeyRelease: 
+            return "KeyRelease";
+
+        case ButtonPress: 
+            return "ButtonPress";
+
+        case ButtonRelease: 
+            return "ButtonRelease";
+
+        case MotionNotify: 
+            return "MotionNotify";
+
+        case EnterNotify: 
+            return "EnterNotify";
+
+        case LeaveNotify: 
+            return "LeaveNotify";
+
+        case FocusIn: 
+            return "FocusIn";
+
+        case FocusOut: 
+            return "FocusOut";
+
+        case KeymapNotify: 
+            return "KeymapNotify";
+
+        case Expose: 
+            return "Expose";
+
+        case GraphicsExpose: 
+            return "GraphicsExpose";
+
+        case NoExpose: 
+            return "NoExpose";
+
+        case VisibilityNotify: 
+            return "VisibilityNotify";
+
+        case CreateNotify: 
+            return "CreateNotify";
+
+        case DestroyNotify: 
+            return "DestroyNotify";
+
+        case UnmapNotify: 
+            return "UnmapNotify";
+
+        case MapNotify: 
+            return "MapNotify";
+
+        case MapRequest: 
+            return "MapRequest";
+
+        case ReparentNotify: 
+            return "ReparentNotify";
+
+        case ConfigureNotify: 
+            return "ConfigureNotify";
+
+        case ConfigureRequest: 
+            return "ConfigureRequest";
+
+        case GravityNotify: 
+            return "GravityNotify";
+
+        case ResizeRequest: 
+            return "ResizeRequest";
+
+        case CirculateNotify: 
+            return "CirculateNotify";
+
+        case CirculateRequest: 
+            return "CirculateRequest";
+
+        case PropertyNotify: 
+            return "PropertyNotify";
+
+        case SelectionClear: 
+            return "SelectionClear";
+
+        case SelectionRequest: 
+            return "SelectionRequest";
+
+        case SelectionNotify: 
+            return "SelectionNotify";
+
+        case ColormapNotify: 
+            return "ColormapNotify";
+
+        case ClientMessage: 
+            return "ClientMessage";
+
+        case MappingNotify: 
+            return "MappingNotify";
+            
+        }
+        
+        return "Unknown";
+    }
 	
 	void Window::processmessages() {
 		XEvent event;
@@ -1633,6 +1792,8 @@ failsafe: //this should use X11 screen as monitor
 		while(XEventsQueued(WindowManager::display, QueuedAfterReading)) {
 			XNextEvent(WindowManager::display, &event);
 			KeySym key;
+            //std::cout<<"XEV: "<<xeventname(event)<<std::endl;
+            
 			switch(event.type) {
 				case ClientMessage: {
 					if (event.xclient.message_type == WindowManager::XA_PROTOCOLS
@@ -2085,32 +2246,18 @@ failsafe: //this should use X11 screen as monitor
                     break;
 					
 				case FocusIn: {
-                    XEvent nextevent;
-                    nextevent.type = 0;
-                    if(XEventsQueued(WindowManager::display, QueuedAfterReading))
-                        XPeekEvent(WindowManager::display, &nextevent);
-                
-                    if(nextevent.type == FocusOut) {
-                        XNextEvent(WindowManager::display, &nextevent);
-                    }
+                    assertkeys(*this, data);
                     
-                    if(!data->focused) {
-                        FocusedEvent();
-                        data->focused = true;
-                    }
+                    if(event.xfocus.mode == NotifyNormal) {
+                        if(!data->focused) {
+                            FocusedEvent();
+                            data->focused = true;
+                        }
+                    }                    
                 }
 				break;
 					
 				case FocusOut: {
-                    XEvent nextevent;
-                    nextevent.type = 0;
-                    if(XEventsQueued(WindowManager::display, QueuedAfterReading))
-                        XPeekEvent(WindowManager::display, &nextevent);
-                
-                    if(nextevent.type == FocusIn) {
-                        XNextEvent(WindowManager::display, &nextevent);
-                    }
-                    
                     if(data->focused) {
                         LostFocusEvent();
                         data->focused = false;
@@ -2137,6 +2284,8 @@ failsafe: //this should use X11 screen as monitor
 				case KeyPress: {
 					key=XLookupKeysym(&event.xkey,0);
 					
+                    data->pressed.insert(key);
+                    
 					//modifiers
 					switch(key) {
 						case XK_Shift_L:
@@ -2217,6 +2366,8 @@ failsafe: //this should use X11 screen as monitor
 						}
 					}
 					
+                    data->pressed.erase(key);
+					
 					//modifiers
 					switch(key) {
 						case XK_Shift_L:
@@ -2270,6 +2421,9 @@ failsafe: //this should use X11 screen as monitor
                     if(event.xbutton.button!=4 && event.xbutton.button!=5) {
                         mouse_up({event.xbutton.x, event.xbutton.y}, buttonfromx11(event.xbutton.button));
                     }
+                    break;
+                default:
+                    //std::cout<<xeventname(event)<<std::endl;
                     break;
 			}
 		}
