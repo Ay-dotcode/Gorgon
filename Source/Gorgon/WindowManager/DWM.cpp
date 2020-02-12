@@ -21,6 +21,8 @@
 #include "../Encoding/JPEG.h"
 #include "../IO/MemoryStream.h"
 
+#include <set>
+
 #include <windows.h>
 #include <ShlObj.h>
 #include "../Utils/ScopeGuard.h"
@@ -242,6 +244,7 @@ namespace Gorgon {
 			Geometry::Margin chrome = {0, 0};
 			bool pointerdisplayed = true;
 			bool min = false;
+			std::set<Input::Key> pressedkeys;
 
 			WindowManager::GGEDropTarget target;
 
@@ -498,7 +501,20 @@ namespace Gorgon {
 							parent->FocusedEvent();
 						}
 						else {
-							//ReleaseAll();
+							Input::Keyboard::CurrentModifier = Input::Keyboard::Modifier::None;
+
+							for(auto key : pressedkeys) {
+								if(handlers.count(key)>0 && handlers[key]!=ConsumableEvent<Window, Input::Key, bool>::EmptyToken) {
+									parent->KeyEvent.FireFor(handlers[key], key, false);
+									handlers[key] = ConsumableEvent<Window, Input::Key, bool>::EmptyToken;
+								}
+								else {
+									parent->KeyEvent(key, false);
+								}
+							}
+
+							pressedkeys.clear();
+
 							parent->LostFocusEvent();
 						}
 					} //Activate
@@ -744,6 +760,7 @@ namespace Gorgon {
 
 						//if the key is repeating, do not repeat keyevent.
 						if(!(lParam&1<<30)) {
+							pressedkeys.insert(key);
 							auto token=parent->KeyEvent(key, true);
 							if(token!=ConsumableEvent<Window, Input::Key, bool>::EmptyToken) {
 								handlers[key]=token;
@@ -774,6 +791,7 @@ namespace Gorgon {
 						}
 
 						Input::Keyboard::Key key = maposkey(wParam, lParam);
+						pressedkeys.erase(key);
 
 						if(handlers.count(key)>0 && handlers[key]!=ConsumableEvent<Window, Input::Key, bool>::EmptyToken) {
 							parent->KeyEvent.FireFor(handlers[key], key, false);
