@@ -2324,7 +2324,7 @@ failsafe: //this should use X11 screen as monitor
                         Input::Keyboard::Char c = keysym2ucs(key);
                         
                         if(c != 0xfffd) {
-                            if( (c>=0x20 || c == '\t' || c =='\n') && (c < 0x7f || c > 0x9f)) { //exclude c0 & c1 but keep enter and tab
+                            if( (c>=0x20 || c == '\t' || c ==13) && (c < 0x7f || c > 0x9f)) { //exclude c0 & c1 but keep tab
                                 CharacterEvent(c);
                             }
                         }

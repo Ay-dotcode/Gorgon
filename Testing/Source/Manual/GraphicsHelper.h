@@ -99,10 +99,10 @@ public:
 
 		sty.SetTabWidthInLetters(4);
 		sty.SetParagraphSpacing(4);
-		sty.Print(l,
+		/*sty.Print(l,
 				  helptext
 				  , 500, 10, wind.GetWidth()-505
-		);
+		);*/
 
 		wind.KeyEvent.Register([](Input::Key key, bool state) {
 			if(!state && (key == 27 || key == 65307))

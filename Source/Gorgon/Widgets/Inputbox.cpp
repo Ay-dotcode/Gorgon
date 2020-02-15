@@ -184,8 +184,9 @@ namespace Gorgon { namespace Widgets { namespace internal {
                     }
 
                     return true;
-                    
+
                 case Keycodes::Enter:
+                case Keycodes::Numpad_Enter:
                     Done();
                     
                     changed();
@@ -239,6 +240,9 @@ namespace Gorgon { namespace Widgets { namespace internal {
     }
 
     bool Inputbox_base::CharacterEvent(Char c) {
+        if(c == Input::Keyboard::Keycodes::Enter) 
+            return false;
+
         if(sellen.byte != 0) {
             eraseselected();
         }
@@ -319,6 +323,8 @@ namespace Gorgon { namespace Widgets { namespace internal {
         
         if(targetsize.Width > textsize.Width) {
             scrolloffset = 0;
+
+            stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, {scrolloffset, 0});
         }
         
         if(display == "") {
