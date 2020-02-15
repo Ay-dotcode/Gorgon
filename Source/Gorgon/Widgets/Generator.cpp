@@ -76,7 +76,7 @@ namespace Gorgon { namespace Widgets {
             regularrenderer = &regular;
         }
         
-        RegularFont.AlignRight();
+        //RegularFont.AlignRight();
     }
 
     SimpleGenerator::~SimpleGenerator() {

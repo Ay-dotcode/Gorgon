@@ -25,11 +25,63 @@ namespace Gorgon { namespace Widgets { namespace internal {
         
         repeater.Register(Input::Keyboard::Keycodes::Left);
         repeater.Register(Input::Keyboard::Keycodes::Right);
+        repeater.Register(Input::Keyboard::Keycodes::Backspace);
+        repeater.Register(Input::Keyboard::Keycodes::Delete);
 
         repeater.SetRepeatOnPress(true);
 
         repeater.Repeat.Register([this](Input::Key key) {
-            if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::Shift) {
+            namespace Keycodes = Input::Keyboard::Keycodes;
+            using Input::Keyboard::Modifier;
+
+            if(key == Keycodes::Backspace) {
+                if(sellen.byte == 0) {
+                    if(selstart.glyph != 0) {
+                        moveselleft();
+
+                        display.erase(selstart.byte, String::UTF8Bytes(display[selstart.byte]));
+                        glyphcount--;
+
+                        updatevalue();
+                        updatevaluedisplay(false);
+                        updateselection();
+                    }
+
+                }
+                else {
+                    eraseselected();
+
+                    updatevalue();
+                    updatevaluedisplay(false);
+                    updateselection();
+                }
+
+                return;
+            }
+            if(key == Keycodes::Delete) {
+                if(sellen.byte == 0) {
+                    if(selstart.glyph < glyphcount) {
+                        display.erase(selstart.byte, String::UTF8Bytes(display[selstart.byte]));
+                        glyphcount--;
+
+                        updatevalue();
+                        updatevaluedisplay(false);
+
+                        updateselection();
+                    }
+                }
+                else {
+                    eraseselected();
+
+                    updatevalue();
+                    updatevaluedisplay(false);
+                    updateselection();
+                }
+
+                return;
+            }
+
+            if(Input::Keyboard::CurrentModifier == Modifier::Shift) {
                 if(sellen.byte == allselected) {
                     sellen.byte  = (int)display.size() - selstart.byte;
                     sellen.glyph = glyphcount - selstart.glyph;
@@ -56,28 +108,29 @@ namespace Gorgon { namespace Widgets { namespace internal {
                     updateselection();
                 }
             }
-            else if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::None) {
+            else if(Input::Keyboard::CurrentModifier == Modifier::None) {
+
                 if(sellen.byte == allselected) {
                     sellen = {0, 0};
 
-                    if(key == Input::Keyboard::Keycodes::Left) {
+                    if(key == Keycodes::Left) {
                         selstart = {0, 0};
                     }
-                    else if(key == Input::Keyboard::Keycodes::Right) {
+                    else if(key == Keycodes::Right) {
                         selstart = {Length(), (int)display.size()};
                     }
 
                     updateselection();
                 }
                 else if(sellen.byte != 0) {
-                    if(key == Input::Keyboard::Keycodes::Left) {
+                    if(key == Keycodes::Left) {
                         if(sellen.byte < 0) {
                             selstart += sellen;
 
                             moveselleft();
                         }
                     }
-                    else if(key == Input::Keyboard::Keycodes::Right) {
+                    else if(key == Keycodes::Right) {
                         if(sellen.byte > 0) {
                             selstart += sellen;
 
@@ -90,11 +143,11 @@ namespace Gorgon { namespace Widgets { namespace internal {
                     updateselection();
                 }
                 else {
-                    if(key == Input::Keyboard::Keycodes::Left) {
+                    if(key == Keycodes::Left) {
                         moveselleft();
                         updateselection();
                     }
-                    else if(key == Input::Keyboard::Keycodes::Right) {
+                    else if(key == Keycodes::Right) {
                         moveselright();
                         updateselection();
                     }
@@ -118,12 +171,13 @@ namespace Gorgon { namespace Widgets { namespace internal {
 
     bool Inputbox_base::KeyEvent(Input::Key key, float state) {
         namespace Keycodes = Input::Keyboard::Keycodes;
+        using Input::Keyboard::Modifier;
 
         if(repeater.KeyEvent(key, state))
             return true;
 
         if(state) {
-            if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::None) {
+            if(Input::Keyboard::CurrentModifier == Modifier::None) {
                 switch(key) {
                 case Keycodes::Home:
                     selstart = {0, 0};
@@ -139,52 +193,6 @@ namespace Gorgon { namespace Widgets { namespace internal {
 
                     return true;
 
-                case Keycodes::Backspace:
-                    if(sellen.byte == 0) {
-                        if(selstart.glyph != 0) {
-                            moveselleft();
-
-                            display.erase(selstart.byte, String::UTF8Bytes(display[selstart.byte]));
-                            glyphcount--;
-
-                            updatevalue();
-                            updatevaluedisplay(false);
-                            updateselection();
-                        }
-
-                    }
-                    else {
-                        eraseselected();
-
-                        updatevalue();
-                        updatevaluedisplay(false);
-                        updateselection();
-                    }
-
-                    return true;
-                    
-                case Keycodes::Delete:
-                    if(sellen.byte == 0) {
-                        if(selstart.glyph < glyphcount) {
-                            display.erase(selstart.byte, String::UTF8Bytes(display[selstart.byte]));
-                            glyphcount--;
-
-                            updatevalue();
-                            updatevaluedisplay(false);
-                            
-                            updateselection();
-                        }
-                    }
-                    else {
-                        eraseselected();
-
-                        updatevalue();
-                        updatevaluedisplay(false);
-                        updateselection();
-                    }
-
-                    return true;
-
                 case Keycodes::Enter:
                 case Keycodes::Numpad_Enter:
                     Done();
@@ -194,7 +202,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
                     return blockenter;
                 }
             }
-            else if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::Ctrl) {
+            else if(Input::Keyboard::CurrentModifier == Modifier::Ctrl) {
                 switch(key) {
                 case Keycodes::A:
                     SelectAll();
@@ -263,7 +271,6 @@ namespace Gorgon { namespace Widgets { namespace internal {
 
         return true;
     }
-
 
     void Inputbox_base::updateselection() {
         //for font
@@ -378,14 +385,11 @@ namespace Gorgon { namespace Widgets { namespace internal {
             updateselection();
     }
 
-    
-
     void Inputbox_base::focuslost() { 
         UI::ComponentStackWidget::focuslost();
         
         Done();
     }
-
     
     void Inputbox_base::mousedown(UI::ComponentTemplate::Tag, Geometry::Point location, Input::Mouse::Button button) { 
         if(button != Input::Mouse::Button::Left) {
