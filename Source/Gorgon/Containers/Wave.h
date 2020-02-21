@@ -5,10 +5,6 @@
 #include <string>
 
 #include "../Types.h"
-#include "../Geometry/Point.h"
-#include "../Geometry/Size.h"
-#include "../Graphics/Color.h"
-
 #include "../Audio/Basic.h"
 #include "../IO/Stream.h"
 

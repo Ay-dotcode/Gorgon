@@ -32,6 +32,7 @@ namespace Gorgon {
 		friend internal::windowdata *WindowManager::internal::getdata(const Window&);
 		friend struct internal::windowdata;
         friend class Layer;
+        friend class windaccess;
 	public:
 		/// Fullscreen tag
 		static const struct FullscreenTag {
@@ -402,6 +403,18 @@ namespace Gorgon {
         /// If the mouse is moved more than this value during a mouse down/up sequence, it will not 
         /// register as a click operation. Default is 5px.
 		static int ClickThreshold;
+        
+        /// These functions are used internally
+		void mouse_down(Geometry::Point location, Input::Mouse::Button button);
+
+        /// These functions are used internally
+        void mouse_up(Geometry::Point location, Input::Mouse::Button button);
+
+        /// These functions are used internally
+        void mouse_event(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount);
+
+        /// These functions are used internally
+        void mouse_location();
 
 	protected:
 		Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool allowresize, bool visible);
@@ -411,10 +424,6 @@ namespace Gorgon {
 		
 		virtual void added(Layer &layer) override;
 		
-		void mouse_down(Geometry::Point location, Input::Mouse::Button button);
-		void mouse_up(Geometry::Point location, Input::Mouse::Button button);
-		void mouse_event(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount);
-        void mouse_location();
         
         void deleting(Layer *layer) { if(layer==down) down = MouseHandler{}; }
 

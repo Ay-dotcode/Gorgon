@@ -1,6 +1,8 @@
 /// @file
 
 #pragma once
+
+#include "../Types.h"
 #include "../Enum.h"
 
 namespace Gorgon { namespace Input {
