@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Geometry/Point.h"
+#include "Geometry/Size.h"
 #include "Geometry/Rectangle.h"
 #include "Containers/Collection.h"
 #include "Utils/Assert.h"

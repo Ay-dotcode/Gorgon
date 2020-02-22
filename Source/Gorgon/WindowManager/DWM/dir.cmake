@@ -1,0 +1,9 @@
+set(Local
+    DWM.h
+    DWM.cpp
+    Clipboard.cpp
+    DnD.cpp
+    Monitor.cpp
+    Input.cpp
+    Window.cpp
+)

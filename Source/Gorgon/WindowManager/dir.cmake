@@ -5,13 +5,11 @@ SET(Local
 
 IF(${WIN32})
 	LIST(APPEND Local
-		DWM.cpp
+		DWM
 	)
 ELSE()
 	LIST(APPEND Local
 		X11
-	)
-	
-	
+	)	
 ENDIF()
 
