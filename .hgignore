@@ -39,3 +39,7 @@ CMakeSettings.json
 .vs
 syntax: regexp
 .*\.kdev4(_.*)?
+
+# ccls/emacs related
+.ccls-cache
+compile_commands.json
