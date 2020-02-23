@@ -1,15 +1,15 @@
 //Copy Resources/Testing/Victoria to Testing/Runtime (in VS you need to fix running directory)
 #include <unordered_map>
 
-#include <Gorgon/Window.h>
 #include <Gorgon/Main.h>
-#include "Gorgon/Graphics/BitmapFont.h"
-#include "Gorgon/Graphics/Font.h"
-#include "Gorgon/Graphics/Layer.h"
-#include "Gorgon/Graphics/EmptyImage.h"
-#include "Gorgon/Graphics/BlankImage.h"
-
-#include "Gorgon/Graphics/HTMLRenderer.h"
+#include <Gorgon/Window.h>
+#include <Gorgon/Graphics/BitmapFont.h>
+#include <Gorgon/Graphics/BlankImage.h>
+#include <Gorgon/Graphics/EmptyImage.h>
+#include <Gorgon/Graphics/Font.h>
+#include <Gorgon/Graphics/FreeType.h>
+#include <Gorgon/Graphics/HTMLRenderer.h>
+#include <Gorgon/Graphics/Layer.h>
 
 using Gorgon::Window;
 using Gorgon::Geometry::Point;
@@ -17,101 +17,130 @@ namespace Graphics = Gorgon::Graphics;
 namespace Input = Gorgon::Input;
 namespace Resource = Gorgon::Resource;
 
+namespace
+{
+    class Printer
+    {
+    public:
+        Printer(Graphics::Layer& layer, Graphics::HTMLRenderer& renderer, int x, int y)
+            : layer(layer)
+            , renderer(renderer)
+            , x(x)
+            , y(y)
+            , bimg(2, 2)
+        {}
+
+        void Print(const std::string& str, int offset)
+        {
+            bimg.Draw(layer, x - 5, y + 7);
+            renderer.Print(layer, str, x, y);
+            y += offset;
+        }
+
+    private:
+        Graphics::Layer& layer;
+        Graphics::HTMLRenderer& renderer;
+        int x;
+        int y;
+        Graphics::BlankImage bimg;
+    };
+
+    /*
+    std::pair<Window, Graphics::Layer> init() {
+        Gorgon::Initialize("HTMLRenderer-test");
+        Graphics::HTMLRendererInternal::Logger.InitializeConsole();
+
+        Window wind({800, 600}, "htmlrenderertest", "HTML Renderer Test");
+        wind.DestroyedEvent.Register([]{
+            exit(0);
+        });
+
+        Graphics::Layer layer;
+        wind.Add(layer);
+
+        Graphics::Initialize();
+
+        return std::make_pair(std::move(wind), std::move(layer));
+    }
+    */
+}
+
 
 int main() {
+    /*
+    auto pair = init();
+    auto& wind = pair.first;
+    auto& layer = pair.second;
+    */
+
     Gorgon::Initialize("HTMLRenderer-test");
     Graphics::HTMLRendererInternal::Logger.InitializeConsole();
-    Window wind({800, 600}, "htmlrenderertest", "HTML Renderer Test");
-    Graphics::Initialize();
 
+    Window wind({800, 600}, "htmlrenderertest", "HTML Renderer Test");
     wind.DestroyedEvent.Register([]{
-         exit(0);
+        exit(0);
     });
 
     Graphics::Layer layer;
     wind.Add(layer);
 
-    Graphics::BitmapFont victoria, vicbold, vicboldlarge;
-    victoria.ImportFolder("Victoria");
-    vicbold.ImportFolder("VictoriaBold");
-    vicboldlarge.ImportFolder("VictoriaBoldLarge");
+    Graphics::Initialize();
+
+    Graphics::FreeType djv, djvbold, djvboldit;
+
+    const int fontsize = 12;
+    djv.LoadFile("dejavu/ttf/DejaVuSans.ttf");
+    djv.LoadMetrics(fontsize);
+
+    djvbold.LoadFile("dejavu/ttf//DejaVuSans-Bold.ttf");
+    djvbold.LoadMetrics(fontsize);
+
+    djvboldit.LoadFile("dejavu/ttf//DejaVuSans-BoldOblique.ttf");
+    djvboldit.LoadMetrics(fontsize);
 
     std::unordered_map<Graphics::FontFamily::Style,
                        Graphics::GlyphRenderer*,
                        Graphics::FontFamily::HashType> fonts;
 
-    fonts.emplace(Graphics::FontFamily::Style::Normal, &victoria);
-    fonts.emplace(Graphics::FontFamily::Style::Bold, &vicbold);
-    fonts.emplace(Graphics::FontFamily::Style::Large, &vicboldlarge);
+    fonts.emplace(Graphics::FontFamily::Style::Normal, &djv);
+    fonts.emplace(Graphics::FontFamily::Style::Bold, &djvbold);
+    fonts.emplace(Graphics::FontFamily::Style::Italic, &djvboldit);
 
-    std::string str = "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG";
-
-    Graphics::StyledRenderer renderer(victoria);
-    auto styledsize = renderer.GetSize(str);
-    auto styledsizewrap = renderer.GetSize(str, 300);
-    auto basicfontsize = victoria.GetSize(str);
-    auto basicfontsizewrap = victoria.GetSize(str, 50);
-
-    Graphics::BlankImage bimg;
-    bimg.SetColor(0.f);
-
-    bimg.SetSize(styledsize);
-    bimg.Draw(layer, 250, 250);
-    renderer.Print(layer, str, 250, 250);
-
-    bimg.SetSize(basicfontsize);
-    bimg.Draw(layer, 250, 270);
-    victoria.Print(layer, str, 250, 270);
-
-    /*
-    bimg.SetSize(styledsizewrap);
-    bimg.Draw(layer, 250, 400);
-    renderer.Print(layer, str, 250, 300, 50, 1.f);
-    */
-
-    bimg.SetSize(basicfontsizewrap);
-    bimg.Draw(layer, 250, 290);
-    victoria.Print(layer, str, 250, 290, 50, 1.f);
-
-    std::cout << "styled         : " << styledsize << std::endl;
-    std::cout << "styled wrap    : " << styledsizewrap << std::endl;
-    std::cout << "basic font     : " << basicfontsize << std::endl;
-    std::cout << "basic font wrap: " << basicfontsizewrap << std::endl;
     Graphics::FontFamily family(fonts);
 
-    /*
     Graphics::HTMLRenderer sty(family);
 
-    sty.Print(layer, "<b>Annie, I bet you are okay...<br>Ann</b>ie?\?\?</br><b>Woaaaaa wth?\?\?\?</b>", 250, 230);
+    Printer printer(layer, sty, 250, 50);
 
-    sty.Print(layer, "<u color=\"black\"><b>AAAA</b> BBBB</u> <strike color=\"green\"><strong>CCCC</strong> DDDD</strike>", 250, 270);
+    const int offset = 20;
 
-    sty.Print(layer, "<u>AAAA <strong>BBBB</strong></u> <strike>CCCC <strong>DDDD</strong></strike>", 250, 300);
+    printer.Print("the quick brown fox jumps over the lazy dog", offset);
+    printer.Print("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG", offset);
+    printer.Print("<b>the quick brown fox jumps over the lazy dog</b>", offset);
+    printer.Print("<i>THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG</i>", offset);
+    printer.Print("<strong>THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG</strong>", offset);
 
-    sty.Print(layer, "<strong>ABCDEFG</strong>", 250, 330);
-    sty.Print(layer, "<strike><strong>Annie, are you okay?</strong></strike>", 250, 360);
+    printer.Print("<b>Annie, I bet you are okay...<br>Ann</b>ie?\?\?</br><b>Are you okay, Annie?</b>", offset * 4);
 
-    sty.Print(layer, "<u><strike><strong>Are you okay Annie?</strong></strike></u>", 250, 390);
+    printer.Print("<u color=\"black\"><b>AAAA</b> BBBB</u> <strike color=\"green\"><strong>CCCC</strong> DDDD</strike>", offset);
+    printer.Print("<u>AAAA <strong>BBBB</strong></u> <strike>CCCC <strong>DDDD</strong></strike>", offset);
 
-    sty.Print(layer, "<strong>the </strong><u><strike>quick <strong>brown</strong></strike> fox</u> jumps over the lazy dog", 250, 420);
-    sty.Print(layer, "<u>the <strong>quick brown <strike>fox jumps</strong> over the lazy</u> dog</strike>", 250, 450);    
+    printer.Print("<u><strike><strong>Are you okay, Annie?</strong></strike></u>", offset);
+    printer.Print("<strong>the </strong><u><strike>quick <strong>brown</strong></strike> fox</u> jumps over the lazy dog", offset);
+    printer.Print("<u>the <strong>quick brown <strike>fox jumps</strong> over the lazy</u> dog</strike>", offset);
+    printer.Print("<u>the <strong>quick brown <strike>fox <br>jumps</strong> over the lazy</u> dog</strike>", offset);
 
-    sty.Print(layer, "<u>the <strong>quick brown <strike>fox <br>jumps</strong> over the lazy</u> dog</strike>", 250, 480);
+    /* BUG: the way glyphs are printed seem to depend on prior prints, perhaps we do not clear the state properly after each print?
+    printer.Print("the quick brown fox jumps over the lazy dog", offset);
+    printer.Print("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG", offset);
+    printer.Print("<b>the quick brown fox jumps over the lazy dog</b>", offset);
+    printer.Print("<i>THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG</i>", offset);
+    printer.Print("<strong>THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG</strong>", offset);
 
-    sty.Print(layer, "the quick brown fox jumps over the lazy dog", 250, 510);
-    sty.Print(layer, "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG", 250, 540);
+    printer.Print("<b>Annie, I bet you are okay...<br>Ann</b>ie?\?\?</br><b>Are you okay, Annie?</b>", offset * 4);
 
-    Graphics::BlankImage bimg(1, 1);
-    bimg.Draw(layer, 245, 270);
-    bimg.Draw(layer, 245, 300);
-    bimg.Draw(layer, 245, 330);
-    bimg.Draw(layer, 245, 360);
-    bimg.Draw(layer, 245, 390);
-    bimg.Draw(layer, 245, 420);
-    bimg.Draw(layer, 245, 450);
-    bimg.Draw(layer, 245, 480);
-    bimg.Draw(layer, 245, 510);
-    bimg.Draw(layer, 245, 540);
+    printer.Print("<u color=\"black\"><b>AAAA</b> BBBB</u> <strike color=\"green\"><strong>CCCC</strong> DDDD</strike>", offset);
+    printer.Print("<u>AAAA <strong>BBBB</strong></u> <strike>CCCC <strong>DDDD</strong></strike>", offset);
     */
 
     while(true){
