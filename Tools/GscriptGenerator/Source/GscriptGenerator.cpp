@@ -33,7 +33,6 @@ struct Element{
   void addData(std::string data){this->data=data;};
 };
 
-int Depth;
 std::string fileOut;
 int carryOn = 1;
 std::vector<Element> elements; 
@@ -42,22 +41,21 @@ std::string atr;
 std::string atrVal;
 std::string xmlData;
 bool accept;
+bool open ;
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 static void addToFile(std::string data){
     std::ofstream file;
-    //file.open(fileOut, std::ios_base::app);
-    //file << data;
+    file.open(fileOut, std::ios_base::app);
+    file << data;
     file.close();
 }
 
 //XML start function/////////////////////////////////////////////////////////////////////////////////////
 static void XMLCALL
 start(void *data, const XML_Char *el, const XML_Char **attr){
-    
     int i;
-    std::cout << "About to start\n"; 
     //Reading in the attributes of the element
     if(strcmp(el,"innernamespace")==0){
         for (i = 0; attr[i]; i += 2){
@@ -65,32 +63,42 @@ start(void *data, const XML_Char *el, const XML_Char **attr){
             atrVal = attr[i+1];
             Element e =  *new Element(el,attr[i],attr[i+1]);
             elements.push_back(e);
+            open = true;
         }
-         
+     
     }
     else if(strcmp(el,"highlight")==0){  
-        if(strcmp(attr[0],"class")==0 && strcmp(attr[1],"keywordtype")==0){
-                Element e =  *new Element(el,attr[0],attr[1]);
-                elements.push_back(e);
-            }
+        Element e;
+        if(strcmp(attr[0],"class")==0 && strcmp(attr[1],"keywordtype")==0)
+            e =  *new Element(el,attr[0],attr[1]);
+
+        else if(strcmp(attr[0],"class")==0 && strcmp(attr[1],"keywordflow")==0)
+            e =  *new Element(el,attr[0],attr[1]);
+            
+        elements.push_back(e);
+        open = true;
     }
-    else if(strcmp(el,"ref")==0){
-        std::cout << "Here is true\n";    
+    else if(strcmp(el,"ref")==0){   
         if(strcmp(attr[2],"kindref")==0 && strcmp(attr[3],"member")==0){
-                Element e =  *new Element(el,attr[2],attr[3]);
-                elements.push_back(e);
-            }
-         
+            Element e =  *new Element(el,attr[2],attr[3]);
+            elements.push_back(e);
+            open = true;
+        }
+        
     }
     else if(strcmp(el,"ref")==0){
-        std::cout << "Here is true\n";    
         if(strcmp(attr[2],"kindref")==0 && strcmp(attr[3],"compound")==0){
-                Element e =  *new Element(el,attr[2],attr[3]);
-                elements.push_back(e);
-            }
-         
+            Element e =  *new Element(el,attr[2],attr[3]);
+            elements.push_back(e);
+            open = true;
+        }
     }
-    Depth++;
+    else if(strcmp(el,"compoundname")==0){
+        Element e =  *new Element(el,"null","null");
+        elements.push_back(e);
+        open = true;
+    }
+    
     
 }
 
@@ -100,39 +108,22 @@ fileData(void *data, const char* content, int len){
     
     std::string temp;
     std::string info;
-        
     temp = content ;
     info = temp.substr(0,len);
-    xmlData = info;
-    
-    elements.back().data = info;
+    //xmlData = info;
+    std::cout << "|=>"<< info << "<=|";
+    std::string checkName;
+    if(open == 1){
+        elements.back().data = info;
+        open = 0;
+    }
 }
 
 //XML end function////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 static void XMLCALL 
 end(void *data, const XML_Char *el){
     
-    int i;
-    for (i = 0; i < Depth; i++){
-        addToFile(" ");
-    }
-    std::string info = xmlData + "...|";
-    info = info + "...";
-    std::cout << "\t\t\t " << info << "\n";
     
-    //elements.back().addData(info);
-    //elements.back().addData(info);
-    //if(strcmp(el,"compoundname")==0)
-    
-    if(strcmp(el,"compoundname")==0)
-        addToFile( "\n#include \"" + info + "\"\n");
-    
-    if(strcmp(el,"innernamespace")==0)
-        addToFile("namespace hell " + info + " {");
-    
-    
-    
-    Depth--;
 }
 
 //Main///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -146,10 +137,10 @@ int main(int argc, char* argv[]){
     fileOut = argv[1];
     std::ofstream file;
     file.open(fileOut);
-    //std::string fileName = "Time";
+    std::string fileName = "Time";
     
     file << "//Some Random Information";
-    file << "\n#include \"Gorgon/Scripting/Embedding.h\"\n#include \"Gorgon/Scripting/Reflection.h\"\n#include \"Gorgon/Scripting.h\"\n\n";
+    //file << "\n#include \"Gorgon/Scripting/Embedding.h\"\n#include \"Gorgon/Scripting/Reflection.h\"\n#include \"Gorgon/Scripting.h\"\n\n";
     file.close();
     
     //Start of parsing
@@ -208,19 +199,45 @@ int main(int argc, char* argv[]){
     }
     
     XML_ParserFree(p);
+    std::cout<< "Finished Parsing!!\n";
     
-    std::ofstream file1;
-    
-    std::string t1 = "\n\n namespace Gorgon { namespace Time {\n\tScripting::Library LibTime(\"Time\",\"Data types under Time.h module and their member functions and operators\");  \n\t}\n} \n ";
-    file1 << t1;
-    file1.close();
+    /////////////////////////////////Inside Cells///////////////////////////////////////////
     int count = 1;
     for(auto e : elements){
         std::cout << count++ << ")- "<< e.name << " -> " << e.atrName << " = " << e.value << " |DATA -> " << e.data << std::endl;
        
     }
     std::cout << "This is in cells\n\n";
+    /////////////////////////////////End////////////////////////////////////////////////////
     
-    std::cout<< "Finished Parsing!!\n";
+    
+    
+    ////////////////////////////////Creation of new Gscripting file/////////////////////////
+    std::ofstream file1;
+    file1.open(fileOut, std::ios::app);
+    std::string t1 = "\n#include \"Gorgon/Scripting/Embedding.h\"\n#include \"Gorgon/Scripting/Reflection.h\"\n#include \"Gorgon/Scripting.h\"\n\n";
+    bool initialized = false;
+    for(auto e : elements){
+        if(e.name == "compoundname"){
+            e.data.resize(e.data.size()-2);
+            t1 += "\n\n namespace Gorgon { namespace " + e.data + "{\n\t Scripting::Library Lib" + e.data + "(\"" + e.data + "\",\"Data types under " + e.data + " module and their member functions and operators\");\n\n\n" ;
+            initialized = true;
+        }
+        
+        if(initialized == true){
+            t1 += "\tvoid init_scripting() { ";
+            initialized = false;
+        }
+        
+    }
+    
+    //t1 += "\n\n namespace Gorgon { namespace Time {\n\t  \n\t}\n} \n ";
+    t1 += "\n\n\n\n\t}\n\n}  } \n ";
+    //Scripting::Library LibTime(\"Time\",\"Data types under Time.h module and their member functions and operators\");
+    file1 << t1;
+    file1.close();
+    
+    ////////////////////////////////End/////////////////////////////////////////////////////
+    
     return 0;
 }
