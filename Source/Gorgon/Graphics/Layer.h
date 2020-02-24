@@ -211,14 +211,28 @@ namespace Gorgon { namespace Graphics {
             
             if(parent==other.parent) return;
             
-            if(parent) {
-                parent->Remove(this);
+            auto myparent = parent;
+            auto otherparent = other.parent;
+            
+            int myind = -1;
+            int otherind = -1;
+            
+            if(myparent) {
+                myind = myparent->Children.FindLocation(this);
             }
-            if(other.parent) {
+            
+            if(otherparent) {
+                otherind = otherparent->Children.FindLocation(other);
+            }
+            
+            if(myparent) {
+                parent->Remove(this);
+                parent->Insert(other, myind);
+            }
+            
+            if(otherparent) {
                 other.parent->Remove(other);
-                other.parent->Add(this);
-                if(parent)
-                    parent->Add(other);
+                other.parent->Insert(this, otherind);
             }
         }
 

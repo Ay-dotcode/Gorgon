@@ -252,11 +252,12 @@ namespace Gorgon { namespace WindowManager {
         char keys[32];
         XQueryKeymap(WindowManager::display, keys);
         
-        for(auto it=data->pressed.begin(); it!=data->pressed.end(); ++it) {
+        for(auto it=data->pressed.begin(); it!=data->pressed.end();) {
             auto key = *it;
             KeyCode kc = XKeysymToKeycode(WindowManager::display, key);
             if((keys[kc >> 3] & (1 << (kc & 7))) == 0) {
                 auto ggekey = mapx11key(key, kc);
+                
                 it = data->pressed.erase(it);
                 
                 //modifiers
@@ -293,6 +294,9 @@ namespace Gorgon { namespace WindowManager {
                 else {
                     wind.KeyEvent(ggekey, 0.f);
                 }
+            }
+            else {
+                ++it;
             }
         }
     }
