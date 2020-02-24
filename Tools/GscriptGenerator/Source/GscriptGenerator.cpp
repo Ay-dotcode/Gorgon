@@ -69,14 +69,22 @@ start(void *data, const XML_Char *el, const XML_Char **attr){
     }
     else if(strcmp(el,"highlight")==0){  
         Element e;
-        if(strcmp(attr[0],"class")==0 && strcmp(attr[1],"keywordtype")==0)
+        if(strcmp(attr[0],"class")==0 && strcmp(attr[1],"keywordtype")==0){
             e =  *new Element(el,attr[0],attr[1]);
-
-        else if(strcmp(attr[0],"class")==0 && strcmp(attr[1],"keywordflow")==0)
+            elements.push_back(e);
+            open = true;
+        }
+        else if(strcmp(attr[0],"class")==0 && strcmp(attr[1],"keywordflow")==0){
             e =  *new Element(el,attr[0],attr[1]);
-            
-        elements.push_back(e);
-        open = true;
+            elements.push_back(e);
+            open = true;
+        }
+        else if(strcmp(attr[0],"class")==0 && strcmp(attr[1],"keyword")==0){
+            e =  *new Element(el,attr[0],attr[1]);
+            elements.push_back(e);
+            open = true;
+        }    
+        
     }
     else if(strcmp(el,"ref")==0){   
         if(strcmp(attr[2],"kindref")==0 && strcmp(attr[3],"member")==0){
@@ -220,7 +228,7 @@ int main(int argc, char* argv[]){
     for(auto e : elements){
         if(e.name == "compoundname"){
             e.data.resize(e.data.size()-2);
-            t1 += "\n\n namespace Gorgon { namespace " + e.data + "{\n\t Scripting::Library Lib" + e.data + "(\"" + e.data + "\",\"Data types under " + e.data + " module and their member functions and operators\");\n\n\n" ;
+            t1 += "\n\n namespace Gorgon { namespace " + e.data + "{\n\t Scripting::Library Lib" + e.data + "(\"" + e.data + "\",\"Data types under " + e.data + " module and their member functions and operators\");\n\n" ;
             initialized = true;
         }
         
@@ -232,7 +240,7 @@ int main(int argc, char* argv[]){
     }
     
     //t1 += "\n\n namespace Gorgon { namespace Time {\n\t  \n\t}\n} \n ";
-    t1 += "\n\n\n\n\t}\n\n}  } \n ";
+    t1 += "\n\n\n\t}\n\n}  } \n ";
     //Scripting::Library LibTime(\"Time\",\"Data types under Time.h module and their member functions and operators\");
     file1 << t1;
     file1.close();
