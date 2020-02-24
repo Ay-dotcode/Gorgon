@@ -153,13 +153,13 @@ namespace Gorgon {
             }
             
             if(myparent) {
-                parent->Remove(this);
-                parent->Insert(other, myind);
+                myparent->Remove(this);
+                myparent->Insert(other, myind);
             }
             
             if(otherparent) {
-                other.parent->Remove(other);
-                other.parent->Insert(this, otherind);
+                otherparent->Remove(other);
+                otherparent->Insert(this, otherind);
             }
 		}
 

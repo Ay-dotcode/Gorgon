@@ -16,6 +16,10 @@ long keysym2ucs(KeySym keysym)
     /* also check for directly encoded 24-bit UCS characters */
     if ((keysym & 0xff000000) == 0x01000000)
         return keysym & 0x00ffffff;
+    
+    /* checkfor numpad */
+    if (keysym > 0xff80 && keysym < 0xffb9)
+        return keysym - 0xff80;
 
     /* binary search in table */
     while (max >= min) {
