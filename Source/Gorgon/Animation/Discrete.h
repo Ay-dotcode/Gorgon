@@ -19,6 +19,8 @@ namespace Gorgon { namespace Animation {
 	/// This is the base class for a single frame in a discreet animation
 	class Frame {
 	public:
+        virtual ~Frame() { }
+        
 		/// Returns the duration of this frame
 		virtual unsigned GetDuration() const = 0;
 

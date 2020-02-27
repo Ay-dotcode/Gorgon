@@ -67,4 +67,16 @@ namespace Gorgon { namespace UI {
             boundschanged(); 
     }
     
+
+    void WidgetBase::focuslost() {
+        focus = false;
+        FocusEvent();
+    }
+
+
+    void WidgetBase::focused() {
+        focus = true;
+        FocusEvent();
+    }
+
 } }
