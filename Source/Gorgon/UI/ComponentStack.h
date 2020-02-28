@@ -591,6 +591,7 @@ namespace Gorgon { namespace UI {
         Graphics::Layer base;
         Input::Layer mouse;
         Input::Mouse::Button mousebuttonaccepted;
+        Geometry::Point downlocation;
         
         std::function<void(ComponentTemplate::Tag, Geometry::Point, Input::Mouse::Button)> down_fn;
         std::function<void(ComponentTemplate::Tag, Geometry::Point, Input::Mouse::Button)> click_fn;

@@ -6,6 +6,8 @@
 #include "GL/FrameBuffer.h"
 #include "Input/DnD.h"
 
+#include "Config.h"
+
 
 namespace Gorgon {
 
@@ -124,7 +126,7 @@ namespace Gorgon {
 					down.Clear();
 			}
 			else {
-				if(mousedownlocation.Distance(location) <= ClickThreshold) {
+				if(mousedownlocation.Distance(location) <= WindowManager::ClickThreshold) {
 					MouseHandler handler;
 					Layer::propagate_mouseevent(Input::Mouse::EventType::Click, location, button, 1, handler);
 				}
@@ -205,6 +207,4 @@ namespace Gorgon {
         iswmpointer = true;
         ShowPointer();
     }
-
-	int Window::ClickThreshold = 5;
 }

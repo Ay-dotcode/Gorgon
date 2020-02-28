@@ -18,6 +18,8 @@ SET(Local
 	Utils
 	WindowManager
 	Any.h
+	Config.h
+	Config.cpp
 	Enum.h
 	Event.h
 	DataExchange.h
