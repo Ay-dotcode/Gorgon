@@ -1842,7 +1842,7 @@ namespace Scripting {
 						}
 					),
 			   
-					new MappedOperator("and", "Combines two enumeration entries", 
+					new MappedOperator("with", "Combines two enumeration entries", 
 						this, this, this, 
 						[](E_ l, E_ r) -> E_ {
 							return (E_)((unsigned)l|(unsigned)r);
