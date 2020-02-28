@@ -816,6 +816,8 @@ constexpr codepair keysymtab[] = {
   { 0x13bd, 0x0153 }, /*                          oe œ LATIN SMALL LIGATURE OE */
   { 0x13be, 0x0178 }, /*                  Ydiaeresis Ÿ LATIN CAPITAL LETTER Y WITH DIAERESIS */
   { 0x20ac, 0x20ac }, /*                    EuroSign € EURO SIGN */
+  { 0xff09, 0x0009 }, /*                    Tab */
+  { 0xff0d, 0x000d }, /*                    Enter */
 };
 
 long keysym2ucs(KeySym keysym);

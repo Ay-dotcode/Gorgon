@@ -7,6 +7,10 @@ long keysym2ucs(KeySym keysym)
     int min = 0;
     int max = sizeof(keysymtab) / sizeof(struct codepair) - 1;
     int mid;
+    
+    if(keysym == 13 || keysym == 10) {
+        return keysym;
+    }
 
     /* first check for Latin-1 characters (1:1 mapping) */
     if ((keysym >= 0x0020 && keysym <= 0x007e) ||
@@ -379,7 +383,7 @@ namespace Gorgon { namespace WindowManager {
                     Input::Keyboard::Char c = keysym2ucs(key);
                     
                     if(c != 0xfffd) {
-                        if( (c>=0x20 || c == '\t' || c =='\n') && (c < 0x7f || c > 0x9f)) { //exclude c0 & c1 but keep enter and tab
+                        if( (c>=0x20 || c == '\t' || c ==13) && (c < 0x7f || c > 0x9f)) { //exclude c0 & c1 but keep enter and tab
                             wind.CharacterEvent(c);
                         }
                     }
