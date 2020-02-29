@@ -22,6 +22,8 @@ namespace Gorgon { namespace Graphics {
         }
 
 		void DeleteAnimation() const override { }
+		
+		virtual void SetController(Gorgon::Animation::ControllerBase &) override { }
 
 		virtual bool Progress(unsigned &leftover) override {
 			return true;

@@ -41,6 +41,8 @@ namespace Gorgon { namespace Graphics {
 		virtual void DeleteAnimation() const override {
 		}
 
+		virtual void SetController(Gorgon::Animation::ControllerBase &) override { }
+		
 		/// Returns the color of this blank image
 		RGBAf GetColor() const {
 			return color;

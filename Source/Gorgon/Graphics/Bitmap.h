@@ -144,6 +144,9 @@ namespace Gorgon { namespace Graphics {
 
 		/// if used as animation, this object will not be deleted
 		virtual void DeleteAnimation() const override { }
+		
+		/// Bitmap cannot be controlled
+		virtual void SetController(Gorgon::Animation::ControllerBase &) override { }
 
 		/// Releases the image data. The image data returned by this function is moved out. Data is passed by value, thus
 		/// if it is not moved into a Containers::Image, it will be destroyed.
