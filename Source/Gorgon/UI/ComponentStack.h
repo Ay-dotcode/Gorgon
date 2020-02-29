@@ -16,10 +16,7 @@ namespace Gorgon { namespace UI {
         /// should handle instantiation as well
         explicit ComponentStack(const Template &temp, Geometry::Size size);
         
-        ComponentStack(ComponentStack &&) = default;
-        ComponentStack &operator =(ComponentStack &&) = default;
-        
-        ~ComponentStack() {
+        virtual ~ComponentStack() {
             for(auto &p : storage) {
                 delete p.second;
             }

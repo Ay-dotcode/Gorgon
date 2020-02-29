@@ -48,6 +48,8 @@ namespace Gorgon { namespace Widgets {
                             break;
                         }
                     }
+                    
+                    delete buf;
                 }
             }
             catch(...) {

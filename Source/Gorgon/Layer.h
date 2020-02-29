@@ -110,7 +110,8 @@ namespace Gorgon {
 			if(parent)
 				parent->Remove(this);
 			
-			children.Clear();
+            while(children.GetSize())
+                Remove(*children.First());
 			
 			Swap(other);
 			
@@ -327,6 +328,16 @@ namespace Gorgon {
 		/// Resizes the layer to the given size
 		virtual void Resize(int width, int height) {
 			bounds.Resize({width, height});
+		}
+
+		/// Resizes the layer to the given size
+		void SetWidth(int width) {
+			bounds.SetWidth(width);
+		}
+
+		/// Resizes the layer to the given size
+		void SetHeight(int height) {
+			bounds.SetHeight(height);
 		}
 
 		/// Sets the boundaries of this layer.

@@ -338,6 +338,10 @@ namespace internal {
 
     
     void Window::Close() {
+        //already closed
+        if(data->handle == 0)
+            return;
+        
         XDestroyWindow(WindowManager::display, data->handle);
         data->handle = 0;
         
