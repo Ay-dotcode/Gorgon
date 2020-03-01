@@ -7,113 +7,90 @@
 
 namespace Gorgon { namespace Widgets {
 
-	/**
-	 * Generators create templates for widgets. First setup a generator, then
-     * call specific generation functions.
-	 */
+    /**
+    * Generators create templates for widgets. First setup a generator, then
+    * call specific generation functions.
+    */
     class Generator {
     public:
-		virtual ~Generator() { }
+        virtual ~Generator() { }
+        
+        /// Generates a button template
+        virtual UI::Template Button() = 0;
         
         /// Generates a button template with the given default size.
-        virtual UI::Template Button(Geometry::Size size) = 0;
+        virtual UI::Template IconButton(Geometry::Size iconsize) = 0;
         
-        /// Generates a button template with the given default size.
-        virtual UI::Template IconButton(Geometry::Size size) = 0;
         
-        virtual UI::Template Checkbox(Geometry::Size size) = 0;
+        virtual UI::Template Checkbox() = 0;
         
-        virtual UI::Template RadioButton(Geometry::Size size) = 0;
+        virtual UI::Template RadioButton() = 0;
         
-        virtual UI::Template Label(Geometry::Size size) = 0;
-		
-        virtual UI::Template ErrorLabel(Geometry::Size size) = 0;
         
-        virtual UI::Template Panel(Geometry::Size size) = 0;
+        virtual UI::Template Label() = 0;
         
-        virtual UI::Template TopPanel(Geometry::Size size) = 0;
+        virtual UI::Template ErrorLabel() = 0;
         
-        virtual UI::Template LeftPanel(Geometry::Size size) = 0;
         
-        virtual UI::Template BottomPanel(Geometry::Size size) = 0;
+        virtual UI::Template Panel() = 0;
         
-        virtual UI::Template RightPanel(Geometry::Size size) = 0;
+        virtual UI::Template TopPanel() = 0;
         
-        virtual UI::Template BlankPanel(Geometry::Size size) = 0;
+        virtual UI::Template LeftPanel() = 0;
         
-        virtual UI::Template Inputbox(Geometry::Size size) = 0;
+        virtual UI::Template BottomPanel() = 0;
+        
+        virtual UI::Template RightPanel() = 0;
+        
+        virtual UI::Template BlankPanel() = 0;
+        
+        
+        virtual UI::Template Inputbox() = 0;
     };
     
     /**
-     * This class generates very simple templates. Hover and down states are marked
-     * with simple fore and background color changes. For background, hover and down
-     * state colors are blended with the regular color. Font is shared, thus any
-     * changes to it will effect existing templates too.
-     */
-	class SimpleGenerator : public Generator {
-	public:
-		/// Initializes the generator
-		explicit SimpleGenerator(int fontsize = 14, std::string fontname = "");
+    * This class generates very simple templates. Hover and down states are marked
+    * with simple fore and background color changes. For background, hover and down
+    * state colors are blended with the regular color. Font is shared, thus any
+    * changes to it will effect existing templates too.
+    */
+    class SimpleGenerator : public Generator {
+    public:
+        
+        /// Initializes the generator
+        explicit SimpleGenerator(int fontsize = 14, std::string fontname = "");
 
         
         virtual ~SimpleGenerator();
         
-        virtual UI::Template Button(
-            Geometry::Size size = {70, 32}
-        ) override;
+        virtual UI::Template Button() override;
+        
+        virtual UI::Template IconButton(Geometry::Size iconsize = {16, 16}) override;
         
         
-        virtual UI::Template IconButton(
-            Geometry::Size size = {24, 24}
-        ) override;
+        virtual UI::Template Checkbox() override;
         
+        virtual UI::Template RadioButton() override;
+        
+        
+        virtual UI::Template Label() override;
 
-        virtual UI::Template Checkbox(
-            Geometry::Size size = {166, 24}
-        ) override;
+        virtual UI::Template ErrorLabel() override;
         
-        virtual UI::Template RadioButton(
-            Geometry::Size size = {155, 24}
-        ) override;
+        virtual UI::Template BlankPanel() override;
         
-        virtual UI::Template Label(
-            Geometry::Size size = {155, 24}
-        ) override;
-
-
-		virtual UI::Template ErrorLabel(
-			Geometry::Size size = { 155, 24 }
-		) override;
-		
-	
+        virtual UI::Template Panel() override;
         
-        virtual UI::Template BlankPanel(
-            Geometry::Size size = {155, 300}
-        ) override;
+        virtual UI::Template TopPanel() override;
         
-        virtual UI::Template Panel(
-            Geometry::Size size = {155, 300}
-        ) override;
+        virtual UI::Template LeftPanel() override;
         
-        virtual UI::Template TopPanel(
-            Geometry::Size size = {155, 300}
-        ) override;
+        virtual UI::Template RightPanel() override;
         
-        virtual UI::Template LeftPanel(
-            Geometry::Size size = {155, 300}
-        ) override;
+        virtual UI::Template BottomPanel() override;
         
-        virtual UI::Template RightPanel(
-            Geometry::Size size = {155, 300}
-        ) override;
         
-        virtual UI::Template BottomPanel(
-            Geometry::Size size = {155, 300}
-        ) override;
-        
-        virtual UI::Template Inputbox(
-            Geometry::Size size = {166, 32}
-        ) override;
+        virtual UI::Template Inputbox() override;
         
         Graphics::BitmapRectangleProvider &NormalBorder();
         Graphics::BitmapRectangleProvider &PanelBorder();
@@ -121,16 +98,20 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider &HoverBorder();
         Graphics::BitmapRectangleProvider &DownBorder();
         
-		int Spacing      = 4;
-		int ObjectHeight = 15;
-		int ObjectBorder = 2;
+        int Spacing      = 4;
+        int ObjectHeight = 15;
+        int ObjectBorder = 2;
+        
+        /// This function will update default widget dimensions. Call this function after
+        /// setting up or changing borders, font size
+        void UpdateDimensions();
 
-		Graphics::StyledRenderer RegularFont;
+        Graphics::StyledRenderer RegularFont;
 
-		struct FocusInfo {
-			Graphics::RGBA	Color = {Graphics::Color::Charcoal, 0.7};
-			int				Width = 1;
-		} Focus;
+        struct FocusInfo {
+            Graphics::RGBA  Color = {Graphics::Color::Charcoal, 0.7};
+            int             Width = 1;
+        } Focus;
         
         struct BorderInfo {
             int Width             = 2;
@@ -153,17 +134,26 @@ namespace Gorgon { namespace Widgets {
             Graphics::RGBA Regular = Graphics::Color::Charcoal;
             Graphics::RGBA Hover   = Graphics::Color::Black;
             Graphics::RGBA Down    = Graphics::Color::Black;
-			Graphics::RGBA Error   = Graphics::Color::Red;
+            Graphics::RGBA Error   = Graphics::Color::Red;
         } Forecolor;
-		
-		
+        
+        
+        /// This is the width of a one cell widget
+        int WidgetWidth = 64;
+        
+        /// This is the height of a bordered widget
+        int BordedWidgetHeight = 32;
+        
+        /// This is the height of a non-bordered widget
+        int WidgetHeight = 24;
+
     private:
         Graphics::BitmapRectangleProvider makeborder(Graphics::RGBA border, Graphics::RGBA bg);
         
-		Graphics::GlyphRenderer *regularrenderer = nullptr;
-		Containers::Collection<Graphics::Drawable> drawables;
-		Containers::Collection<Graphics::AnimationProvider> providers;
-
-	};
+        Graphics::GlyphRenderer *regularrenderer = nullptr;
+        Containers::Collection<Graphics::Drawable> drawables;
+        Containers::Collection<Graphics::AnimationProvider> providers;
+        
+    };
 
 }}

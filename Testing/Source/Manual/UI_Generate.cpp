@@ -35,6 +35,7 @@ int main() {
     
     Widgets::SimpleGenerator gen(15);
     gen.Border.Radius=4;
+    gen.UpdateDimensions();
 
     auto btntemp = gen.Button();
     auto radtemp = gen.RadioButton();
@@ -60,7 +61,7 @@ int main() {
     
     Widgets::RadioButtons<int> rad(radtemp);
     
-    rad.Add(0, "Americano");
+    rad.Add(0, "Ájmericano");
     rad.Add(1, "Latte");
     rad.Add(2);
 
@@ -153,7 +154,9 @@ int main() {
     auto inptemp = gen.Inputbox();
     Widgets::Pointbox inp(inptemp);
     inp={5, 2};
-    pnl.Add(inp);
+    //pnl.Add(inp);
+    app.wind.Add(inp);
+    inp.Move(5, 80);
     inp.SelectAll();
     
     pnl.Add(lbl);
