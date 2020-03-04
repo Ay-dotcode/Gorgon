@@ -84,7 +84,11 @@ start(void *data, const XML_Char *el, const XML_Char **attr){
             elements.push_back(e);
             open = true;
         }    
-        
+        else if(strcmp(attr[0],"class")==0 && strcmp(attr[1],"normal")==0){
+            e =  *new Element(el,attr[0],attr[1]);
+            elements.push_back(e);
+            open = true;
+        }   
     }
     else if(strcmp(el,"ref")==0){   
         if(strcmp(attr[2],"kindref")==0 && strcmp(attr[3],"member")==0){
@@ -102,7 +106,7 @@ start(void *data, const XML_Char *el, const XML_Char **attr){
         }
     }
     else if(strcmp(el,"compoundname")==0){
-        Element e =  *new Element(el,"null","null");
+        Element e =  *new Element(el,"null5","null4");
         elements.push_back(e);
         open = true;
     }
@@ -114,17 +118,31 @@ start(void *data, const XML_Char *el, const XML_Char **attr){
 static void XMLCALL
 fileData(void *data, const char* content, int len){
     
-    std::string temp;
-    std::string info;
-    temp = content ;
-    info = temp.substr(0,len);
-    //xmlData = info;
-    std::cout << "|=>"<< info << "<=|";
-    std::string checkName;
-    if(open == 1){
-        elements.back().data = info;
+    if (content != nullptr && len != 0){
+        std::string info;
+        info = std::string(content, len) ;
+        std::cout << "=>"<< info << "<=";
+        
+        while(!info.empty() && isspace(info.front())) 
+            info.erase(info.begin());
+        
+        while(!info.empty() && isspace(info.back())) 
+            info.pop_back();
+        
+        if(open == 1){
+            if(info == "\n" || info == ""){
+                elements.pop_back();
+            }else{
+                elements.back().data = info;
+            }
+            open = 0;
+        }
+    }
+    else{
+        elements.pop_back();
         open = 0;
     }
+        
 }
 
 //XML end function////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -212,7 +230,7 @@ int main(int argc, char* argv[]){
     /////////////////////////////////Inside Cells///////////////////////////////////////////
     int count = 1;
     for(auto e : elements){
-        std::cout << count++ << ")- "<< e.name << " -> " << e.atrName << " = " << e.value << " |DATA -> " << e.data << std::endl;
+        std::cout << count++ << ") "<< e.name << " -> " << e.atrName << " = " << e.value << " |DATA =>" << e.data << "<=" << std::endl;
        
     }
     std::cout << "This is in cells\n\n";
@@ -225,6 +243,7 @@ int main(int argc, char* argv[]){
     file1.open(fileOut, std::ios::app);
     std::string t1 = "\n#include \"Gorgon/Scripting/Embedding.h\"\n#include \"Gorgon/Scripting/Reflection.h\"\n#include \"Gorgon/Scripting.h\"\n\n";
     bool initialized = false;
+    int i = 0;
     for(auto e : elements){
         if(e.name == "compoundname"){
             e.data.resize(e.data.size()-2);
@@ -233,10 +252,23 @@ int main(int argc, char* argv[]){
         }
         
         if(initialized == true){
-            t1 += "\tvoid init_scripting() { ";
+            t1 += "\tvoid init_scripting() { \n";
             initialized = false;
         }
         
+//         if(e.name == "highlight" && e.atrName == "class" && e.value == "keyword"){
+//             t1 += "\n\t\t //" + e.data;
+//             t1 += " " + elements.at(i + 1).data;
+//         }
+        
+        if(e.name == "ref" && e.atrName == "kindref" && e.value == "member"){
+            if( !(elements.at(i - 1).data == "null" && (elements.at(i + 1).data == "null" || elements.at(i + 1).data == "};"))){
+                t1 += "\n\t\t/*new Scripting::Function(\"" + e.data + "\",\n\t\t\t\"DESCRIPTION\", Gorgon::Date,\n\t\t\t{ \n\n\t\t\t}\n\t\t),*/";
+            }
+            //t1 += " " + elements.at(i + 1).data;
+        }
+        
+        i++;
     }
     
     //t1 += "\n\n namespace Gorgon { namespace Time {\n\t  \n\t}\n} \n ";
