@@ -52,7 +52,8 @@ namespace Gorgon { namespace Widgets {
     * This class generates very simple templates. Hover and down states are marked
     * with simple fore and background color changes. For background, hover and down
     * state colors are blended with the regular color. Font is shared, thus any
-    * changes to it will effect existing templates too.
+    * changes to it will effect existing templates too. Most graphics are generated
+    * immediately upon creating and will not be modified if they are already created
     */
     class SimpleGenerator : public Generator {
     public:
@@ -93,10 +94,19 @@ namespace Gorgon { namespace Widgets {
         virtual UI::Template Inputbox() override;
         
         Graphics::BitmapRectangleProvider &NormalBorder();
-        Graphics::BitmapRectangleProvider &PanelBorder();
-        Graphics::BitmapRectangleProvider &NormalEditBorder();
         Graphics::BitmapRectangleProvider &HoverBorder();
         Graphics::BitmapRectangleProvider &DownBorder();
+        
+        Graphics::BitmapRectangleProvider &PanelBorder();
+        Graphics::BitmapRectangleProvider &TopPanelBorder();
+        Graphics::BitmapRectangleProvider &BottomPanelBorder();
+        Graphics::BitmapRectangleProvider &LeftPanelBorder();
+        Graphics::BitmapRectangleProvider &RightPanelBorder();
+        
+        Graphics::BitmapRectangleProvider &NormalEditBorder();
+        Graphics::BitmapRectangleProvider &HoverEditBorder();
+        
+        Graphics::RectangleProvider &FocusBorder();
         
         int Spacing      = 4;
         int ObjectHeight = 15;
@@ -121,7 +131,7 @@ namespace Gorgon { namespace Widgets {
         
         struct BackgroundInfo {
             Graphics::RGBA Regular = {Graphics::Color::Ivory, 0.8};
-            Graphics::RGBA Hover   = {Graphics::Color::White, 0.2};
+            Graphics::RGBA Hover   = {Graphics::Color::LightTan, 0.5};
             Graphics::RGBA Down    = {Graphics::Color::Crimson, 0.2};
             
             Graphics::RGBA Edit    = {Graphics::Color::White};
@@ -148,12 +158,26 @@ namespace Gorgon { namespace Widgets {
         int WidgetHeight = 24;
 
     private:
-        Graphics::BitmapRectangleProvider makeborder(Graphics::RGBA border, Graphics::RGBA bg);
+        Graphics::BitmapRectangleProvider *makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingside = 0);
+        Graphics::RectangleProvider *makefocusborder();
         
         Graphics::GlyphRenderer *regularrenderer = nullptr;
         Containers::Collection<Graphics::Drawable> drawables;
         Containers::Collection<Graphics::AnimationProvider> providers;
         
+        Graphics::BitmapRectangleProvider *normalborder = nullptr;
+        Graphics::BitmapRectangleProvider *hoverborder = nullptr;
+        Graphics::BitmapRectangleProvider *downborder = nullptr;
+        Graphics::BitmapRectangleProvider *panelborder = nullptr;
+        Graphics::BitmapRectangleProvider *toppanelborder = nullptr;
+        Graphics::BitmapRectangleProvider *bottompanelborder = nullptr;
+        Graphics::BitmapRectangleProvider *leftpanelborder = nullptr;
+        Graphics::BitmapRectangleProvider *rightpanelborder = nullptr;
+        
+        Graphics::BitmapRectangleProvider *normaleditborder = nullptr;
+        Graphics::BitmapRectangleProvider *hovereditborder = nullptr;
+        
+        Graphics::RectangleProvider *focusborder = nullptr;
     };
 
 }}

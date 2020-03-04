@@ -34,8 +34,10 @@ int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
     
     Widgets::SimpleGenerator gen(15);
+    Widgets::SimpleGenerator gen2(12);
     gen.Border.Radius=4;
     gen.UpdateDimensions();
+    gen2.Focus.Color = Graphics::Color::Red;
 
     auto btntemp = gen.Button();
     auto radtemp = gen.RadioButton();
@@ -44,6 +46,7 @@ int main() {
     auto lbltemp = gen.Label();
     auto pnltemp = gen.BlankPanel();
     auto pnltemp2 = gen.Panel();
+    auto inptemp = gen2.Inputbox();
     
 
     Widgets::Button btn(btntemp, "Helloo...", []() { std::cout<<"Hello..."<<std::endl; });
@@ -98,9 +101,9 @@ int main() {
     
     
     Widgets::Panel pnl(pnltemp);
-    pnl.Resize(300, 300);
+    pnl.Resize(350, 300);
     Widgets::Panel mainpanel(pnltemp);
-    mainpanel.Resize(300, 700);
+    mainpanel.Resize(350, 700);
     app.wind.Add(mainpanel);
     Widgets::Panel sub(pnltemp2);
     sub.Resize(300, 50);
@@ -151,11 +154,9 @@ int main() {
     Widgets::Label lbl(lbltemp, "This is a label");
     Widgets::Label error(errortemp, "This is an Error label");
     
-    auto inptemp = gen.Inputbox();
     Widgets::Pointbox inp(inptemp);
     inp={5, 2};
-    //pnl.Add(inp);
-    app.wind.Add(inp);
+    pnl.Add(inp);
     inp.Move(5, 80);
     inp.SelectAll();
     
@@ -164,7 +165,7 @@ int main() {
     pnl.Add(rad);
     pnl.Add(ib);
     pnl.SetHeight(500);
-    mainpanel.Resize(100, 500);
+    mainpanel.Resize(140, 500);
 
     pnl.CreateOrganizer<Gorgon::UI::Organizers::List>();
 

@@ -89,6 +89,18 @@ namespace Gorgon { namespace Widgets {
 
         providers.DeleteAll();
         drawables.DeleteAll();
+        
+        delete normalborder;
+        delete hoverborder;
+        delete downborder;
+        delete panelborder;
+        delete toppanelborder;
+        delete bottompanelborder;
+        delete leftpanelborder;
+        delete rightpanelborder;
+        delete normaleditborder;
+        delete hovereditborder;
+        delete focusborder;
     }
     
     void SimpleGenerator::UpdateDimensions() {
@@ -98,61 +110,122 @@ namespace Gorgon { namespace Widgets {
     }
     
     Graphics::BitmapRectangleProvider &SimpleGenerator::NormalBorder() {
-        static Graphics::BitmapRectangleProvider border = makeborder(Border.Color, Background.Regular);
+        if(!normalborder)
+            normalborder = makeborder(Border.Color, Background.Regular);
         
-        return border;
+        return *normalborder;
     }
     
     Graphics::BitmapRectangleProvider &SimpleGenerator::PanelBorder() {
-        static Graphics::BitmapRectangleProvider border = makeborder(Border.Color, Background.Panel);
+        if(!panelborder)
+            panelborder = makeborder(Border.Color, Background.Panel);
         
-        return border;
+        return *panelborder;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::TopPanelBorder() {
+        if(!toppanelborder)
+            panelborder = makeborder(Border.Color, Background.Panel, 1);
+        
+        return *panelborder;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::BottomPanelBorder() {
+        if(!panelborder)
+            panelborder = makeborder(Border.Color, Background.Panel, 3);
+        
+        return *panelborder;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::LeftPanelBorder() {
+        if(!panelborder)
+            panelborder = makeborder(Border.Color, Background.Panel, 2);
+        
+        return *panelborder;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::RightPanelBorder() {
+        if(!panelborder)
+            panelborder = makeborder(Border.Color, Background.Panel, 4);
+        
+        return *panelborder;
     }
     
     Graphics::BitmapRectangleProvider &SimpleGenerator::NormalEditBorder() {
-        static Graphics::BitmapRectangleProvider border = makeborder(Border.Color, Background.Edit);
+        if(!normaleditborder)
+            normaleditborder = makeborder(Border.Color, Background.Edit);
         
-        return border;
+        return *normaleditborder;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::HoverEditBorder() {
+        if(!hovereditborder) {
+            auto c = Background.Edit;
+            c.Blend(Background.Hover);
+        
+            hovereditborder = makeborder(Border.Color, c);
+        }
+        
+        return *hovereditborder;
     }
     
     Graphics::BitmapRectangleProvider &SimpleGenerator::HoverBorder() {
-        auto c = Background.Regular;
-        c.Blend(Background.Hover);
-        static Graphics::BitmapRectangleProvider border = makeborder(Border.Color, c);
+        if(!hoverborder) {
+            auto c = Background.Regular;
+            c.Blend(Background.Hover);
+            hoverborder = makeborder(Border.Color, c);
+        }
         
-        return border;
+        return *hoverborder;
     }
     
     Graphics::BitmapRectangleProvider &SimpleGenerator::DownBorder() {
-        auto c = Background.Regular;
-        c.Blend(Background.Down);
-        static Graphics::BitmapRectangleProvider border = makeborder(Border.Color, c);
+        if(!downborder) {
+            auto c = Background.Regular;
+            c.Blend(Background.Down);
+            downborder = makeborder(Border.Color, c);
+        }
         
-        return border;
+        return *downborder;
     }
     
-    Graphics::BitmapRectangleProvider SimpleGenerator::makeborder(Graphics::RGBA border, Graphics::RGBA bg) {
+    Graphics::RectangleProvider &SimpleGenerator::FocusBorder() {
+        if(!focusborder)
+            focusborder = makefocusborder();
+        
+        return *focusborder;
+    }
+    
+    Graphics::BitmapRectangleProvider *SimpleGenerator::makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingside) {
         int bsize = (Border.Width + Border.Radius + 1) * 2 + 16;
-        float off = (float)(Border.Width + 1) / 2; //round up
+        float off = (int)(Border.Width + 1) / 2; //round up
         
         auto &bi = *new Graphics::Bitmap({bsize, bsize}, Graphics::ColorMode::RGBA);
         bi.Clear();
         
         if(Border.Radius == 0) {
-            CGI::Polyfill(bi.GetData(), {{off,off}, {off, bsize-off}, {bsize-off, bsize-off}, {bsize-off, off}}, CGI::SolidFill<>(bg));
+            Geometry::PointList<Geometry::Pointf> list = {{off,off}, {off, bsize-off}, {bsize-off, bsize-off}, {bsize-off, off}};
             
-            CGI::DrawLines(bi.GetData(), {
+            CGI::Polyfill(bi.GetData(), list, CGI::SolidFill<>(bg));
+            
+            list = {
                 {off, off}, 
                 {off, bsize-off},
                 {bsize-off, bsize-off},
                 {bsize-off, off}, 
                 {off, off}
-            }, (float)Border.Width, CGI::SolidFill<>(border));
+            };
+            
+            if(missingside) {
+                list.Pop();
+            }
+            
+            CGI::DrawLines(bi.GetData(), list, (float)Border.Width, CGI::SolidFill<>(border));
         }
         else {
             auto r = Border.Radius;
             
-            CGI::Polyfill(bi.GetData(), {
+            Geometry::PointList<Geometry::Pointf> list = {
                 {off + r, off}, 
                 {off, off + r}, 
                 {off, bsize - off - r}, 
@@ -161,9 +234,16 @@ namespace Gorgon { namespace Widgets {
                 {bsize - off, bsize - off - r},
                 {bsize - off, off + r}, 
                 {bsize - off - r, off}, 
-            }, CGI::SolidFill<>(bg));
+            };
             
-            CGI::DrawLines(bi.GetData(), {
+            if(missingside) {
+                list[0].X = off;
+                list[7].X = bsize - off;
+            }
+            
+            CGI::Polyfill(bi.GetData(), list, CGI::SolidFill<>(bg));
+            
+            list = {
                 {off + r, off}, 
                 {off, off + r}, 
                 {off, bsize - off - r}, 
@@ -173,23 +253,63 @@ namespace Gorgon { namespace Widgets {
                 {bsize - off, off + r}, 
                 {bsize - off - r, off}, 
                 {off + r, off}
-            }, (float)Border.Width, CGI::SolidFill<>(Border.Color));
+            };
+            
+            if(missingside) {
+                list.Pop();
+                list[0].X = off;
+                list[7].X = bsize - off;
+            }
+            
+            CGI::DrawLines(bi.GetData(), list, (float)Border.Width, CGI::SolidFill<>(Border.Color));
+        }
+        
+        if(missingside == 2) {
+            bi = bi.Rotate90();
+        }
+        else if(missingside == 3) {
+            bi = bi.Rotate180();
+        }
+        else if(missingside == 4) {
+            bi = bi.Rotate270();
         }
         
         drawables.Add(bi);
 
-        Graphics::BitmapRectangleProvider ret = Graphics::Slice(bi, {
+        auto ret = new Graphics::BitmapRectangleProvider(Graphics::Slice(bi, {
             int(off*2+Border.Radius), 
             int(off*2+Border.Radius), 
             int(bsize-off*2-Border.Radius),
             int(bsize-off*2-Border.Radius)
-        });
+        }));
         
-        ret.Prepare();
+        ret->Prepare();
         
         return ret;
     }
     
+    
+    Graphics::RectangleProvider *SimpleGenerator::makefocusborder() {
+        auto &ci = Graphics::EmptyImage::Instance();
+
+        auto &hi = *new Graphics::Bitmap({2, Focus.Width});
+        hi.Clear();
+        for(auto i=0; i<Focus.Width; i++)
+            hi.SetRGBAAt(0, i, Focus.Color);
+        hi.Prepare();
+        drawables.Add(hi);
+
+        auto &vi = *new Graphics::Bitmap({Focus.Width, 2});
+        vi.Clear();
+        for(auto i=0; i<Focus.Width; i++)
+            vi.SetRGBAAt(i, 0, Focus.Color);
+        vi.Prepare();
+        drawables.Add(vi);
+
+        auto &cri = *new Graphics::BlankImage(Focus.Width, Focus.Width, Focus.Color);
+
+        return new Graphics::RectangleProvider(cri, hi, cri, vi, ci, vi, cri, hi, cri);
+    }
     
     UI::Template SimpleGenerator::Button() {
         Geometry::Size defsize = {WidgetWidth, BordedWidgetHeight};
@@ -269,29 +389,7 @@ namespace Gorgon { namespace Widgets {
         {
             auto &foc = temp.AddContainer(2, UI::ComponentCondition::Focused);
 
-            auto &ci = Graphics::EmptyImage::Instance();
-
-
-            auto &hi = *new Graphics::Bitmap({2, Focus.Width});
-            hi.Clear();
-            for(auto i=0; i<Focus.Width; i++)
-                hi.SetRGBAAt(0, i, Focus.Color);
-            hi.Prepare();
-            drawables.Add(hi);
-
-            auto &vi = *new Graphics::Bitmap({Focus.Width, 2});
-            vi.Clear();
-            for(auto i=0; i<Focus.Width; i++)
-                vi.SetRGBAAt(i, 0, Focus.Color);
-            vi.Prepare();
-            drawables.Add(vi);
-
-            auto &cri = *new Graphics::BlankImage(Focus.Width, Focus.Width, Focus.Color);
-
-            auto &rect = *new Graphics::RectangleProvider(cri, hi, cri, vi, ci, vi, cri, hi, cri);
-
-            foc.Background.SetAnimation(rect);
-            providers.Add(rect);
+            foc.Background.SetAnimation(FocusBorder());
             foc.SetMargin(Spacing / 2);
             foc.SetSize(100, 100, UI::Dimension::Percent);
             foc.SetPositioning(foc.Absolute);
@@ -378,30 +476,7 @@ namespace Gorgon { namespace Widgets {
         
         {
             auto &foc = temp.AddContainer(2, UI::ComponentCondition::Focused);
-            
-            auto &ci = Graphics::EmptyImage::Instance();
-            
-            
-            auto &hi = *new Graphics::Bitmap({2, Focus.Width});
-            hi.Clear();
-            for(auto i=0; i<Focus.Width; i++)
-                hi.SetRGBAAt(0, i, Focus.Color);
-            hi.Prepare();
-            drawables.Add(hi);
-            
-            auto &vi = *new Graphics::Bitmap({Focus.Width, 2});
-            vi.Clear();
-            for(auto i=0; i<Focus.Width; i++)
-                vi.SetRGBAAt(i, 0, Focus.Color);
-            vi.Prepare();
-            drawables.Add(vi);
-            
-            auto &cri = *new Graphics::BlankImage(Focus.Width, Focus.Width, Focus.Color);
-            
-            auto &rect = *new Graphics::RectangleProvider(cri, hi, cri, vi, ci, vi, cri, hi, cri);
-            
-            foc.Background.SetAnimation(rect);
-            providers.Add(rect);
+            foc.Background.SetAnimation(FocusBorder());
             foc.SetMargin(1);
             foc.SetSize(100, 100, UI::Dimension::Percent);
             foc.SetPositioning(foc.Absolute);
@@ -599,30 +674,7 @@ namespace Gorgon { namespace Widgets {
         
         {
             auto &foc = temp.AddContainer(4, UI::ComponentCondition::Focused);
-            
-            auto &ci = Graphics::EmptyImage::Instance();
-            
-            auto &hi = *new Graphics::Bitmap({2, Focus.Width});
-            hi.Clear();
-            for(auto i=0; i<Focus.Width; i++)
-                hi.SetRGBAAt(0, i, Focus.Color);
-            hi.Prepare();
-            drawables.Add(hi);
-
-            auto &vi = *new Graphics::Bitmap({Focus.Width, 2});
-            vi.Clear();
-            for(auto i=0; i<Focus.Width; i++)
-                vi.SetRGBAAt(i, 0, Focus.Color);
-            vi.Prepare();
-            drawables.Add(vi);
-
-            auto &cri = *new Graphics::BlankImage(Focus.Width, Focus.Width, Focus.Color);
-            
-            auto &rect = *new Graphics::RectangleProvider(cri, hi, cri, vi, ci, vi, cri, hi, cri);
-            
-            foc.Background.SetAnimation(rect);
-            //providers.Add(rect);
-            //foc.SetMargin(Spacing / 2);
+            foc.Background.SetAnimation(FocusBorder());
             foc.SetSize(100, 100, UI::Dimension::Percent);
             foc.SetPositioning(foc.Absolute);
             foc.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
@@ -779,27 +831,7 @@ namespace Gorgon { namespace Widgets {
         
         {
             auto &foc = temp.AddContainer(4, UI::ComponentCondition::Focused);
-            
-            auto &ci = Graphics::EmptyImage::Instance();
-            
-            auto &hi = *new Graphics::Bitmap({2, Focus.Width});
-            hi.Clear();
-            for(auto i=0; i<Focus.Width; i++)
-                hi.SetRGBAAt(0, i, Focus.Color);
-            hi.Prepare();
-            
-            auto &vi = *new Graphics::Bitmap({Focus.Width, 2});
-            vi.Clear();
-            for(auto i=0; i<Focus.Width; i++)
-                vi.SetRGBAAt(i, 0, Focus.Color);
-            vi.Prepare();
-            
-            auto &cri = *new Graphics::BlankImage(Focus.Width, Focus.Width, Focus.Color);
-            
-            auto &rect = *new Graphics::RectangleProvider(cri, hi, cri, vi, ci, vi, cri, hi, cri);
-            
-            foc.Background.SetAnimation(rect);
-            providers.Add(rect);
+            foc.Background.SetAnimation(FocusBorder());
             foc.SetSize(100, 100, UI::Dimension::Percent);
             foc.SetPositioning(foc.Absolute);
             foc.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
@@ -837,30 +869,7 @@ namespace Gorgon { namespace Widgets {
         
         {
             auto &foc = temp.AddContainer(2, UI::ComponentCondition::Focused);
-            
-            auto &ci = Graphics::EmptyImage::Instance();
-            
-            
-            auto &hi = *new Graphics::Bitmap({2, Focus.Width});
-            hi.Clear();
-            for(auto i=0; i<Focus.Width; i++)
-                hi.SetRGBAAt(0, i, Focus.Color);
-            hi.Prepare();
-            drawables.Add(hi);
-            
-            auto &vi = *new Graphics::Bitmap({Focus.Width, 2});
-            vi.Clear();
-            for(auto i=0; i<Focus.Width; i++)
-                vi.SetRGBAAt(i, 0, Focus.Color);
-            vi.Prepare();
-            drawables.Add(vi);
-            
-            auto &cri = *new Graphics::BlankImage(Focus.Width, Focus.Width, Focus.Color);
-            
-            auto &rect = *new Graphics::RectangleProvider(cri, hi, cri, vi, ci, vi, cri, hi, cri);
-            
-            foc.Background.SetAnimation(rect);
-            providers.Add(rect);
+foc.Background.SetAnimation(FocusBorder());
             foc.SetMargin(Spacing / 2);
             foc.SetSize(100, 100, UI::Dimension::Percent);
             foc.SetPositioning(foc.Absolute);
@@ -1011,7 +1020,6 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
-    //TODO: fix me
     UI::Template SimpleGenerator::TopPanel() {
         Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 5 + Border.Width * 2 + Border.Radius + Spacing * 2, WidgetHeight * 2 + Spacing * 3 + Border.Width * 2 + Border.Radius + Spacing * 2};
         
@@ -1031,7 +1039,7 @@ namespace Gorgon { namespace Widgets {
         cont.SetPositioning(cont.Absolute);
         cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
         cont.SetPosition(0, 0);
-        cont.Background.SetAnimation(PanelBorder());
+        cont.Background.SetAnimation(TopPanelBorder());
         
         return temp;
     }
@@ -1055,7 +1063,7 @@ namespace Gorgon { namespace Widgets {
         cont.SetPositioning(cont.Absolute);
         cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
         cont.SetPosition(0, 0);
-        cont.Background.SetAnimation(PanelBorder());
+        cont.Background.SetAnimation(LeftPanelBorder());
         
         return temp;
     }
@@ -1079,7 +1087,7 @@ namespace Gorgon { namespace Widgets {
         cont.SetPositioning(cont.Absolute);
         cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
         cont.SetPosition(0, 0);
-        cont.Background.SetAnimation(PanelBorder());
+        cont.Background.SetAnimation(RightPanelBorder());
         
         return temp;
     }
@@ -1103,7 +1111,7 @@ namespace Gorgon { namespace Widgets {
         cont.SetPositioning(cont.Absolute);
         cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
         cont.SetPosition(0, 0);
-        cont.Background.SetAnimation(PanelBorder());
+        cont.Background.SetAnimation(BottomPanelBorder());
         
         return temp;
     }
@@ -1120,7 +1128,6 @@ namespace Gorgon { namespace Widgets {
         {
             auto &bg_n = temp.AddContainer(0, UI::ComponentCondition::Always);
             bg_n.SetPadding(Spacing);
-            //bg_n.SetTag(UI::ComponentTemplate::ViewPortTag);
             bg_n.AddIndex(1);
             bg_n.AddIndex(2);
             bg_n.AddIndex(3);
@@ -1130,31 +1137,19 @@ namespace Gorgon { namespace Widgets {
         }
         
         {
+            auto &bg_h = temp.AddContainer(0, UI::ComponentCondition::Hover);
+            bg_h.SetPadding(Spacing);
+            bg_h.AddIndex(1);
+            bg_h.AddIndex(2);
+            bg_h.AddIndex(3);
+            bg_h.AddIndex(4);
+            bg_h.SetClip(true); //!Shadow
+            bg_h.Background.SetAnimation(HoverEditBorder());
+        }
+        
+        {
             auto &foc = temp.AddContainer(1, UI::ComponentCondition::Focused);
-            
-            auto &ci = Graphics::EmptyImage::Instance();
-            
-            
-            auto &hi = *new Graphics::Bitmap({2, Focus.Width});
-            hi.Clear();
-            for(auto i=0; i<Focus.Width; i++)
-                hi.SetRGBAAt(0, i, Focus.Color);
-            hi.Prepare();
-            drawables.Add(hi);
-            
-            auto &vi = *new Graphics::Bitmap({Focus.Width, 2});
-            vi.Clear();
-            for(auto i=0; i<Focus.Width; i++)
-                vi.SetRGBAAt(i, 0, Focus.Color);
-            vi.Prepare();
-            drawables.Add(vi);
-            
-            auto &cri = *new Graphics::BlankImage(Focus.Width, Focus.Width, Focus.Color);
-            
-            auto &rect = *new Graphics::RectangleProvider(cri, hi, cri, vi, ci, vi, cri, hi, cri);
-            
-            foc.Background.SetAnimation(rect);
-            providers.Add(rect);
+            foc.Background.SetAnimation(FocusBorder());
             foc.SetMargin(Spacing / 2);
             foc.SetSize(100, 100, UI::Dimension::Percent);
             foc.SetPositioning(foc.Absolute);
@@ -1170,6 +1165,20 @@ namespace Gorgon { namespace Widgets {
             txt_n.SetTag(txt_n.ContentsTag);
             txt_n.SetSize({100, UI::Dimension::Percent}, RegularFont.GetGlyphRenderer().GetHeight()*5/6);
             txt_n.SetSizing(UI::ComponentTemplate::Fixed);
+        }
+        
+        {
+            
+            auto c = Forecolor.Regular;
+            c.Blend(Forecolor.Hover);
+            auto &txt_h = temp.AddTextholder(2, UI::ComponentCondition::Always);
+            txt_h.SetRenderer(RegularFont);
+            txt_h.SetColor(c);
+            txt_h.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+            txt_h.SetDataEffect(UI::ComponentTemplate::Text);
+            txt_h.SetTag(txt_h.ContentsTag);
+            txt_h.SetSize({100, UI::Dimension::Percent}, RegularFont.GetGlyphRenderer().GetHeight()*5/6);
+            txt_h.SetSizing(UI::ComponentTemplate::Fixed);
         }
         
         {
