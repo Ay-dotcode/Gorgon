@@ -82,6 +82,8 @@ public:
                     break;
                 }
             }
+            
+            delete buf;
         }
         
         if(!found)
@@ -104,7 +106,7 @@ public:
 				  , 500, 10, wind.GetWidth()-505
 		);*/
 
-		wind.KeyEvent.Register([](Input::Key key, bool state) {
+		wind.KeyEvent.Register([this](Input::Key key, bool state) {
 			if(!state && (key == 27 || key == 65307))
 				exit(0);
 

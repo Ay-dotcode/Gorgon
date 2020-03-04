@@ -16,10 +16,7 @@ namespace Gorgon { namespace UI {
         /// should handle instantiation as well
         explicit ComponentStack(const Template &temp, Geometry::Size size);
         
-        ComponentStack(ComponentStack &&) = default;
-        ComponentStack &operator =(ComponentStack &&) = default;
-        
-        ~ComponentStack() {
+        virtual ~ComponentStack() {
             for(auto &p : storage) {
                 delete p.second;
             }
@@ -591,6 +588,7 @@ namespace Gorgon { namespace UI {
         Graphics::Layer base;
         Input::Layer mouse;
         Input::Mouse::Button mousebuttonaccepted;
+        Geometry::Point downlocation;
         
         std::function<void(ComponentTemplate::Tag, Geometry::Point, Input::Mouse::Button)> down_fn;
         std::function<void(ComponentTemplate::Tag, Geometry::Point, Input::Mouse::Button)> click_fn;

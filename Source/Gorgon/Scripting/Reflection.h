@@ -519,10 +519,6 @@ namespace Gorgon {
 						reference=true;
 						break;
 						
-					case ConstTag:
-						constant=true;
-						break;
-						
 					case ReadonlyTag:
 						readonly=true;
 						break;
@@ -1209,7 +1205,7 @@ namespace Gorgon {
 			virtual MemberType GetMemberType() const override { return StaticMember::RegularType; }
 			
 			virtual Data Get() const override {
-				Type *TypeType();
+				Type *TypeType( );
 				
 				return {TypeType(), dynamic_cast<const Type*>(this), true, true};
 			}

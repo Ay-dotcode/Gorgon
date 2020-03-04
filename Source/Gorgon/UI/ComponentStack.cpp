@@ -2,6 +2,7 @@
 
 #include "../Graphics/Font.h"
 #include "../Time.h"
+#include "../Config.h"
 
 #include "math.h"
 
@@ -63,6 +64,8 @@ namespace Gorgon { namespace UI {
 
             if(down_fn)
                 down_fn(ComponentTemplate::NoTag, location, btn);
+            
+            downlocation = location;
         });
         
         mouse.SetUp([this](Geometry::Point location, Input::Mouse::Button btn) {
@@ -73,7 +76,7 @@ namespace Gorgon { namespace UI {
                 }
             }
             
-            if(click_fn)
+            if(click_fn && downlocation.Distance(location) < WindowManager::ClickThreshold)
                 click_fn(ComponentTemplate::NoTag, location, btn);
             
             if(up_fn)

@@ -48,6 +48,8 @@ namespace Gorgon { namespace Widgets {
                             break;
                         }
                     }
+                    
+                    delete buf;
                 }
             }
             catch(...) {
@@ -64,7 +66,7 @@ namespace Gorgon { namespace Widgets {
 
         RegularFont.SetGlyphRenderer(regular);
 
-        if(!regular.HasKerning()) {
+        /*if(!regular.HasKerning()) {
             auto &bmpfnt = *new Graphics::BitmapFont(regular.MoveOutBitmap());
             RegularFont.SetGlyphRenderer(bmpfnt);
             bmpfnt.AutoKern();
@@ -72,11 +74,13 @@ namespace Gorgon { namespace Widgets {
 
             delete &regular;
         }
-        else {
+        else {*/
             regularrenderer = &regular;
-        }
+        //}
         
-        //RegularFont.AlignRight();
+        WidgetWidth = regularrenderer->GetDigitWidth() * 8 + Border.Width * 2 + Border.Radius / 2 + Spacing;
+        BordedWidgetHeight = regularrenderer->GetHeight() + Border.Radius / 2 + Spacing;
+        WidgetHeight = regularrenderer->GetHeight();
     }
 
     SimpleGenerator::~SimpleGenerator() {
@@ -85,6 +89,12 @@ namespace Gorgon { namespace Widgets {
 
         providers.DeleteAll();
         drawables.DeleteAll();
+    }
+    
+    void SimpleGenerator::UpdateDimensions() {
+        WidgetWidth = regularrenderer->GetDigitWidth() * 8 + Border.Width * 2 + Border.Radius / 2 + Spacing;
+        BordedWidgetHeight = regularrenderer->GetHeight() + Border.Radius / 2 + Spacing;
+        WidgetHeight = regularrenderer->GetHeight();
     }
     
     Graphics::BitmapRectangleProvider &SimpleGenerator::NormalBorder() {
@@ -168,15 +178,22 @@ namespace Gorgon { namespace Widgets {
         
         drawables.Add(bi);
 
-        Graphics::BitmapRectangleProvider ret = Graphics::Slice(bi, {int(off*2+Border.Radius), int(off*2+Border.Radius), int(bsize-off*2-Border.Radius), int(bsize-off*2-Border.Radius)});
+        Graphics::BitmapRectangleProvider ret = Graphics::Slice(bi, {
+            int(off*2+Border.Radius), 
+            int(off*2+Border.Radius), 
+            int(bsize-off*2-Border.Radius),
+            int(bsize-off*2-Border.Radius)
+        });
+        
         ret.Prepare();
         
         return ret;
     }
     
     
-    UI::Template SimpleGenerator::Button(Geometry::Size defsize) {
-
+    UI::Template SimpleGenerator::Button() {
+        Geometry::Size defsize = {WidgetWidth, BordedWidgetHeight};
+        
         UI::Template temp;
         temp.SetSize(defsize);
 
@@ -284,12 +301,12 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
-    UI::Template SimpleGenerator::IconButton(Geometry::Size defsize) {
+    UI::Template SimpleGenerator::IconButton(Geometry::Size iconsize) {
         
         UI::Template temp;
-        temp.SetSize(defsize);
+        temp.SetSize(iconsize + Geometry::Size(16, 16));
         
-        auto bgsize = defsize - Geometry::Size(8, 8);
+        auto bgsize = iconsize + Geometry::Size(8, 8);
         
         {
             auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
@@ -328,7 +345,7 @@ namespace Gorgon { namespace Widgets {
             auto c = Background.Regular;
             c.Blend(Background.Down);
             
-            auto &im = *new Graphics::BlankImage(defsize - bgsize, c);
+            auto &im = *new Graphics::BlankImage(bgsize, c);
             drawables.Add(im);
             
             bg.SetPadding(4);
@@ -394,7 +411,9 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
 
-    UI::Template SimpleGenerator::Checkbox(Geometry::Size defsize) {
+    UI::Template SimpleGenerator::Checkbox() {
+        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight};
+        
         UI::Template temp;
         temp.SetSize(defsize);
         
@@ -611,7 +630,9 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
-    UI::Template SimpleGenerator::RadioButton(Geometry::Size defsize) {
+    UI::Template SimpleGenerator::RadioButton() {
+        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight};
+        
         UI::Template temp;
         temp.SetSize(defsize);
         
@@ -786,7 +807,9 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
-    UI::Template SimpleGenerator::Label(Geometry::Size defsize) {
+    UI::Template SimpleGenerator::Label() {
+        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight};
+        
         UI::Template temp;
         temp.SetSize(defsize);
         
@@ -858,7 +881,9 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
 
-    UI::Template SimpleGenerator::ErrorLabel(Geometry::Size defsize) {
+    UI::Template SimpleGenerator::ErrorLabel() {
+        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight};
+        
         UI::Template temp;
         temp.SetSize(defsize);
 
@@ -930,7 +955,9 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
-    UI::Template SimpleGenerator::BlankPanel(Geometry::Size defsize) {
+    UI::Template SimpleGenerator::BlankPanel() {
+        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 5, WidgetHeight * 10 + Spacing * 11};
+        
         UI::Template temp;
         temp.SetSize(defsize);
         
@@ -952,7 +979,9 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
-    UI::Template SimpleGenerator::Panel(Geometry::Size defsize) {
+    UI::Template SimpleGenerator::Panel() {
+        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 5 + Border.Width * 2 + Border.Radius + Spacing * 2, WidgetHeight * 10 + Spacing * 11 + Border.Width * 2 + Border.Radius + Spacing * 2};
+        
         UI::Template temp;
         temp.SetSize(defsize);
         
@@ -983,7 +1012,9 @@ namespace Gorgon { namespace Widgets {
     }
     
     //TODO: fix me
-    UI::Template SimpleGenerator::TopPanel(Geometry::Size defsize) {
+    UI::Template SimpleGenerator::TopPanel() {
+        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 5 + Border.Width * 2 + Border.Radius + Spacing * 2, WidgetHeight * 2 + Spacing * 3 + Border.Width * 2 + Border.Radius + Spacing * 2};
+        
         UI::Template temp;
         temp.SetSize(defsize);
         
@@ -1005,7 +1036,9 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
-    UI::Template SimpleGenerator::LeftPanel(Geometry::Size defsize) {
+    UI::Template SimpleGenerator::LeftPanel() {
+        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 5 + Border.Width * 2 + Border.Radius + Spacing * 2, WidgetHeight * 10 + Spacing * 11 + Border.Width * 2 + Border.Radius + Spacing * 2};
+        
         UI::Template temp;
         temp.SetSize(defsize);
         
@@ -1027,7 +1060,9 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
-    UI::Template SimpleGenerator::RightPanel(Geometry::Size defsize) {
+    UI::Template SimpleGenerator::RightPanel() {
+        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 5 + Border.Width * 2 + Border.Radius + Spacing * 2, WidgetHeight * 10 + Spacing * 11 + Border.Width * 2 + Border.Radius + Spacing * 2};
+        
         UI::Template temp;
         temp.SetSize(defsize);
         
@@ -1049,7 +1084,9 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
-    UI::Template SimpleGenerator::BottomPanel(Geometry::Size defsize) {
+    UI::Template SimpleGenerator::BottomPanel() {
+        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 5 + Border.Width * 2 + Border.Radius + Spacing * 2, WidgetHeight * 2 + Spacing * 3 + Border.Width * 2 + Border.Radius + Spacing * 2};
+        
         UI::Template temp;
         temp.SetSize(defsize);
         
@@ -1071,7 +1108,9 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
-    UI::Template SimpleGenerator::Inputbox(Geometry::Size defsize) {
+    UI::Template SimpleGenerator::Inputbox() {
+        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, BordedWidgetHeight};
+        
         UI::Template temp;
         temp.SetSize(defsize);
         

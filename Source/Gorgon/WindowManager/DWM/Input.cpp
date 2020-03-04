@@ -411,19 +411,19 @@ namespace WindowManager {
 		int y = int(lParam>>16);
 
 		switch(message) {
-		case WM_LBUTTONDOWN:
+		case WM_LBUTTONUP:
 			data->parent->mouse_up({x, y}, Input::Mouse::Button::Left);
 			break;
 
-		case WM_RBUTTONDOWN:
+		case WM_RBUTTONUP:
 			data->parent->mouse_up({x, y}, Input::Mouse::Button::Right);
 			break;
 
-		case WM_MBUTTONDOWN:
+		case WM_MBUTTONUP:
 			data->parent->mouse_up({x, y}, Input::Mouse::Button::Middle);
 			break;
 
-		case WM_XBUTTONDOWN:
+		case WM_XBUTTONUP:
 
 			switch(GET_XBUTTON_WPARAM(wParam)) {
 			case 1:

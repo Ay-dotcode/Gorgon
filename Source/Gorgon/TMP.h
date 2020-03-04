@@ -212,7 +212,7 @@ namespace Gorgon {
 			using NewType = typename std::remove_const<typename Choose<std::is_reference<T_>::value, typename std::remove_reference<T_>::type*, T_>::Type>::type;
 			using CloneType = const typename Choose<std::is_reference<T_>::value, typename std::remove_reference<T_>::type*, T_>::Type* const;
 			
-			virtual RTTS *Duplicate() const {
+			virtual RTTS *Duplicate() const override {
 				return new RTT<T_>();
 			}
 			

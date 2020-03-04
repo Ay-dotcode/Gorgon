@@ -33,19 +33,18 @@ Graphics::Bitmap &prep(Graphics::Bitmap &bmp) {
 int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
     
-    Graphics::Layer l, l2;
-    
-    app.wind.Add(l);
-    app.wind.Add(l2);
-    
-    l2.SetColor(Gorgon::Graphics::Color::Pink);
-    l2.Resize({ 200,200 });
-    
-    l2.Move(400, 400);
     Widgets::SimpleGenerator gen(15);
     gen.Border.Radius=4;
+    gen.UpdateDimensions();
 
     auto btntemp = gen.Button();
+    auto radtemp = gen.RadioButton();
+    auto chktemp = gen.Checkbox();
+    auto icobtntemp = gen.IconButton();
+    auto lbltemp = gen.Label();
+    auto pnltemp = gen.BlankPanel();
+    auto pnltemp2 = gen.Panel();
+    
 
     Widgets::Button btn(btntemp, "Helloo...", []() { std::cout<<"Hello..."<<std::endl; });
     btn.Move(5,5);
@@ -58,12 +57,11 @@ int main() {
     btn2.Move({5, btn.GetSize().Height + 10});
     app.wind.Add(btn2);
     
-    auto radtemp = gen.RadioButton();
     std::cout<<"Height: "<<gen.RegularFont.GetGlyphRenderer().GetSize('A').Height<<std::endl;
     
     Widgets::RadioButtons<int> rad(radtemp);
     
-    rad.Add(0, "Americano");
+    rad.Add(0, "Ájmericano");
     rad.Add(1, "Latte");
     rad.Add(2);
 
@@ -74,7 +72,6 @@ int main() {
         std::cout<<"Changed to "<<val<<std::endl;
     });
 
-    auto chktemp = gen.Checkbox();
     
 
     Widgets::Checkbox chk(chktemp, "Sugar", [](bool state) {
@@ -92,7 +89,6 @@ int main() {
 
     chk.Move(rad.GetLocation() + Gorgon::Geometry::Point(0, rad.GetSize().Height + 4));
 
-    auto icobtntemp = gen.IconButton();
     Widgets::Button ib(icobtntemp);
     auto ico = Graphics::BlankImage({16, 16}, Graphics::Color::Black);
     //ico.Prepare();
@@ -100,8 +96,6 @@ int main() {
     ib.Move(chk.GetLocation() + Gorgon::Geometry::Point(0, chk.GetSize().Height + 4));
     app.wind.Add(ib);
     
-    auto pnltemp = gen.BlankPanel();
-    auto pnltemp2 = gen.Panel();
     
     Widgets::Panel pnl(pnltemp);
     pnl.Resize(300, 300);
@@ -113,7 +107,6 @@ int main() {
     Widgets::Button increase(btntemp);
     Widgets::Button decrease(btntemp);
 
-    auto lbltemp = gen.Label();
 
     mainpanel.Add(sub);
     sub.Move(5, 0);
@@ -161,7 +154,9 @@ int main() {
     auto inptemp = gen.Inputbox();
     Widgets::Pointbox inp(inptemp);
     inp={5, 2};
-    pnl.Add(inp);
+    //pnl.Add(inp);
+    app.wind.Add(inp);
+    inp.Move(5, 80);
     inp.SelectAll();
     
     pnl.Add(lbl);

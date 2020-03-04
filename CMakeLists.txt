@@ -152,6 +152,10 @@ include(Scripts/Doxygen.cmake)
 
 add_library(Gorgon STATIC ${All})
 
+if(MSVC)
+	target_compile_options(Gorgon PRIVATE "/MP")
+endif()
+
 set_property(TARGET Gorgon PROPERTY CXX_STANDARD 14)
 
 #if(WIN32)

@@ -120,6 +120,17 @@ namespace Gorgon { namespace UI {
         /// trigger this event. Organizers use this event to rearrange widgets, 
         /// thus it is not advisable to remove all handlers from this event.
         Event<WidgetBase> BoundsChangedEvent = Event<WidgetBase>{*this};
+        
+        /// This is a debug feature
+        void setname(std::string value) {
+#ifndef NDEBUG
+            dbgname = value;
+#endif
+        }
+        
+#ifndef NDEBUG
+    std::string dbgname;
+#endif
 
     protected:
         /// Called when it is about to be added to the given container
@@ -155,10 +166,7 @@ namespace Gorgon { namespace UI {
         virtual bool allowfocus() const { return true; }
         
         /// This is called after the focus is transferred to this widget.
-        virtual void focused() {
-            focus = true;
-            FocusEvent();
-        }
+        virtual void focused();
         
         /// Should return true if the widget can loose the focus right now.
         /// Even if you return false, you still might be forced to loose
@@ -167,10 +175,7 @@ namespace Gorgon { namespace UI {
         
         /// This is called after the focus is lost. This is called even if
         /// focus removal is forced.
-        virtual void focuslost() {
-            focus = false;
-            FocusEvent();
-        }
+        virtual void focuslost();
         
         /// Call this function when the widget bounds is changed
         virtual void boundschanged();

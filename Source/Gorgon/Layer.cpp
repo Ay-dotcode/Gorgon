@@ -155,8 +155,8 @@ namespace Gorgon {
 	}
 
     Layer::~Layer() {
-        for(auto &l : children)
-            Remove(l);
+        while(children.GetSize())
+            Remove(*children.First());
 
         for(auto &win : Window::Windows)
             win.deleting(this);
