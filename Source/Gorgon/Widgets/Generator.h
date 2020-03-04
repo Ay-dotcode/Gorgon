@@ -24,6 +24,8 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template Checkbox() = 0;
         
+        virtual UI::Template CheckboxButton() = 0;
+        
         virtual UI::Template RadioButton() = 0;
         
         
@@ -71,6 +73,8 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template Checkbox() override;
         
+        virtual UI::Template CheckboxButton() override;
+        
         virtual UI::Template RadioButton() override;
         
         
@@ -105,6 +109,12 @@ namespace Gorgon { namespace Widgets {
         
         Graphics::BitmapRectangleProvider &NormalEditBorder();
         Graphics::BitmapRectangleProvider &HoverEditBorder();
+        
+        Graphics::BitmapRectangleProvider &NormalEmptyBorder();
+        
+        Graphics::BitmapRectangleProvider &NormalBG();
+        Graphics::BitmapRectangleProvider &HoverBG();
+        Graphics::BitmapRectangleProvider &DownBG();
         
         Graphics::RectangleProvider &FocusBorder();
         
@@ -176,6 +186,12 @@ namespace Gorgon { namespace Widgets {
         
         Graphics::BitmapRectangleProvider *normaleditborder = nullptr;
         Graphics::BitmapRectangleProvider *hovereditborder = nullptr;
+        
+        Graphics::BitmapRectangleProvider *normalemptyborder = nullptr;
+        
+        Graphics::BitmapRectangleProvider *normalbg = nullptr;
+        Graphics::BitmapRectangleProvider *hoverbg = nullptr;
+        Graphics::BitmapRectangleProvider *downbg = nullptr;
         
         Graphics::RectangleProvider *focusborder = nullptr;
     };

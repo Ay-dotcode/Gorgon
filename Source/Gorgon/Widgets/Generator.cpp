@@ -101,6 +101,10 @@ namespace Gorgon { namespace Widgets {
         delete normaleditborder;
         delete hovereditborder;
         delete focusborder;
+        delete normalemptyborder;
+        delete normalbg;
+        delete hoverbg;
+        delete downbg;
     }
     
     void SimpleGenerator::UpdateDimensions() {
@@ -114,6 +118,26 @@ namespace Gorgon { namespace Widgets {
             normalborder = makeborder(Border.Color, Background.Regular);
         
         return *normalborder;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::HoverBorder() {
+        if(!hoverborder) {
+            auto c = Background.Regular;
+            c.Blend(Background.Hover);
+            hoverborder = makeborder(Border.Color, c);
+        }
+        
+        return *hoverborder;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::DownBorder() {
+        if(!downborder) {
+            auto c = Background.Regular;
+            c.Blend(Background.Down);
+            downborder = makeborder(Border.Color, c);
+        }
+        
+        return *downborder;
     }
     
     Graphics::BitmapRectangleProvider &SimpleGenerator::PanelBorder() {
@@ -168,32 +192,46 @@ namespace Gorgon { namespace Widgets {
         
         return *hovereditborder;
     }
+
+    Graphics::BitmapRectangleProvider &SimpleGenerator::NormalBG() {
+        if(!normalbg)
+            normalbg = makeborder(0x0, Background.Regular);
+        
+        return *normalbg;
+    }
     
-    Graphics::BitmapRectangleProvider &SimpleGenerator::HoverBorder() {
-        if(!hoverborder) {
+    Graphics::BitmapRectangleProvider &SimpleGenerator::HoverBG() {
+        if(!hoverbg) {
             auto c = Background.Regular;
             c.Blend(Background.Hover);
-            hoverborder = makeborder(Border.Color, c);
+            hoverbg = makeborder(0x0, c);
         }
         
-        return *hoverborder;
+        return *hoverbg;
     }
     
-    Graphics::BitmapRectangleProvider &SimpleGenerator::DownBorder() {
-        if(!downborder) {
+    Graphics::BitmapRectangleProvider &SimpleGenerator::DownBG() {
+        if(!downbg) {
             auto c = Background.Regular;
             c.Blend(Background.Down);
-            downborder = makeborder(Border.Color, c);
+            downbg = makeborder(0x0, c);
         }
         
-        return *downborder;
+        return *downbg;
     }
-    
+        
     Graphics::RectangleProvider &SimpleGenerator::FocusBorder() {
         if(!focusborder)
             focusborder = makefocusborder();
         
         return *focusborder;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::NormalEmptyBorder() {
+        if(!normalemptyborder)
+            normalemptyborder = makeborder(Border.Color, 0x0);
+        
+        return *normalemptyborder;
     }
     
     Graphics::BitmapRectangleProvider *SimpleGenerator::makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingside) {
@@ -261,7 +299,7 @@ namespace Gorgon { namespace Widgets {
                 list[7].X = bsize - off;
             }
             
-            CGI::DrawLines(bi.GetData(), list, (float)Border.Width, CGI::SolidFill<>(Border.Color));
+            CGI::DrawLines(bi.GetData(), list, (float)Border.Width, CGI::SolidFill<>(border));
         }
         
         if(missingside == 2) {
@@ -679,6 +717,81 @@ namespace Gorgon { namespace Widgets {
             foc.SetPositioning(foc.Absolute);
             foc.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
         }
+        return temp;
+    }
+    
+    UI::Template SimpleGenerator::CheckboxButton() {
+        
+        UI::Template temp;
+        temp.SetSize((WidgetWidth-Spacing*3)/4, BordedWidgetHeight);
+        
+        auto bgsize = temp.GetSize();
+        
+        {
+            auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
+            
+            bg.Background.SetAnimation(NormalBG());
+            bg.AddIndex(1);
+            bg.AddIndex(2);
+            bg.AddIndex(3);
+        }
+        
+        {
+            auto &bg = temp.AddContainer(0, UI::ComponentCondition::Hover);
+            
+            bg.Background.SetAnimation(HoverBG());
+            bg.AddIndex(1);
+            bg.AddIndex(2);
+            bg.AddIndex(3);
+        }
+        
+        {
+            auto &bg = temp.AddContainer(0, UI::ComponentCondition::Down);
+            
+            bg.Background.SetAnimation(DownBG());
+            bg.AddIndex(1);
+            bg.AddIndex(2);
+            bg.AddIndex(3);
+        }
+        
+        auto &icon = temp.AddPlaceholder(1, UI::ComponentCondition::Always);
+        icon.SetDataEffect(icon.Icon);
+        icon.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+        icon.SetSize(100, 100, UI::Dimension::Percent);
+        icon.SetPositioning(icon.Absolute);
+        icon.SetSizing(icon.Fixed);
+        icon.SetClip(true);
+
+        {
+            auto &txt_n = temp.AddTextholder(3, UI::ComponentCondition::Always);
+            txt_n.SetRenderer(RegularFont);
+            txt_n.SetColor(Forecolor.Regular);
+            txt_n.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+            txt_n.SetDataEffect(UI::ComponentTemplate::Text);
+            txt_n.SetClip(true);
+            txt_n.SetSize(100, 100, UI::Dimension::Percent);
+            txt_n.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+            txt_n.SetPositioning(txt_n.Absolute);
+        }
+
+        
+        {
+            auto &foc = temp.AddContainer(2, UI::ComponentCondition::Focused);
+            foc.Background.SetAnimation(FocusBorder());
+            foc.SetMargin(1);
+            foc.SetSize(100, 100, UI::Dimension::Percent);
+            foc.SetPositioning(foc.Absolute);
+            foc.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+        }
+        
+        {
+            auto &sel = temp.AddContainer(2, UI::ComponentCondition::State2);
+            sel.Background.SetAnimation(NormalEmptyBorder());
+            sel.SetSize(100, 100, UI::Dimension::Percent);
+            sel.SetPositioning(sel.Absolute);
+            sel.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+        }
+        
         return temp;
     }
     

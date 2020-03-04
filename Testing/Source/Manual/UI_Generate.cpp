@@ -42,6 +42,7 @@ int main() {
     auto btntemp = gen.Button();
     auto radtemp = gen.RadioButton();
     auto chktemp = gen.Checkbox();
+    auto chktemp2 = gen.CheckboxButton();
     auto icobtntemp = gen.IconButton();
     auto lbltemp = gen.Label();
     auto pnltemp = gen.BlankPanel();
@@ -138,7 +139,7 @@ int main() {
     });
     decrease.ActivateClickRepeat();
     
-    Widgets::Checkbox chk1(chktemp, "Sugar?");
+    Widgets::Checkbox chk1(chktemp2, "Su?");
     
     //app.wind.Add(chk1);
     chk1.Move(300, 0);
