@@ -372,7 +372,11 @@ namespace Gorgon { namespace Graphics {
         void Adopt(const RectangularDrawable &img) {
             destroylist.Add(img);
         }
-            
+           
+        /// @see Gorgon::Graphics::GlyphRenderer::GetLetterHeight. This function may produce
+        /// incorrect values if the bitmap data for the used letters are not present.
+        virtual std::pair<int, int> GetLetterHeight(bool asciionly = false) const override;
+
         
         virtual const GlyphRenderer &GetGlyphRenderer() const override {
             return *this;

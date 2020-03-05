@@ -994,6 +994,74 @@ namespace Gorgon { namespace Graphics {
         }
     }
 
+    std::pair<int, int>  BitmapFont::GetLetterHeight(bool asciionly) const {
+        Char c[3];
+
+        if(asciionly) {
+            c[0] = 'A';
+        }
+        else {
+            if(glyphmap.count(0xc2)) {
+                c[0] = 0xc2;
+            }
+            else
+                c[0] = 'A';
+        }
+        c[1] = 'j';
+        c[2] = 'f';
+
+        for(int i = 0; i<3; i++) {
+            if(!glyphmap.count(c[i]) || !glyphmap.at(c[i]).image)
+                return {0, GetHeight()};
+        }
+
+        int miny = GetHeight(), maxy = 0;
+
+        for(int i = 0; i<3; i++) {
+            const auto &g = glyphmap.at(c[i]);
+            auto bmp = dynamic_cast<const Bitmap *>(g.image);
+
+            if(bmp && bmp->HasAlpha()) {
+                int firsty = 0, lasty = 0;
+                bool foundfirst = false;
+
+                for(int y=0; y<bmp->GetHeight(); y++) {
+                    bool found = false;
+                    for(int x=0; x<bmp->GetWidth(); x++) {
+                        if(bmp->GetAlphaAt(x, y)) {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if(!foundfirst && !found) {
+                        firsty++;
+                    }
+                    if(found) {
+                        foundfirst = true;
+                        lasty = y;
+                    }
+                }
+
+
+                if(g.offset.Y + firsty < miny)
+                    miny = g.offset.Y + firsty;
+
+                if(g.offset.Y + lasty > maxy)
+                    maxy = g.offset.Y + lasty;
+            }
+            else {
+                if(g.offset.Y < miny)
+                    miny = g.offset.Y;
+                
+                if(g.offset.Y + g.image->GetHeight() > maxy)
+                    maxy = g.offset.Y + g.image->GetHeight();
+            }
+        }
+
+        return {miny, maxy - miny};
+    }
+
     
     float BitmapFont::GetCursorAdvance(Glyph chr) const { 
 		if(glyphmap.count(chr))

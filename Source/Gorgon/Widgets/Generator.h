@@ -194,6 +194,8 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider *downbg = nullptr;
         
         Graphics::RectangleProvider *focusborder = nullptr;
+
+        std::pair<int, int> lettervsize, asciivsize;
     };
 
 }}

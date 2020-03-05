@@ -33,11 +33,14 @@ Graphics::Bitmap &prep(Graphics::Bitmap &bmp) {
 int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
     
-    Widgets::SimpleGenerator gen(15);
+    Widgets::SimpleGenerator gen(15, "DejavuSans");
     Widgets::SimpleGenerator gen2(12);
-    gen.Border.Radius=4;
+    gen.Border.Radius = 3;
     gen.UpdateDimensions();
     gen2.Focus.Color = Graphics::Color::Red;
+    gen2.Border.Radius = 2;
+
+    std::cout << "font height: " << gen.RegularFont.GetGlyphRenderer().GetLetterHeight(true).second << std::endl;
 
     auto btntemp = gen.Button();
     auto radtemp = gen.RadioButton();
@@ -65,7 +68,7 @@ int main() {
     
     Widgets::RadioButtons<int> rad(radtemp);
     
-    rad.Add(0, "Ájmericano");
+    rad.Add(0, u8"Ájmericano");
     rad.Add(1, "Latte");
     rad.Add(2);
 

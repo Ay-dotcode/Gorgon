@@ -111,6 +111,12 @@ namespace Gorgon { namespace Graphics {
         /// actual draw location to compensate.
         virtual int GetHeight() const = 0;
 
+        /// Returns the offset (first) and maximum height (second) that is used by letters. Offset 
+        /// is the distance of the letter with max height to the top. This function uses Â and j
+        /// to calculate letter height when ascii only is not set. If ascii only is set, it uses
+        /// A, f, j. If Â is not found, this function simply reverts to using A.
+        virtual std::pair<int, int> GetLetterHeight(bool asciionly = false) const = 0;
+
         /// Width of a digit, if digits do not have the same width, maximum should be returned. For
         /// practical reasons, this function is expected to consider arabic numerals.
         virtual int GetDigitWidth() const = 0;

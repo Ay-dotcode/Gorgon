@@ -1045,4 +1045,51 @@ namespace Gorgon { namespace Graphics {
         data     = nullptr;
         datasize = 0;
     }
+    
+    std::pair<int, int> FreeType::GetLetterHeight(bool asciionly) const {
+        Char c[3];
+
+        if(asciionly) {
+            c[0] = 'A';
+
+            loadglyphs('A', true);
+            loadglyphs('f', true);
+            loadglyphs('j', true);
+        }
+        else {
+            loadglyphs('A', true);
+            loadglyphs(0xc2, true);
+            loadglyphs('f', true);
+            loadglyphs('j', true);
+
+            if(glyphmap.count(0xc2)) {
+                c[0] = 0xc2;
+            }
+            else
+                c[0] = 'A';
+        }
+        c[1] = 'j';
+        c[2] = 'f';
+
+        for(int i = 0; i<3; i++) {
+            if(!glyphmap.count(c[i]) && !glyphmap.at(c[i]).images.regular)
+                return {0, GetHeight()};
+        }
+
+        int miny = GetHeight(), maxy = 0;
+
+        for(int i = 0; i<3; i++) {
+            const auto &g = glyphmap.at(c[i]);
+
+            //we trust freetype to give us trimmed images
+
+            if(g.offset.Y < miny)
+                miny = g.offset.Y;
+
+            if(g.offset.Y + g.images.regular->GetHeight() > maxy)
+                maxy = g.offset.Y + g.images.regular->GetHeight();
+        }
+
+        return {miny + baseline, maxy - miny};
+    }
 } }

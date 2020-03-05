@@ -324,7 +324,10 @@ namespace Gorgon { namespace Graphics {
         /// however, new glyphs cannot be loaded and packed after this function is issued. 
         /// Additionally, bitmap font copying and unpacking option in moving out will not work.
         void Discard();
-        
+
+
+        virtual std::pair<int, int> GetLetterHeight(bool asciionly = false) const override;
+
     private:
         void pack(float extrasize = 0.2) const;
         
