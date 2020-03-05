@@ -126,6 +126,10 @@ namespace Gorgon { namespace Widgets {
             return scrollspeed != 0;
         }
 
+        using WidgetBase::Enable;
+        using WidgetBase::Disable;
+        using WidgetBase::ToggleEnabled;
+
         virtual void SetEnabled(bool value) override {
             if(value != IsEnabled()) {
                 ComponentStackWidget::SetEnabled(value);
@@ -155,6 +159,15 @@ namespace Gorgon { namespace Widgets {
         void updatecontent();
         
         bool updaterequired = false;
+
+        virtual void parentenabledchanged(bool state) {
+            ComponentStackWidget::parentenabledchanged(state);
+
+            if(!state && IsEnabled())
+                distributeparentenabled(state);
+            else if(state && IsEnabled())
+                distributeparentenabled(state);
+        }
         
         int overscroll = 0;
         bool scrollclipped = true;

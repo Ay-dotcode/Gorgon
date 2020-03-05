@@ -55,7 +55,6 @@ int main() {
 
     Widgets::Button btn(btntemp, "Helloo...", []() { std::cout<<"Hello..."<<std::endl; });
     btn.Move(5,5);
-
     
     app.wind.Add(btn);
     btn.Focus();
@@ -72,6 +71,8 @@ int main() {
     rad.Add(0, u8"Ájmericano");
     rad.Add(1, "Latte");
     rad.Add(2);
+
+    rad.Disable(2);
 
     app.wind.Add(rad);
     rad.Move(150, 4);
@@ -96,7 +97,6 @@ int main() {
     chk.FocusEvent.Register([]{ std::cout << "Focus changed." << std::endl; });
 
     chk.Move(rad.GetLocation() + Gorgon::Geometry::Point(0, rad.GetSize().Height + 4));
-    chk.Disable();
 
     Widgets::Button ib(icobtntemp);
     auto ico = Graphics::BlankImage({16, 16}, Graphics::Color::Black);
@@ -104,7 +104,7 @@ int main() {
     ib.SetIcon(ico);
     ib.Move(chk.GetLocation() + Gorgon::Geometry::Point(0, chk.GetSize().Height + 4));
     app.wind.Add(ib);
-    
+
     
     Widgets::Panel pnl(pnltemp);
     pnl.Resize(350, 300);
@@ -149,7 +149,6 @@ int main() {
     //app.wind.Add(chk1);
     chk1.Move(300, 0);
     
-    
     app.wind.Add(pnl);
     pnl.Move(150, 0);
     app.wind.Add(mainpanel);
@@ -173,6 +172,7 @@ int main() {
     pnl.Add(ib);
     pnl.SetHeight(500);
     mainpanel.Resize(140, 500);
+    pnl.Disable();
 
     pnl.CreateOrganizer<Gorgon::UI::Organizers::List>();
 

@@ -78,6 +78,7 @@ namespace Gorgon { namespace UI {
         ComponentStack &stack; //allocate on heap due to its size.
         
         bool enabled = true;
+        bool parentenabled = true;
 
         /// This function is called when the parent's enabled state changes.
         virtual void parentenabledchanged(bool state) {
@@ -87,6 +88,8 @@ namespace Gorgon { namespace UI {
             else if(enabled && state) {
                 stack.RemoveCondition(ComponentCondition::Disabled);
             }
+
+            parentenabled = state;
         }
 
 		virtual void focused() override {

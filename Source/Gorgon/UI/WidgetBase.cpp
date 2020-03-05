@@ -55,6 +55,20 @@ namespace Gorgon { namespace UI {
         BoundsChangedEvent();
     }
 
+
+    /// Called when this widget added to the given container
+    void WidgetBase::addedto(WidgetContainer &container) {
+        if(parent == &container)
+            return;
+
+        parent = &container;
+
+        if(IsVisible())
+            boundschanged();
+
+        parentenabledchanged(parent->IsEnabled());
+    }
+
     void WidgetBase::removed(){
         if(!parent)
             return;

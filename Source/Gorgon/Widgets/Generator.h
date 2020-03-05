@@ -100,6 +100,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider &NormalBorder();
         Graphics::BitmapRectangleProvider &HoverBorder();
         Graphics::BitmapRectangleProvider &DownBorder();
+        Graphics::BitmapRectangleProvider &DisabledBorder();
         
         Graphics::BitmapRectangleProvider &PanelBorder();
         Graphics::BitmapRectangleProvider &TopPanelBorder();
@@ -115,6 +116,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider &NormalBG();
         Graphics::BitmapRectangleProvider &HoverBG();
         Graphics::BitmapRectangleProvider &DownBG();
+        Graphics::BitmapRectangleProvider &DisabledBG();
         
         Graphics::RectangleProvider &FocusBorder();
         
@@ -134,15 +136,18 @@ namespace Gorgon { namespace Widgets {
         } Focus;
         
         struct BorderInfo {
-            int Width             = 2;
-            int Radius            = 0;
-            Graphics::RGBA Color  = Graphics::Color::Charcoal;
+            int Width               = 2;
+            int Radius              = 0;
+            Graphics::RGBA Color    = Graphics::Color::Charcoal;
+            Graphics::RGBA Disabled = {Graphics::Color::Grey, 0.5};
         } Border;
         
         struct BackgroundInfo {
             Graphics::RGBA Regular = {Graphics::Color::Ivory, 0.8};
             Graphics::RGBA Hover   = {Graphics::Color::LightTan, 0.5};
             Graphics::RGBA Down    = {Graphics::Color::Crimson, 0.2};
+            Graphics::RGBA Disabled=  Graphics::Color::LightGrey;
+
             
             Graphics::RGBA Edit    = {Graphics::Color::White};
             Graphics::RGBA Panel   = {Graphics::Color::Grey, Graphics::Color::Ivory, 0.5};
@@ -152,6 +157,7 @@ namespace Gorgon { namespace Widgets {
         
         struct ForecolorInfo {
             Graphics::RGBA Regular = Graphics::Color::Charcoal;
+            Graphics::RGBA Disabled= {Graphics::Color::Grey, 0.5};
             Graphics::RGBA Hover   = Graphics::Color::Black;
             Graphics::RGBA Down    = Graphics::Color::Black;
             Graphics::RGBA Error   = Graphics::Color::Red;
@@ -178,6 +184,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider *normalborder = nullptr;
         Graphics::BitmapRectangleProvider *hoverborder = nullptr;
         Graphics::BitmapRectangleProvider *downborder = nullptr;
+        Graphics::BitmapRectangleProvider *disabledborder = nullptr;
         Graphics::BitmapRectangleProvider *panelborder = nullptr;
         Graphics::BitmapRectangleProvider *toppanelborder = nullptr;
         Graphics::BitmapRectangleProvider *bottompanelborder = nullptr;
@@ -192,6 +199,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider *normalbg = nullptr;
         Graphics::BitmapRectangleProvider *hoverbg = nullptr;
         Graphics::BitmapRectangleProvider *downbg = nullptr;
+        Graphics::BitmapRectangleProvider *disabledbg = nullptr;
         
         Graphics::RectangleProvider *focusborder = nullptr;
 

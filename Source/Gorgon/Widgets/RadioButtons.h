@@ -71,7 +71,49 @@ namespace Gorgon { namespace Widgets {
             boundschanged();
             childboundschanged(&c);
         }
+
+        using WidgetBase::Enable;
+
+        /// Enables the given element
+        void Enable(const T_ &value) {
+            SetEnabled(value, true);
+        }
+
+        using WidgetBase::Disable;
+
+
+        /// Disables the given element
+        void Disable(const T_ &value) {
+            SetEnabled(value, false);
+        }
+
+        using WidgetBase::ToggleEnabled;
+
+        /// Toggles enabled state of the given element
+        void ToggleEnabled(const T_ &value) {
+            SetEnabled(value, !IsEnabled(value));
+        }
+
+
+        /// Sets the enabled state the given element
+        void SetEnabled(const T_ &value, bool state) {
+            for(auto p : this->elements) {
+                if(p.first == value)
+                    p.second.SetEnabled(state);
+            }
+        }
         
+        /// Returns if given element is enabled. Returns false if the element
+        /// is not found.
+        bool IsEnabled(const T_ &value) const {
+            for(auto p : this->elements)
+                if(p.first == value)
+                    return p.second.IsEnabled();
+
+            return false;
+        }
+
+
         Geometry::Size GetInteriorSize() const override {
             return GetSize();
         }
@@ -165,6 +207,12 @@ namespace Gorgon { namespace Widgets {
             return contents;
         }
 
+        virtual void parentenabledchanged(bool state) {
+            if(!state && IsEnabled())
+                distributeparentenabled(state);
+            else if(state && IsEnabled())
+                distributeparentenabled(state);
+        }
 
         Geometry::Point location = {0, 0};
         int spacing = 4;

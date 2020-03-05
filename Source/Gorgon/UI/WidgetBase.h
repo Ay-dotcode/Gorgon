@@ -155,17 +155,7 @@ namespace Gorgon { namespace UI {
         virtual void addto(Layer &layer) = 0;
 
         /// Called when this widget added to the given container
-        virtual void addedto(WidgetContainer &container) {
-            if(parent == &container)
-                return;
-            
-            parent = &container;
-            
-            if(IsVisible())
-                boundschanged();
-
-            parentenabledchanged(parent->IsEnabled());
-        }
+        virtual void addedto(WidgetContainer &container);
 
         /// When called, widget should remove itself from the given layer
         virtual void removefrom(Layer &layer) = 0;

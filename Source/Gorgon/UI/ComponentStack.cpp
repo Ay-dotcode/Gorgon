@@ -36,7 +36,7 @@ namespace Gorgon { namespace UI {
                 }
             }
                 
-            if(over_fn)
+            if(!IsDisabled() && over_fn)
                 over_fn(ComponentTemplate::NoTag);
         });
         
@@ -46,7 +46,7 @@ namespace Gorgon { namespace UI {
                 disabled.erase(ComponentCondition::Hover);
             }
 
-            if(out_fn)
+            if(!IsDisabled() && out_fn)
                 out_fn(ComponentTemplate::NoTag);
         });
         
@@ -62,7 +62,7 @@ namespace Gorgon { namespace UI {
                 }
             }
 
-            if(down_fn)
+            if(!IsDisabled() && down_fn)
                 down_fn(ComponentTemplate::NoTag, location, btn);
             
             downlocation = location;
