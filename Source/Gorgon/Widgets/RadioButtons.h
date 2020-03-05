@@ -118,6 +118,29 @@ namespace Gorgon { namespace Widgets {
         
         using WidgetBase::IsVisible;
 
+        virtual void SetEnabled(bool value) override {
+            if(enabled == value)
+                return;
+
+            enabled = value;
+
+            if(!value) {
+                ForceRemoveFocus();
+
+                if(HasParent() && IsFocused()) {
+                    GetParent().FocusNext();
+                    if(IsFocused())
+                        GetParent().ForceRemoveFocus();
+                }
+            }
+
+            distributeparentenabled(value);
+        }
+
+        virtual bool IsEnabled() const override {
+            return enabled;
+        }
+
     protected:
         virtual void addto(Layer &layer) override { 
             layer.Add(contents);
@@ -135,7 +158,7 @@ namespace Gorgon { namespace Widgets {
 
 
         virtual bool allowfocus() const override {
-            return false;
+            return true;
         }
         
         Gorgon::Layer &getlayer() override {
@@ -146,6 +169,7 @@ namespace Gorgon { namespace Widgets {
         Geometry::Point location = {0, 0};
         int spacing = 4;
         const UI::Template &temp;
+        bool enabled = true;
         
     private:
         virtual void show() override {
@@ -154,6 +178,21 @@ namespace Gorgon { namespace Widgets {
         
         virtual void hide() override {
             contents.Hide();
+        }
+
+        virtual void focuschanged() {
+            if(HasFocusedWidget() && !IsFocused())
+                Focus();
+            else if(!HasFocusedWidget() && IsFocused() && HasParent())
+                GetParent().RemoveFocus();
+        }
+
+        virtual void focuslost() {
+            WidgetBase::focuslost();
+
+            if(HasFocusedWidget()) {
+                ForceRemoveFocus();
+            }
         }
         
         Gorgon::Graphics::Layer contents;

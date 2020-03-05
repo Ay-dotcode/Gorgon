@@ -14,7 +14,7 @@ namespace Gorgon { namespace UI {
 		if(!parent)
 			return false;
 
-		if(!allowfocus() || !visible)
+		if(!allowfocus() || !visible || !enabled)
 			return false;
 
 		return parent->SetFocusTo(*this);

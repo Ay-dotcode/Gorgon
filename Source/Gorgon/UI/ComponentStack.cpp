@@ -75,11 +75,13 @@ namespace Gorgon { namespace UI {
                     disabled.erase(ComponentCondition::Down);
                 }
             }
+
+            if(!IsDisabled()) {
+                if(click_fn && downlocation.Distance(location) < WindowManager::ClickThreshold)
+                    click_fn(ComponentTemplate::NoTag, location, btn);
+            }
             
-            if(click_fn && downlocation.Distance(location) < WindowManager::ClickThreshold)
-                click_fn(ComponentTemplate::NoTag, location, btn);
-            
-            if(up_fn)
+            if(!IsDisabled() && up_fn)
                 up_fn(ComponentTemplate::NoTag, location, btn);
             
         });

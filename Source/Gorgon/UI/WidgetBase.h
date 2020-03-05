@@ -90,6 +90,21 @@ namespace Gorgon { namespace UI {
             return visible;
         }
 
+        /// Enables the widget so that the user can interact with it
+        void Enable() { SetEnabled(true); }
+
+        /// Disables the widget so that the user cannot interact with it
+        void Disable() { SetEnabled(false); }
+
+        /// Toggles enabled state of the widget
+        void ToggleEnabled() { SetEnabled(!IsEnabled()); }
+
+        /// Sets the enabled state of the widget
+        virtual void SetEnabled(bool value) = 0;
+
+        /// Returns whether the widget is enabled.
+        virtual bool IsEnabled() const = 0;
+
         /// Returns if this widget has a parent
         bool HasParent() const { return parent != nullptr; }
 
@@ -148,6 +163,8 @@ namespace Gorgon { namespace UI {
             
             if(IsVisible())
                 boundschanged();
+
+            parentenabledchanged(parent->IsEnabled());
         }
 
         /// When called, widget should remove itself from the given layer
@@ -179,6 +196,9 @@ namespace Gorgon { namespace UI {
         
         /// Call this function when the widget bounds is changed
         virtual void boundschanged();
+
+        /// This function is called when the parent's enabled state changes.
+        virtual void parentenabledchanged(bool state) { }
         
     private:
         bool visible = true;

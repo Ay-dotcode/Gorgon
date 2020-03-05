@@ -230,7 +230,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
                     
                     display.insert(selstart.byte, s);
                     
-                    selstart.byte  += s.size();
+                    selstart.byte  += (int)s.size();
                     selstart.glyph += gcnt;
                     
                     glyphcount += gcnt;

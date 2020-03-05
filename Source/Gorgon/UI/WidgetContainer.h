@@ -164,45 +164,30 @@ namespace Gorgon { namespace UI {
         virtual bool IsEnabled() const { return isenabled; }
         
         /// Enables the container, allowing interaction with the widgets
-        /// in it. This function will return true if the container is
-        /// enabled at the end of the call.
-        bool Enable() {
-            if(!IsEnabled()) {
-                isenabled = true;
-                return enable();
-            }
-            
-            return true;
+        /// in it.
+        void Enable() {
+            SetEnabled(true);
         }
         
         /// Disables the container, disallowing interactions of all widgets
-        /// in it. This function will return true if the container is
-        /// enabled at the end of the call.
-        bool Disable() {
-            if(IsEnabled()) {
-                isenabled = false;
-                return disable();
-            }
-            
-            return true;
+        /// in it.
+        void Disable() {
+            SetEnabled(false);
         }
         
         /// Toggles the enabled state of this container. If the state is
         /// toggled after the call, this function will return true.
-        bool ToggleEnabled() { 
-            if(!isenabled)
-                return Enable(); 
-            else
-                return Disable();
+        void ToggleEnabled() { 
+            SetEnabled(!IsEnabled());
         }
         
         /// Sets the enabled state of this container. This function will 
         /// return true if the container is enabled at the end of the call.
-        bool SetEnabled(bool enabled) {
-            if(enabled)
-                return Enable();
-            else
-                return Disable();
+        virtual void SetEnabled(bool value) {
+            if(value != isenabled) {
+                isenabled = value;
+                distributeparentenabled(value);
+            }
         }
         
         /// Should return the interior (usable) size of the container.
@@ -392,16 +377,6 @@ namespace Gorgon { namespace UI {
 
         /// This function is called after a widget is removed
         virtual void widgetremoved(WidgetBase &) { }
-        
-        /// This function is called when the container is to be enabled. This function
-        /// will only be called when the container was disabled prior to the call.
-        /// Return false if this container cannot be enabled.
-        virtual bool enable() { return true; }
-        
-        /// This function is called when the container is to be disabled. This function
-        /// will only be called when the container is enabled prior to the call.
-        /// Return false if this container cannot be disabled.
-        virtual bool disable() { return true; }
 
         /// If this widget is not top level, return the current strategy used by the
         /// parent. Never return Inherit from this function.
@@ -424,7 +399,10 @@ namespace Gorgon { namespace UI {
 
         /// Distributes a pressed character to the focused widget.
         bool distributecharevent(Char c);
-        
+
+        /// Distributes a enabled state to children
+        void distributeparentenabled(bool state);
+
         /// The boundary of any of the children is changed. Source could be nullptr
         virtual void childboundschanged(WidgetBase *source);
 

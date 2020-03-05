@@ -40,6 +40,7 @@ int main() {
     gen2.Focus.Color = Graphics::Color::Red;
     gen2.Border.Radius = 2;
 
+
     std::cout << "font height: " << gen.RegularFont.GetGlyphRenderer().GetLetterHeight(true).second << std::endl;
 
     auto btntemp = gen.Button();
@@ -51,10 +52,10 @@ int main() {
     auto pnltemp = gen.BlankPanel();
     auto pnltemp2 = gen.Panel();
     auto inptemp = gen2.Inputbox();
-    
 
     Widgets::Button btn(btntemp, "Helloo...", []() { std::cout<<"Hello..."<<std::endl; });
     btn.Move(5,5);
+
     
     app.wind.Add(btn);
     btn.Focus();
@@ -75,18 +76,18 @@ int main() {
     app.wind.Add(rad);
     rad.Move(150, 4);
     
-    rad.ChangedEvent.Register([](int val) {
-        std::cout<<"Changed to "<<val<<std::endl;
-    });
-
     
 
     Widgets::Checkbox chk(chktemp, "Sugar", [](bool state) {
         std::cout<<(state ? "with sugar" : "without sugar")<<std::endl;
     });
 
+    rad.ChangedEvent.Register([&](int val) {
+        std::cout<<"Changed to "<<val<<std::endl;
+        chk.ToggleEnabled();
+    });
+    
     //chk.Hide();
-    //app.wind.Add(chk);
 
     chk.BoundsChangedEvent.Register([] { 
         std::cout << "Bounds changed" << std::endl; 
@@ -95,6 +96,7 @@ int main() {
     chk.FocusEvent.Register([]{ std::cout << "Focus changed." << std::endl; });
 
     chk.Move(rad.GetLocation() + Gorgon::Geometry::Point(0, rad.GetSize().Height + 4));
+    chk.Disable();
 
     Widgets::Button ib(icobtntemp);
     auto ico = Graphics::BlankImage({16, 16}, Graphics::Color::Black);
@@ -163,7 +165,8 @@ int main() {
     pnl.Add(inp);
     inp.Move(5, 80);
     inp.SelectAll();
-    
+
+    pnl.Add(chk);
     pnl.Add(lbl);
     pnl.Add(error);
     pnl.Add(rad);

@@ -125,6 +125,17 @@ namespace Gorgon { namespace Widgets {
         bool IsSmoothScrollEnabled() const {
             return scrollspeed != 0;
         }
+
+        virtual void SetEnabled(bool value) override {
+            if(value != IsEnabled()) {
+                ComponentStackWidget::SetEnabled(value);
+                distributeparentenabled(value);
+            }
+        }
+
+        virtual bool IsEnabled() const override {
+            return ComponentStackWidget::IsEnabled();
+        }
         
     protected:
         virtual bool allowfocus() const override;

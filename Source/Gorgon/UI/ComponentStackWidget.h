@@ -2,6 +2,7 @@
 
 #include "WidgetBase.h"
 #include "ComponentStack.h"
+#include "WidgetContainer.h"
 
 namespace Gorgon { namespace UI {
     
@@ -12,11 +13,15 @@ namespace Gorgon { namespace UI {
      */
     class ComponentStackWidget : public WidgetBase {
     public:
-        ComponentStackWidget(const Template &temp) : stack(temp, temp.GetSize()) { }
+        ComponentStackWidget(const Template &temp) : stack(*new ComponentStack(temp, temp.GetSize())) { }
         
         ComponentStackWidget(ComponentStackWidget &&) = default;
         
         ComponentStackWidget &operator =(ComponentStackWidget &&) = default;
+
+        virtual ~ComponentStackWidget() {
+            delete &stack;
+        }
         
         using WidgetBase::Move;
         
@@ -44,8 +49,45 @@ namespace Gorgon { namespace UI {
 			return stack.GetSize();
 		}
 
+        virtual void SetEnabled(bool value) override {
+            if(enabled == value)
+                return;
+
+            enabled = value;
+
+            if(!value) {
+                stack.AddCondition(ComponentCondition::Disabled);
+                if(HasParent() && IsFocused()) {
+                    GetParent().FocusNext();
+                    if(IsFocused())
+                        GetParent().ForceRemoveFocus();
+                }
+            }
+            else {
+                if(!HasParent() || GetParent().IsEnabled()) {
+                    stack.RemoveCondition(ComponentCondition::Disabled);
+                }
+            }
+        }
+        
+        virtual bool IsEnabled() const override {
+            return enabled;
+        }
+        
 	protected:
-        mutable ComponentStack stack;
+        ComponentStack &stack; //allocate on heap due to its size.
+        
+        bool enabled = true;
+
+        /// This function is called when the parent's enabled state changes.
+        virtual void parentenabledchanged(bool state) {
+            if(enabled && !state) {
+                stack.AddCondition(ComponentCondition::Disabled);
+            }
+            else if(enabled && state) {
+                stack.RemoveCondition(ComponentCondition::Disabled);
+            }
+        }
 
 		virtual void focused() override {
             WidgetBase::focused();

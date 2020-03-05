@@ -148,7 +148,7 @@ namespace Gorgon { namespace UI {
             return false;
 
         for(int i=after+1; i<widgets.GetSize(); i++) {
-            if(widgets[i].allowfocus() && widgets[i].IsVisible()) {
+            if(widgets[i].allowfocus() && widgets[i].IsVisible() && widgets[i].IsEnabled()) {
                 auto prevfoc = focused;
 
                 focused = &widgets[i];
@@ -186,7 +186,7 @@ namespace Gorgon { namespace UI {
 
         //rollover
         for(int i=0; i<after; i++) {
-            if(widgets[i].allowfocus() && widgets[i].IsVisible()) {
+            if(widgets[i].allowfocus() && widgets[i].IsVisible() && widgets[i].IsEnabled()) {
                 auto prevfoc = focused;
 
                 focused = &widgets[i];
@@ -211,7 +211,7 @@ namespace Gorgon { namespace UI {
             return false;
 
         for(int i=before-1; i>=0; i--) {
-            if(widgets[i].allowfocus() && widgets[i].IsVisible()) {
+            if(widgets[i].allowfocus() && widgets[i].IsVisible() && widgets[i].IsEnabled()) {
                 auto prevfoc = focused;
 
                 focused = &widgets[i];
@@ -260,7 +260,7 @@ namespace Gorgon { namespace UI {
 
         //rollover
         for(int i=widgets.GetSize()-1; i>before; i--) {
-            if(widgets[i].allowfocus() && widgets[i].IsVisible()) {
+            if(widgets[i].allowfocus() && widgets[i].IsVisible() && widgets[i].IsEnabled()) {
                 auto prevfoc = focused;
 
                 focused = &widgets[i];
@@ -296,7 +296,7 @@ namespace Gorgon { namespace UI {
         if(&widget == focused)
             return true;
 
-        if(!widget.allowfocus() && widget.IsVisible())
+        if(!widget.allowfocus() || !widget.IsVisible() || !widget.IsEnabled())
             return false;
 
         if(focused && !focused->canloosefocus())
@@ -394,6 +394,11 @@ namespace Gorgon { namespace UI {
             return focused->CharacterEvent(c);
 
         return false;
+    }
+
+    void WidgetContainer::distributeparentenabled(bool state) {
+        for(auto &w : widgets)
+            w.parentenabledchanged(state);
     }
 
     void WidgetContainer::childboundschanged(WidgetBase *) {
