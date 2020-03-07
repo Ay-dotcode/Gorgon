@@ -115,8 +115,10 @@ namespace Gorgon { namespace Widgets {
         Spacing = (int)std::round((float)totalh / 4);
 
         WidgetWidth = regularrenderer->GetDigitWidth() * 8 + Border.Width * 2 + Border.Radius / 2 + Spacing * 3;
-        BordedWidgetHeight = totalh + Border.Radius / 2 + Spacing * 2;
+        BordedWidgetHeight = totalh + Border.Radius / 2 + Spacing * 2 + Border.Width * 2;
         WidgetHeight = totalh + Focus.Width * 2;
+        
+        ObjectHeight = asciivsize.second;
     }
     
     Graphics::BitmapRectangleProvider &SimpleGenerator::NormalBorder() {

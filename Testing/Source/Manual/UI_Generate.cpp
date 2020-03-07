@@ -172,7 +172,7 @@ int main() {
     pnl.Add(ib);
     pnl.SetHeight(500);
     mainpanel.Resize(140, 500);
-    pnl.Disable();
+    //pnl.Disable();
 
     pnl.CreateOrganizer<Gorgon::UI::Organizers::List>();
 
