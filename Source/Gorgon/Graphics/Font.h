@@ -130,7 +130,7 @@ namespace Gorgon { namespace Graphics {
 
         /// Should return the average thickness of a line. This information can be used to construct
         /// underline and strike through.
-        virtual int GetLineThickness() const = 0;
+        virtual float GetLineThickness() const = 0;
 
         /// The position of the underline, if it is to be drawn.
         virtual int GetUnderlineOffset() const = 0;

@@ -1,4 +1,4 @@
-﻿#include "GraphicsHelper.h"
+#include "GraphicsHelper.h"
 
 #include <Gorgon/UI/ComponentStack.h>
 #include <Gorgon/Widgets/Generator.h>
@@ -34,11 +34,12 @@ int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
     
     Widgets::SimpleGenerator gen(15, "DejavuSans");
-    Widgets::SimpleGenerator gen2(12);
-    gen.Border.Radius = 3;
+    Widgets::SimpleGenerator gen2(11);
+    gen.UpdateBorders();
     gen.UpdateDimensions();
     gen2.Focus.Color = Graphics::Color::Red;
-    gen2.Border.Radius = 2;
+    gen2.UpdateBorders(false);
+    gen2.UpdateDimensions();
 
 
     std::cout << "font height: " << gen.RegularFont.GetGlyphRenderer().GetLetterHeight(true).second << std::endl;
@@ -53,7 +54,7 @@ int main() {
     auto pnltemp2 = gen.Panel();
     auto inptemp = gen2.Inputbox();
 
-    Widgets::Button btn(btntemp, "Helloo...", []() { std::cout<<"Hello..."<<std::endl; });
+    Widgets::Button btn(btntemp, "Helloo_...", []() { std::cout<<"Hello..."<<std::endl; });
     btn.Move(5,5);
     
     app.wind.Add(btn);
@@ -180,6 +181,11 @@ int main() {
     //lbl.Move(chk.GetLocation() + Gorgon::Geometry::Point(0, chk.GetSize().Height + 4));
     //error.Move(lbl.GetLocation().X,lbl.GetLocation().Y + 25);
     lbl.OwnIcon(prep(*new Graphics::Bitmap(Triangle(8, 8))));
+    
+    Geometry::Size b{30,30};
+    Geometry::Margin m{3};
+    
+    std::cout<<(b-m)<<std::endl;
     
     app.wind.Run();
 

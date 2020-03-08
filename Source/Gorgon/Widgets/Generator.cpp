@@ -114,11 +114,17 @@ namespace Gorgon { namespace Widgets {
 
         Spacing = (int)std::round((float)totalh / 4);
 
-        WidgetWidth = regularrenderer->GetDigitWidth() * 8 + Border.Width * 2 + Border.Radius / 2 + Spacing * 3;
+        WidgetWidth = regularrenderer->GetDigitWidth() * 8 + Border.Width * 2 + Border.Radius + Spacing * 3;
         BordedWidgetHeight = totalh + Border.Radius / 2 + Spacing * 2 + Border.Width * 2;
         WidgetHeight = totalh + Focus.Width * 2;
         
         ObjectHeight = asciivsize.second;
+    }
+    
+    void SimpleGenerator::UpdateBorders(bool smooth) {
+        Border.Width  = (int)std::max(std::round(regularrenderer->GetLineThickness()*2.5f), 1.f);
+        Border.Radius = asciivsize.second / 4;
+        Border.Divisions = smooth * Border.Radius  / 2;
     }
     
     Graphics::BitmapRectangleProvider &SimpleGenerator::NormalBorder() {
@@ -266,8 +272,8 @@ namespace Gorgon { namespace Widgets {
     }
     
     Graphics::BitmapRectangleProvider *SimpleGenerator::makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingside) {
-        int bsize = (Border.Width + Border.Radius + 1) * 2 + 16;
-        float off = (int)(Border.Width + 1) / 2; //round up
+        int bsize = (Border.Width + Border.Radius + 2) * 2 + 16;
+        float off = (int)(Border.Width + 1) / 2+1; //round up
         
         auto &bi = *new Graphics::Bitmap({bsize, bsize}, Graphics::ColorMode::RGBA);
         bi.Clear();
@@ -294,7 +300,9 @@ namespace Gorgon { namespace Widgets {
         else {
             auto r = Border.Radius;
             
-            Geometry::PointList<Geometry::Pointf> list = {
+            Geometry::PointList<Geometry::Pointf> list;
+            
+            /*= {
                 {off + r, off}, 
                 {off, off + r}, 
                 {off, bsize - off - r}, 
@@ -303,31 +311,45 @@ namespace Gorgon { namespace Widgets {
                 {bsize - off, bsize - off - r},
                 {bsize - off, off + r}, 
                 {bsize - off - r, off}, 
-            };
+            };*/
             
+            int div = Border.Divisions+1;
+            float angperdivision = -PI/2/div;
+            float angstart = -PI/2;
+            
+            for(int i=0; i<=div; i++) {
+                float ang = angstart + angperdivision*i;
+                list.Push(Geometry::Pointf::FromVector(r, ang, Geometry::Pointf{off+r, off+r}));
+            }
+            
+            angstart = PI;
+            for(int i=0; i<=div; i++) {
+                float ang = angstart + angperdivision*i;
+                list.Push(Geometry::Pointf::FromVector(r, ang, Geometry::Pointf{off+r, bsize-off-r}));
+            }
+            
+            angstart = PI/2;
+            for(int i=0; i<=div; i++) {
+                float ang = angstart + angperdivision*i;
+                list.Push(Geometry::Pointf::FromVector(r, ang, Geometry::Pointf{bsize-off-r, bsize-off-r}));
+            }
+            
+            angstart = 0;
+            for(int i=0; i<=div; i++) {
+                float ang = angstart + angperdivision*i;
+                list.Push(Geometry::Pointf::FromVector(r, ang, Geometry::Pointf{bsize-off-r, off+r}));
+            }
+            /*
             if(missingside) {
                 list[0].X = off;
                 list[7].X = bsize - off;
-            }
+            }*/
             
             CGI::Polyfill(bi.GetData(), list, CGI::SolidFill<>(bg));
             
-            list = {
-                {off + r, off}, 
-                {off, off + r}, 
-                {off, bsize - off - r}, 
-                {off + r, bsize - off}, 
-                {bsize - off - r, bsize - off},
-                {bsize - off, bsize - off - r},
-                {bsize - off, off + r}, 
-                {bsize - off - r, off}, 
-                {off + r, off}
-            };
             
-            if(missingside) {
-                list.Pop();
-                list[0].X = off;
-                list[7].X = bsize - off;
+            if(!missingside) {
+                list.Push(list.Front());
             }
             
             CGI::DrawLines(bi.GetData(), list, (float)Border.Width, CGI::SolidFill<>(border));
@@ -346,10 +368,10 @@ namespace Gorgon { namespace Widgets {
         drawables.Add(bi);
 
         auto ret = new Graphics::BitmapRectangleProvider(Graphics::Slice(bi, {
-            int(off*2+Border.Radius+1), 
-            int(off*2+Border.Radius+1), 
-            int(bsize-off*2-Border.Radius-1),
-            int(bsize-off*2-Border.Radius-1)
+            int(Border.Radius+Border.Width+1), 
+            int(Border.Radius+Border.Width+1), 
+            int(bsize-Border.Radius-Border.Width-1),
+            int(bsize-Border.Radius-Border.Width-1)
         }));
         
         ret->Prepare();
@@ -482,7 +504,7 @@ namespace Gorgon { namespace Widgets {
             auto &foc = temp.AddContainer(2, UI::ComponentCondition::Focused);
 
             foc.Background.SetAnimation(FocusBorder());
-            foc.SetMargin(Spacing / 2);
+            foc.SetMargin(Border.Width + Border.Radius / 2);
             foc.SetSize(100, 100, UI::Dimension::Percent);
             foc.SetPositioning(foc.Absolute);
             foc.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
@@ -1549,7 +1571,7 @@ namespace Gorgon { namespace Widgets {
         {
             auto &anim = *new Graphics::BitmapAnimationProvider();
             int h = lettervsize.first + lettervsize.second;
-            auto &img = *new Graphics::Bitmap({std::min(Border.Width/2, 1), h});
+            auto &img = *new Graphics::Bitmap({std::min((int)std::round(Border.Width/2.f), 1), h});
             img.ForAllPixels([&img, this, h](int x, int y) {
                 img(x, y, 0) = Border.Color.R;
                 img(x, y, 1) = Border.Color.G;
@@ -1558,7 +1580,7 @@ namespace Gorgon { namespace Widgets {
             });
             drawables.Add(img);
             img.Prepare();
-            auto &img2 = *new Graphics::Bitmap({std::min(Border.Width/2, 1), RegularFont.GetGlyphRenderer().GetHeight()});
+            auto &img2 = *new Graphics::Bitmap({std::min((int)std::round(Border.Width/2.f), 1), RegularFont.GetGlyphRenderer().GetHeight()});
             img2.Clear();
             img2.Prepare();
             drawables.Add(img2);

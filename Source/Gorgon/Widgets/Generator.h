@@ -127,6 +127,9 @@ namespace Gorgon { namespace Widgets {
         /// This function will update default widget dimensions. Call this function after
         /// setting up or changing borders, font size
         void UpdateDimensions();
+        
+        /// This function will update default widget borders depending on the font size
+        void UpdateBorders(bool smooth = true);
 
         Graphics::StyledRenderer RegularFont;
 
@@ -138,6 +141,7 @@ namespace Gorgon { namespace Widgets {
         struct BorderInfo {
             int Width               = 2;
             int Radius              = 0;
+            int Divisions           = 1;
             Graphics::RGBA Color    = Graphics::Color::Charcoal;
             Graphics::RGBA Disabled = {Graphics::Color::Grey, 0.5};
         } Border;

@@ -331,9 +331,9 @@ namespace Gorgon { namespace Graphics {
             baseline = std::round(lib->face->size->metrics.ascender/64.f);
             
             linegap = std::round(lib->face->size->metrics.height/64.f);
-           
+            
             underlinepos  = (int)std::round(baseline - FT_MulFix((lib->face->underline_position),yscale)/64.f);
-            linethickness = (int)std::round(FT_MulFix((lib->face->underline_thickness),xscale)/64.f);
+            linethickness = FT_MulFix((lib->face->underline_thickness),yscale)/64.f;
          }
         else {
             //search bitmap size table and find values that is closest to the given one.
