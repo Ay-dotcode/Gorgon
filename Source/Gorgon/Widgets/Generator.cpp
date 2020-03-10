@@ -302,24 +302,18 @@ namespace Gorgon { namespace Widgets {
             
             Geometry::PointList<Geometry::Pointf> list;
             
-            /*= {
-                {off + r, off}, 
-                {off, off + r}, 
-                {off, bsize - off - r}, 
-                {off + r, bsize - off}, 
-                {bsize - off - r, bsize - off},
-                {bsize - off, bsize - off - r},
-                {bsize - off, off + r}, 
-                {bsize - off - r, off}, 
-            };*/
-            
             int div = Border.Divisions+1;
             float angperdivision = -PI/2/div;
             float angstart = -PI/2;
             
-            for(int i=0; i<=div; i++) {
-                float ang = angstart + angperdivision*i;
-                list.Push(Geometry::Pointf::FromVector(r, ang, Geometry::Pointf{off+r, off+r}));
+            if(missingside) {
+                list.Push({off, off});
+            }
+            else {
+                for(int i=0; i<=div; i++) {
+                    float ang = angstart + angperdivision*i;
+                    list.Push(Geometry::Pointf::FromVector(r, ang, Geometry::Pointf{off+r, off+r}));
+                }
             }
             
             angstart = PI;
@@ -334,16 +328,16 @@ namespace Gorgon { namespace Widgets {
                 list.Push(Geometry::Pointf::FromVector(r, ang, Geometry::Pointf{bsize-off-r, bsize-off-r}));
             }
             
-            angstart = 0;
-            for(int i=0; i<=div; i++) {
-                float ang = angstart + angperdivision*i;
-                list.Push(Geometry::Pointf::FromVector(r, ang, Geometry::Pointf{bsize-off-r, off+r}));
-            }
-            /*
             if(missingside) {
-                list[0].X = off;
-                list[7].X = bsize - off;
-            }*/
+                list.Push({bsize-off, off});
+            }
+            else {
+                angstart = 0;
+                for(int i=0; i<=div; i++) {
+                    float ang = angstart + angperdivision*i;
+                    list.Push(Geometry::Pointf::FromVector(r, ang, Geometry::Pointf{bsize-off-r, off+r}));
+                }
+            }
             
             CGI::Polyfill(bi.GetData(), list, CGI::SolidFill<>(bg));
             
@@ -1359,7 +1353,8 @@ namespace Gorgon { namespace Widgets {
         
         
         auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
-        bg.SetPadding(Border.Width+Border.Radius);
+        bg.SetPadding(Spacing);
+        bg.SetBorderSize(Border.Width);
         bg.Background.SetAnimation(PanelBorder());
         bg.AddIndex(1);
         
@@ -1384,25 +1379,34 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::TopPanel() {
-        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 5 + Border.Width * 2 + Border.Radius + Spacing * 2, WidgetHeight * 2 + Spacing * 3 + Border.Width * 2 + Border.Radius + Spacing * 2};
+        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 5 + Border.Width * 2 + Border.Radius + Spacing * 2, WidgetHeight * 10 + Spacing * 11 + Border.Width * 2 + Border.Radius + Spacing * 2};
         
         UI::Template temp;
         temp.SetSize(defsize);
         
         
         auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
-        bg.SetClip(true);
-        
+        bg.SetPadding(Border.Width + Spacing);
+        bg.Background.SetAnimation(TopPanelBorder());
         bg.AddIndex(1);
         
-        auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always);
+        auto &vp = temp.AddContainer(1, UI::ComponentCondition::Always);
+        vp.SetTag(UI::ComponentTemplate::ViewPortTag);
+        vp.SetSize(100, 100, UI::Dimension::Percent);
+        vp.SetPositioning(vp.Absolute);
+        vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        vp.SetPosition(0, 0);
+        vp.SetClip(true);
+        vp.AddIndex(2);
+        
+        auto &cont = temp.AddContainer(2, UI::ComponentCondition::Always);
         cont.SetTag(UI::ComponentTemplate::ContentsTag);
         cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
         cont.SetSize(100, 100, UI::Dimension::Percent);
+        cont.SetSizing(UI::ComponentTemplate::Fixed);
         cont.SetPositioning(cont.Absolute);
-        cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        cont.SetAnchor(UI::Anchor::TopCenter, UI::Anchor::TopCenter, UI::Anchor::TopCenter);
         cont.SetPosition(0, 0);
-        cont.Background.SetAnimation(TopPanelBorder());
         
         return temp;
     }
@@ -1415,18 +1419,27 @@ namespace Gorgon { namespace Widgets {
         
         
         auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
-        bg.SetClip(true);
-        
+        bg.SetPadding(Border.Width + Spacing);
+        bg.Background.SetAnimation(LeftPanelBorder());
         bg.AddIndex(1);
         
-        auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always);
+        auto &vp = temp.AddContainer(1, UI::ComponentCondition::Always);
+        vp.SetTag(UI::ComponentTemplate::ViewPortTag);
+        vp.SetSize(100, 100, UI::Dimension::Percent);
+        vp.SetPositioning(vp.Absolute);
+        vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        vp.SetPosition(0, 0);
+        vp.SetClip(true);
+        vp.AddIndex(2);
+        
+        auto &cont = temp.AddContainer(2, UI::ComponentCondition::Always);
         cont.SetTag(UI::ComponentTemplate::ContentsTag);
         cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
         cont.SetSize(100, 100, UI::Dimension::Percent);
+        cont.SetSizing(UI::ComponentTemplate::Fixed);
         cont.SetPositioning(cont.Absolute);
-        cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        cont.SetAnchor(UI::Anchor::TopCenter, UI::Anchor::TopCenter, UI::Anchor::TopCenter);
         cont.SetPosition(0, 0);
-        cont.Background.SetAnimation(LeftPanelBorder());
         
         return temp;
     }
@@ -1439,42 +1452,60 @@ namespace Gorgon { namespace Widgets {
         
         
         auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
-        bg.SetClip(true);
-        
+        bg.SetPadding(Border.Width + Spacing);
+        bg.Background.SetAnimation(RightPanelBorder());
         bg.AddIndex(1);
         
-        auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always);
+        auto &vp = temp.AddContainer(1, UI::ComponentCondition::Always);
+        vp.SetTag(UI::ComponentTemplate::ViewPortTag);
+        vp.SetSize(100, 100, UI::Dimension::Percent);
+        vp.SetPositioning(vp.Absolute);
+        vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        vp.SetPosition(0, 0);
+        vp.SetClip(true);
+        vp.AddIndex(2);
+        
+        auto &cont = temp.AddContainer(2, UI::ComponentCondition::Always);
         cont.SetTag(UI::ComponentTemplate::ContentsTag);
         cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
         cont.SetSize(100, 100, UI::Dimension::Percent);
+        cont.SetSizing(UI::ComponentTemplate::Fixed);
         cont.SetPositioning(cont.Absolute);
-        cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        cont.SetAnchor(UI::Anchor::TopCenter, UI::Anchor::TopCenter, UI::Anchor::TopCenter);
         cont.SetPosition(0, 0);
-        cont.Background.SetAnimation(RightPanelBorder());
         
         return temp;
     }
     
     UI::Template SimpleGenerator::BottomPanel() {
-        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 5 + Border.Width * 2 + Border.Radius + Spacing * 2, WidgetHeight * 2 + Spacing * 3 + Border.Width * 2 + Border.Radius + Spacing * 2};
+        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 5 + Border.Width * 2 + Border.Radius + Spacing * 2, WidgetHeight * 10 + Spacing * 11 + Border.Width * 2 + Border.Radius + Spacing * 2};
         
         UI::Template temp;
         temp.SetSize(defsize);
         
         
         auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
-        bg.SetClip(true);
-        
+        bg.SetPadding(Border.Width + Spacing);
+        bg.Background.SetAnimation(BottomPanelBorder());
         bg.AddIndex(1);
         
-        auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always);
+        auto &vp = temp.AddContainer(1, UI::ComponentCondition::Always);
+        vp.SetTag(UI::ComponentTemplate::ViewPortTag);
+        vp.SetSize(100, 100, UI::Dimension::Percent);
+        vp.SetPositioning(vp.Absolute);
+        vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        vp.SetPosition(0, 0);
+        vp.SetClip(true);
+        vp.AddIndex(2);
+        
+        auto &cont = temp.AddContainer(2, UI::ComponentCondition::Always);
         cont.SetTag(UI::ComponentTemplate::ContentsTag);
         cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
         cont.SetSize(100, 100, UI::Dimension::Percent);
+        cont.SetSizing(UI::ComponentTemplate::Fixed);
         cont.SetPositioning(cont.Absolute);
-        cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        cont.SetAnchor(UI::Anchor::TopCenter, UI::Anchor::TopCenter, UI::Anchor::TopCenter);
         cont.SetPosition(0, 0);
-        cont.Background.SetAnimation(BottomPanelBorder());
         
         return temp;
     }

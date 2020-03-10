@@ -172,7 +172,7 @@ int main() {
     pnl.Add(rad);
     pnl.Add(ib);
     pnl.SetHeight(500);
-    mainpanel.Resize(140, 500);
+    mainpanel.Resize(140, 550);
     //pnl.Disable();
 
     pnl.CreateOrganizer<Gorgon::UI::Organizers::List>();
@@ -182,10 +182,6 @@ int main() {
     //error.Move(lbl.GetLocation().X,lbl.GetLocation().Y + 25);
     lbl.OwnIcon(prep(*new Graphics::Bitmap(Triangle(8, 8))));
     
-    Geometry::Size b{30,30};
-    Geometry::Margin m{3};
-    
-    std::cout<<(b-m)<<std::endl;
     
     app.wind.Run();
 
