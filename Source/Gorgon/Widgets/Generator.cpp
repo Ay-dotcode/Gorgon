@@ -123,6 +123,7 @@ namespace Gorgon { namespace Widgets {
     
     void SimpleGenerator::UpdateBorders(bool smooth) {
         Border.Width  = (int)std::max(std::round(regularrenderer->GetLineThickness()*2.5f), 1.f);
+        ObjectBorder  = Border.Width;
         Border.Radius = asciivsize.second / 4;
         Border.Divisions = smooth * Border.Radius  / 2;
     }
@@ -995,37 +996,45 @@ namespace Gorgon { namespace Widgets {
         cont2.AddIndex(3);
         cont2.AddIndex(4);
         cont2.SetPadding(Focus.Width);
-
+        
+        int outer_r = ObjectHeight / 2;
+        int borderstart_r = outer_r - ObjectBorder;
+        int inner_r = borderstart_r - Spacing / 2;
+        
+        Geometry::Size bmpsize = {ObjectHeight + 2, ObjectHeight + 2};
+        Geometry::Pointf center = {float(outer_r + 1), float(outer_r + 1)};
+        
+        auto blank = [&](auto border) {
+            auto icon = new Graphics::Bitmap(bmpsize);
+            
+            icon->Clear();
+            CGI::Circle<16>(*icon, center, outer_r - 0.5, CGI::SolidFill<>(Background.Regular));
+            CGI::Circle<16>(*icon, center, borderstart_r, (float)ObjectBorder, CGI::SolidFill<>(border));
+            icon->Prepare();
+            drawables.Add(icon);
+            
+            return icon;
+        };
+        
+        auto filled = [&](auto color) {
+            auto icon = blank( color);
+            
+            CGI::Circle<16>(*icon, center, inner_r, CGI::SolidFill<>(color));
+            icon->Prepare();
+            
+            return icon;
+        };
 
         {
             auto color = Forecolor.Regular;
             
-            auto &icon = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
-            auto &icon2 = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
-
-            icon.Clear();
-            icon2.Clear();
-            
-            Float center = Float(ObjectHeight-ObjectBorder*2.5f) / 2.f;
-            CGI::Circle(icon, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center+ObjectBorder, CGI::SolidFill<>(Background.Regular));
-            CGI::Circle(icon2, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center+ObjectBorder, CGI::SolidFill<>(Background.Regular));
-            
-            CGI::Circle(icon, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center, (float)ObjectBorder, CGI::SolidFill<>(color));
-            CGI::Circle(icon2, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center, (float)ObjectBorder, CGI::SolidFill<>(color));
-            
-            CGI::Circle(icon2, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center - Spacing / 2, CGI::SolidFill<>(color));
-            icon.Prepare();
-            drawables.Add(icon);
-            icon2.Prepare();
-            drawables.Add(icon2);
-            
             auto &it = temp.AddGraphics(1, UI::ComponentCondition::Always);
-            it.Content.SetDrawable(icon);
+            it.Content.SetDrawable(*blank(color));
             it.SetSizing(it.Automatic);
             it.SetIndent(Spacing, 0, 0, 0);
             
             auto &it2 = temp.AddGraphics(2, UI::ComponentCondition::Always);
-            it2.Content.SetDrawable(icon2);
+            it2.Content.SetDrawable(*filled(color));
             it2.SetSizing(it2.Automatic);
             it2.SetIndent(Spacing, 0, 0, 0);
             
@@ -1044,32 +1053,13 @@ namespace Gorgon { namespace Widgets {
             auto color = Forecolor.Regular;
             color.Blend(Forecolor.Hover);
             
-            auto &icon = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
-            auto &icon2 = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
-
-            icon.Clear();
-            icon2.Clear();
-
-            Float center = Float(ObjectHeight-ObjectBorder*2.5f) / 2.f;
-            CGI::Circle(icon, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center+ObjectBorder, CGI::SolidFill<>(Background.Regular));
-            CGI::Circle(icon2, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center+ObjectBorder, CGI::SolidFill<>(Background.Regular));
-            
-            CGI::Circle(icon, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center, (float)ObjectBorder, CGI::SolidFill<>(color));
-            CGI::Circle(icon2, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center, (float)ObjectBorder, CGI::SolidFill<>(color));
-            
-            CGI::Circle(icon2, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center - Spacing / 2, CGI::SolidFill<>(color));
-            icon.Prepare();
-            drawables.Add(icon);
-            icon2.Prepare();
-            drawables.Add(icon2);
-            
             auto &it = temp.AddGraphics(1, UI::ComponentCondition::Hover);
-            it.Content.SetDrawable(icon);
+            it.Content.SetDrawable(*blank(color));
             it.SetSizing(it.Automatic);
             it.SetIndent(Spacing, 0, 0, 0);
             
             auto &it2 = temp.AddGraphics(2, UI::ComponentCondition::Hover);
-            it2.Content.SetDrawable(icon2);
+            it2.Content.SetDrawable(*filled(color));
             it2.SetSizing(it2.Automatic);
             it2.SetIndent(Spacing, 0, 0, 0);
             
@@ -1082,41 +1072,22 @@ namespace Gorgon { namespace Widgets {
             tt.SetClip(true);
             tt.SetSize(100, 100, UI::Dimension::Percent);
             tt.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
-        }
+      }
 
         {
             auto color = Forecolor.Regular;
             color.Blend(Forecolor.Down);
-
-            auto &icon = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
-            auto &icon2 = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
-
-            icon.Clear();
-            icon2.Clear();
-
-            Float center = Float(ObjectHeight-ObjectBorder*2.5f) / 2.f;
-            CGI::Circle(icon, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center+ObjectBorder, CGI::SolidFill<>(Background.Regular));
-            CGI::Circle(icon2, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center+ObjectBorder, CGI::SolidFill<>(Background.Regular));
-
-            CGI::Circle(icon, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center, (float)ObjectBorder, CGI::SolidFill<>(color));
-            CGI::Circle(icon2, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center, (float)ObjectBorder, CGI::SolidFill<>(color));
-
-            CGI::Circle(icon2, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center - Spacing / 2, CGI::SolidFill<>(color));
-            icon.Prepare();
-            drawables.Add(icon);
-            icon2.Prepare();
-            drawables.Add(icon2);
-
+            
             auto &it = temp.AddGraphics(1, UI::ComponentCondition::Down);
-            it.Content.SetDrawable(icon);
+            it.Content.SetDrawable(*blank(color));
             it.SetSizing(it.Automatic);
             it.SetIndent(Spacing, 0, 0, 0);
-
+            
             auto &it2 = temp.AddGraphics(2, UI::ComponentCondition::Down);
-            it2.Content.SetDrawable(icon2);
+            it2.Content.SetDrawable(*filled(color));
             it2.SetSizing(it2.Automatic);
             it2.SetIndent(Spacing, 0, 0, 0);
-
+            
             auto &tt = temp.AddTextholder(3, UI::ComponentCondition::Down);
             tt.SetRenderer(RegularFont);
             tt.SetColor(color);
@@ -1131,36 +1102,17 @@ namespace Gorgon { namespace Widgets {
         {
             auto color = Forecolor.Regular;
             color.Blend(Forecolor.Disabled);
-
-            auto &icon = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
-            auto &icon2 = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
-
-            icon.Clear();
-            icon2.Clear();
-
-            Float center = Float(ObjectHeight-ObjectBorder*2.5f) / 2.f;
-            CGI::Circle(icon, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center+ObjectBorder, CGI::SolidFill<>(Background.Regular));
-            CGI::Circle(icon2, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center+ObjectBorder, CGI::SolidFill<>(Background.Regular));
-
-            CGI::Circle(icon, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center, (float)ObjectBorder, CGI::SolidFill<>(color));
-            CGI::Circle(icon2, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center, (float)ObjectBorder, CGI::SolidFill<>(color));
-
-            CGI::Circle(icon2, {center+ObjectBorder*1.25f, center+ObjectBorder*1.25f}, center - Spacing / 2, CGI::SolidFill<>(color));
-            icon.Prepare();
-            drawables.Add(icon);
-            icon2.Prepare();
-            drawables.Add(icon2);
-
+            
             auto &it = temp.AddGraphics(1, UI::ComponentCondition::Disabled);
-            it.Content.SetDrawable(icon);
+            it.Content.SetDrawable(*blank(color));
             it.SetSizing(it.Automatic);
             it.SetIndent(Spacing, 0, 0, 0);
-
+            
             auto &it2 = temp.AddGraphics(2, UI::ComponentCondition::Disabled);
-            it2.Content.SetDrawable(icon2);
+            it2.Content.SetDrawable(*filled(color));
             it2.SetSizing(it2.Automatic);
             it2.SetIndent(Spacing, 0, 0, 0);
-
+            
             auto &tt = temp.AddTextholder(3, UI::ComponentCondition::Disabled);
             tt.SetRenderer(RegularFont);
             tt.SetColor(color);
@@ -1353,8 +1305,7 @@ namespace Gorgon { namespace Widgets {
         
         
         auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
-        bg.SetPadding(Spacing);
-        bg.SetBorderSize(Border.Width);
+        bg.SetPadding(Border.Width + Spacing);
         bg.Background.SetAnimation(PanelBorder());
         bg.AddIndex(1);
         
