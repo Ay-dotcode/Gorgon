@@ -102,11 +102,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider &DownBorder();
         Graphics::BitmapRectangleProvider &DisabledBorder();
         
-        Graphics::BitmapRectangleProvider &PanelBorder();
-        Graphics::BitmapRectangleProvider &TopPanelBorder();
-        Graphics::BitmapRectangleProvider &BottomPanelBorder();
-        Graphics::BitmapRectangleProvider &LeftPanelBorder();
-        Graphics::BitmapRectangleProvider &RightPanelBorder();
+        Graphics::BitmapRectangleProvider &PanelBorder(int missingedge = 0);
         
         Graphics::BitmapRectangleProvider &NormalEditBorder();
         Graphics::BitmapRectangleProvider &HoverEditBorder();
@@ -172,14 +168,15 @@ namespace Gorgon { namespace Widgets {
         int WidgetWidth = 64;
         
         /// This is the height of a bordered widget
-        int BordedWidgetHeight = 32;
+        int BorderedWidgetHeight = 32;
         
         /// This is the height of a non-bordered widget
         int WidgetHeight = 24;
 
     private:
-        Graphics::BitmapRectangleProvider *makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingside = 0);
+        Graphics::BitmapRectangleProvider *makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingedge = 0);
         Graphics::RectangleProvider *makefocusborder();
+        UI::Template makepanel(int missingedge);
         
         Graphics::GlyphRenderer *regularrenderer = nullptr;
         Containers::Collection<Graphics::Drawable> drawables;
@@ -189,11 +186,8 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider *hoverborder = nullptr;
         Graphics::BitmapRectangleProvider *downborder = nullptr;
         Graphics::BitmapRectangleProvider *disabledborder = nullptr;
-        Graphics::BitmapRectangleProvider *panelborder = nullptr;
-        Graphics::BitmapRectangleProvider *toppanelborder = nullptr;
-        Graphics::BitmapRectangleProvider *bottompanelborder = nullptr;
-        Graphics::BitmapRectangleProvider *leftpanelborder = nullptr;
-        Graphics::BitmapRectangleProvider *rightpanelborder = nullptr;
+        
+        Graphics::BitmapRectangleProvider *panelborders[5] = {};
         
         Graphics::BitmapRectangleProvider *normaleditborder = nullptr;
         Graphics::BitmapRectangleProvider *hovereditborder = nullptr;

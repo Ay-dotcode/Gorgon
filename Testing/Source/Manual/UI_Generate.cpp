@@ -51,7 +51,7 @@ int main() {
     auto icobtntemp = gen.IconButton();
     auto lbltemp = gen.Label();
     auto pnltemp = gen.BlankPanel();
-    auto pnltemp2 = gen.Panel();
+    auto pnltemp2 = gen.TopPanel();
     auto inptemp = gen2.Inputbox();
 
     Widgets::Button btn(btntemp, "Helloo_...", []() { std::cout<<"Hello..."<<std::endl; });
@@ -119,16 +119,16 @@ int main() {
 
 
     mainpanel.Add(sub);
-    sub.Move(5, 0);
+    sub.Move(0, 0);
 
     Widgets::Label valuelabel(lbltemp);
-    sub.Add(valuelabel);
     valuelabel.SetText("Bug test : ");
     increase.SetText("+");
     decrease.SetText("-");
     
     sub.Add(increase);
     sub.Add(decrease);
+    sub.Add(valuelabel);
     sub.CreateOrganizer<Gorgon::UI::Organizers::List>();
     
     sub.SetWidth(100);

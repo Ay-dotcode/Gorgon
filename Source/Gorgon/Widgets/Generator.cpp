@@ -92,11 +92,6 @@ namespace Gorgon { namespace Widgets {
         delete hoverborder;
         delete downborder;
         delete disabledborder;
-        delete panelborder;
-        delete toppanelborder;
-        delete bottompanelborder;
-        delete leftpanelborder;
-        delete rightpanelborder;
         delete normaleditborder;
         delete hovereditborder;
         delete focusborder;
@@ -105,6 +100,10 @@ namespace Gorgon { namespace Widgets {
         delete hoverbg;
         delete downbg;
         delete disabledbg;
+        
+        for(auto p : panelborders) {
+            delete p;
+        }
     }
     
     void SimpleGenerator::UpdateDimensions() {
@@ -115,7 +114,7 @@ namespace Gorgon { namespace Widgets {
         Spacing = (int)std::round((float)totalh / 4);
 
         WidgetWidth = regularrenderer->GetDigitWidth() * 8 + Border.Width * 2 + Border.Radius + Spacing * 3;
-        BordedWidgetHeight = totalh + Border.Radius / 2 + Spacing * 2 + Border.Width * 2;
+        BorderedWidgetHeight = totalh + Border.Radius / 2 + Spacing * 2 + Border.Width * 2;
         WidgetHeight = totalh + Focus.Width * 2;
         
         ObjectHeight = asciivsize.second;
@@ -168,39 +167,11 @@ namespace Gorgon { namespace Widgets {
         return *disabledborder;
     }
     
-    Graphics::BitmapRectangleProvider &SimpleGenerator::PanelBorder() {
-        if(!panelborder)
-            panelborder = makeborder(Border.Color, Background.Panel);
+    Graphics::BitmapRectangleProvider &SimpleGenerator::PanelBorder(int missingedge) {
+        if(!panelborders[missingedge])
+            panelborders[missingedge] = makeborder(Border.Color, Background.Panel, missingedge);
         
-        return *panelborder;
-    }
-    
-    Graphics::BitmapRectangleProvider &SimpleGenerator::TopPanelBorder() {
-        if(!toppanelborder)
-            panelborder = makeborder(Border.Color, Background.Panel, 1);
-        
-        return *panelborder;
-    }
-    
-    Graphics::BitmapRectangleProvider &SimpleGenerator::BottomPanelBorder() {
-        if(!panelborder)
-            panelborder = makeborder(Border.Color, Background.Panel, 3);
-        
-        return *panelborder;
-    }
-    
-    Graphics::BitmapRectangleProvider &SimpleGenerator::LeftPanelBorder() {
-        if(!panelborder)
-            panelborder = makeborder(Border.Color, Background.Panel, 2);
-        
-        return *panelborder;
-    }
-    
-    Graphics::BitmapRectangleProvider &SimpleGenerator::RightPanelBorder() {
-        if(!panelborder)
-            panelborder = makeborder(Border.Color, Background.Panel, 4);
-        
-        return *panelborder;
+        return *panelborders[missingedge];
     }
     
     Graphics::BitmapRectangleProvider &SimpleGenerator::NormalEditBorder() {
@@ -272,7 +243,7 @@ namespace Gorgon { namespace Widgets {
         return *normalemptyborder;
     }
     
-    Graphics::BitmapRectangleProvider *SimpleGenerator::makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingside) {
+    Graphics::BitmapRectangleProvider *SimpleGenerator::makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingedge) {
         int bsize = (Border.Width + Border.Radius + 2) * 2 + 16;
         float off = (int)(Border.Width + 1) / 2+1; //round up
         
@@ -292,7 +263,7 @@ namespace Gorgon { namespace Widgets {
                 {off, off}
             };
             
-            if(missingside) {
+            if(missingedge) {
                 list.Pop();
             }
             
@@ -307,8 +278,8 @@ namespace Gorgon { namespace Widgets {
             float angperdivision = -PI/2/div;
             float angstart = -PI/2;
             
-            if(missingside) {
-                list.Push({off, off});
+            if(missingedge) {
+                list.Push({off, 0});
             }
             else {
                 for(int i=0; i<=div; i++) {
@@ -329,8 +300,8 @@ namespace Gorgon { namespace Widgets {
                 list.Push(Geometry::Pointf::FromVector(r, ang, Geometry::Pointf{bsize-off-r, bsize-off-r}));
             }
             
-            if(missingside) {
-                list.Push({bsize-off, off});
+            if(missingedge) {
+                list.Push({bsize-off, 0});
             }
             else {
                 angstart = 0;
@@ -343,20 +314,20 @@ namespace Gorgon { namespace Widgets {
             CGI::Polyfill(bi.GetData(), list, CGI::SolidFill<>(bg));
             
             
-            if(!missingside) {
+            if(!missingedge) {
                 list.Push(list.Front());
             }
             
             CGI::DrawLines(bi.GetData(), list, (float)Border.Width, CGI::SolidFill<>(border));
         }
         
-        if(missingside == 2) {
+        if(missingedge == 2) {
             bi = bi.Rotate90();
         }
-        else if(missingside == 3) {
+        else if(missingedge == 3) {
             bi = bi.Rotate180();
         }
-        else if(missingside == 4) {
+        else if(missingedge == 4) {
             bi = bi.Rotate270();
         }
         
@@ -397,7 +368,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::Button() {
-        Geometry::Size defsize = {WidgetWidth, BordedWidgetHeight};
+        Geometry::Size defsize = {WidgetWidth, BorderedWidgetHeight};
         
         UI::Template temp;
         temp.SetSize(defsize);
@@ -613,32 +584,30 @@ namespace Gorgon { namespace Widgets {
         UI::Template temp;
         temp.SetSize(defsize);
         
-        auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always);
-        cont.AddIndex(1);
-        cont.AddIndex(3);
-        cont.AddIndex(4);
-        
-        auto &cont2 = temp.AddContainer(0, UI::ComponentCondition::State2);
-        cont2.AddIndex(2);
-        cont2.AddIndex(3);
-        cont2.AddIndex(4);
+        {
+            auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always);
+            cont.SetPadding(Focus.Width);
+            cont.AddIndex(1);
+            cont.AddIndex(3);
+            cont.AddIndex(4);
+        }
         
         {
-            auto color = Forecolor.Regular;
+            auto &cont = temp.AddContainer(0, UI::ComponentCondition::State2);
+            cont.SetPadding(Focus.Width);
+            cont.AddIndex(2);
+            cont.AddIndex(3);
+            cont.AddIndex(4);
+        }
+        
+        auto box = [&](auto color) {
+            auto icon = new Graphics::Bitmap({ObjectHeight, ObjectHeight});
             
-            auto &icon = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
-            auto &icon2 = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
-            icon.ForAllPixels([&](auto x, auto y) {
+            icon->ForAllPixels([&](auto x, auto y) {
                 if(x>=ObjectBorder && x<ObjectHeight-ObjectBorder && y>=ObjectBorder && y<ObjectHeight-ObjectBorder)
-                    icon.SetRGBAAt(x, y, Background.Regular);
+                    icon->SetRGBAAt(x, y, Background.Regular);
                 else
-                    icon.SetRGBAAt(x, y, 0x0);
-            });
-            icon2.ForAllPixels([&](auto x, auto y) {
-                if(x>=ObjectBorder && x<ObjectHeight-ObjectBorder && y>=ObjectBorder && y<ObjectHeight-ObjectBorder)
-                    icon2.SetRGBAAt(x, y, Background.Regular);
-                else
-                    icon2.SetRGBAAt(x, y, 0x0);
+                    icon->SetRGBAAt(x, y, 0x0);
             });
             
             Geometry::PointList<Geometry::Pointf> border ={
@@ -648,92 +617,41 @@ namespace Gorgon { namespace Widgets {
                 {ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
                 {ObjectBorder/2.f, ObjectBorder/2.f},
             };
-            CGI::DrawLines(icon, border, (float)ObjectBorder, CGI::SolidFill<>(color));
-            CGI::DrawLines(icon2, border, (float)ObjectBorder, CGI::SolidFill<>(color));
             
-            Geometry::PointList<Geometry::Pointf> tick ={
-                {ObjectBorder*2.f, ObjectHeight/2.f},
-                {ObjectHeight/2.f, ObjectHeight-ObjectBorder*2.f},
-                {ObjectHeight-ObjectBorder*2.f, ObjectBorder*2.f}
-            };
-            CGI::DrawLines(icon2, tick, (float)ObjectBorder, CGI::SolidFill<>(color));
-            icon.Prepare();
+            CGI::DrawLines(*icon, border, (float)ObjectBorder, CGI::SolidFill<>(color));
+            icon->Prepare();
             drawables.Add(icon);
-            icon2.Prepare();
-            drawables.Add(icon2);
             
-            auto &it = temp.AddGraphics(1, UI::ComponentCondition::Always);
-            it.Content.SetDrawable(icon);
-            it.SetSizing(it.Automatic);
-            it.SetIndent(Spacing, 0, 0, 0);
-            
-            auto &it2 = temp.AddGraphics(2, UI::ComponentCondition::Always);
-            it2.Content.SetDrawable(icon2);
-            it2.SetSizing(it2.Automatic);
-            it2.SetIndent(Spacing, 0, 0, 0);
-            
-            auto &tt = temp.AddTextholder(3, UI::ComponentCondition::Always);
-            tt.SetRenderer(RegularFont);
-            tt.SetColor(color);
-            tt.SetMargin(Spacing, 0, 0, 0);
-            tt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-            tt.SetDataEffect(UI::ComponentTemplate::Text);
-            tt.SetClip(true);
-            tt.SetSize(100, 100, UI::Dimension::Percent);
-            tt.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
-        }
+            return icon;
+        };
         
-        {
-            auto color = Forecolor.Regular;
-            color.Blend(Forecolor.Hover);
-            
-            auto &icon = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
-            auto &icon2 = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
-            icon.ForAllPixels([&](auto x, auto y) {
-                if(x>=ObjectBorder && x<ObjectHeight-ObjectBorder && y>=ObjectBorder && y<ObjectHeight-ObjectBorder)
-                    icon.SetRGBAAt(x, y, Background.Regular);
-                else
-                    icon.SetRGBAAt(x, y, 0x0);
-            });
-            icon2.ForAllPixels([&](auto x, auto y) {
-                if(x>=ObjectBorder && x<ObjectHeight-ObjectBorder && y>=ObjectBorder && y<ObjectHeight-ObjectBorder)
-                    icon2.SetRGBAAt(x, y, Background.Regular);
-                else
-                    icon2.SetRGBAAt(x, y, 0x0);
-            });
-            
-            Geometry::PointList<Geometry::Pointf> border ={
-                {ObjectBorder/2.f, ObjectBorder/2.f},
-                {ObjectHeight-ObjectBorder/2.f, ObjectBorder/2.f},
-                {ObjectHeight-ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
-                {ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
-                {ObjectBorder/2.f, ObjectBorder/2.f},
-            };
-            CGI::DrawLines(icon, border, (float)ObjectBorder, CGI::SolidFill<>(color));
-            CGI::DrawLines(icon2, border, (float)ObjectBorder, CGI::SolidFill<>(color));
+        auto tick = [&](auto color) {
+            auto icon = box(color);
             
             Geometry::PointList<Geometry::Pointf> tick ={
                 {ObjectBorder*2.f, ObjectHeight/2.f},
                 {ObjectHeight/2.f, ObjectHeight-ObjectBorder*2.f},
                 {ObjectHeight-ObjectBorder*2.f, ObjectBorder*2.f}
             };
-            CGI::DrawLines(icon2, tick, (float)ObjectBorder, CGI::SolidFill<>(color));
-            icon.Prepare();
-            drawables.Add(icon);
-            icon2.Prepare();
-            drawables.Add(icon2);
             
-            auto &it = temp.AddGraphics(1, UI::ComponentCondition::Hover);
-            it.Content.SetDrawable(icon);
+            CGI::DrawLines(*icon, tick, (float)ObjectBorder, CGI::SolidFill<>(color));
+            icon->Prepare();
+            
+            return icon;
+        };
+        
+        auto makestate = [&](auto color, UI::ComponentCondition condition) {
+            auto &it = temp.AddGraphics(1, condition);
+            it.Content.SetDrawable(*box(color));
             it.SetSizing(it.Automatic);
             it.SetIndent(Spacing, 0, 0, 0);
             
-            auto &it2 = temp.AddGraphics(2, UI::ComponentCondition::Hover);
-            it2.Content.SetDrawable(icon2);
+            auto &it2 = temp.AddGraphics(2, condition);
+            it2.Content.SetDrawable(*tick(color));
             it2.SetSizing(it2.Automatic);
             it2.SetIndent(Spacing, 0, 0, 0);
             
-            auto &tt = temp.AddTextholder(3, UI::ComponentCondition::Hover);
+            auto &tt = temp.AddTextholder(3, condition);
             tt.SetRenderer(RegularFont);
             tt.SetColor(color);
             tt.SetMargin(Spacing, 0, 0, 0);
@@ -742,134 +660,18 @@ namespace Gorgon { namespace Widgets {
             tt.SetClip(true);
             tt.SetSize(100, 100, UI::Dimension::Percent);
             tt.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
-        }
-
-        {
-            auto color = Forecolor.Regular;
-            color.Blend(Forecolor.Down);
-
-            auto &icon = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
-            auto &icon2 = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
-            icon.ForAllPixels([&](auto x, auto y) {
-                if(x>=ObjectBorder && x<ObjectHeight-ObjectBorder && y>=ObjectBorder && y<ObjectHeight-ObjectBorder)
-                    icon.SetRGBAAt(x, y, Background.Regular);
-                else
-                    icon.SetRGBAAt(x, y, 0x0);
-            });
-            icon2.ForAllPixels([&](auto x, auto y) {
-                if(x>=ObjectBorder && x<ObjectHeight-ObjectBorder && y>=ObjectBorder && y<ObjectHeight-ObjectBorder)
-                    icon2.SetRGBAAt(x, y, Background.Regular);
-                else
-                    icon2.SetRGBAAt(x, y, 0x0);
-            });
-
-            Geometry::PointList<Geometry::Pointf> border = {
-                {ObjectBorder/2.f, ObjectBorder/2.f},
-                {ObjectHeight-ObjectBorder/2.f, ObjectBorder/2.f},
-                {ObjectHeight-ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
-                {ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
-                {ObjectBorder/2.f, ObjectBorder/2.f},
-            };
-            CGI::DrawLines(icon, border, (float)ObjectBorder, CGI::SolidFill<>(color));
-            CGI::DrawLines(icon2, border, (float)ObjectBorder, CGI::SolidFill<>(color));
-
-            Geometry::PointList<Geometry::Pointf> tick = {
-                {ObjectBorder*2.f, ObjectHeight/2.f},
-                {ObjectHeight/2.f, ObjectHeight-ObjectBorder*2.f},
-                {ObjectHeight-ObjectBorder*2.f, ObjectBorder*2.f}
-            };
-            CGI::DrawLines(icon2, tick, (float)ObjectBorder, CGI::SolidFill<>(color));
-            icon.Prepare();
-            drawables.Add(icon);
-            icon2.Prepare();
-            drawables.Add(icon2);
-
-            auto &it = temp.AddGraphics(1, UI::ComponentCondition::Down);
-            it.Content.SetDrawable(icon);
-            it.SetSizing(it.Automatic);
-            it.SetIndent(Spacing, 0, 0, 0);
-
-            auto &it2 = temp.AddGraphics(2, UI::ComponentCondition::Down);
-            it2.Content.SetDrawable(icon2);
-            it2.SetSizing(it2.Automatic);
-            it2.SetIndent(Spacing, 0, 0, 0);
-
-            auto &tt = temp.AddTextholder(3, UI::ComponentCondition::Down);
-            tt.SetRenderer(RegularFont);
-            tt.SetColor(color);
-            tt.SetMargin(Spacing, 0, 0, 0);
-            tt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-            tt.SetDataEffect(UI::ComponentTemplate::Text);
-            tt.SetClip(true);
-            tt.SetSize(100, 100, UI::Dimension::Percent);
-            tt.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
-        }
-
-        {
-            auto color = Forecolor.Regular;
-            color.Blend(Forecolor.Disabled);
-
-            auto &icon = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
-            auto &icon2 = *new Graphics::Bitmap({ObjectHeight, ObjectHeight});
-            icon.ForAllPixels([&](auto x, auto y) {
-                if(x>=ObjectBorder && x<ObjectHeight-ObjectBorder && y>=ObjectBorder && y<ObjectHeight-ObjectBorder)
-                    icon.SetRGBAAt(x, y, Background.Disabled);
-                else
-                    icon.SetRGBAAt(x, y, 0x0);
-            });
-            icon2.ForAllPixels([&](auto x, auto y) {
-                if(x>=ObjectBorder && x<ObjectHeight-ObjectBorder && y>=ObjectBorder && y<ObjectHeight-ObjectBorder)
-                    icon2.SetRGBAAt(x, y, Background.Disabled);
-                else
-                    icon2.SetRGBAAt(x, y, 0x0);
-            });
-
-            Geometry::PointList<Geometry::Pointf> border = {
-                {ObjectBorder/2.f, ObjectBorder/2.f},
-                {ObjectHeight-ObjectBorder/2.f, ObjectBorder/2.f},
-                {ObjectHeight-ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
-                {ObjectBorder/2.f, ObjectHeight-ObjectBorder/2.f},
-                {ObjectBorder/2.f, ObjectBorder/2.f},
-            };
-            CGI::DrawLines(icon, border, (float)ObjectBorder, CGI::SolidFill<>(color));
-            CGI::DrawLines(icon2, border, (float)ObjectBorder, CGI::SolidFill<>(color));
-
-            Geometry::PointList<Geometry::Pointf> tick = {
-                {ObjectBorder*2.f, ObjectHeight/2.f},
-                {ObjectHeight/2.f, ObjectHeight-ObjectBorder*2.f},
-                {ObjectHeight-ObjectBorder*2.f, ObjectBorder*2.f}
-            };
-            CGI::DrawLines(icon2, tick, (float)ObjectBorder, CGI::SolidFill<>(color));
-            icon.Prepare();
-            drawables.Add(icon);
-            icon2.Prepare();
-            drawables.Add(icon2);
-
-            auto &it = temp.AddGraphics(1, UI::ComponentCondition::Disabled);
-            it.Content.SetDrawable(icon);
-            it.SetSizing(it.Automatic);
-            it.SetIndent(Spacing, 0, 0, 0);
-
-            auto &it2 = temp.AddGraphics(2, UI::ComponentCondition::Disabled);
-            it2.Content.SetDrawable(icon2);
-            it2.SetSizing(it2.Automatic);
-            it2.SetIndent(Spacing, 0, 0, 0);
-
-            auto &tt = temp.AddTextholder(3, UI::ComponentCondition::Disabled);
-            tt.SetRenderer(RegularFont);
-            tt.SetColor(color);
-            tt.SetMargin(Spacing, 0, 0, 0);
-            tt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-            tt.SetDataEffect(UI::ComponentTemplate::Text);
-            tt.SetClip(true);
-            tt.SetSize(100, 100, UI::Dimension::Percent);
-            tt.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
-        }
+        };
+        
+        makestate(Forecolor.Regular, UI::ComponentCondition::Always);
+        makestate(Forecolor.Regular.BlendWith(Forecolor.Hover), UI::ComponentCondition::Hover);
+        makestate(Forecolor.Regular.BlendWith(Forecolor.Down), UI::ComponentCondition::Down);
+        makestate(Forecolor.Regular.BlendWith(Forecolor.Disabled), UI::ComponentCondition::Disabled);
         
         {
             auto &foc = temp.AddContainer(4, UI::ComponentCondition::Focused);
             foc.Background.SetAnimation(FocusBorder());
             foc.SetSize(100, 100, UI::Dimension::Percent);
+            foc.SetIndent(-Focus.Width);
             foc.SetPositioning(foc.Absolute);
             foc.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
         }
@@ -879,7 +681,7 @@ namespace Gorgon { namespace Widgets {
     UI::Template SimpleGenerator::CheckboxButton() {
         
         UI::Template temp;
-        temp.SetSize((WidgetWidth-Spacing*3)/4, BordedWidgetHeight);
+        temp.SetSize((WidgetWidth-Spacing*3)/4, BorderedWidgetHeight);
         
         auto bgsize = temp.GetSize();
         
@@ -1008,6 +810,7 @@ namespace Gorgon { namespace Widgets {
             auto icon = new Graphics::Bitmap(bmpsize);
             
             icon->Clear();
+            
             CGI::Circle<16>(*icon, center, outer_r - 0.5, CGI::SolidFill<>(Background.Regular));
             CGI::Circle<16>(*icon, center, borderstart_r, (float)ObjectBorder, CGI::SolidFill<>(border));
             icon->Prepare();
@@ -1024,46 +827,19 @@ namespace Gorgon { namespace Widgets {
             
             return icon;
         };
-
-        {
-            auto color = Forecolor.Regular;
-            
-            auto &it = temp.AddGraphics(1, UI::ComponentCondition::Always);
-            it.Content.SetDrawable(*blank(color));
-            it.SetSizing(it.Automatic);
-            it.SetIndent(Spacing, 0, 0, 0);
-            
-            auto &it2 = temp.AddGraphics(2, UI::ComponentCondition::Always);
-            it2.Content.SetDrawable(*filled(color));
-            it2.SetSizing(it2.Automatic);
-            it2.SetIndent(Spacing, 0, 0, 0);
-            
-            auto &tt = temp.AddTextholder(3, UI::ComponentCondition::Always);
-            tt.SetRenderer(RegularFont);
-            tt.SetColor(color);
-            tt.SetMargin(Spacing, 0, 0, 0);
-            tt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-            tt.SetDataEffect(UI::ComponentTemplate::Text);
-            tt.SetClip(true);
-            tt.SetSize(100, 100, UI::Dimension::Percent);
-            tt.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
-        }
         
-        {
-            auto color = Forecolor.Regular;
-            color.Blend(Forecolor.Hover);
-            
-            auto &it = temp.AddGraphics(1, UI::ComponentCondition::Hover);
+        auto makestate = [&](auto color, UI::ComponentCondition condition) {
+            auto &it = temp.AddGraphics(1, condition);
             it.Content.SetDrawable(*blank(color));
             it.SetSizing(it.Automatic);
             it.SetIndent(Spacing, 0, 0, 0);
             
-            auto &it2 = temp.AddGraphics(2, UI::ComponentCondition::Hover);
+            auto &it2 = temp.AddGraphics(2, condition);
             it2.Content.SetDrawable(*filled(color));
             it2.SetSizing(it2.Automatic);
             it2.SetIndent(Spacing, 0, 0, 0);
             
-            auto &tt = temp.AddTextholder(3, UI::ComponentCondition::Hover);
+            auto &tt = temp.AddTextholder(3, condition);
             tt.SetRenderer(RegularFont);
             tt.SetColor(color);
             tt.SetMargin(Spacing, 0, 0, 0);
@@ -1072,57 +848,12 @@ namespace Gorgon { namespace Widgets {
             tt.SetClip(true);
             tt.SetSize(100, 100, UI::Dimension::Percent);
             tt.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
-      }
+        };
 
-        {
-            auto color = Forecolor.Regular;
-            color.Blend(Forecolor.Down);
-            
-            auto &it = temp.AddGraphics(1, UI::ComponentCondition::Down);
-            it.Content.SetDrawable(*blank(color));
-            it.SetSizing(it.Automatic);
-            it.SetIndent(Spacing, 0, 0, 0);
-            
-            auto &it2 = temp.AddGraphics(2, UI::ComponentCondition::Down);
-            it2.Content.SetDrawable(*filled(color));
-            it2.SetSizing(it2.Automatic);
-            it2.SetIndent(Spacing, 0, 0, 0);
-            
-            auto &tt = temp.AddTextholder(3, UI::ComponentCondition::Down);
-            tt.SetRenderer(RegularFont);
-            tt.SetColor(color);
-            tt.SetMargin(Spacing, 0, 0, 0);
-            tt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-            tt.SetDataEffect(UI::ComponentTemplate::Text);
-            tt.SetClip(true);
-            tt.SetSize(100, 100, UI::Dimension::Percent);
-            tt.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
-        }
-
-        {
-            auto color = Forecolor.Regular;
-            color.Blend(Forecolor.Disabled);
-            
-            auto &it = temp.AddGraphics(1, UI::ComponentCondition::Disabled);
-            it.Content.SetDrawable(*blank(color));
-            it.SetSizing(it.Automatic);
-            it.SetIndent(Spacing, 0, 0, 0);
-            
-            auto &it2 = temp.AddGraphics(2, UI::ComponentCondition::Disabled);
-            it2.Content.SetDrawable(*filled(color));
-            it2.SetSizing(it2.Automatic);
-            it2.SetIndent(Spacing, 0, 0, 0);
-            
-            auto &tt = temp.AddTextholder(3, UI::ComponentCondition::Disabled);
-            tt.SetRenderer(RegularFont);
-            tt.SetColor(color);
-            tt.SetMargin(Spacing, 0, 0, 0);
-            tt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-            tt.SetDataEffect(UI::ComponentTemplate::Text);
-            tt.SetClip(true);
-            tt.SetSize(100, 100, UI::Dimension::Percent);
-            tt.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
-        }
+        makestate(Forecolor.Regular, UI::ComponentCondition::Always);
+        makestate(Forecolor.Regular.BlendWith(Forecolor.Hover), UI::ComponentCondition::Hover);
+        makestate(Forecolor.Regular.BlendWith(Forecolor.Down), UI::ComponentCondition::Down);
+        makestate(Forecolor.Regular.BlendWith(Forecolor.Disabled), UI::ComponentCondition::Disabled);
 
         {
             auto &foc = temp.AddContainer(4, UI::ComponentCondition::Focused);
@@ -1297,49 +1028,46 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
-    UI::Template SimpleGenerator::Panel() {
-        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 5 + Border.Width * 2 + Border.Radius + Spacing * 2, WidgetHeight * 10 + Spacing * 11 + Border.Width * 2 + Border.Radius + Spacing * 2};
+    UI::Template SimpleGenerator::makepanel(int missingedge) {
+        Geometry::Size defsize = {
+            WidgetWidth * 4 + Spacing * 3 + Border.Width * 2 + Spacing * 2, 
+            BorderedWidgetHeight * 10 + Spacing * 9 + Border.Width * 2 + Spacing * 2
+        };
+        
+        if(missingedge == 1 || missingedge == 3) {
+            defsize.Height = BorderedWidgetHeight + Border.Width + Spacing * 2;
+        }
+        
+        if(missingedge == 2 || missingedge == 4) {
+            defsize.Width = WidgetWidth * 2 + Spacing + Border.Width + Spacing * 2;
+        }
         
         UI::Template temp;
         temp.SetSize(defsize);
         
         
         auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
-        bg.SetPadding(Border.Width + Spacing);
-        bg.Background.SetAnimation(PanelBorder());
+        bg.Background.SetAnimation(PanelBorder(missingedge));
         bg.AddIndex(1);
         
-        auto &vp = temp.AddContainer(1, UI::ComponentCondition::Always);
-        vp.SetTag(UI::ComponentTemplate::ViewPortTag);
-        vp.SetSize(100, 100, UI::Dimension::Percent);
-        vp.SetPositioning(vp.Absolute);
-        vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
-        vp.SetPosition(0, 0);
-        vp.SetClip(true);
-        vp.AddIndex(2);
         
-        auto &cont = temp.AddContainer(2, UI::ComponentCondition::Always);
-        cont.SetTag(UI::ComponentTemplate::ContentsTag);
-        cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
-        cont.SetSize(100, 100, UI::Dimension::Percent);
-        cont.SetPositioning(cont.Absolute);
-        cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
-        cont.SetPosition(0, 0);
+        Geometry::Margin padding(Border.Width + Spacing);
+        switch(missingedge) {
+        case 1:
+            padding.Top = Spacing;
+            break;
+        case 2:
+            padding.Left = Spacing;
+            break;
+        case 3:
+            padding.Bottom = Spacing;
+            break;
+        case 4:
+            padding.Right = Spacing;
+            break;
+        }
         
-        return temp;
-    }
-    
-    UI::Template SimpleGenerator::TopPanel() {
-        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 5 + Border.Width * 2 + Border.Radius + Spacing * 2, WidgetHeight * 10 + Spacing * 11 + Border.Width * 2 + Border.Radius + Spacing * 2};
-        
-        UI::Template temp;
-        temp.SetSize(defsize);
-        
-        
-        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
-        bg.SetPadding(Border.Width + Spacing);
-        bg.Background.SetAnimation(TopPanelBorder());
-        bg.AddIndex(1);
+        bg.SetPadding(padding);
         
         auto &vp = temp.AddContainer(1, UI::ComponentCondition::Always);
         vp.SetTag(UI::ComponentTemplate::ViewPortTag);
@@ -1360,109 +1088,31 @@ namespace Gorgon { namespace Widgets {
         cont.SetPosition(0, 0);
         
         return temp;
+    }
+    
+    UI::Template SimpleGenerator::Panel() {
+        return makepanel(0);
+    }
+    
+    
+    UI::Template SimpleGenerator::TopPanel() {
+        return makepanel(1);
     }
     
     UI::Template SimpleGenerator::LeftPanel() {
-        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 5 + Border.Width * 2 + Border.Radius + Spacing * 2, WidgetHeight * 10 + Spacing * 11 + Border.Width * 2 + Border.Radius + Spacing * 2};
-        
-        UI::Template temp;
-        temp.SetSize(defsize);
-        
-        
-        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
-        bg.SetPadding(Border.Width + Spacing);
-        bg.Background.SetAnimation(LeftPanelBorder());
-        bg.AddIndex(1);
-        
-        auto &vp = temp.AddContainer(1, UI::ComponentCondition::Always);
-        vp.SetTag(UI::ComponentTemplate::ViewPortTag);
-        vp.SetSize(100, 100, UI::Dimension::Percent);
-        vp.SetPositioning(vp.Absolute);
-        vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
-        vp.SetPosition(0, 0);
-        vp.SetClip(true);
-        vp.AddIndex(2);
-        
-        auto &cont = temp.AddContainer(2, UI::ComponentCondition::Always);
-        cont.SetTag(UI::ComponentTemplate::ContentsTag);
-        cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
-        cont.SetSize(100, 100, UI::Dimension::Percent);
-        cont.SetSizing(UI::ComponentTemplate::Fixed);
-        cont.SetPositioning(cont.Absolute);
-        cont.SetAnchor(UI::Anchor::TopCenter, UI::Anchor::TopCenter, UI::Anchor::TopCenter);
-        cont.SetPosition(0, 0);
-        
-        return temp;
+        return makepanel(2);
     }
     
     UI::Template SimpleGenerator::RightPanel() {
-        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 5 + Border.Width * 2 + Border.Radius + Spacing * 2, WidgetHeight * 10 + Spacing * 11 + Border.Width * 2 + Border.Radius + Spacing * 2};
-        
-        UI::Template temp;
-        temp.SetSize(defsize);
-        
-        
-        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
-        bg.SetPadding(Border.Width + Spacing);
-        bg.Background.SetAnimation(RightPanelBorder());
-        bg.AddIndex(1);
-        
-        auto &vp = temp.AddContainer(1, UI::ComponentCondition::Always);
-        vp.SetTag(UI::ComponentTemplate::ViewPortTag);
-        vp.SetSize(100, 100, UI::Dimension::Percent);
-        vp.SetPositioning(vp.Absolute);
-        vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
-        vp.SetPosition(0, 0);
-        vp.SetClip(true);
-        vp.AddIndex(2);
-        
-        auto &cont = temp.AddContainer(2, UI::ComponentCondition::Always);
-        cont.SetTag(UI::ComponentTemplate::ContentsTag);
-        cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
-        cont.SetSize(100, 100, UI::Dimension::Percent);
-        cont.SetSizing(UI::ComponentTemplate::Fixed);
-        cont.SetPositioning(cont.Absolute);
-        cont.SetAnchor(UI::Anchor::TopCenter, UI::Anchor::TopCenter, UI::Anchor::TopCenter);
-        cont.SetPosition(0, 0);
-        
-        return temp;
+        return makepanel(4);
     }
     
     UI::Template SimpleGenerator::BottomPanel() {
-        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 5 + Border.Width * 2 + Border.Radius + Spacing * 2, WidgetHeight * 10 + Spacing * 11 + Border.Width * 2 + Border.Radius + Spacing * 2};
-        
-        UI::Template temp;
-        temp.SetSize(defsize);
-        
-        
-        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
-        bg.SetPadding(Border.Width + Spacing);
-        bg.Background.SetAnimation(BottomPanelBorder());
-        bg.AddIndex(1);
-        
-        auto &vp = temp.AddContainer(1, UI::ComponentCondition::Always);
-        vp.SetTag(UI::ComponentTemplate::ViewPortTag);
-        vp.SetSize(100, 100, UI::Dimension::Percent);
-        vp.SetPositioning(vp.Absolute);
-        vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
-        vp.SetPosition(0, 0);
-        vp.SetClip(true);
-        vp.AddIndex(2);
-        
-        auto &cont = temp.AddContainer(2, UI::ComponentCondition::Always);
-        cont.SetTag(UI::ComponentTemplate::ContentsTag);
-        cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
-        cont.SetSize(100, 100, UI::Dimension::Percent);
-        cont.SetSizing(UI::ComponentTemplate::Fixed);
-        cont.SetPositioning(cont.Absolute);
-        cont.SetAnchor(UI::Anchor::TopCenter, UI::Anchor::TopCenter, UI::Anchor::TopCenter);
-        cont.SetPosition(0, 0);
-        
-        return temp;
+        return makepanel(3);
     }
     
     UI::Template SimpleGenerator::Inputbox() {
-        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, BordedWidgetHeight};
+        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, BorderedWidgetHeight};
         
         UI::Template temp;
         temp.SetSize(defsize);

@@ -293,6 +293,20 @@ namespace Gorgon { namespace Graphics {
 				B = (Byte)(B*alpham1 + color.B*a);
 			}
 		}
+		
+		/// Blends the current color with the given color and returns the result
+		RGBA BlendWith(const RGBA &color) const {
+            auto n = *this;
+            n.Blend(color);
+            return n;
+        }
+        
+		/// Blends the current color with the given color and returns the result
+		RGBA BlendWith(const RGBA &color, float alpha) const {
+            auto n = *this;
+            n.Blend(color, alpha);
+            return n;
+        }
 
 		/// Converts this color to a hex representation of this color
 		operator std::string() const {
