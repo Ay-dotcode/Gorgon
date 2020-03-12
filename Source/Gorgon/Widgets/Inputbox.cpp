@@ -8,7 +8,8 @@ namespace Gorgon { namespace Widgets { namespace internal {
     Inputbox_base::Inputbox_base(const UI::Template& temp) : 
         UI::ComponentStackWidget(temp),
         AutoSelectAll(this),
-        BlockEnterKey(this)
+        BlockEnterKey(this),
+        Readonly(this)
     {
         stack.DisableTagWrap(UI::ComponentTemplate::ContentsTag);
         stack.HandleMouse(Input::Mouse::Button::Left);
@@ -35,6 +36,9 @@ namespace Gorgon { namespace Widgets { namespace internal {
             using Input::Keyboard::Modifier;
 
             if(key == Keycodes::Backspace) {
+                if(readonly)
+                    return;
+
                 if(sellen.byte == 0) {
                     if(selstart.glyph != 0) {
                         moveselleft();
@@ -45,6 +49,8 @@ namespace Gorgon { namespace Widgets { namespace internal {
                         updatevalue();
                         updatevaluedisplay(false);
                         updateselection();
+
+                        dirty = true;
                     }
 
                 }
@@ -59,6 +65,9 @@ namespace Gorgon { namespace Widgets { namespace internal {
                 return;
             }
             if(key == Keycodes::Delete) {
+                if(readonly)
+                    return;
+
                 if(sellen.byte == 0) {
                     if(selstart.glyph < glyphcount) {
                         display.erase(selstart.byte, String::UTF8Bytes(display[selstart.byte]));
@@ -68,6 +77,8 @@ namespace Gorgon { namespace Widgets { namespace internal {
                         updatevaluedisplay(false);
 
                         updateselection();
+
+                        dirty = true;
                     }
                 }
                 else {
@@ -164,7 +175,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
         }
         else {
             updateselection();
-        }    
+        }
         
         return true;
     }
@@ -195,9 +206,12 @@ namespace Gorgon { namespace Widgets { namespace internal {
 
                 case Keycodes::Enter:
                 case Keycodes::Numpad_Enter:
-                    Done();
-                    
-                    changed();
+                    if(!readonly) {
+                        Done();
+                        
+                        changed();
+                        dirty = false;
+                    }
                     
                     return blockenter;
                 }
@@ -219,10 +233,15 @@ namespace Gorgon { namespace Widgets { namespace internal {
                 }
                 
                 case Keycodes::V:
+                    if(readonly)
+                        return true;
+
                     auto s = WindowManager::GetClipboardText();
                     
                     if(s.empty())
                         return true;
+
+                    dirty = true;
                     
                     eraseselected();
                     
@@ -250,6 +269,11 @@ namespace Gorgon { namespace Widgets { namespace internal {
     bool Inputbox_base::CharacterEvent(Char c) {
         if(c == Input::Keyboard::Keycodes::Enter) 
             return false;
+
+        if(readonly)
+            return true;
+
+        dirty = true;
 
         if(sellen.byte != 0) {
             eraseselected();
@@ -302,8 +326,8 @@ namespace Gorgon { namespace Widgets { namespace internal {
         
         if(selstart.byte > display.size()) { //equal is fine
             selstart = {glyphcount, (int)display.size()};
-        }        
-        if(selstart.byte + sellen.byte >= display.size()) {
+        }
+        if((std::size_t)selstart.byte + sellen.byte >= display.size()) {
             sellen = {glyphcount - selstart.glyph, (int)display.size() - selstart.byte};
         }
 
@@ -388,7 +412,14 @@ namespace Gorgon { namespace Widgets { namespace internal {
     void Inputbox_base::focuslost() { 
         UI::ComponentStackWidget::focuslost();
         
-        Done();
+        if(!readonly) {
+            Done();
+
+            if(dirty) {
+                changed();
+                dirty = false;
+            }
+        }
     }
     
     void Inputbox_base::mousedown(UI::ComponentTemplate::Tag, Geometry::Point location, Input::Mouse::Button button) { 

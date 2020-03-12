@@ -121,7 +121,19 @@ namespace Gorgon { namespace Widgets {
             bool CharacterEvent(Gorgon::Char c) override;
             
             virtual bool KeyEvent(Input::Key key, float state) override;
-            
+
+            virtual void SetEnabled(bool value) override {
+                ComponentStackWidget::SetEnabled(value);
+
+                if(readonly) {
+                    if(!value) {
+                        stack.RemoveCondition(UI::ComponentCondition::Readonly);
+                    }
+                    else {
+                        stack.AddCondition(UI::ComponentCondition::Readonly);
+                    }
+                }
+            }
             
             /// Controls if the inputbox will be auto selected recieving focus
             /// or right after the user is done with editing. Default is false.
@@ -137,17 +149,39 @@ namespace Gorgon { namespace Widgets {
             bool GetAutoSelectAll() const {
                 return autoselectall;
             }
-            
+
             /// When set to true, pressing enter on this widget will block default
             /// button to recieve it. Default is false.
             void SetBlockEnterKey(const bool &value) {
                 blockenter = value;
             }
-            
+
             /// When set to true, pressing enter on this widget will block default
             /// button to recieve it. Default is false.
             bool GetBlockEnterKey() const {
                 return blockenter;
+            }
+
+            /// When set to true, the value contained in the inputbox cannot be edited
+            /// by the user. Default is false.
+            void SetReadonly(const bool &value) {
+                if(value == readonly)
+                    return;
+
+                readonly = value;
+
+                if(readonly && IsEnabled()) {
+                    stack.AddCondition(UI::ComponentCondition::Readonly);
+                }
+                else {
+                    stack.RemoveCondition(UI::ComponentCondition::Readonly);
+                }
+            }
+
+            /// When set to true, the value contained in the inputbox cannot be edited
+            /// by the user. Default is false.
+            bool GetReadonly() const {
+                return readonly;
             }
             
             /// Controls if the inputbox will be auto selected recieving focus
@@ -159,8 +193,14 @@ namespace Gorgon { namespace Widgets {
             /// When set to true, pressing enter on this widget will block default
             /// button to recieve it. Default is false.
             BooleanProperty< Inputbox_base, bool, 
-                            &Inputbox_base::GetAutoSelectAll, 
-                            &Inputbox_base::SetAutoSelectAll> BlockEnterKey;
+                            &Inputbox_base::GetBlockEnterKey, 
+                            &Inputbox_base::SetBlockEnterKey> BlockEnterKey;
+                            
+            /// When set to true, the value contained in the inputbox cannot be edited
+            /// by the user. Default is false.
+            BooleanProperty< Inputbox_base, bool, 
+                            &Inputbox_base::GetReadonly, 
+                            &Inputbox_base::SetReadonly> Readonly;
                             
             
         protected:
@@ -196,6 +236,8 @@ namespace Gorgon { namespace Widgets {
 
             void eraseselected() {
                 if(sellen.byte < 0) {
+                    dirty = true;
+
                     int pos = selstart.byte + sellen.byte;
 
                     display.erase(pos, -sellen.byte);
@@ -205,6 +247,8 @@ namespace Gorgon { namespace Widgets {
                     sellen = {0, 0};
                 }
                 else if(sellen.byte > 0) {
+                    dirty = true;
+
                     int pos = selstart.byte;
 
                     display.erase(pos, sellen.byte);
@@ -233,12 +277,14 @@ namespace Gorgon { namespace Widgets {
             glyphbyte selstart = {0, 0};
             glyphbyte sellen   = {0, 0};
             int glyphcount = 0;
-            int pglyph;
+            int pglyph = 0;
             int scrolloffset = 0;
             
             bool ismousedown = false;
             bool autoselectall = false;
             bool blockenter = false;
+            bool readonly = false;
+            bool dirty = false;
         
             Input::KeyRepeater repeater;
             
@@ -379,6 +425,8 @@ namespace Gorgon { namespace Widgets {
             
             updatevaluedisplay();
             updateselection();
+
+            dirty = false;
         }
 
         void updatevalue() override {

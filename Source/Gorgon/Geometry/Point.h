@@ -45,8 +45,8 @@ namespace Gorgon {
 			basic_Point(const basic_Point<O_> &point) : X((T_)point.X), Y((T_)point.Y) { }
 			
 			/// Conversion from string
-			explicit basic_Point(const std::string &str) {
-				T_ x, y;
+			explicit basic_Point(const std::string &str) : X(0), Y(0) {
+				T_ x = 0, y = 0;
 				auto s=str.begin();
 
 				if(s==str.end())

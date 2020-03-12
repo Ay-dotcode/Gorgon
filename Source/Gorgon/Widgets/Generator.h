@@ -106,6 +106,7 @@ namespace Gorgon { namespace Widgets {
         
         Graphics::BitmapRectangleProvider &NormalEditBorder();
         Graphics::BitmapRectangleProvider &HoverEditBorder();
+        Graphics::BitmapRectangleProvider &ReadonlyBorder();
         
         Graphics::BitmapRectangleProvider &NormalEmptyBorder();
         
@@ -191,6 +192,7 @@ namespace Gorgon { namespace Widgets {
         
         Graphics::BitmapRectangleProvider *normaleditborder = nullptr;
         Graphics::BitmapRectangleProvider *hovereditborder = nullptr;
+        Graphics::BitmapRectangleProvider *readonlyborder = nullptr;
         
         Graphics::BitmapRectangleProvider *normalemptyborder = nullptr;
         

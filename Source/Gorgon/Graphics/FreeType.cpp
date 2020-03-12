@@ -368,7 +368,7 @@ namespace Gorgon { namespace Graphics {
             
             underlinepos = (int)std::round((baseline + height) / 2.f);
             
-            linethickness = height / 10;
+            linethickness = (float)height / 10;
             
             linegap = std::round(lib->face->size->metrics.height/64.f);
             
@@ -603,7 +603,7 @@ namespace Gorgon { namespace Graphics {
 			gs = 1;
         
         font.SetBaseline(baseline);
-        font.SetLineThickness(linethickness);
+        font.SetLineThickness((int)std::round(linethickness));
         font.SetUnderlineOffset(underlinepos);
         font.SetLineGap(linegap);
 		font.SetGlyphSpacing(gs);
@@ -685,7 +685,7 @@ namespace Gorgon { namespace Graphics {
 			gs = 1;
 
         font.SetBaseline(baseline);
-        font.SetLineThickness(linethickness);
+        font.SetLineThickness((int)std::round(linethickness));
 		font.SetUnderlineOffset(underlinepos);
 		font.SetLineGap(linegap);
 		font.SetGlyphSpacing(gs);

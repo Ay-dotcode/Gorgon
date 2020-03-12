@@ -229,7 +229,7 @@ namespace Gorgon { namespace Graphics {
 
 		virtual int GetDigitWidth() const override { return digw; }
 
-		virtual float GetLineThickness() const override { return linethickness; }
+		virtual float GetLineThickness() const override { return (float)linethickness; }
 
 		virtual int GetUnderlineOffset() const override { return underlinepos; }
 

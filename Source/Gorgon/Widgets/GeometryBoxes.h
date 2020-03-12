@@ -7,20 +7,98 @@
 #include "../Geometry/Margin.h"
 
 namespace Gorgon { namespace Widgets {
+
+    //These classes here are overloads to set default values.
     
     /// An inputbox variant designed to edit points.
-    using Pointbox = Inputbox<Geometry::Point>;
+    class Pointbox : public Inputbox<Geometry::Point> {
+    public:
+        using Inputbox::operator=;
+
+        /// Initializes the inputbox
+        explicit Pointbox(const UI::Template &temp, Geometry::Point value = {0, 0}) : Inputbox(temp, value) {
+        }
+
+        /// Initializes the inputbox
+        explicit Pointbox(const UI::Template &temp, std::function<void()> changedevent) : Inputbox(temp, {0, 0}, changedevent) {
+        }
+
+        /// Initializes the inputbox
+        explicit Pointbox(const UI::Template &temp, Geometry::Point value, std::function<void()> changedevent) : Inputbox(temp, value, changedevent) {
+        }
+    };
     
     /// An inputbox variant designed to edit points with floating point coordinates.
-    using Pointfbox = Inputbox<Geometry::Pointf>;
+    class Pointfbox : public Inputbox<Geometry::Pointf> {
+    public:
+        using Inputbox::operator=;
+
+        /// Initializes the inputbox
+        explicit Pointfbox(const UI::Template &temp, Geometry::Pointf value = {0, 0}) : Inputbox(temp, value) {
+        }
+
+        /// Initializes the inputbox
+        explicit Pointfbox(const UI::Template &temp, std::function<void()> changedevent) : Inputbox(temp, {0, 0}, changedevent) {
+        }
+
+        /// Initializes the inputbox
+        explicit Pointfbox(const UI::Template &temp, Geometry::Pointf value, std::function<void()> changedevent) : Inputbox(temp, value, changedevent) {
+        }
+    };
+
     
     /// An inputbox variant designed to edit size data.
-    using Sizebox = Inputbox<Geometry::Size>;
+    class Sizebox : public Inputbox<Geometry::Size> {
+    public:
+        using Inputbox::operator=;
+
+        /// Initializes the inputbox
+        explicit Sizebox(const UI::Template &temp, Geometry::Size value = {0, 0}) : Inputbox(temp, value) {
+        }
+
+        /// Initializes the inputbox
+        explicit Sizebox(const UI::Template &temp, std::function<void()> changedevent) : Inputbox(temp, {0, 0}, changedevent) {
+        }
+
+        /// Initializes the inputbox
+        explicit Sizebox(const UI::Template &temp, Geometry::Size value, std::function<void()> changedevent) : Inputbox(temp, value, changedevent) {
+        }
+    };
     
     /// An inputbox variant designed to edit bounds data.
-    using Boundsbox = Inputbox<Geometry::Bounds>;
+    class Boundsbox : public Inputbox<Geometry::Bounds> {
+    public:
+        using Inputbox::operator=;
+
+        /// Initializes the inputbox
+        explicit Boundsbox(const UI::Template &temp, Geometry::Bounds value = {0, 0, 0, 0}) : Inputbox(temp, value) {
+        }
+
+        /// Initializes the inputbox
+        explicit Boundsbox(const UI::Template &temp, std::function<void()> changedevent) : Inputbox(temp, {0, 0, 0, 0}, changedevent) {
+        }
+
+        /// Initializes the inputbox
+        explicit Boundsbox(const UI::Template &temp, Geometry::Bounds value, std::function<void()> changedevent) : Inputbox(temp, value, changedevent) {
+        }
+    };
     
     /// An inputbox variant designed to edit margin data.
-    using Marginbox = Inputbox<Geometry::Margin>;
+    class Marginbox : public Inputbox<Geometry::Margin> {
+    public:
+        using Inputbox::operator=;
+
+        /// Initializes the inputbox
+        explicit Marginbox(const UI::Template &temp, Geometry::Margin value = {0, 0, 0, 0}) : Inputbox(temp, value) {
+        }
+
+        /// Initializes the inputbox
+        explicit Marginbox(const UI::Template &temp, std::function<void()> changedevent) : Inputbox(temp, {0, 0, 0, 0}, changedevent) {
+        }
+
+        /// Initializes the inputbox
+        explicit Marginbox(const UI::Template &temp, Geometry::Margin value, std::function<void()> changedevent) : Inputbox(temp, value, changedevent) {
+        }
+    };
     
 } }

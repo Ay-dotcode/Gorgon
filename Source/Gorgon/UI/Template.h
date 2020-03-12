@@ -423,8 +423,11 @@ namespace Gorgon {
         
         None = Never,
 
-        /// Component is visible when the widget is disabled.
+		/// Component is visible when the widget is disabled.
 		Disabled,
+
+		/// Component is visible when the widget is readonly.
+		Readonly,
 
         
 		Focused,

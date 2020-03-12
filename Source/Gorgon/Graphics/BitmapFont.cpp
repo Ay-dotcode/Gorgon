@@ -1045,7 +1045,7 @@ namespace Gorgon { namespace Graphics {
 
 
                 if(g.offset.Y + firsty < miny)
-                    miny = g.offset.Y + firsty;
+                    miny = int(g.offset.Y + firsty);
 
                 if(g.offset.Y + lasty > maxy)
                     maxy = g.offset.Y + lasty;

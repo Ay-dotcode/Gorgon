@@ -34,7 +34,7 @@ int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
     
     Widgets::SimpleGenerator gen(14, "DejavuSans");
-    Widgets::SimpleGenerator gen2(11);
+    Widgets::SimpleGenerator gen2(10);
     gen.UpdateBorders();
     gen.UpdateDimensions();
     gen2.Focus.Color = Graphics::Color::Red;
@@ -165,6 +165,10 @@ int main() {
     pnl.Add(inp);
     inp.Move(5, 80);
     inp.SelectAll();
+    inp.ChangedEvent.Register([](Geometry::Point val) {
+        std::cout << val << std::endl;
+    });
+    inp.Readonly = true;
 
     pnl.Add(chk);
     pnl.Add(lbl);
