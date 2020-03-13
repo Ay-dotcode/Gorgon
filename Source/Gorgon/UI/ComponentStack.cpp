@@ -21,8 +21,8 @@ namespace Gorgon { namespace UI {
         data = (Component*)malloc(sizeof(Component) * indices * stackcapacity);
         stacksizes.resize(indices);
         
-        Add(base);
         Add(mouse);
+        Add(base);
         
         addcondition(ComponentCondition::None, ComponentCondition::Always);
         

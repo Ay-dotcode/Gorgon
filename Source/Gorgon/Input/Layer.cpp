@@ -15,7 +15,12 @@ namespace Gorgon { namespace Input {
         }
     }
     
-	bool Layer::propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers) {   
+	bool Layer::propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers) { 
+        if(event != Input::Mouse::EventType::Out && event != Input::Mouse::EventType::Up) {
+            if(Gorgon::Layer::propagate_mouseevent(event, location, button, amount, handlers))
+                return true;
+        }
+        
         if(event == Input::Mouse::EventType::HitCheck) {
 			dotransformandclip(true);
             

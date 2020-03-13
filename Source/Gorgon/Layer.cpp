@@ -95,7 +95,9 @@ namespace Gorgon {
             throw std::logic_error("Regular layers cannot handle mouse events.");
         }
         else {
-            for(auto &l : children) {
+            for(int i=children.GetSize()-1; i>=0; i--) {
+            //for(int i=0; i<children.GetSize(); i++) {
+                auto &l = children[i];
                 if(l.IsVisible()) {
                     if(l.propagate_mouseevent(event, location, button, amount, handlers)) {
                         ret=true;

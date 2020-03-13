@@ -33,15 +33,14 @@ Graphics::Bitmap &prep(Graphics::Bitmap &bmp) {
 int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
     
-    Widgets::SimpleGenerator gen(14, "DejavuSans");
+    Widgets::SimpleGenerator gen(25, "DejavuSans");
     Widgets::SimpleGenerator gen2(10);
     gen.UpdateBorders();
     gen.UpdateDimensions();
     gen2.Focus.Color = Graphics::Color::Red;
     gen2.UpdateBorders(false);
     gen2.UpdateDimensions();
-
-
+    
     std::cout << "font height: " << gen.RegularFont.GetGlyphRenderer().GetLetterHeight(true).second << std::endl;
 
     auto btntemp = gen.Button();
