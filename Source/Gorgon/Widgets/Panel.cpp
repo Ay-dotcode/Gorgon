@@ -30,6 +30,36 @@ namespace Gorgon { namespace Widgets {
             
             return false;
         });
+        
+        
+        repeater.Register(Input::Keyboard::Keycodes::Up);
+        repeater.Register(Input::Keyboard::Keycodes::Down);
+        repeater.Register(Input::Keyboard::Keycodes::PageUp);
+        repeater.Register(Input::Keyboard::Keycodes::PageDown);
+
+        repeater.SetRepeatOnPress(true);
+
+        repeater.Repeat.Register([this](Input::Key key) {
+            namespace Keycodes = Input::Keyboard::Keycodes;
+            
+            switch(key) {
+            case Keycodes::Down:
+                ScrollBy(scrolldist.Y);
+                break;
+                
+            case Keycodes::Up:
+                ScrollBy(-scrolldist.Y);
+                break;
+                
+            case Keycodes::PageDown:
+                ScrollBy(std::max(scrolldist.Y, GetInteriorSize().Height - scrolldist.Y));
+                break;
+                
+            case Keycodes::PageUp:
+                ScrollBy(-std::max(scrolldist.Y, GetInteriorSize().Height - scrolldist.Y));
+                break;
+            }
+        });
 
         SetSmoothScrollSpeed(scrollspeed);
     }
@@ -46,7 +76,32 @@ namespace Gorgon { namespace Widgets {
 
     
     bool Panel::KeyEvent(Input::Key key, float state) {
-        return UI::WidgetContainer::KeyEvent(key, state);
+        if(UI::WidgetContainer::KeyEvent(key, state))
+            return true;
+        
+        namespace Keycodes = Input::Keyboard::Keycodes;
+        
+        if(state) {
+            switch(key) {
+            case Keycodes::Down:
+            case Keycodes::PageDown:
+                if(ScrollOffset().Y >= MaxScrollOffset().Y)
+                    return false;
+                break;
+                
+            case Keycodes::Up:
+            case Keycodes::PageUp:
+                if(ScrollOffset().Y <= 0)
+                    return false;
+                
+                break;
+            }
+        }
+        
+        if(repeater.KeyEvent(key, state))
+            return true;
+        
+        return false;
     }
 
     

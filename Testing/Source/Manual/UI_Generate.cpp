@@ -33,7 +33,7 @@ Graphics::Bitmap &prep(Graphics::Bitmap &bmp) {
 int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
     
-    Widgets::SimpleGenerator gen(25, "DejavuSans");
+    Widgets::SimpleGenerator gen(15, "DejavuSans");
     Widgets::SimpleGenerator gen2(10);
     gen.UpdateBorders();
     gen.UpdateDimensions();

@@ -3,6 +3,7 @@
 #include "../UI/ComponentStackWidget.h"
 #include "../UI/WidgetContainer.h"
 #include "../Property.h"
+#include "../Input/KeyRepeater.h"
 
 namespace Gorgon { namespace Widgets {
     
@@ -10,8 +11,6 @@ namespace Gorgon { namespace Widgets {
     public:
         
         Panel(const Panel &) = delete;
-        
-        Panel(Panel &&) = default;
         
         explicit Panel(const UI::Template &temp);
         
@@ -159,8 +158,10 @@ namespace Gorgon { namespace Widgets {
         void updatecontent();
         
         bool updaterequired = false;
+        
+        Input::KeyRepeater repeater;
 
-        virtual void parentenabledchanged(bool state) {
+        virtual void parentenabledchanged(bool state) override {
             ComponentStackWidget::parentenabledchanged(state);
 
             if(!state && IsEnabled())
