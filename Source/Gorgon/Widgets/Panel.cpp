@@ -225,7 +225,10 @@ namespace Gorgon { namespace Widgets {
             return;
         
         updaterequired = true;
-        Gorgon::RegisterOnce(std::bind(&Panel::updatecontent, this));
+        //TODO: Fix me
+        //Gorgon::RegisterOnce([this] { 
+            updatecontent(); 
+        //});
     }
     
     void Panel::updatecontent() {

@@ -124,6 +124,6 @@ namespace Gorgon {
 	}
 	
 	void RegisterOnce(std::function<void()> fn) {
-        once.push_back(std::move(fn));
+        once.push_back(fn);
     }
 }

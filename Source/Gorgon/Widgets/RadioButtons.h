@@ -148,6 +148,8 @@ namespace Gorgon { namespace Widgets {
         /// in the, it will be selected, if not, nothing will be selected.
         RadioButtons &operator =(const T_ value) {
             Set(value);
+            
+            return *this;
         }
 
         using UI::RadioControl<T_, W_>::ChangedEvent;

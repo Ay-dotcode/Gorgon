@@ -124,7 +124,7 @@ namespace Gorgon { namespace Widgets {
     void SimpleGenerator::UpdateBorders(bool smooth) {
         Border.Width  = (int)std::max(std::round(regularrenderer->GetLineThickness()*2.5f), 1.f);
         ObjectBorder  = Border.Width;
-        Border.Radius = asciivsize.second / 4;
+        Border.Radius = (int)std::round(asciivsize.second / 4.f);
         Border.Divisions = smooth * Border.Radius  / 2;
     }
     
@@ -493,15 +493,23 @@ namespace Gorgon { namespace Widgets {
     
     UI::Template SimpleGenerator::IconButton(Geometry::Size iconsize) {
         
+        if(iconsize.Width == -1) {
+            iconsize.Width = BorderedWidgetHeight - Spacing * 2;
+        }
+        
+        if(iconsize.Height == -1) {
+            iconsize.Height = BorderedWidgetHeight - Spacing * 2;
+        }
+        
+        
         UI::Template temp;
-        temp.SetSize(iconsize + Geometry::Size(16, 16));
         
-        auto bgsize = iconsize + Geometry::Size(8, 8);
-        
+        auto bgsize = iconsize + Geometry::Size(Spacing * 2, Spacing * 2);
+        temp.SetSize(bgsize);
         {
             auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
             
-            bg.SetPadding(4);
+            bg.SetPadding(Spacing);
             bg.Background.SetAnimation(NormalBG());
             bg.AddIndex(1);
             bg.AddIndex(2);
@@ -511,7 +519,7 @@ namespace Gorgon { namespace Widgets {
         {
             auto &bg = temp.AddContainer(0, UI::ComponentCondition::Hover);
             
-            bg.SetPadding(4);
+            bg.SetPadding(Spacing);
             bg.Background.SetAnimation(HoverBG());
             bg.AddIndex(1);
             bg.AddIndex(2);
@@ -521,7 +529,7 @@ namespace Gorgon { namespace Widgets {
         {
             auto &bg = temp.AddContainer(0, UI::ComponentCondition::Down);
             
-            bg.SetPadding(4);
+            bg.SetPadding(Spacing);
             bg.Background.SetAnimation(DownBG());
             bg.AddIndex(1);
             bg.AddIndex(2);
@@ -531,7 +539,7 @@ namespace Gorgon { namespace Widgets {
         {
             auto &bg = temp.AddContainer(0, UI::ComponentCondition::Disabled);
 
-            bg.SetPadding(4);
+            bg.SetPadding(Spacing);
             bg.Background.SetAnimation(DisabledBG());
             bg.AddIndex(1);
             bg.AddIndex(2);
@@ -1096,7 +1104,7 @@ namespace Gorgon { namespace Widgets {
         cont.SetSize(100, 100, UI::Dimension::Percent);
         cont.SetSizing(UI::ComponentTemplate::Fixed);
         cont.SetPositioning(cont.Absolute);
-        cont.SetAnchor(UI::Anchor::TopCenter, UI::Anchor::TopCenter, UI::Anchor::TopCenter);
+        cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
         cont.SetPosition(0, 0);
         
         return temp;
@@ -1105,7 +1113,6 @@ namespace Gorgon { namespace Widgets {
     UI::Template SimpleGenerator::Panel() {
         return makepanel(0);
     }
-    
     
     UI::Template SimpleGenerator::TopPanel() {
         return makepanel(1);

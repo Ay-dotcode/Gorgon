@@ -68,7 +68,7 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template Button() override;
         
-        virtual UI::Template IconButton(Geometry::Size iconsize = {16, 16}) override;
+        virtual UI::Template IconButton(Geometry::Size iconsize = {-1, -1}) override;
         
         
         virtual UI::Template Checkbox() override;

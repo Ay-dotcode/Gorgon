@@ -15,7 +15,7 @@ namespace Gorgon { namespace Widgets {
 
         stack.SetClickEvent([this](auto, auto, auto btn) {
             if(btn == Input::Mouse::Button::Left) {
-                Toggle();
+                if(Toggle()) ChangedEvent(GetState());
             }
         });
 
@@ -43,9 +43,12 @@ namespace Gorgon { namespace Widgets {
     }
 
     bool Checkbox::Activate() {
-        Toggle();
-
-        return true;
+        if(Toggle()) {
+            ChangedEvent(GetState());
+            return true;
+        }
+        else
+            return false;
     }
 
     bool Checkbox::allowfocus() const {
@@ -69,21 +72,27 @@ namespace Gorgon { namespace Widgets {
             else if(spacedown) {
                 spacedown  =false;
                 stack.RemoveCondition(UI::ComponentCondition::Down);
-                Toggle();
+                
+                if(Toggle()) ChangedEvent(GetState());
                 
                 return true;
             }
         }
         else if(state == 1) {
             if(key == Keycodes::Numpad_Plus) {
-                Check();
+                if(!GetState()) {
+                    if(Check()) ChangedEvent(GetState());
+                }
+                
                 if(HasParent())
                     GetParent().FocusNext();
                 
                 return true;
             }
             else if(key == Keycodes::Numpad_Minus) {
-                Clear();
+                if(GetState()) {
+                    if(Clear()) ChangedEvent(GetState());
+                }
 
                 if(HasParent())
                     GetParent().FocusNext();
@@ -113,8 +122,6 @@ namespace Gorgon { namespace Widgets {
             else {
                 stack.RemoveCondition(UI::ComponentCondition::State2);
             }
-            
-            ChangedEvent(state);
             
             return true;
         }
