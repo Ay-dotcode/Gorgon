@@ -8,10 +8,12 @@ namespace Gorgon { namespace UI { namespace Organizers {
         int w = GetAttached().GetInteriorSize().Width;
         
         for(auto &widget : GetAttached()) {
-            widget.Move(0, y);
-            widget.SetWidth(w);
-            
-            y += widget.GetHeight() + spacing;
+            if(widget.IsVisible()) {
+                widget.Move(0, y);
+                widget.SetWidth(w);
+                
+                y += widget.GetHeight() + spacing;
+                }
         }
     }
     

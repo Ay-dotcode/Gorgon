@@ -45,6 +45,9 @@ namespace Gorgon { namespace UI {
                 Defocus();
                 hide();
             }
+            
+            if(parent)
+                parent->childboundschanged(this);
         }
     }
 
