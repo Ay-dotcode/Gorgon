@@ -22,7 +22,7 @@ long keysym2ucs(KeySym keysym)
         return keysym & 0x00ffffff;
     
     /* checkfor numpad */
-    if (keysym > 0xff80 && keysym < 0xffb9)
+    if (keysym > 0xff80 && keysym <= 0xffb9)
         return keysym - 0xff80;
 
     /* binary search in table */

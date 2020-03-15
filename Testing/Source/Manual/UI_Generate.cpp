@@ -167,7 +167,7 @@ int main() {
     inp.ChangedEvent.Register([](Geometry::Point val) {
         std::cout << val << std::endl;
     });
-    inp.Readonly = true;
+    //inp.Readonly = true;
 
     pnl.Add(chk);
     pnl.Add(lbl);

@@ -191,21 +191,21 @@ namespace Gorgon {
         inline float To<float>(const std::string &value) {
             if(value=="") return 0;
             
-            return (float)std::stof(value);
+            return (float)std::strtof(value.c_str(), nullptr);
         }
 
         template <>
         inline double To<double>(const std::string &value) {
             if(value=="") return 0;
             
-            return std::stod(value);
+            return std::strtod(value.c_str(), nullptr);
         }
 
         template <>
         inline long double To<long double>(const std::string &value) {
             if(value=="") return 0;
             
-            return std::stold(value);
+            return std::strtold(value.c_str(), nullptr);
         }
         
         template <>
@@ -218,62 +218,52 @@ namespace Gorgon {
         
         template <>
         inline char To<char>(const char *value) {
-            char *n;
-            return (char)std::strtol(value, &n, 10);
+            return (char)std::strtol(value, nullptr, 10);
         }
 
         template <>
         inline unsigned char To<unsigned char>(const char *value) {
-            char *n;
-            return (unsigned char)std::strtol(value, &n, 10);
+            return (unsigned char)std::strtol(value, nullptr, 10);
         }
 
         template <>
         inline short To<short>(const char *value) {
-            char *n;
-            return (short)std::strtol(value, &n, 10);
+            return (short)std::strtol(value, nullptr, 10);
         }
 
         template <>
         inline unsigned short To<unsigned short>(const char *value) {
-            char *n;
-            return (unsigned short)std::strtol(value, &n, 10);
+            return (unsigned short)std::strtol(value, nullptr, 10);
         }
 
         template <>
         inline int To<int>(const char *value) {
-            char *n;
-            return (int)std::strtol(value, &n, 10);
+            return (int)std::strtol(value, nullptr, 10);
         }
 
         template <>
         inline unsigned To<unsigned>(const char *value) {
-            char *n;
-            return (unsigned)std::strtol(value, &n, 10);
+            return (unsigned)std::strtol(value, nullptr, 10);
         }
 
         template <>
         inline long To<long>(const char *value) {
-            char *n;
-            return (long)std::strtol(value, &n, 10);
+            return (long)std::strtol(value, nullptr, 10);
         }
 
         template <>
         inline unsigned long To<unsigned long>(const char *value) {
-            char *n;
-            return (unsigned long)std::strtol(value, &n, 10);
+            return (unsigned long)std::strtol(value, nullptr, 10);
         }
 
         template <>
         inline long long To<long long>(const char *value) {
-            char *n;
-            return (long long)std::strtol(value, &n, 10);
+            return (long long)std::strtol(value, nullptr, 10);
         }
 
         template <>
         inline unsigned long long To<unsigned long long>(const char *value) {
-            char *n;
-            return (unsigned long long)std::strtol(value, &n, 10);
+            return (unsigned long long)std::strtol(value, nullptr, 10);
         }
 
         template <>
@@ -297,7 +287,8 @@ namespace Gorgon {
         }
 
         /// Converts a hexadecimal number stored in the string to a given
-        /// integer type.
+        /// integer type. If given string is not a valid number this function
+        /// throws
         template <class T_>
         T_ HexTo(const std::string &value);
 
