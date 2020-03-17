@@ -58,6 +58,11 @@ namespace Gorgon { namespace UI {
             Gorgon::NextFrame();
         }
         
+        /// Window does not do any scrolling, thus cannot ensure visibility
+        bool EnsureVisible(const UI::WidgetBase &) override {
+            return true;
+        }
+        
         using WidgetContainer::Add;
         using Gorgon::Window::Add;
         using Gorgon::Window::KeyEvent;

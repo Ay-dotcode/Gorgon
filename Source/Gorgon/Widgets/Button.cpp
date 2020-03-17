@@ -141,7 +141,7 @@ namespace Gorgon { namespace Widgets {
        
         namespace Keycodes = Input::Keyboard::Keycodes;
         
-        if(key == Keycodes::Enter && state == 1) {
+        if((key == Keycodes::Enter || key == Keycodes::Numpad_Enter) && state == 1) {
             PressEvent();
             ClickEvent();
             ReleaseEvent();

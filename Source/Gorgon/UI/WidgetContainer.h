@@ -155,6 +155,13 @@ namespace Gorgon { namespace UI {
         /// will throw.
         WidgetBase &GetFocus() const;
         
+        /// Ensures the widget is visible. Returns true if the container can be
+        /// scroll to make sure the given widget is visible. This function cannot
+        /// be expected to take outside factors into account, such as occlusion.
+        /// This function does not change the visibility of the widget and will
+        /// return false if the widget is not visible.
+        virtual bool EnsureVisible(const WidgetBase &widget) = 0;
+        
         /// Should return whether the container is visible. Due to
         /// different container designs and capabilities, setting
         /// visibility depends on the particular container

@@ -160,6 +160,9 @@ namespace Gorgon { namespace UI {
                 widgets[i].focused();
 
                 focuschanged();
+        
+                EnsureVisible(widgets[i]);
+                
                 return true;
             }
         }
@@ -198,6 +201,8 @@ namespace Gorgon { namespace UI {
                 widgets[i].focused();
 
                 focuschanged();
+        
+                EnsureVisible(widgets[i]);
                 return true;
             }
         }
@@ -228,6 +233,8 @@ namespace Gorgon { namespace UI {
                 }
 
                 focuschanged();
+        
+                EnsureVisible(widgets[i]);
                 return true;
             }
         }
@@ -277,6 +284,8 @@ namespace Gorgon { namespace UI {
                 }
 
                 focuschanged();
+        
+                EnsureVisible(widgets[i]);
                 return true;
             }
         }
@@ -313,6 +322,8 @@ namespace Gorgon { namespace UI {
         widget.focused();
         
         focuschanged();
+        
+        EnsureVisible(widget);
 
         return true;
     }
@@ -369,11 +380,14 @@ namespace Gorgon { namespace UI {
             return false;
         }
         else if(key == Keycodes::Tab) {
-            if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::Shift)
-                return FocusPrevious();
+            if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::Shift) {
+                FocusPrevious();
+                return true;
+            }
 
             if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::None)
-                return FocusNext();
+                FocusNext();
+                return true;
         }
 
         return false;

@@ -89,6 +89,13 @@ namespace Gorgon { namespace UI {
         bool IsVisible() const {
             return visible;
         }
+        
+        /// Ensures this widget is visible in its container by scrolling it
+        /// into view. This function will not change visibility of the widget
+        /// and will return false if the widget is not visible. This function 
+        /// cannot be expected to take outside factors into account, such as 
+        /// occlusion.
+        bool EnsureVisible() const;
 
         /// Enables the widget so that the user can interact with it
         void Enable() { SetEnabled(true); }

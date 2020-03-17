@@ -40,6 +40,7 @@ namespace Gorgon { namespace Widgets {
 
         virtual bool ResizeInterior(Geometry::Size size) override;
         
+        
         /// Scrolls the contents of the panel so that the given location will
         /// be at the top left. If clip is set, the scroll amount cannot go
         /// out of the scrolling region.
@@ -124,6 +125,10 @@ namespace Gorgon { namespace Widgets {
         bool IsSmoothScrollEnabled() const {
             return scrollspeed != 0;
         }
+        
+        using WidgetBase::EnsureVisible;
+        
+        bool EnsureVisible(const UI::WidgetBase &widget) override;
 
         using WidgetBase::Enable;
         using WidgetBase::Disable;

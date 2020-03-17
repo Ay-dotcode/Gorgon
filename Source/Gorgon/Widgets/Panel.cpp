@@ -204,15 +204,15 @@ namespace Gorgon { namespace Widgets {
                 y = 0;
         }
         
-        if(x == -b.Left && y == -b.Top) return;
+        if(x == target.X && y == target.Y) return;
         
         stack.SetValue(-float(x) / b.Width(), -float(y) / b.Height());
-
+        target = {x, y};
+        
         if(scrollspeed == 0) {
             stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, {-x, -y});
         }
         else {
-            target = {x, y};
             if(!isscrolling) {
                 stack.SetFrameEvent(std::bind(&Panel::updatescroll, this));
                 isscrolling = true;
@@ -368,4 +368,24 @@ namespace Gorgon { namespace Widgets {
         else
             stack.SetValueTransitionSpeed({(float)value / s.Width, (float)value / s.Height, 0, 0});
     }
+    
+    
+     bool Panel::EnsureVisible(const UI::WidgetBase &widget) {
+        if(widgets.Find(widget) == widgets.end())
+            return false;
+        
+        if(!widget.IsVisible())
+            return false;
+        
+        auto wb = widget.GetBounds();
+        
+        Geometry::Bounds cb = {target, GetInteriorSize()};
+        
+        if(!Contains(cb, wb)) {
+            ScrollTo(wb.TopLeft());
+        }
+        
+        return true;
+    }
+    
 } }

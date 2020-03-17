@@ -72,7 +72,7 @@ int main() {
     rad.Add(1, "Latte");
     rad.Add(2);
 
-    rad.Disable(2);
+    //rad.Disable(2);
 
     app.wind.Add(rad);
     rad.Move(150, 4);
@@ -179,7 +179,7 @@ int main() {
     pnl.SetHeight(500);
     mainpanel.Resize(140, 550);
     //pnl.Disable();
-
+    
     pnl.CreateOrganizer<Gorgon::UI::Organizers::List>();
 
 

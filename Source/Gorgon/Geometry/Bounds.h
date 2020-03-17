@@ -515,6 +515,12 @@ namespace Gorgon { namespace Geometry {
 		return p.X>=b.Left && p.Y>=b.Top && p.X<b.Right && p.Y<b.Bottom;
 	}
 
+	/// Checks whether the outer bounds contain inner bounds.
+	template<class T_>
+	bool Contains(const basic_Bounds<T_> &outer, const basic_Bounds<T_> &inner) {
+		return inner.Left >= outer.Left && inner.Top >= outer.Top && inner.Right <= outer.Right && inner.Bottom <= outer.Bottom;
+	}
+
 	/// Translation moves the given bounds *by* the given amount
 	template<class T_, class O_>
 	void Translate(basic_Bounds<T_> &bounds, O_ x, O_ y) {

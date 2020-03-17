@@ -50,6 +50,14 @@ namespace Gorgon { namespace UI {
                 parent->childboundschanged(this);
         }
     }
+    
+    
+    bool WidgetBase::EnsureVisible() const {
+        if(!parent)
+            return false;
+        
+        return parent->EnsureVisible(*this);
+    }
 
     void WidgetBase::boundschanged(){
         if(parent)

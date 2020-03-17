@@ -10,8 +10,14 @@
 
 namespace Gorgon { namespace Widgets {
     
+    /**
+     * Allows the use of radio buttons working together. This widget acts as a container for checkboxes
+     * that work together. Manually adding/removing widgets will fail. Attaching an organizer to this
+     * widget might cause unexpected behavior. All other container functionality should work as intended.
+     */
     template<class T_, class W_ = Checkbox>
-    class RadioButtons : public UI::WidgetBase, protected UI::RadioControl<T_, W_>, protected UI::WidgetContainer {
+    class RadioButtons : public UI::WidgetBase, protected UI::RadioControl<T_, W_>, public UI::WidgetContainer {
+        friend class UI::WidgetContainer;
     public:
         explicit RadioButtons(const UI::Template &temp) : temp(temp) { }
 
@@ -59,6 +65,9 @@ namespace Gorgon { namespace Widgets {
         void Add(const T_ value, std::string text) {
             auto &c = *new W_(temp, text);
             UI::RadioControl<T_, W_>::Add(value, c);
+            
+            if(value == this->Get())
+                c.Check();
             
             if(GetWidth() < c.GetWidth())
                 SetWidth(c.GetWidth());
@@ -135,10 +144,16 @@ namespace Gorgon { namespace Widgets {
         bool IsVisible() const override {
             return contents.IsVisible();
         }
+        
+        bool EnsureVisible(const UI::WidgetBase &) override {
+            return EnsureVisible();
+        }
 
         using WidgetBase::Resize;
 
         using WidgetBase::Move;
+        
+        using WidgetBase::EnsureVisible;
         
         void Move(Geometry::Point location) override {
             contents.Move(location);
@@ -184,6 +199,10 @@ namespace Gorgon { namespace Widgets {
         virtual bool IsEnabled() const override {
             return enabled;
         }
+        
+        bool KeyEvent(Input::Key key, float state) override {
+            return UI::WidgetContainer::KeyEvent(key, state);
+        }
 
     protected:
         virtual void addto(Layer &layer) override { 
@@ -205,16 +224,34 @@ namespace Gorgon { namespace Widgets {
             return true;
         }
         
+        virtual void focused() override {        
+            if(!HasFocusedWidget())
+                FocusFirst();
+            
+            WidgetBase::focused();
+        }
+        
         Gorgon::Layer &getlayer() override {
             return contents;
         }
 
-        virtual void parentenabledchanged(bool state) {
+        virtual void parentenabledchanged(bool state) override {
             if(!state && IsEnabled())
                 distributeparentenabled(state);
             else if(state && IsEnabled())
                 distributeparentenabled(state);
         }
+        
+        virtual bool addingwidget(WidgetBase &widget) override { 
+            for(auto p : this->elements) {
+                if(&p.second == &widget)
+                    return true;
+            }
+            
+            return false;
+        }
+        
+        virtual bool removingwidget(WidgetBase &) override { return false; }
 
         Geometry::Point location = {0, 0};
         int spacing = 4;
@@ -230,14 +267,14 @@ namespace Gorgon { namespace Widgets {
             contents.Hide();
         }
 
-        virtual void focuschanged() {
+        virtual void focuschanged() override {
             if(HasFocusedWidget() && !IsFocused())
                 Focus();
             else if(!HasFocusedWidget() && IsFocused() && HasParent())
                 GetParent().RemoveFocus();
         }
 
-        virtual void focuslost() {
+        virtual void focuslost() override {
             WidgetBase::focuslost();
 
             if(HasFocusedWidget()) {
