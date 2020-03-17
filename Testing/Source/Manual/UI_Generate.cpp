@@ -120,7 +120,7 @@ int main() {
     mainpanel.Add(sub);
     sub.Move(0, 0);
 
-    Widgets::Label valuelabel(lbltemp);
+    Widgets::Label valuelabel(lbltemp), l2(lbltemp, "Hello"), l3(lbltemp, "Another");
     valuelabel.SetText("Bug test : ");
     increase.SetText("+");
     decrease.SetText("-");
@@ -128,11 +128,13 @@ int main() {
     sub.Add(increase);
     sub.Add(decrease);
     sub.Add(valuelabel);
+    sub.Add(l2);
+    sub.Add(l3);
     sub.CreateOrganizer<Gorgon::UI::Organizers::List>();
     
     sub.SetWidth(100);
     sub.SetScrollDistance(15);
-    sub.SetOverscroll(200);
+    sub.SetOverscroll(50);
     
     increase.ClickEvent.Register([&]() {
         sub.ScrollBy(100);

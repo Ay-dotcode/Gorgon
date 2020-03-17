@@ -157,6 +157,8 @@ namespace Gorgon { namespace Widgets {
         
         void updatecontent();
         
+        void updatescroll();
+        
         bool updaterequired = false;
         
         Input::KeyRepeater repeater;
@@ -174,6 +176,9 @@ namespace Gorgon { namespace Widgets {
         bool scrollclipped = true;
         Geometry::Point scrolldist = {80, 45};
         int scrollspeed = 250;
+        Geometry::Point target;
+        bool isscrolling = false;
+        float scrollleftover = 0;
     };
     
 } }

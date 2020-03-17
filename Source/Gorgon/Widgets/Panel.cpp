@@ -202,19 +202,79 @@ namespace Gorgon { namespace Widgets {
             
             if(y < 0)
                 y = 0;
-            
         }
         
+        if(x == -b.Left && y == -b.Top) return;
+        
         stack.SetValue(-float(x) / b.Width(), -float(y) / b.Height());
+
+        if(scrollspeed == 0) {
+            stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, {-x, -y});
+        }
+        else {
+            target = {x, y};
+            if(!isscrolling) {
+                stack.SetFrameEvent(std::bind(&Panel::updatescroll, this));
+                isscrolling = true;
+            }
+        }
+        
         scrollclipped = clip;
+    }
+    
+    void Panel::updatescroll() {
+        if(!isscrolling)
+            Utils::ASSERT_FALSE("This should not happen");
+        
+        auto b = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
+        
+        auto cur = -b.TopLeft();
+        
+        float d = (float)scrollspeed/1000 * Time::DeltaTime() + scrollleftover;
+        int dist = (int)std::round(d);
+        scrollleftover = d - dist;
+        
+        int done = 0;
+        
+        auto doaxis = [&](int &c, int t) {
+            if(t < c) {
+                if(c - dist <= t) {
+                    c = t;
+                }
+                else {
+                    c -= dist;
+                }
+            }
+            else if(t > c) {
+                if(c + dist >= t) {
+                    c = t;
+                }
+                else {
+                    c += dist;
+                }
+            }
+            else {
+                done++;
+            }                
+        };
+        
+        doaxis(cur.X, target.X);
+        doaxis(cur.Y, target.Y);
+        
+        stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, -cur);
+        
+        if(done == 2) {
+            isscrolling = false;
+            stack.RemoveFrameEvent();
+            scrollleftover = 0;
+        }
     }
     
     
     Geometry::Point Panel::ScrollOffset() const {
         auto b = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
-        auto val = stack.GetValue();
 
-        return {(int)(-val[0]*b.Width()), (int)(-val[1]*b.Height())};
+        return -b.TopLeft();
     }
     
     
@@ -248,10 +308,12 @@ namespace Gorgon { namespace Widgets {
         
         stack.SetTagSize(UI::ComponentTemplate::ContentsTag, {maxx, maxy});
         
-        //clip scroll
-        if(scrollclipped)
-            ScrollTo(ScrollOffset());
-        
+        ScrollTo(ScrollOffset(), scrollclipped);
+
+        auto size = GetInteriorSize();
+        auto val = stack.GetValue();
+        stack.SetValue(val[0], val[1], Clamp((size.Width+1.f) / (maxx+1.f), 0.f, 1.f), Clamp((size.Height+1.f) / (maxy+1.f), 0.f, 1.f));
+
         SetSmoothScrollSpeed(scrollspeed);
         
         updaterequired = false;
@@ -288,9 +350,18 @@ namespace Gorgon { namespace Widgets {
 
 
     void Panel::SetSmoothScrollSpeed(int value){
-        auto s = stack.TagBounds(UI::ComponentTemplate::ContentsTag).GetSize();
+        auto b = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
+        auto s = b.GetSize();
         
         scrollspeed = value;
+        
+        if(value == 0 && isscrolling) {
+            stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, target);
+            
+            isscrolling = false;
+            scrollleftover = 0;
+            stack.RemoveFrameEvent();
+        }
         
         if(s.Area() == 0) 
             stack.SetValueTransitionSpeed({0, 0, 0, 0});

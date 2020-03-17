@@ -1100,7 +1100,7 @@ namespace Gorgon { namespace Widgets {
         
         auto &cont = temp.AddContainer(2, UI::ComponentCondition::Always);
         cont.SetTag(UI::ComponentTemplate::ContentsTag);
-        cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
+        //cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
         cont.SetSize(100, 100, UI::Dimension::Percent);
         cont.SetSizing(UI::ComponentTemplate::Fixed);
         cont.SetPositioning(cont.Absolute);

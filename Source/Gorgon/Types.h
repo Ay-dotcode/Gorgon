@@ -85,6 +85,14 @@ namespace Gorgon {
         
         v = v < min ? min : (v > max ? max : v);
     }
+    
+    /// Performs clamping on the given value and returns the result.
+    template<class T_>
+    T_ Clamp(T_ v, T_ min, T_ max) {
+        //replace with std::clamp once C++17 is enforced
+        
+        return v < min ? min : (v > max ? max : v);
+    }
 
 	/// Returns if the given number is within the given range including min
 	/// but excluding max
