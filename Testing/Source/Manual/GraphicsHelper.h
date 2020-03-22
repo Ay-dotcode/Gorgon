@@ -6,6 +6,7 @@
 #include <Gorgon/Graphics/Bitmap.h>
 #include <Gorgon/Graphics/FreeType.h>
 #include <Gorgon/OS.h>
+#include <Gorgon/UI.h>
 
 #ifdef LINUX
 #include <unistd.h>
@@ -43,6 +44,7 @@ public:
 		//Gorgon::GL::log.InitializeConsole();
 
 		Graphics::Initialize();
+        UI::Initialize();
 
 
 		wind.ClosingEvent.Register([] { exit(0); });

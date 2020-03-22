@@ -2,6 +2,7 @@
 
 #include "../UI/ComponentStackWidget.h"
 #include "../Property.h"
+#include "Registry.h"
 
 namespace Gorgon { namespace Graphics { class Bitmap; } }
 
@@ -11,13 +12,15 @@ namespace Gorgon { namespace Widgets {
     public:
         Label(const Label &) = delete;
         
-        Label(Label &&) = default;
+        explicit Label(std::string text = "", Registry::TemplateType type = Registry::Label_Regular) : 
+            Label(Registry::Active()[type], text) 
+        {
+        }
+
 
         explicit Label(const UI::Template &temp, std::string text = "");
 
         Label(const UI::Template &temp, const char *text) : Label(temp, std::string(text)) { }
-        
-        Label &operator =(Label &&) = default;
 
         virtual ~Label();
 

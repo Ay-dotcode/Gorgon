@@ -73,6 +73,6 @@ IF(GSCRIPT_GENERATOR)
     GenerateGscript(Gscripting.cpp)
     
     SET(Local
-    	Gscripting.cpp
+        Gscripting.cpp
     )
 ENDIF()

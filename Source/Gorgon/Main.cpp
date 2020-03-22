@@ -16,6 +16,9 @@
 #	include "Scripting.h"
 #endif
 
+#ifdef ENABLE_UI
+#   include "UI.h"
+#endif
 
 /**
  * @page GDB Pretty Printing

@@ -2,6 +2,7 @@
 
 #include "../UI/ComponentStackWidget.h"
 #include "../Property.h"
+#include "Registry.h"
 
 namespace Gorgon { namespace Graphics { class Bitmap; } }
 
@@ -11,7 +12,33 @@ namespace Gorgon { namespace Widgets {
     public:
         Button(const Button &) = delete;
         
-        Button(Button &&) = default;
+        explicit Button(std::string text, Registry::TemplateType type = Registry::Button_Regular) : 
+            Button(Registry::Active()[type], text) 
+        {
+        }
+        
+        explicit Button(Registry::TemplateType type = Registry::Button_Regular) : 
+            Button(Registry::Active()[type], "") 
+        {
+        }
+        
+        template<class F_>
+        explicit Button(F_ clickfn, Registry::TemplateType type = Registry::Button_Regular) : 
+            Button(Registry::Active()[type], "", clickfn) 
+        {
+        }
+        
+        template<class F_>
+        explicit Button(std::string text, F_ clickfn, Registry::TemplateType type = Registry::Button_Regular) : 
+            Button(Registry::Active()[type], text, clickfn) 
+        {
+        }
+        
+        template<class F_>
+        explicit Button(const char *text, F_ clickfn, Registry::TemplateType type = Registry::Button_Regular) : 
+            Button(Registry::Active()[type], text, clickfn) 
+        {
+        }
 
         explicit Button(const UI::Template &temp, std::string text = "");
 

@@ -92,7 +92,7 @@ namespace Gorgon {
 				}
 				
 			protected:
-				Iterator_(H_ &container, const I_ iterator) : container(&container), currentit(iterator) {
+				Iterator_(H_ &container, const I_ iterator) : currentit(iterator), container(&container) {
 				}
 				
 			protected:

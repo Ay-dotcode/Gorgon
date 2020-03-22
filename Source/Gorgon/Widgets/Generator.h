@@ -5,21 +5,25 @@
 #include "../Graphics/Font.h"
 #include "../Graphics/Rectangle.h"
 
+#include "Registry.h"
+
 namespace Gorgon { namespace Widgets {
 
     /**
     * Generators create templates for widgets. First setup a generator, then
     * call specific generation functions.
     */
-    class Generator {
+    class Generator : public Registry {
     public:
         virtual ~Generator() { }
+        
+        Generator(bool activate = true) : Registry(activate) { }
         
         /// Generates a button template
         virtual UI::Template Button() = 0;
         
         /// Generates a button template with the given default size.
-        virtual UI::Template IconButton(Geometry::Size iconsize) = 0;
+        virtual UI::Template IconButton(Geometry::Size iconsize = {-1, -1}) = 0;
         
         
         virtual UI::Template Checkbox() = 0;
@@ -48,6 +52,43 @@ namespace Gorgon { namespace Widgets {
         
         
         virtual UI::Template Inputbox() = 0;
+        
+    protected:
+        
+        virtual UI::Template &generate(Gorgon::Widgets::Registry::TemplateType type) override {
+            switch(type) {
+            case Button_Regular:
+                return *new UI::Template(Button());
+            case Button_Icon:
+                return *new UI::Template(IconButton());
+            case Label_Regular:
+                return *new UI::Template(Label());
+            case Label_Error:
+                return *new UI::Template(ErrorLabel());
+            case Checkbox_Regular:
+                return *new UI::Template(Checkbox());
+            case Checkbox_Button:
+                return *new UI::Template(CheckboxButton());
+            case Radio_Regular:
+                return *new UI::Template(RadioButton());
+            case Inputbox_Regular:
+                return *new UI::Template(Inputbox());
+            case Panel_Regular:
+                return *new UI::Template(Panel());
+            case Panel_Blank:
+                return *new UI::Template(BlankPanel());
+            case Panel_Top:
+                return *new UI::Template(TopPanel());
+            case Panel_Left:
+                return *new UI::Template(LeftPanel());
+            case Panel_Bottom:
+                return *new UI::Template(BottomPanel());
+            case Panel_Right:
+                return *new UI::Template(RightPanel());
+            default:
+                return *new UI::Template();
+            }
+        }
     };
     
     /**
@@ -61,8 +102,15 @@ namespace Gorgon { namespace Widgets {
     public:
         
         /// Initializes the generator
-        explicit SimpleGenerator(int fontsize = 14, std::string fontname = "");
+        explicit SimpleGenerator(int fontsize, std::string fontname = "", bool activate = true);
+        
+        /// Creates a non-working simple generator. Calls to any function other than Init
+        /// is undefined behaviour.
+        SimpleGenerator() : Generator(false) {
+        }
 
+        /// Initializes the generator
+        void Init(int fontsize = 14, std::string fontname = "");
         
         virtual ~SimpleGenerator();
         

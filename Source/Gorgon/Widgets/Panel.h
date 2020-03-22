@@ -4,6 +4,7 @@
 #include "../UI/WidgetContainer.h"
 #include "../Property.h"
 #include "../Input/KeyRepeater.h"
+#include "Registry.h"
 
 namespace Gorgon { namespace Widgets {
     
@@ -14,6 +15,8 @@ namespace Gorgon { namespace Widgets {
         
         explicit Panel(const UI::Template &temp);
         
+        explicit Panel(Registry::TemplateType type = Registry::Panel_Regular) : Panel(Registry::Active()[type]) { }
+
         using WidgetBase::Resize;
         
         using WidgetBase::Remove;

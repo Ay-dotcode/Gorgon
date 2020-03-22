@@ -7,6 +7,7 @@
 #include "../Property.h"
 #include "Checkbox.h"
 #include "../UI/WidgetContainer.h"
+#include "Registry.h"
 
 namespace Gorgon { namespace Widgets {
     
@@ -20,6 +21,8 @@ namespace Gorgon { namespace Widgets {
         friend class UI::WidgetContainer;
     public:
         explicit RadioButtons(const UI::Template &temp) : temp(temp) { }
+        
+        explicit RadioButtons(Registry::TemplateType type = Registry::Radio_Regular) : temp(Registry::Active()[type]) { }
 
         ~RadioButtons() {
             this->elements.Destroy();

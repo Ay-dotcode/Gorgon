@@ -8,6 +8,7 @@
 #include "../UI/Validators.h"
 #include "../UI/ComponentStackWidget.h"
 #include "../Input/KeyRepeater.h"
+#include "Registry.h"
 
 namespace Gorgon { namespace Widgets {
     
@@ -338,7 +339,7 @@ namespace Gorgon { namespace Widgets {
     * supply a validator to a specific inputbox. Inputbox is designed
     * for value objects that can be copied and serialized to string.
     */
-    template<class T_, class V_ = UI::ConversionValidator<T_>, template<class C_, class PT_, PT_(C_::*Getter_)() const, void(C_::*Setter_)(const PT_ &)> class P_ = Gorgon::Property>
+    template<class T_, class V_ = UI::ConversionValidator<T_>, template<class C_, class PT_, PT_(C_::*Getter_)() const, void(C_::*Setter_)(const PT_ &)> class P_ = Gorgon::Property, Widgets::Registry::TemplateType DEFTMP_ = Widgets::Registry::Inputbox_Regular>
     class Inputbox : 
         public internal::Inputbox_base, 
         public P_<internal::prophelper<Inputbox<T_, V_, P_>, T_>, T_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::get_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::set_> {
@@ -350,7 +351,7 @@ namespace Gorgon { namespace Widgets {
         using PropType = P_<internal::prophelper<Inputbox<T_, V_, P_>, T_>, T_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::get_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::set_>;
 
         friend class P_<internal::prophelper<Inputbox<T_, V_, P_>, T_>, T_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::get_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::set_>;
-        template<class T1_, class V1_, template<class C_, class PT_, PT_(C_::*Getter_)() const, void(C_::*Setter_)(const PT_&)> class P1_>
+        template<class T1_, class V1_, template<class C_, class PT_, PT_(C_::*Getter_)() const, void(C_::*Setter_)(const PT_&)> class P1_, Widgets::Registry::TemplateType DEFTMP1_>
         friend class Inputbox;
         friend struct internal::prophelper<Inputbox<T_, V_, P_>, T_>;
         
@@ -362,7 +363,6 @@ namespace Gorgon { namespace Widgets {
             
             updatevaluedisplay();
             updateselection();
-
         }
         
         /// Initializes the inputbox
@@ -375,6 +375,18 @@ namespace Gorgon { namespace Widgets {
         {
             ChangedEvent.Register(changedevent);
         }
+        
+        /// Initializes the inputbox
+        explicit Inputbox(T_ value = T_(), Registry::TemplateType type = DEFTMP_) : 
+        Inputbox(Registry::Active()[type], value) { }
+        
+        /// Initializes the inputbox
+        explicit Inputbox(std::function<void()> changedevent, Registry::TemplateType type = DEFTMP_) : 
+        Inputbox(Registry::Active()[type], changedevent) { }
+        
+        /// Initializes the inputbox
+        explicit Inputbox(T_ value, std::function<void()> changedevent, Registry::TemplateType type = DEFTMP_) : 
+        Inputbox(Registry::Active()[type], value, changedevent) { }
         
         /// Assignment to the value type
         Inputbox &operator =(const T_ value) {

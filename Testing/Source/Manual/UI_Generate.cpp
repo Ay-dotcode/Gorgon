@@ -33,8 +33,9 @@ Graphics::Bitmap &prep(Graphics::Bitmap &bmp) {
 int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
     
-    Widgets::SimpleGenerator gen(15, "DejavuSans");
-    Widgets::SimpleGenerator gen2(10);
+    Widgets::SimpleGenerator gen;
+    Widgets::SimpleGenerator gen2(12, "", false);
+    gen.Init(15);
     gen.UpdateBorders();
     gen.UpdateDimensions();
     gen2.Focus.Color = Graphics::Color::Red;
@@ -50,23 +51,22 @@ int main() {
     auto icobtntemp = gen.IconButton();
     auto lbltemp = gen.Label();
     auto pnltemp = gen.BlankPanel();
-    auto pnltemp2 = gen.TopPanel();
     auto inptemp = gen2.Inputbox();
 
-    Widgets::Button btn(btntemp, "Helloo_...", []() { std::cout<<"Hello..."<<std::endl; });
+    Widgets::Button btn("Helloo_...", []() { std::cout<<"Hello..."<<std::endl; });
     btn.Move(5,5);
     
     app.wind.Add(btn);
     btn.Focus();
     
-    Widgets::Button btn2(btntemp, "Exit", [&app]() { app.wind.Quit(); });
+    Widgets::Button btn2("Exit", [&app]() { app.wind.Quit(); });
 
     btn2.Move({5, btn.GetSize().Height + 10});
     app.wind.Add(btn2);
     
     std::cout<<"Height: "<<gen.RegularFont.GetGlyphRenderer().GetSize('A').Height<<std::endl;
     
-    Widgets::RadioButtons<int> rad(radtemp);
+    Widgets::RadioButtons<int> rad;
     
     rad.Add(0, u8"Ájmericano");
     rad.Add(1, "Latte");
@@ -79,7 +79,7 @@ int main() {
     
     
 
-    Widgets::Checkbox chk(chktemp, "Sugar", [](bool state) {
+    Widgets::Checkbox chk("Sugar", [](bool state) {
         std::cout<<(state ? "with sugar" : "without sugar")<<std::endl;
     });
 
@@ -98,7 +98,7 @@ int main() {
 
     chk.Move(rad.GetLocation() + Gorgon::Geometry::Point(0, rad.GetSize().Height + 4));
 
-    Widgets::Button ib(icobtntemp);
+    Widgets::Button ib(Widgets::Registry::Button_Icon);
     auto ico = Graphics::BlankImage({16, 16}, Graphics::Color::Black);
     //ico.Prepare();
     ib.SetIcon(ico);
@@ -106,12 +106,13 @@ int main() {
     app.wind.Add(ib);
 
     
+    
     Widgets::Panel pnl(pnltemp);
     pnl.Resize(350, 300);
     Widgets::Panel mainpanel(pnltemp);
     mainpanel.Resize(350, 700);
     app.wind.Add(mainpanel);
-    Widgets::Panel sub(pnltemp2);
+    Widgets::Panel sub(Widgets::Registry::Panel_Top);
     sub.Resize(300, 50);
     Widgets::Button increase(btntemp);
     Widgets::Button decrease(btntemp);
@@ -146,10 +147,10 @@ int main() {
     });
     decrease.ActivateClickRepeat();
     
-    Widgets::Checkbox chk1(chktemp2, "Su?");
+    Widgets::Checkbox chk1("?", Widgets::Registry::Checkbox_Button);
     
-    //app.wind.Add(chk1);
-    chk1.Move(300, 0);
+    app.wind.Add(chk1);
+    chk1.Move(500, 80);
     
     app.wind.Add(pnl);
     pnl.Move(150, 0);
@@ -158,10 +159,10 @@ int main() {
 
     auto errortemp = gen.ErrorLabel();
     
-    Widgets::Label lbl(lbltemp, "This is a label");
-    Widgets::Label error(errortemp, "This is an Error label");
+    Widgets::Label lbl("This is a label");
+    Widgets::Label error("This is an Error label", Gorgon::Widgets::Registry::Label_Error);
     
-    Widgets::Pointbox inp(inptemp);
+    Widgets::Pointbox inp;
     inp={5, 2};
     pnl.Add(inp);
     inp.Move(5, 80);

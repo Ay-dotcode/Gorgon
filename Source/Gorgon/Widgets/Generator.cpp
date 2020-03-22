@@ -22,7 +22,11 @@ namespace Gorgon { namespace OS {
 
 namespace Gorgon { namespace Widgets { 
 
-    SimpleGenerator::SimpleGenerator(int fontsize, std::string fontname) {
+    SimpleGenerator::SimpleGenerator(int fontsize, std::string fontname, bool activate) : Generator(activate) {
+        Init(fontsize, fontname);
+    }
+    
+    void SimpleGenerator::Init(int fontsize, std::string fontname) {
 #ifdef WIN32
         if(fontname.find_last_of('.') == fontname.npos)
             fontname = Filesystem::Join(Filesystem::Join(OS::GetEnvVar("WINDIR"), "Fonts"), fontname == "" ? "tahoma.ttf" : fontname + ".ttf");
@@ -79,6 +83,8 @@ namespace Gorgon { namespace Widgets {
         //}
         
         UpdateDimensions();
+        UpdateBorders();
+        UpdateDimensions();
     }
 
     SimpleGenerator::~SimpleGenerator() {
@@ -122,7 +128,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     void SimpleGenerator::UpdateBorders(bool smooth) {
-        Border.Width  = (int)std::max(std::round(regularrenderer->GetLineThickness()*2.5f), 1.f);
+        Border.Width  = (int)std::max(std::round(regularrenderer->GetLineThickness()*2.6f), 1.f);
         ObjectBorder  = Border.Width;
         Border.Radius = (int)std::round(asciivsize.second / 4.f);
         Border.Divisions = smooth * Border.Radius  / 2;

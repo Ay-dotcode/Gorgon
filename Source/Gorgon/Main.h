@@ -30,7 +30,8 @@ namespace Gorgon {
 		virtual void Quit() = 0;
 	};
 
-	/// Initializes the entire system
+	/// Initializes the entire system except for graphics and UI. Graphics should
+    /// be initialized after a window is created and UI should be initialized last.
 	void Initialize(const std::string &systemname);
 
 	/// Returns the name of the current system

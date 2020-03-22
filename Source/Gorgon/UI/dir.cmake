@@ -7,6 +7,8 @@ SET(Local
 	RadioControl.h
 	Template.h
 	Template.cpp
+	../UI.h
+	UI.cpp
 	TwoStateControl.h
 	Validators.h
 	WidgetBase.h
