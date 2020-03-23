@@ -17,6 +17,11 @@ namespace Gorgon { namespace Widgets {
         {
         }
         
+        explicit Button(const char *text, Registry::TemplateType type = Registry::Button_Regular) : 
+            Button(Registry::Active()[type], text) 
+        {
+        }
+        
         explicit Button(Registry::TemplateType type = Registry::Button_Regular) : 
             Button(Registry::Active()[type], "") 
         {
