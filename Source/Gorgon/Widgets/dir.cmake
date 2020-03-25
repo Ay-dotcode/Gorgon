@@ -19,5 +19,7 @@ SET(Local
 	Panel.h
 	Panel.cpp
 	
+	Progressbar.h
+	
 	RadioButtons.h
 )

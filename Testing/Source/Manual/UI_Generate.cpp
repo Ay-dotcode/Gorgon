@@ -11,6 +11,7 @@
 #include <Gorgon/Widgets/Textbox.h>
 #include <Gorgon/Widgets/Numberbox.h>
 #include <Gorgon/Widgets/GeometryBoxes.h>
+#include <Gorgon/Widgets/Progressbar.h>
 #include <Gorgon/UI/RadioControl.h>
 #include <Gorgon/UI/Organizers/List.h>
 #include <Gorgon/Graphics/BlankImage.h>
@@ -32,7 +33,7 @@ Graphics::Bitmap &prep(Graphics::Bitmap &bmp) {
 
 int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
-    
+    /*
     Widgets::SimpleGenerator gen;
     Widgets::SimpleGenerator gen2(12, "", false);
     gen.Init(15);
@@ -169,9 +170,16 @@ int main() {
     inp.SelectAll();
     inp.ChangedEvent.Register([](Geometry::Point val) {
         std::cout << val << std::endl;
-    });
+    });*/
     //inp.Readonly = true;
 
+    Widgets::Progressbar progress;
+    
+    progress = 36;
+    
+    app.wind.Add(progress);
+    /*
+    pnl.Add(progress);
     pnl.Add(chk);
     pnl.Add(lbl);
     pnl.Add(error);
@@ -188,7 +196,7 @@ int main() {
     //error.Move(lbl.GetLocation().X,lbl.GetLocation().Y + 25);
     lbl.OwnIcon(prep(*new Graphics::Bitmap(Triangle(8, 8))));
     
-    
+    */
     app.wind.Run();
 
     return 0;

@@ -7,31 +7,14 @@
 #include "../Property.h"
 #include "../UI/Validators.h"
 #include "../UI/ComponentStackWidget.h"
+#include "../UI/Helpers.h"
 #include "../Input/KeyRepeater.h"
 #include "Registry.h"
 
 namespace Gorgon { namespace Widgets {
     
     /// @cond internal
-    namespace internal {
-        template<class I_, class T_>
-        struct prophelper {
-            prophelper(I_ *obj) : obj(obj) {}
-
-            ~prophelper() { 
-                
-            }
-            
-            void set_(const T_&v) {
-                obj->set(v);
-            }
-            T_ get_() const {
-                return obj->get();
-            }
-
-            I_ *obj;
-        };
-        
+    namespace internal {        
         class Inputbox_base : public UI::ComponentStackWidget {
         protected:
             Inputbox_base(const UI::Template &temp);
@@ -342,18 +325,18 @@ namespace Gorgon { namespace Widgets {
     template<class T_, class V_ = UI::ConversionValidator<T_>, template<class C_, class PT_, PT_(C_::*Getter_)() const, void(C_::*Setter_)(const PT_ &)> class P_ = Gorgon::Property, Widgets::Registry::TemplateType DEFTMP_ = Widgets::Registry::Inputbox_Regular>
     class Inputbox : 
         public internal::Inputbox_base, 
-        public P_<internal::prophelper<Inputbox<T_, V_, P_>, T_>, T_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::get_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::set_> {
+        public P_<UI::internal::prophelper<Inputbox<T_, V_, P_>, T_>, T_, &UI::internal::prophelper<Inputbox<T_, V_, P_>, T_>::get_, &UI::internal::prophelper<Inputbox<T_, V_, P_>, T_>::set_> {
 
 
     public:
         
         using Type     = T_;
-        using PropType = P_<internal::prophelper<Inputbox<T_, V_, P_>, T_>, T_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::get_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::set_>;
+        using PropType = P_<UI::internal::prophelper<Inputbox<T_, V_, P_>, T_>, T_, &UI::internal::prophelper<Inputbox<T_, V_, P_>, T_>::get_, &UI::internal::prophelper<Inputbox<T_, V_, P_>, T_>::set_>;
 
-        friend class P_<internal::prophelper<Inputbox<T_, V_, P_>, T_>, T_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::get_, &internal::prophelper<Inputbox<T_, V_, P_>, T_>::set_>;
+        friend class P_<UI::internal::prophelper<Inputbox<T_, V_, P_>, T_>, T_, &UI::internal::prophelper<Inputbox<T_, V_, P_>, T_>::get_, &UI::internal::prophelper<Inputbox<T_, V_, P_>, T_>::set_>;
         template<class T1_, class V1_, template<class C_, class PT_, PT_(C_::*Getter_)() const, void(C_::*Setter_)(const PT_&)> class P1_, Widgets::Registry::TemplateType DEFTMP1_>
         friend class Inputbox;
-        friend struct internal::prophelper<Inputbox<T_, V_, P_>, T_>;
+        friend struct UI::internal::prophelper<Inputbox<T_, V_, P_>, T_>;
         
         /// Initializes the inputbox
         explicit Inputbox(const UI::Template &temp, T_ value = T_()) : 
@@ -466,7 +449,7 @@ namespace Gorgon { namespace Widgets {
         V_ validator;
         T_ value;
 
-        struct internal::prophelper<Inputbox<T_, V_, P_>, T_> helper = internal::prophelper<Inputbox<T_, V_, P_>, T_>(this);
+        struct UI::internal::prophelper<Inputbox<T_, V_, P_>, T_> helper = UI::internal::prophelper<Inputbox<T_, V_, P_>, T_>(this);
     };
     
     

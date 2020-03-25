@@ -53,6 +53,9 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template Inputbox() = 0;
         
+        
+        virtual UI::Template Progressbar() = 0;
+        
     protected:
         
         virtual UI::Template &generate(Gorgon::Widgets::Registry::TemplateType type) override {
@@ -85,6 +88,8 @@ namespace Gorgon { namespace Widgets {
                 return *new UI::Template(BottomPanel());
             case Panel_Right:
                 return *new UI::Template(RightPanel());
+            case Progress_Regular:
+                return *new UI::Template(Progressbar());
             default:
                 return *new UI::Template();
             }
@@ -130,6 +135,7 @@ namespace Gorgon { namespace Widgets {
 
         virtual UI::Template ErrorLabel() override;
         
+        
         virtual UI::Template BlankPanel() override;
         
         virtual UI::Template Panel() override;
@@ -144,6 +150,9 @@ namespace Gorgon { namespace Widgets {
         
         
         virtual UI::Template Inputbox() override;
+        
+        
+        virtual UI::Template Progressbar() override;
         
         Graphics::BitmapRectangleProvider &NormalBorder();
         Graphics::BitmapRectangleProvider &HoverBorder();
@@ -162,6 +171,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider &HoverBG();
         Graphics::BitmapRectangleProvider &DownBG();
         Graphics::BitmapRectangleProvider &DisabledBG();
+        Graphics::BitmapRectangleProvider &ObjectShape();
         
         Graphics::RectangleProvider &FocusBorder();
         
@@ -248,6 +258,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider *hoverbg = nullptr;
         Graphics::BitmapRectangleProvider *downbg = nullptr;
         Graphics::BitmapRectangleProvider *disabledbg = nullptr;
+        Graphics::BitmapRectangleProvider *objectshape = nullptr;
         
         Graphics::RectangleProvider *focusborder = nullptr;
 

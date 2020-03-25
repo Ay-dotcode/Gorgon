@@ -36,6 +36,8 @@ namespace Gorgon { namespace Widgets {
             Panel_Bottom,
             Panel_Right,
             
+            Progress_Regular,
+            
             ///Do not use this value
             Max 
         };

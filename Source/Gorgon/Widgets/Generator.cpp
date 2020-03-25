@@ -17,6 +17,7 @@
 namespace Gorgon { namespace OS {
     bool Start(const std::string &name, std::streambuf *&buf, const std::vector<std::string> &args);
 } }
+
 #endif
 #include "../Graphics/EmptyImage.h"
 
@@ -107,6 +108,7 @@ namespace Gorgon { namespace Widgets {
         delete hoverbg;
         delete downbg;
         delete disabledbg;
+        delete objectshape;
         
         for(auto p : panelborders) {
             delete p;
@@ -245,6 +247,15 @@ namespace Gorgon { namespace Widgets {
         }
 
         return *disabledbg;
+    }
+
+    Graphics::BitmapRectangleProvider &SimpleGenerator::ObjectShape() {
+        if(!objectshape) {
+            auto c = Forecolor.Regular;
+            objectshape = makeborder(0x0, c);
+        }
+
+        return *objectshape;
     }
 
     Graphics::RectangleProvider &SimpleGenerator::FocusBorder() {
@@ -1296,5 +1307,32 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
 
+    UI::Template SimpleGenerator::Progressbar() {
+        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, BorderedWidgetHeight};
+        
+        UI::Template temp;
+        temp.SetSize(defsize);
+        
+        {
+            auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
+         
+            bg.Background.SetAnimation(NormalBorder());
+            bg.SetPadding(Border.Width + Spacing);
+            
+            bg.AddIndex(1);
+        }
+        
+        {
+            auto &bar = temp.AddGraphics(1, UI::ComponentCondition::Always);
+            bar.SetSizing(UI::ComponentTemplate::Fixed);
+            bar.SetSize(100, 100, UI::Dimension::Percent);
+            bar.SetPositioning(UI::ComponentTemplate::AbsoluteSliding);
+            //bar.SetValueModification(UI::ComponentTemplate::ModifyX);
+            bar.Content.SetAnimation(ObjectShape());
+            bar.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        }
+        
+        return temp;
+    }
     
 }}

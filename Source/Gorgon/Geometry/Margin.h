@@ -29,7 +29,7 @@ namespace Gorgon { namespace Geometry {
 		
 		/// Sets all Margin to the given value. Intentionally left implicit as Margin can
 		/// be represented as a simple integer
-		basic_Margin(T_ all) : Left(all), Right(all), Top(all), Bottom(all) { }
+		basic_Margin(T_ all) : Left(all), Top(all), Right(all), Bottom(all) { }
 		
 		/// Sets horizontal and vertical Margin separately
 		basic_Margin(T_ horizontal, T_ vertical) : Left(horizontal), Right(horizontal), 
@@ -37,7 +37,7 @@ namespace Gorgon { namespace Geometry {
 		
 		/// Sets all Margin separately
 		basic_Margin(T_ left, T_ top, T_ right, T_ bottom) : 
-			Left(left), Right(right), Top(top), Bottom(bottom) { }
+			Left(left), Top(top), Right(right), Bottom(bottom) { }
 
 		/// Converts this object to a string.
 		/// TODO
