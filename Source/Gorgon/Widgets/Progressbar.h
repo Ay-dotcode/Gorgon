@@ -70,7 +70,7 @@ namespace Gorgon { namespace Widgets {
         {
         }
 
-        explicit Progressor(const UI::Template &temp, T_ cur = T_{}) : Progressor(temp, cur, T_{}) { }
+        explicit Progressor(const UI::Template &temp, T_ cur = T_{}) : Progressor(temp, cur, T_{100}) { }
 
         Progressor(const UI::Template &temp, T_ cur, T_ max) : 
             ComponentStackWidget(temp),

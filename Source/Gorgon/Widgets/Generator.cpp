@@ -1308,7 +1308,7 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::Progressbar() {
-        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, BorderedWidgetHeight};
+        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight};
         
         UI::Template temp;
         temp.SetSize(defsize);
@@ -1325,9 +1325,9 @@ namespace Gorgon { namespace Widgets {
         {
             auto &bar = temp.AddGraphics(1, UI::ComponentCondition::Always);
             bar.SetSizing(UI::ComponentTemplate::Fixed);
-            bar.SetSize(100, 100, UI::Dimension::Percent);
+            bar.SetSize(0, 100, UI::Dimension::Percent);
             bar.SetPositioning(UI::ComponentTemplate::AbsoluteSliding);
-            //bar.SetValueModification(UI::ComponentTemplate::ModifyX);
+            bar.SetValueModification(UI::ComponentTemplate::ModifyWidth);
             bar.Content.SetAnimation(ObjectShape());
             bar.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         }

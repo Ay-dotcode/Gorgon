@@ -3,6 +3,7 @@ SET(Local
 	ComponentStack.h
 	ComponentStack.cpp
 	ComponentStackWidget.h
+	Dimension.h
 	Helpers.h
 	Organizers
 	RadioControl.h

@@ -175,7 +175,7 @@ int main() {
 
     Widgets::Progressbar progress;
     
-    progress = 36;
+    progress = 1;
     
     app.wind.Add(progress);
     /*

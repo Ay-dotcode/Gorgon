@@ -1813,12 +1813,15 @@ realign:
                     comp.size = Convert(size, maxsize, emsize);
                 }
                 
-                if(temp.GetPositioning() == temp.Relative && (
-                    (cont.GetOrientation() == Graphics::Orientation::Horizontal && 
-                        (size.Width.GetUnit() == Dimension::Percent || size.Width.GetUnit() == Dimension::BasisPoint)) ||
-                    (cont.GetOrientation() == Graphics::Orientation::Vertical && 
-                        (size.Height.GetUnit() == Dimension::Percent || size.Height.GetUnit() == Dimension::BasisPoint))
-                ))
+                if(
+                    (temp.GetPositioning() == temp.Relative || temp.GetPositioning() == temp.AbsoluteSliding) && 
+                    (
+                        (cont.GetOrientation() == Graphics::Orientation::Horizontal && 
+                            (size.Width.GetUnit() == Dimension::Percent || size.Width.GetUnit() == Dimension::BasisPoint)) ||
+                        (cont.GetOrientation() == Graphics::Orientation::Vertical && 
+                            (size.Height.GetUnit() == Dimension::Percent || size.Height.GetUnit() == Dimension::BasisPoint))
+                    )
+                )
                     requiresrepass = true;
                 
                 if(!(tagsizes.count(temp.GetTag())) && 
