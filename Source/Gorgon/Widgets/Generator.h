@@ -172,6 +172,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider &DownBG();
         Graphics::BitmapRectangleProvider &DisabledBG();
         Graphics::BitmapRectangleProvider &ObjectShape();
+        Graphics::BitmapRectangleProvider &InnerObjectShape();
         
         Graphics::RectangleProvider &FocusBorder();
         
@@ -233,7 +234,7 @@ namespace Gorgon { namespace Widgets {
         int WidgetHeight = 24;
 
     private:
-        Graphics::BitmapRectangleProvider *makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingedge = 0);
+        Graphics::BitmapRectangleProvider *makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingedge = 0, int borderwidth = -1, int borderradius = -1);
         Graphics::RectangleProvider *makefocusborder();
         UI::Template makepanel(int missingedge);
         
@@ -259,6 +260,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider *downbg = nullptr;
         Graphics::BitmapRectangleProvider *disabledbg = nullptr;
         Graphics::BitmapRectangleProvider *objectshape = nullptr;
+        Graphics::BitmapRectangleProvider *innerobjectshape = nullptr;
         
         Graphics::RectangleProvider *focusborder = nullptr;
 

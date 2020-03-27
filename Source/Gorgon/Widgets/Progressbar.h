@@ -74,8 +74,12 @@ namespace Gorgon { namespace Widgets {
 
         Progressor(const UI::Template &temp, T_ cur, T_ max) : 
             ComponentStackWidget(temp),
-            PropType(&helper), value(cur), max(max)
+            PropType(&helper), 
+            Maximum(this),
+            Minimum(this),
+            value(cur), max(max)
         { 
+            stack.SetValueTransitionSpeed({progressspeed, 0, 0, 0});
             refreshprogress();
         }
         
@@ -83,7 +87,7 @@ namespace Gorgon { namespace Widgets {
         /// progress will display 0. Progressor will always keep the value between minimum
         /// and maximum. If maximum is less than minimum, this function will automatically
         /// exchange these values.
-        void SetMaximum(T_ value) {
+        void SetMaximum(const T_ &value) {
             if(value < min) {
                 max = min;
                 min = value;
@@ -92,7 +96,7 @@ namespace Gorgon { namespace Widgets {
                 max = value;
             }
             
-            if(!setval(value)) //if returns true, refresh is already called
+            if(!setval(this->value)) //if returns true, refresh is already called
                 refreshprogress();
         }
         
@@ -105,7 +109,7 @@ namespace Gorgon { namespace Widgets {
         /// progress will display 0. Progressor will always keep the value between minimum
         /// and maximum. If maximum is less than minimum, this function will automatically
         /// exchange these values.
-        void SetMinimum(T_ value) {
+        void SetMinimum(const T_ &value) {
             if(value > max) {
                 min = max;
                 max = value;
@@ -114,7 +118,7 @@ namespace Gorgon { namespace Widgets {
                 min = value;
             }
             
-            if(!setval(value)) //if returns true, refresh is already called
+            if(!setval(this->value)) //if returns true, refresh is already called
                 refreshprogress();
         }
         
@@ -139,7 +143,7 @@ namespace Gorgon { namespace Widgets {
             this->min = min;
             this->max = max;
             
-            if(setval(value)) //if returns true, refresh is already called
+            if(setval(this->value)) //if returns true, refresh is already called
                 refreshprogress();
         }
         
@@ -164,8 +168,46 @@ namespace Gorgon { namespace Widgets {
             return false;
         }
         
+        /// Disables smooth progress
+        void DisableSmoothProgress() {
+            SetSmoothProgressSpeed(0);
+        }
         
+        /// Adjusts the smooth progress speed. Given value is in values per second, 
+        /// default value is max and will be sync to the maximum value.
+        void SetSmoothProgressSpeed(T_ value) {
+            SetSmoothProgressSpeedRatio(DIV_(value, min, max));
+        }
+        
+        /// Adjusts the smooth progress speed. Given value is in values per second, 
+        /// default value is 1 and will be sync to the maximum value.
+        void SetSmoothProgressSpeedRatio(float value) {
+            progressspeed = value;
+            stack.SetValueTransitionSpeed({value, 0, 0, 0});
+        }
+        
+        /// Returns the smooth progress speed. If smooth progress is disabled, this 
+        /// value will be 0.
+        T_ GetSmoothProgressSpeed() const {
+            return progressspeed * (max - min);
+        }
+        
+        /// Returns the smooth progress in ratio to the maximum. 1 means full progress
+        /// will be done in 1 second.
+        float GetSmoothProgressSpeedRatio() const {
+            return progressspeed;
+        }
+        
+        /// Returns if the smooth progress is enabled.
+        bool IsSmoothProgressEnabled() const {
+            return progressspeed != 0;
+        }
+        
+        /// This event is fired when the progress is changed
         Event<Progressor, T_> ProgressChanged = Event<Progressor, T_>(this);
+        
+        NumericProperty<Progressor, T_, &Progressor::GetMaximum, &Progressor::SetMaximum> Maximum;
+        NumericProperty<Progressor, T_, &Progressor::GetMinimum, &Progressor::SetMinimum> Minimum;
         
         
     protected:
@@ -210,6 +252,8 @@ namespace Gorgon { namespace Widgets {
         T_ value;
         T_ min = T_{};
         T_ max;
+        
+        float progressspeed = 1;
         
         
     private:

@@ -33,7 +33,7 @@ Graphics::Bitmap &prep(Graphics::Bitmap &bmp) {
 
 int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
-    /*
+    
     Widgets::SimpleGenerator gen;
     Widgets::SimpleGenerator gen2(12, "", false);
     gen.Init(15);
@@ -54,7 +54,11 @@ int main() {
     auto pnltemp = gen.BlankPanel();
     auto inptemp = gen2.Inputbox();
 
-    Widgets::Button btn("Helloo_...", []() { std::cout<<"Hello..."<<std::endl; });
+    Widgets::Progressbar progress;
+    progress.Maximum = 30;
+    progress.Minimum = 10;
+
+    Widgets::Button btn("Helloo_...", [ &]() { std::cout<<"Hello..."<<std::endl; progress += 10; });
     btn.Move(5,5);
     
     app.wind.Add(btn);
@@ -170,15 +174,11 @@ int main() {
     inp.SelectAll();
     inp.ChangedEvent.Register([](Geometry::Point val) {
         std::cout << val << std::endl;
-    });*/
+    });
     //inp.Readonly = true;
-
-    Widgets::Progressbar progress;
-    
-    progress = 1;
     
     app.wind.Add(progress);
-    /*
+    
     pnl.Add(progress);
     pnl.Add(chk);
     pnl.Add(lbl);
@@ -196,7 +196,7 @@ int main() {
     //error.Move(lbl.GetLocation().X,lbl.GetLocation().Y + 25);
     lbl.OwnIcon(prep(*new Graphics::Bitmap(Triangle(8, 8))));
     
-    */
+    
     app.wind.Run();
 
     return 0;

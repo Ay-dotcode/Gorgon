@@ -109,6 +109,7 @@ namespace Gorgon { namespace Widgets {
         delete downbg;
         delete disabledbg;
         delete objectshape;
+        delete innerobjectshape;
         
         for(auto p : panelborders) {
             delete p;
@@ -238,7 +239,7 @@ namespace Gorgon { namespace Widgets {
 
         return *downbg;
     }
-
+    
     Graphics::BitmapRectangleProvider &SimpleGenerator::DisabledBG() {
         if(!disabledbg) {
             auto c = Background.Regular;
@@ -248,7 +249,7 @@ namespace Gorgon { namespace Widgets {
 
         return *disabledbg;
     }
-
+    
     Graphics::BitmapRectangleProvider &SimpleGenerator::ObjectShape() {
         if(!objectshape) {
             auto c = Forecolor.Regular;
@@ -256,6 +257,15 @@ namespace Gorgon { namespace Widgets {
         }
 
         return *objectshape;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::InnerObjectShape() {
+        if(!innerobjectshape) {
+            auto c = Forecolor.Regular;
+            innerobjectshape = makeborder(0x0, c, 0, Border.Width, Border.Radius / 3);
+        }
+
+        return *innerobjectshape;
     }
 
     Graphics::RectangleProvider &SimpleGenerator::FocusBorder() {
@@ -272,14 +282,20 @@ namespace Gorgon { namespace Widgets {
         return *normalemptyborder;
     }
     
-    Graphics::BitmapRectangleProvider *SimpleGenerator::makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingedge) {
-        int bsize = (Border.Width + Border.Radius + 2) * 2 + 16;
-        float off = float((Border.Width + 1) / 2 + 1); //prefer integers
+    Graphics::BitmapRectangleProvider *SimpleGenerator::makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingedge, int w, int r) {
+        if(w == -1)
+            w = Border.Width;
+        
+        if(r == -1)
+            r = Border.Radius;
+        
+        int bsize = (w + r + 2) * 2 + 16;
+        float off = float((w + 1) / 2 + 1); //prefer integers
         
         auto &bi = *new Graphics::Bitmap({bsize, bsize}, Graphics::ColorMode::RGBA);
         bi.Clear();
         
-        if(Border.Radius == 0) {
+        if(r == 0) {
             Geometry::PointList<Geometry::Pointf> list = {{off,off}, {off, bsize-off}, {bsize-off, bsize-off}, {bsize-off, off}};
             
             CGI::Polyfill(bi.GetData(), list, CGI::SolidFill<>(bg));
@@ -296,11 +312,9 @@ namespace Gorgon { namespace Widgets {
                 list.Pop();
             }
             
-            CGI::DrawLines(bi.GetData(), list, (float)Border.Width, CGI::SolidFill<>(border));
+            CGI::DrawLines(bi.GetData(), list, (float)w, CGI::SolidFill<>(border));
         }
         else {
-            auto r = Border.Radius;
-            
             Geometry::PointList<Geometry::Pointf> list;
             
             int div = Border.Divisions+1;
@@ -347,7 +361,7 @@ namespace Gorgon { namespace Widgets {
                 list.Push(list.Front());
             }
             
-            CGI::DrawLines(bi.GetData(), list, (float)Border.Width, CGI::SolidFill<>(border));
+            CGI::DrawLines(bi.GetData(), list, (float)w, CGI::SolidFill<>(border));
         }
         
         if(missingedge == 2) {
@@ -363,10 +377,10 @@ namespace Gorgon { namespace Widgets {
         drawables.Add(bi);
 
         auto ret = new Graphics::BitmapRectangleProvider(Graphics::Slice(bi, {
-            int(Border.Radius+Border.Width+1), 
-            int(Border.Radius+Border.Width+1), 
-            int(bsize-Border.Radius-Border.Width-1),
-            int(bsize-Border.Radius-Border.Width-1)
+            int(r+w+1), 
+            int(r+w+1), 
+            int(bsize-r-w-1),
+            int(bsize-r-w-1)
         }));
         
         ret->Prepare();
@@ -1317,7 +1331,7 @@ namespace Gorgon { namespace Widgets {
             auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
          
             bg.Background.SetAnimation(NormalBorder());
-            bg.SetPadding(Border.Width + Spacing);
+            bg.SetPadding(Border.Width + Spacing/2);
             
             bg.AddIndex(1);
         }
@@ -1328,7 +1342,7 @@ namespace Gorgon { namespace Widgets {
             bar.SetSize(0, 100, UI::Dimension::Percent);
             bar.SetPositioning(UI::ComponentTemplate::AbsoluteSliding);
             bar.SetValueModification(UI::ComponentTemplate::ModifyWidth);
-            bar.Content.SetAnimation(ObjectShape());
+            bar.Content.SetAnimation(InnerObjectShape());
             bar.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         }
         
