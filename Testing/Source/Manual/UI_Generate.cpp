@@ -58,7 +58,7 @@ int main() {
     progress.Maximum = 30;
     progress.Minimum = 10;
 
-    Widgets::Button btn("Helloo_...", [ &]() { std::cout<<"Hello..."<<std::endl; progress += 10; });
+    Widgets::Button btn("Helloo_...", [ &]() { std::cout<<"Hello..."<<std::endl; progress += 1; });
     btn.Move(5,5);
     
     app.wind.Add(btn);

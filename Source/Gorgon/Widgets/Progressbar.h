@@ -247,6 +247,24 @@ namespace Gorgon { namespace Widgets {
             float progress = DIV_(value, min, max);
             
             stack.SetValue(progress);
+            
+            if(progress == 0) {
+                stack.AddCondition(UI::ComponentCondition::Ch1V0);
+            }
+            else {
+                stack.RemoveCondition(UI::ComponentCondition::Ch1V0);
+            }
+            if(progress == 0.5) {
+                stack.AddCondition(UI::ComponentCondition::Ch1V05);
+            }
+            else {
+            }
+            if(progress == 1) {
+                stack.AddCondition(UI::ComponentCondition::Ch1V1);
+            }
+            else {
+                stack.RemoveCondition(UI::ComponentCondition::Ch1V1);
+            }
         }
         
         T_ value;

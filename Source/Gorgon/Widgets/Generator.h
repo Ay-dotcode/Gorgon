@@ -4,7 +4,7 @@
 #include "../Graphics/Color.h"
 #include "../Graphics/Font.h"
 #include "../Graphics/Rectangle.h"
-
+#include "../Graphics/MaskedObject.h"
 #include "Registry.h"
 
 namespace Gorgon { namespace Widgets {
@@ -172,7 +172,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider &DownBG();
         Graphics::BitmapRectangleProvider &DisabledBG();
         Graphics::BitmapRectangleProvider &ObjectShape();
-        Graphics::BitmapRectangleProvider &InnerObjectShape();
+        Graphics::MaskedObjectProvider &InnerObjectShape();
         
         Graphics::RectangleProvider &FocusBorder();
         
@@ -260,7 +260,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider *downbg = nullptr;
         Graphics::BitmapRectangleProvider *disabledbg = nullptr;
         Graphics::BitmapRectangleProvider *objectshape = nullptr;
-        Graphics::BitmapRectangleProvider *innerobjectshape = nullptr;
+        Graphics::MaskedObjectProvider *innerobjectshape = nullptr;
         
         Graphics::RectangleProvider *focusborder = nullptr;
 

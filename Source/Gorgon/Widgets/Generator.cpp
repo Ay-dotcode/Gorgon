@@ -259,10 +259,14 @@ namespace Gorgon { namespace Widgets {
         return *objectshape;
     }
     
-    Graphics::BitmapRectangleProvider &SimpleGenerator::InnerObjectShape() {
+    Graphics::MaskedObjectProvider &SimpleGenerator::InnerObjectShape() {
         if(!innerobjectshape) {
             auto c = Forecolor.Regular;
-            innerobjectshape = makeborder(0x0, c, 0, Border.Width, Border.Radius / 3);
+            auto shape = makeborder(0x0, c, 0, Border.Width, Border.Radius / 3);
+            
+            providers.Add(shape);
+            
+            innerobjectshape = new Graphics::MaskedObjectProvider(shape, shape);
         }
 
         return *innerobjectshape;
@@ -1339,11 +1343,15 @@ namespace Gorgon { namespace Widgets {
         {
             auto &bar = temp.AddGraphics(1, UI::ComponentCondition::Always);
             bar.SetSizing(UI::ComponentTemplate::Fixed);
-            bar.SetSize(0, 100, UI::Dimension::Percent);
+            bar.SetSize({Border.Width*2}, {100, UI::Dimension::Percent});
             bar.SetPositioning(UI::ComponentTemplate::AbsoluteSliding);
             bar.SetValueModification(UI::ComponentTemplate::ModifyWidth);
             bar.Content.SetAnimation(InnerObjectShape());
             bar.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        }
+        
+        {
+            auto &bar = temp.AddGraphics(1, UI::ComponentCondition::Ch1V0);
         }
         
         return temp;

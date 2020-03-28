@@ -67,6 +67,11 @@ namespace Gorgon { namespace Graphics {
         int maxl = std::max(std::max(tl.GetWidth(), ml.GetWidth()), bl.GetWidth());
         int maxr = std::max(std::max(tr.GetWidth(), mr.GetWidth()), br.GetWidth());
         
+        if(r.Height < maxt+maxb) {
+            //partial drawing...
+        }
+        
+        
         tl.Draw(target, r.X + maxl - tl.GetWidth(), r.Y + maxt - tl.GetHeight(), color);
         tm.DrawIn(target, prov.GetSideTiling() ? Tiling::Horizontal : Tiling::None, 
                   Geometry::Rectanglef(r.X + maxl, r.Y + maxt - tm.GetHeight(), r.Width-maxl-maxr, (Float)tm.GetHeight()),
