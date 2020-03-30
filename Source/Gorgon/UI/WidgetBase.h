@@ -3,6 +3,8 @@
 #include "../Layer.h"
 #include "../Geometry/Point.h"
 #include "../Input/Keyboard.h"
+#include "../Geometry/PointProperty.h"
+#include "../Geometry/SizeProperty.h"
 
 namespace Gorgon { namespace UI {
 
@@ -15,13 +17,16 @@ namespace Gorgon { namespace UI {
     friend class WidgetContainer;
     public:
         
+        WidgetBase() : Location(this), Size(this) {
+        }
+        
         virtual ~WidgetBase() { }
         
         /// Moves this widget to the given position.
         void Move(int x, int y) { Move({x, y}); }
         
         /// Moves this widget to the given position.
-        virtual void Move(Geometry::Point location) = 0;
+        virtual void Move(const Geometry::Point &location) = 0;
 
         /// Returns the location of the widget
         virtual Geometry::Point GetLocation() const = 0;
@@ -30,7 +35,7 @@ namespace Gorgon { namespace UI {
         virtual void Resize(int w, int h) { Resize({w, h}); };
 
         /// Changes the size of the widget.
-        virtual void Resize(Geometry::Size size) = 0;
+        virtual void Resize(const Geometry::Size &size) = 0;
 
         /// Returns the size of the widget
         virtual Geometry::Size GetSize() const = 0;
@@ -142,6 +147,9 @@ namespace Gorgon { namespace UI {
         /// trigger this event. Organizers use this event to rearrange widgets, 
         /// thus it is not advisable to remove all handlers from this event.
         Event<WidgetBase> BoundsChangedEvent = Event<WidgetBase>{*this};
+        
+        Geometry::PointProperty<WidgetBase, &WidgetBase::GetLocation, &WidgetBase::Move> Location;
+        Geometry::SizeProperty<WidgetBase, &WidgetBase::GetSize, &WidgetBase::Resize> Size;
         
         /// This is a debug feature
         void setname(std::string value) {

@@ -1,11 +1,19 @@
 #pragma once
 
-/// Property classes allows property access much like vb and c#.
-/// There are different property types for different tasks.
-/// You should use the property type that suits your needs.
-/// If necessary you should derive your own property object.
-/// But do not forget to add assignment operators, as they
-/// are not inherited.
+/**
+ * @page property Properties
+ * Property classes allows property access much like vb and c#.
+ * 
+ * Properties are compile-time constructs, maximum cost they will
+ * bear is the call to setter or getter function.
+ * 
+ * There are different property types for different tasks. You
+ * should use the property type that suits your needs. If necessary
+ * you should derive your own property object. But do not forget to
+ * add assignment operators, as they are not inherited. 
+ *
+ * There are more property types in Geometry namespace.
+ */
 
 #include "Types.h"
 #include <string>
@@ -100,6 +108,9 @@ namespace Gorgon {
 		NumericProperty(C_ *Object) : Property<C_, T_, Getter_, Setter_>(Object) 
 		{ }
 
+		NumericProperty(C_ &Object) : Property<C_, T_, Getter_, Setter_>(Object) 
+		{ }
+
 		NumericProperty &operator =(const T_ &value) { 
 			(this->Object.*Setter_)(value);
 
@@ -169,12 +180,14 @@ namespace Gorgon {
 			return (this->Object.*Getter_)();
 		}
 
-		T_ operator *=(const T_ &v) {
+		template <class O_>
+		T_ operator *=(const O_ &v) {
 			(this->Object.*Setter_)((this->Object.*Getter_)()*v);
 			return (this->Object.*Getter_)();
 		}
 
-		T_ operator /=(const T_ &v) {
+		template <class O_>
+		T_ operator /=(const O_ &v) {
 			(this->Object.*Setter_)((this->Object.*Getter_)()/v);
 			return (this->Object.*Getter_)();
 		}
@@ -204,6 +217,9 @@ namespace Gorgon {
 		using Type = T_;
 
 		BooleanProperty(C_ *Object) : Property<C_, T_, Getter_, Setter_>(Object) 
+		{ }
+		
+		BooleanProperty(C_ &Object) : Property<C_, T_, Getter_, Setter_>(Object) 
 		{ }
 
 		template <class O_>
@@ -242,6 +258,9 @@ namespace Gorgon {
 		using Type = T_;
 
 		BinaryProperty(C_ *Object) : NumericProperty<C_,T_, Getter_, Setter_>(Object) 
+		{ }
+		
+		BinaryProperty(C_ &Object) : NumericProperty<C_,T_, Getter_, Setter_>(Object) 
 		{ }
 
 		template <class O_>
@@ -283,6 +302,9 @@ namespace Gorgon {
 		using Type = T_;
 
 		ObjectProperty(C_ *Object) : Property<C_, T_&, Getter_, Setter_>(Object) 
+		{ }
+		
+		ObjectProperty(C_ &Object) : Property<C_, T_&, Getter_, Setter_>(Object) 
 		{ }
 
 		template <class O_>
@@ -330,6 +352,9 @@ namespace Gorgon {
 		using Type = T_;
 
 		MutableObjectProperty(C_ *Object) : Property<C_, T_, Setter_, Getter_>(Object) 
+		{ }
+
+		MutableObjectProperty(C_ &Object) : Property<C_, T_, Setter_, Getter_>(Object) 
 		{ }
 
 		template <class O_>
@@ -502,6 +527,9 @@ namespace Gorgon {
 	class TextualProperty : public Property<C_, T_, Getter_, Setter_> {
 	public:
 		TextualProperty(C_ *Object) : Property<C_,T_, Getter_, Setter_>(Object) 
+		{ }
+
+		TextualProperty(C_ &Object) : Property<C_,T_, Getter_, Setter_>(Object) 
 		{ }
 
 		template <class O_>
@@ -789,7 +817,7 @@ namespace Gorgon {
 #define MAP_PROPERTY(type, name, variable) \
     type get##name() const { return variable; } \
     void set##name(const type &v) { variable=v; } \
-    type variable;
+    type variable
 
 /// If property is there to call Update every time the value is changed, this mapper can handle this situation.
 /// Names the member variable as m_name. For proptype use the prefix part of the property name: Numeric for 
@@ -801,5 +829,5 @@ public: \
     type Get##name() const { return m_##name; } \
     void Set##name(const type &value) { m_##name=value; Update(); } \
     \
-    Gorgon::proptype##Property<cls, type, &cls::Get##name, &cls::Set##name> name = {this}
+    Gorgon::proptype##Property<cls, type, &cls::Get##name, &cls::Set##name> name = Gorgon::proptype##Property<cls, type, &cls::Get##name, &cls::Set##name>{this}
 }

@@ -1,11 +1,13 @@
 SET(Local
 	Bounds.h
 	Margin.h
-	Point.h
 	Line.h
+	Point.h
 	PointList.h
+	PointProperty.h
 	Rectangle.h
 	Size.h
+	SizeProperty.h
 	Point3D.h
 	Transform3D.h
 )

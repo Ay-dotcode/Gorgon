@@ -248,18 +248,20 @@ namespace Gorgon { namespace Widgets {
             
             stack.SetValue(progress);
             
-            if(progress == 0) {
+            auto v = std::round(progress*1000);
+            
+            if(v == 0) {
                 stack.AddCondition(UI::ComponentCondition::Ch1V0);
             }
             else {
                 stack.RemoveCondition(UI::ComponentCondition::Ch1V0);
             }
-            if(progress == 0.5) {
+            if(v == 500) {
                 stack.AddCondition(UI::ComponentCondition::Ch1V05);
             }
             else {
             }
-            if(progress == 1) {
+            if(v == 1000) {
                 stack.AddCondition(UI::ComponentCondition::Ch1V1);
             }
             else {

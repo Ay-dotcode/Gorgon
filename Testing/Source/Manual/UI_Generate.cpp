@@ -60,6 +60,7 @@ int main() {
 
     Widgets::Button btn("Helloo_...", [ &]() { std::cout<<"Hello..."<<std::endl; progress += 1; });
     btn.Move(5,5);
+    btn.Size.Width *= 1.2;
     
     app.wind.Add(btn);
     btn.Focus();
@@ -80,7 +81,7 @@ int main() {
     //rad.Disable(2);
 
     app.wind.Add(rad);
-    rad.Move(150, 4);
+    rad.Location = {150, 4};
     
     
 
@@ -167,12 +168,12 @@ int main() {
     Widgets::Label lbl("This is a label");
     Widgets::Label error("This is an Error label", Gorgon::Widgets::Registry::Label_Error);
     
-    Widgets::Pointbox inp;
-    inp={5, 2};
+    Widgets::Sizebox inp;
+    inp.Width = 5;
     pnl.Add(inp);
-    inp.Move(5, 80);
+    inp.Location = {5, 80};
     inp.SelectAll();
-    inp.ChangedEvent.Register([](Geometry::Point val) {
+    inp.ChangedEvent.Register([](Geometry::Size val) {
         std::cout << val << std::endl;
     });
     //inp.Readonly = true;

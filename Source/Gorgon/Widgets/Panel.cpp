@@ -139,7 +139,7 @@ namespace Gorgon { namespace Widgets {
         return stack.TagBounds(UI::ComponentTemplate::ContentsTag).GetSize() == size;
     }
     
-    void Panel::Resize(Geometry::Size size) { 
+    void Panel::Resize(const Geometry::Size &size) { 
         ComponentStackWidget::Resize(size);
         
         if(HasOrganizer())

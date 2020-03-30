@@ -5,15 +5,19 @@
 #include "../Geometry/Size.h"
 #include "../Geometry/Bounds.h"
 #include "../Geometry/Margin.h"
+#include "../Geometry/PointProperty.h"
+#include "../Geometry/SizeProperty.h"
 
 namespace Gorgon { namespace Widgets {
 
     //These classes here are overloads to set default values.
     
     /// An inputbox variant designed to edit points.
-    class Pointbox : public Inputbox<Geometry::Point> {
+    class Pointbox : public Inputbox<Geometry::Point, UI::ConversionValidator<Geometry::Point>, Geometry::basic_PointProperty> {
     public:
         using Inputbox::operator=;
+        
+        using WidgetBase::Move;
 
         /// Initializes the inputbox
         explicit Pointbox(const UI::Template &temp, Geometry::Point value = {0, 0}) : Inputbox(temp, value) {
@@ -41,9 +45,12 @@ namespace Gorgon { namespace Widgets {
     };
     
     /// An inputbox variant designed to edit points with floating point coordinates.
-    class Pointfbox : public Inputbox<Geometry::Pointf> {
+    class Pointfbox : public Inputbox<Geometry::Pointf, UI::ConversionValidator<Geometry::Pointf>, Geometry::basic_PointProperty> {
     public:
         using Inputbox::operator=;
+        
+        using WidgetBase::Move;
+
 
         /// Initializes the inputbox
         explicit Pointfbox(const UI::Template &temp, Geometry::Pointf value = {0, 0}) : Inputbox(temp, value) {
@@ -72,9 +79,12 @@ namespace Gorgon { namespace Widgets {
 
     
     /// An inputbox variant designed to edit size data.
-    class Sizebox : public Inputbox<Geometry::Size> {
+    class Sizebox : public Inputbox<Geometry::Size, UI::ConversionValidator<Geometry::Size>, Geometry::basic_SizeProperty> {
     public:
         using Inputbox::operator=;
+        
+        using WidgetBase::Move;
+
 
         /// Initializes the inputbox
         explicit Sizebox(const UI::Template &temp, Geometry::Size value = {0, 0}) : Inputbox(temp, value) {

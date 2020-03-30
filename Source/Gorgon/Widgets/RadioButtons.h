@@ -29,7 +29,7 @@ namespace Gorgon { namespace Widgets {
         }
         
         /// Radio buttons height is automatically adjusted. Only width will be used.
-        virtual void Resize(Geometry::Size size) override {
+        virtual void Resize(const Geometry::Size &size) override {
             for(auto p : this->elements) {
                 p.second.SetWidth(size.Width);
             }
@@ -158,7 +158,7 @@ namespace Gorgon { namespace Widgets {
         
         using WidgetBase::EnsureVisible;
         
-        void Move(Geometry::Point location) override {
+        void Move(const Geometry::Point &location) override {
             contents.Move(location);
         }
         

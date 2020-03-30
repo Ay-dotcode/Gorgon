@@ -25,7 +25,7 @@ namespace Gorgon { namespace UI {
         
         using WidgetBase::Move;
         
-        virtual void Move(Geometry::Point location) override {
+        virtual void Move(const Geometry::Point &location) override {
 			stack.Move(location);
 
 			if(IsVisible() && HasParent())
@@ -34,7 +34,7 @@ namespace Gorgon { namespace UI {
         
         using WidgetBase::Resize;
         
-        virtual void Resize(Geometry::Size size) override {
+        virtual void Resize(const Geometry::Size &size) override {
             stack.Resize(size);
 
 			if(IsVisible() && HasParent())
