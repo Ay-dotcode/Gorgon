@@ -15,6 +15,23 @@ namespace Gorgon { namespace UI {
     */
     class WidgetBase {
     friend class WidgetContainer;
+        //Non-virtual functions for visual studio
+
+        void resize(const Geometry::Size &size) {
+            Resize(size);
+        }
+
+        Geometry::Size getsize() const {
+            return GetSize();
+        }
+
+        void move(const Geometry::Point &value) {
+            Move(value);
+        }
+
+        Geometry::Point getlocation() const {
+            return GetLocation();
+        }
     public:
         
         WidgetBase() : Location(this), Size(this) {
@@ -148,8 +165,8 @@ namespace Gorgon { namespace UI {
         /// thus it is not advisable to remove all handlers from this event.
         Event<WidgetBase> BoundsChangedEvent = Event<WidgetBase>{*this};
         
-        Geometry::PointProperty<WidgetBase, &WidgetBase::GetLocation, &WidgetBase::Move> Location;
-        Geometry::SizeProperty<WidgetBase, &WidgetBase::GetSize, &WidgetBase::Resize> Size;
+        Geometry::PointProperty<WidgetBase, &WidgetBase::getlocation, &WidgetBase::move> Location;
+        Geometry::SizeProperty<WidgetBase, &WidgetBase::getsize, &WidgetBase::resize> Size;
         
         /// This is a debug feature
         void setname(std::string value) {

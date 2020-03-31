@@ -50,6 +50,8 @@ namespace Gorgon { namespace Widgets {
                 mousedown = false;
             }
         });
+        
+        //Size.Object = this;
     }
 
     Button::~Button() {

@@ -33,15 +33,19 @@ namespace Gorgon { namespace Widgets {
         }
 
         template<class F_>
-        explicit Checkbox(std::function<F_> changed, Registry::TemplateType type = Registry::Checkbox_Regular) : 
+        explicit Checkbox(F_ changed, Registry::TemplateType type = Registry::Checkbox_Regular) : 
             Checkbox(Registry::Active()[type], "", changed)
         {
         }
-        
+
         template<class F_>
-        explicit Checkbox(std::string text, std::function<F_> changed, Registry::TemplateType type = Registry::Checkbox_Regular) : 
-            Checkbox(Registry::Active()[type], text, changed)
-        {
+        explicit Checkbox(std::string text, F_ changed, Registry::TemplateType type = Registry::Checkbox_Regular):
+            Checkbox(Registry::Active()[type], text, changed) {
+        }
+
+        template<class F_>
+        explicit Checkbox(const char *text, F_ changed, Registry::TemplateType type = Registry::Checkbox_Regular):
+            Checkbox(Registry::Active()[type], text, changed) {
         }
 
         explicit Checkbox(std::string text, bool state, Registry::TemplateType type = Registry::Checkbox_Regular) : 
@@ -55,13 +59,13 @@ namespace Gorgon { namespace Widgets {
         }
 
         template<class F_>
-        explicit Checkbox(bool state, std::function<F_> changed, Registry::TemplateType type = Registry::Checkbox_Regular) : 
+        explicit Checkbox(bool state, F_ changed, Registry::TemplateType type = Registry::Checkbox_Regular) : 
             Checkbox(Registry::Active()[type], "", state, changed)
         {
         }
         
         template<class F_>
-        explicit Checkbox(std::string text, bool state, std::function<F_> changed, Registry::TemplateType type = Registry::Checkbox_Regular) : 
+        explicit Checkbox(std::string text, bool state, F_ changed, Registry::TemplateType type = Registry::Checkbox_Regular) : 
             Checkbox(Registry::Active()[type], text, state, changed)
         {
         }
@@ -71,7 +75,7 @@ namespace Gorgon { namespace Widgets {
         Checkbox(const UI::Template &temp, const char *text) : Checkbox(temp, std::string(text), false) {}
 
         template<class F_>
-        Checkbox(const UI::Template &temp, std::function<F_> changed) : Checkbox(temp, "", false, changed) { }
+        Checkbox(const UI::Template &temp, F_ changed) : Checkbox(temp, "", false, changed) { }
 
         template<class F_>
         Checkbox(const UI::Template &temp, std::string text, F_ changed) : Checkbox(temp, text, false, changed) { }

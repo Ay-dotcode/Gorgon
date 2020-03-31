@@ -132,6 +132,12 @@ namespace Gorgon { namespace Widgets {
     
     void SimpleGenerator::UpdateBorders(bool smooth) {
         Border.Width  = (int)std::max(std::round(regularrenderer->GetLineThickness()*2.6f), 1.f);
+
+        //limit the thickness after 2.
+        if(Border.Width > 2) {
+            Border.Width = (int)std::max(std::round(regularrenderer->GetLineThickness()*2.4f), 1.f);
+        }
+
         ObjectBorder  = Border.Width;
         Border.Radius = (int)std::round(asciivsize.second / 4.f);
         Border.Divisions = smooth * Border.Radius  / 2;

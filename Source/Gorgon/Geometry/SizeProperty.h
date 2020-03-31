@@ -10,7 +10,7 @@ namespace Gorgon { namespace Geometry {
     * Property support for point class
     */
     template<class C_, class T_, T_(C_::*Getter_)() const, void(C_::*Setter_)(const T_ &)>
-    class basic_SizeProperty : Property<C_, T_, Getter_, Setter_> {
+    class basic_SizeProperty : public Property<C_, T_, Getter_, Setter_> {
     public:
         
         basic_SizeProperty(C_ *object) : 

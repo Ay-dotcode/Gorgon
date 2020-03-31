@@ -60,7 +60,8 @@ int main() {
 
     Widgets::Button btn("Helloo_...", [ &]() { std::cout<<"Hello..."<<std::endl; progress += 1; });
     btn.Move(5,5);
-    btn.Size.Width *= 1.2;
+    btn.Text = "assdfa";
+    btn.Size *= 1.2;
     
     app.wind.Add(btn);
     btn.Focus();
@@ -169,7 +170,7 @@ int main() {
     Widgets::Label error("This is an Error label", Gorgon::Widgets::Registry::Label_Error);
     
     Widgets::Sizebox inp;
-    inp.Width = 5;
+    inp += {3, 2};
     pnl.Add(inp);
     inp.Location = {5, 80};
     inp.SelectAll();
