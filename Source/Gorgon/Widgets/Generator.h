@@ -113,7 +113,7 @@ namespace Gorgon { namespace Widgets {
         /// is undefined behaviour.
         SimpleGenerator() : Generator(false) {
         }
-
+		
         /// Initializes the generator
         void Init(int fontsize = 14, std::string fontname = "");
         
@@ -154,6 +154,11 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template Progressbar() override;
         
+
+		virtual int GetSpacing()const override {
+			return Spacing;
+		}
+
         Graphics::BitmapRectangleProvider &NormalBorder();
         Graphics::BitmapRectangleProvider &HoverBorder();
         Graphics::BitmapRectangleProvider &DownBorder();

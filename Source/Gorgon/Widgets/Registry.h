@@ -75,8 +75,12 @@ namespace Gorgon { namespace Widgets {
             return *templates[type];
         }
         
-        
+	
+		virtual int GetSpacing()const = 0;
+
     protected:
+
+
         /// This function should return a template for the given type. Due to 
         /// being used in constructors you are not allowed to reject template type.
         /// If the generator is capable of generating a similar template, simply
@@ -88,6 +92,7 @@ namespace Gorgon { namespace Widgets {
         /// Stores the templates. Mutable to allow late loading.
         mutable std::array<UI::Template*, Max> templates;
         
+
     private:
         static Registry *active; //initialized in UI.cpp
     };
@@ -108,11 +113,22 @@ namespace Gorgon { namespace Widgets {
             templates[type] = &temp;
         }
         
+		void SetSpacing(const int tspacing) {
+			spacing = tspacing;
+		}
+
+		virtual int GetSpacing()const override {
+			return spacing;
+		}
+
     protected:
         virtual UI::Template &generate(Gorgon::Widgets::Registry::TemplateType) override {
             return *new UI::Template();
         }
+		
+		int spacing = 5;
+
     };
     
-    
+	
 } }
