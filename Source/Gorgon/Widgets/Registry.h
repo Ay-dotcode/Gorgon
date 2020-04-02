@@ -78,6 +78,8 @@ namespace Gorgon { namespace Widgets {
 	
 		virtual int GetSpacing()const = 0;
 
+		virtual int GetEmSize()const = 0;
+
     protected:
 
 
@@ -117,8 +119,17 @@ namespace Gorgon { namespace Widgets {
 			spacing = tspacing;
 		}
 
+		void SetEmSize(const int size) {
+			emsize = size;
+
+		}
+
 		virtual int GetSpacing()const override {
 			return spacing;
+		}
+
+		virtual int GetEmSize()const override {
+			return emsize;
 		}
 
     protected:
@@ -127,6 +138,8 @@ namespace Gorgon { namespace Widgets {
         }
 		
 		int spacing = 5;
+
+		int emsize = 14;
 
     };
     

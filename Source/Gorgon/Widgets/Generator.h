@@ -159,6 +159,10 @@ namespace Gorgon { namespace Widgets {
 			return Spacing;
 		}
 
+		virtual int GetEmSize()const override {
+			return lettervsize.first + lettervsize.second;
+		}
+
         Graphics::BitmapRectangleProvider &NormalBorder();
         Graphics::BitmapRectangleProvider &HoverBorder();
         Graphics::BitmapRectangleProvider &DownBorder();
