@@ -318,7 +318,7 @@ namespace Gorgon {
 		/// Removes all registered handlers from this event
 		void Clear() {
 			std::lock_guard<std::recursive_mutex> g1(firemtx);
-			std::lock_guard<std::recursive_mutex> g2(access);
+			std::lock_guard<std::mutex> g2(access);
             
 #ifndef NDEBUG
 			ASSERT(!fire.test_and_set(), "Recursion detected during event execution.");
