@@ -83,6 +83,8 @@ namespace Gorgon { namespace Widgets {
             boundschanged();
             childboundschanged(&c);
         }
+        
+        using UI::RadioControl<T_, W_>::ChangeValue;
 
         using WidgetBase::Enable;
 

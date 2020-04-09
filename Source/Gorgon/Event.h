@@ -315,6 +315,23 @@ namespace Gorgon {
 			fire.clear();
 		}
 		
+		/// Removes all registered handlers from this event
+		void Clear() {
+			std::lock_guard<std::recursive_mutex> g1(firemtx);
+			std::lock_guard<std::recursive_mutex> g2(access);
+            
+#ifndef NDEBUG
+			ASSERT(!fire.test_and_set(), "Recursion detected during event execution.");
+#else
+			//prevent recursion
+			if(fire.test_and_set()) return;
+#endif
+			
+			fire.clear();
+			
+			handlers.DeleteAll();
+        }
+		
 		/// value for an empty token
 		static const Token EmptyToken;
 		

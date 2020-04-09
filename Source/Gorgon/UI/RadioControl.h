@@ -136,7 +136,17 @@ namespace Gorgon { namespace UI {
             elements.Add(value, control);
 			reverse.insert({&control, value});
 			control.StateChangingEvent.Register(*this, &RadioControl::changing);
+        }        
+        
+        /// Changes the value of the given element
+        void ChangeValue(const T_ &before, const T_ &after) {
+            auto &elm = this->elements[before];
+            this->elements.Remove(before);
+            this->elements.Add(after, elm);
+            this->reverse.erase(&elm);
+            this->reverse.insert({&elm, after});
         }
+
         
         /// This function will add all widgets in this controller
         /// to the given container. If any member is not a widget,
