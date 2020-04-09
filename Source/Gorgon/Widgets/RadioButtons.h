@@ -20,13 +20,10 @@ namespace Gorgon { namespace Widgets {
     class RadioButtons : public UI::WidgetBase, protected UI::RadioControl<T_, W_>, public UI::WidgetContainer {
         friend class UI::WidgetContainer;
     public:
-        explicit RadioButtons(const UI::Template &temp) : temp(temp) { }
+        explicit RadioButtons(const UI::Template &temp) : temp(temp) { this->own = true; }
         
-        explicit RadioButtons(Registry::TemplateType type = Registry::Radio_Regular) : temp(Registry::Active()[type]) { }
+        explicit RadioButtons(Registry::TemplateType type = Registry::Radio_Regular) : temp(Registry::Active()[type]) {  this->own = true; }
 
-        ~RadioButtons() {
-            this->elements.Destroy();
-        }
         
         /// Radio buttons height is automatically adjusted. Only width will be used.
         virtual void Resize(const Geometry::Size &size) override {
@@ -66,6 +63,11 @@ namespace Gorgon { namespace Widgets {
         }
 
         void Add(const T_ value, std::string text) {
+            if(Exists(value)) {
+                this->ForceRemove(this->elements[value]);
+                this->elements.Delete(value);
+            }
+            
             auto &c = *new W_(temp, text);
             UI::RadioControl<T_, W_>::Add(value, c);
             
@@ -84,7 +86,40 @@ namespace Gorgon { namespace Widgets {
             childboundschanged(&c);
         }
         
-        using UI::RadioControl<T_, W_>::ChangeValue;
+        /// Changes the value of the given element
+        void ChangeValue(const T_ &before, const T_ &after) {
+            if(before == after)
+                return;
+           
+            if(!Exists(before))
+                throw std::runtime_error("Element does not exist");
+
+            auto &elm = this->elements[before];
+            
+            if(Exists(after)) {
+                this->ForceRemove(this->elements[after]);
+                this->elements.Delete(after);
+                
+                if(IsVisible())
+                    this->PlaceIn((UI::WidgetContainer&)*this, {0, 0}, spacing);
+                
+                contents.SetHeight(this->widgets.Last()->GetBounds().Bottom + 1);
+                
+                boundschanged();
+                childboundschanged(&elm);
+            }
+
+            if(before == this->Get())
+                elm.Clear();
+
+            this->elements.Remove(before);
+            this->elements.Add(after, elm);
+            this->reverse.erase(&elm);
+            this->reverse.insert({&elm, after});
+            
+            if(after == this->Get())
+                elm.Check();
+        }
 
         using WidgetBase::Enable;
 

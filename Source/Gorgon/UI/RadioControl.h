@@ -133,6 +133,10 @@ namespace Gorgon { namespace UI {
         
         /// Adds the given element to this controller
         void Add(const T_ value, CT_ &control) {
+            if(Exists(value) && own) {
+                elements.Delete(value);
+            }
+            
             elements.Add(value, control);
 			reverse.insert({&control, value});
 			control.StateChangingEvent.Register(*this, &RadioControl::changing);
@@ -140,11 +144,28 @@ namespace Gorgon { namespace UI {
         
         /// Changes the value of the given element
         void ChangeValue(const T_ &before, const T_ &after) {
+            if(before == after)
+                return;
+           
+            if(!Exists(before))
+                throw std::runtime_error("Element does not exist");
+            
+            if(Exists(after) && own) {
+                elements.Delete(after);
+            }
+
             auto &elm = this->elements[before];
+
+            if(before == this->Get())
+                elm.Clear();
+
             this->elements.Remove(before);
             this->elements.Add(after, elm);
             this->reverse.erase(&elm);
             this->reverse.insert({&elm, after});
+            
+            if(after == this->Get())
+                elm.Check();
         }
 
         

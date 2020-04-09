@@ -78,7 +78,7 @@ int main() {
     rad.Add(0, u8"Ájmericano");
     rad.Add(1, "Latte");
     rad.Add(2);
-    rad.ChangeValue(0, 5);
+    rad.ChangeValue(0, 2);
 
     //rad.Disable(2);
 
