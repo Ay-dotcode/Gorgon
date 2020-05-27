@@ -35,7 +35,11 @@ namespace Gorgon { namespace Input {
 			Middle = 0b1000000100 ,
 			X1	   = 0b1000001000 ,
 			X2	   = 0b1000010000 ,
-			All    = 0b1000011111,
+			X3	   = 0b1000100000 ,
+			X4	   = 0b1001000000 ,
+			X5	   = 0b1010000000 ,
+			X6	   = 0b1100000000 ,
+			All    = 0b1111111111,
 		};
         
         inline Button operator |(Button l, Button r) {
@@ -61,6 +65,10 @@ namespace Gorgon { namespace Input {
 			{Button::Middle, "Middle"},
 			{Button::X1, "X1"},
 			{Button::X2, "X2"},
+			{Button::X3, "X3"},
+			{Button::X4, "X4"},
+			{Button::X5, "X5"},
+			{Button::X6, "X6"},
 		);
 
 		ENUMCLASS ScrollType {

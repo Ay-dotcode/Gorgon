@@ -84,6 +84,14 @@ namespace Gorgon { namespace WindowManager {
             return Button::X1;
         case 9:
             return Button::X2;
+        case 10:
+            return Button::X3;
+        case 11:
+            return Button::X4;
+        case 12:
+            return Button::X5;
+        case 13:
+            return Button::X6;
         default:
             return Button::None;
         }

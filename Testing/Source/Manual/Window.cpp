@@ -345,6 +345,7 @@ int main() {
 	});
 
 	Gorgon::Input::Layer il;
+	il.setname("Input");
 	wind.Add(il);
 
     il.Move({25, 0});

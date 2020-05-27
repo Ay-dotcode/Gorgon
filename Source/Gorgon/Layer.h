@@ -361,12 +361,18 @@ namespace Gorgon {
             auto s = GetSize();
             auto p = GetLocation();
             
-            if(s == Geometry::Size(0, 0)) {
-                s = ps;
-                s.Width  -= p.X;
-                s.Height -= p.Y;
-            }
-            
+			
+
+			if(s.Width == 0) {
+				s.Width = ps.Width;
+				s.Width -= p.X;
+			}
+
+			if(s.Height == 0) {
+				s.Height = ps.Height;
+				s.Height -= p.Y;
+			}
+
             return s;
         }
         

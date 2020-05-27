@@ -92,7 +92,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		dot+=dottree(tree, n);
 		
 		dot+="0 -> 1;\n";
-		if(last.size()) {
+		/*if(last.size()) {
 			dot+="{rank=sink; last[shape=record, label=\"{";
 		}
 		int i=0;
@@ -104,7 +104,7 @@ namespace Gorgon { namespace Scripting { namespace Compilers {
 		}
 		if(last.size()) {
 			dot+="}\"];}";
-		}
+		}*/
 		dot+="}";
 		
 		{

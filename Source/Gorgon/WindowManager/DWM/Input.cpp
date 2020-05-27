@@ -400,6 +400,18 @@ namespace WindowManager {
 			case 2:
 				data->parent->mouse_down({x, y}, Input::Mouse::Button::X2);
 				break;
+			case 3:
+				data->parent->mouse_down({x, y}, Input::Mouse::Button::X3);
+				break;
+			case 4:
+				data->parent->mouse_down({x, y}, Input::Mouse::Button::X4);
+				break;
+			case 5:
+				data->parent->mouse_down({x, y}, Input::Mouse::Button::X5);
+				break;
+			case 6:
+				data->parent->mouse_down({x, y}, Input::Mouse::Button::X6);
+				break;
 			}
 
 			break;
@@ -431,6 +443,18 @@ namespace WindowManager {
 				break;
 			case 2:
 				data->parent->mouse_up({x, y}, Input::Mouse::Button::X2);
+				break;
+			case 3:
+				data->parent->mouse_up({x, y}, Input::Mouse::Button::X3);
+				break;
+			case 4:
+				data->parent->mouse_up({x, y}, Input::Mouse::Button::X4);
+				break;
+			case 5:
+				data->parent->mouse_up({x, y}, Input::Mouse::Button::X5);
+				break;
+			case 6:
+				data->parent->mouse_up({x, y}, Input::Mouse::Button::X6);
 				break;
 			}
 
