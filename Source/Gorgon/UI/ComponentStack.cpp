@@ -6,9 +6,16 @@
 
 #include "math.h"
 
+//NOTE if a transition does not exists, but it is in the stack, its completion will be counted as 100%
+
 namespace Gorgon { namespace UI {
 
-    ComponentStack::ComponentStack(const Template& temp, Geometry::Size size) : temp(temp), size(size), ConditionChanged(this) {
+    ComponentStack::ComponentStack(const Template& temp, Geometry::Size size) : 
+        ConditionChanged(this),
+        size(size),
+        temp(temp)  
+    {
+        //find the number of elements required in the stack
         int maxindex = 0;
         
         for(int i=0; i<temp.GetCount(); i++) {
@@ -18,24 +25,30 @@ namespace Gorgon { namespace UI {
     
         indices = maxindex + 1;
         
+        //this is the stack data structure
         data = (Component*)malloc(sizeof(Component) * indices * stackcapacity);
+        
+        //each index will have a separate stack and stack size.
         stacksizes.resize(indices);
         
+        //sub-layers
         Add(mouse);
         Add(base);
         
+        //initial condition
         addcondition(ComponentCondition::None, ComponentCondition::Always);
         
+        // ******* Handling mouse related events ********* //
         mouse.SetOver([this]{
             if(handlingmouse) {
-                if(IsDisabled()) {
+                if(IsDisabled()) { //if disabled defer adding condition
                     disabled.insert(ComponentCondition::Hover);
                 }
                 else {
                     AddCondition(ComponentCondition::Hover);
                 }
             }
-                
+            
             if(!IsDisabled() && over_fn)
                 over_fn(ComponentTemplate::NoTag);
         });
@@ -52,6 +65,7 @@ namespace Gorgon { namespace UI {
         
         mouse.SetDown([this](Geometry::Point location, Input::Mouse::Button btn) {
             if(handlingmouse) {
+                //buttons can be checked using && operator
                 if(btn && mousebuttonaccepted) {
                     if(IsDisabled()) {
                         disabled.insert(ComponentCondition::Down);
@@ -88,6 +102,7 @@ namespace Gorgon { namespace UI {
         
         Resize(size);
         
+        //search for emsize in textholders, use the first one found
         for(int i=0; i<temp.GetCount(); i++) {
             if(temp[i].GetType() == ComponentType::Textholder) {
                 const auto &th = dynamic_cast<const TextholderTemplate&>(temp[i]);
@@ -108,54 +123,62 @@ namespace Gorgon { namespace UI {
                 AddToStack(temp[i], false);
             }
         }
-
-        for(int i=0; i<temp.GetCount(); i++) {
-            const auto &t = temp[i];
-
-            if(t.GetRepeatMode() != ComponentTemplate::NoRepeat && t.GetCondition() == ComponentCondition::Always) {
-                AddToStack(temp[i], false);
-            }
-        }
     }
 
     void ComponentStack::AddToStack(const ComponentTemplate& temp, bool reversed) {
         int ind = temp.GetIndex();
         
+        //if this is not at the top of the stack already
         if(stacksizes[ind] == 0 || &get(ind).GetTemplate() != &temp) {
             int si = stacksizes[ind];
-        
+            
+            //no space in the stack
             if(si == stackcapacity) {
                 grow();
             }
-        
-            new (data + (ind + si*indices)) Component(temp);
-            data[ind + si*indices].reversed = reversed;
+            
+            //create a component at the top of the stack
+            auto pos = ind + si*indices;
+            
+            new (data + pos) Component(temp);
+            data[pos].reversed = reversed;
             stacksizes[ind]++;
         }
         else {
+            //if our component is already at the top of the stack, update reversed state
             get(ind).reversed = reversed;
         }
 
+        //if the storage does not exists for this component
         if(!storage.count(&temp)) {
             auto storage = new ComponentStorage;
             this->storage[&temp] = storage;
             
+            //if clipping is enabled, create a new layer for this component
+            //TODO if *any* component inside the current one has a layer,
+            //all others should too, in order to keep order correctly.
             if(temp.GetClip()) {
                 storage->layer = new Graphics::Layer;
                 storage->layer->EnableClipping();
                 storage->layer->Hide();
             }
-
+            
             if(temp.GetType() == ComponentType::Container) {
+                //container specific
                 const auto &ctemp = dynamic_cast<const ContainerTemplate&>(temp);
-
+                
+                //unless modify animation is used, use the controller of the stack
+                //for animations
                 Animation::ControllerBase *cnt = &controller;
                 
-                if(ctemp.GetValueModification() == ctemp.ModifyAnimation) {
-                    storage->timer = new Animation::ControlledTimer();
-                    cnt = storage->timer;
+                if(ctemp.Background.HasContent() || ctemp.Overlay.HasContent()) {
+                    if(ctemp.GetValueModification() == ctemp.ModifyAnimation) {
+                        storage->timer = new Animation::ControlledTimer();
+                        cnt = storage->timer;
+                    }
                 }
                 
+                //Instantiate animations
                 if(ctemp.Background.HasContent()) {
                     storage->primary = &ctemp.Background.Instantiate(*cnt);
                 }
@@ -167,9 +190,13 @@ namespace Gorgon { namespace UI {
             else if(temp.GetType() == ComponentType::Placeholder) {
                 const auto &ptemp = dynamic_cast<const PlaceholderTemplate&>(temp);
 
+                //if the placeholder has a subtemplate
                 if(ptemp.HasTemplate()) {
+                    //create a new stack to manage it
                     auto s = new ComponentStack(ptemp.GetTemplate(), {0, 0});
+                    
                     substacks.Add(&temp, s);
+                    
                     if(handlingmouse)
                         s->HandleMouse(mousebuttonaccepted);
                 }
@@ -177,27 +204,35 @@ namespace Gorgon { namespace UI {
             else if(temp.GetType() == ComponentType::Graphics) {
                 const auto &gtemp = dynamic_cast<const GraphicsTemplate&>(temp);
 
-                Animation::ControllerBase *cnt = &controller;
-                
-                if(gtemp.GetValueModification() == gtemp.ModifyAnimation) {
-                    storage->timer = new Animation::ControlledTimer();
-                    cnt = storage->timer;
-                }
-                
+                //unless modify animation is used, use the controller of the stack
+                //for animations
                 if(gtemp.Content.HasContent()) {
+                    Animation::ControllerBase *cnt = &controller;
+                
+                    if(gtemp.GetValueModification() == gtemp.ModifyAnimation) {
+                        storage->timer = new Animation::ControlledTimer();
+                        cnt = storage->timer;
+                    }
+                
                     storage->primary = &gtemp.Content.Instantiate(*cnt);
                 }
             }
         }
 
+        //if the component is a place holder ...
         if(temp.GetType() == ComponentType::Placeholder) {
             const auto &ptemp = dynamic_cast<const PlaceholderTemplate&>(temp);
 
+            //... and has template
             if(ptemp.HasTemplate()) {
+                //add the substack to the base layer
+                //TODO if substack is located at a component that has a layer
+                //     it should be based in there.
                 base.Add(substacks[&temp]);
             }
         }
         
+        //reset the animations (?)
         controller.Reset();
         
         //handle repeat storage
@@ -210,48 +245,44 @@ namespace Gorgon { namespace UI {
         }
     }
     
-    void ComponentStack::grow() { 
-        stackcapacity += 2;
-        
-        auto ndata = (Component*)realloc(data, sizeof(Component) * indices * stackcapacity);
-        
-        if(ndata)
-            data = ndata;
-        else {
-            free(data);
-            
-            throw std::bad_alloc();
-        }
-    }
-    
     bool ComponentStack::addcondition(ComponentCondition from, ComponentCondition to, ComponentCondition hint) {        
+        //mouse related conditions will not be effective if the stack is disabled
         if(IsMouseRelated(to) && IsDisabled()) {
             disabled.insert(to);
             return false;
         }
         
+        //if the animation is not to be done, from is not necessary, adjust hint accordingly
         if(from != ComponentCondition::None && temp.GetConditionDuration(from, to) == 0) {
             hint = from;
             from = ComponentCondition::None;
         }
         
+        //if animation will be performed
         if(from != ComponentCondition::None) {
+            //if the animation exists, don't do anything
             if(transitions.count({from, to}))
                 return false;
             
             transitions[{from, to}] = Time::FrameStart();
         }
+        //no animation, immediate effect
         else {
+            //condition is already there, nothing to do
             if(conditions.count(to))
                 return false;
             
             conditions.insert(to);
         }
         
-        if(to == ComponentCondition::Disabled && handlingmouse) {
-            for(auto iter = conditions.begin(); iter != conditions.end();) {
+        //in case we are disabling
+        if(to == ComponentCondition::Disabled) {            
+            //in all conditions
+            for(auto iter = conditions.begin(); iter != conditions.end(); ) {
                 auto c = *iter;
+                //find mouse related ones
                 if(IsMouseRelated(c)) {
+                    //remove and move them to disabled.
                     disabled.insert(c);
                     iter = conditions.erase(iter);
                     RemoveCondition(c, false);
@@ -259,6 +290,9 @@ namespace Gorgon { namespace UI {
                 else
                     ++iter;
             }
+            
+            //transitions are fine as they will come back to this function
+            //once they are completed.
         }
         
         bool updatereq = false;
@@ -268,9 +302,11 @@ namespace Gorgon { namespace UI {
             //direct search: perfect fit
             std::set<int> indicesdone;
             for(int i=0; i<temp.GetCount(); i++) {
+                //do not use repeated components
                 if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
                     continue;
-
+                
+                //this is the target we are looking for
                 if(temp[i].GetCondition() == to && !temp[i].IsTransition()) {
                     updatereq = true;
                     AddToStack(temp[i], false);
@@ -283,18 +319,36 @@ namespace Gorgon { namespace UI {
             //In this case we should take this non-perfect fit.
             if(!updatereq && hint != ComponentCondition::None) {
                 for(int i=0; i<temp.GetCount(); i++) {
+                    //do not use repeated components
                     if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
                         continue;
-
+                    
                     if(temp[i].GetCondition() == hint && temp[i].GetTargetCondition() == to) {
                         updatereq = true;
                         AddToStack(temp[i], false);
                     }
                 }
             }
+            
+            //once more, but this time reversed
+            if(!updatereq && hint != ComponentCondition::None) {
+                for(int i=0; i<temp.GetCount(); i++) {
+                    //do not use repeated components
+                    if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
+                        continue;
+                    
+                    if(temp[i].GetCondition() == to && temp[i].GetTargetCondition() == hint) {
+                        updatereq = true;
+                        AddToStack(temp[i], true);
+                    }
+                }
+            }
         }
+        //we are searching for transition
         else {
+            //perfect fit
             for(int i=0; i<temp.GetCount(); i++) {
+                //do not use repeated components
                 if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
                     continue;
 
@@ -305,15 +359,19 @@ namespace Gorgon { namespace UI {
                 }
             }
             
-            //search for reversed
-            for(int i=0; i<temp.GetCount(); i++) {
-                if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
-                    continue;
-
-                if(temp[i].IsReversible() && temp[i].GetCondition() == to && temp[i].GetTargetCondition() == from) {
-                    updatereq = true;
-                    AddToStack(temp[i], true);
-                    break;
+            //not found
+            if(!updatereq) {
+                //search for reversed
+                for(int i=0; i<temp.GetCount(); i++) {
+                    //do not use repeated components
+                    if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
+                        continue;
+                    
+                    if(temp[i].IsReversible() && temp[i].GetCondition() == to && temp[i].GetTargetCondition() == from) {
+                        updatereq = true;
+                        AddToStack(temp[i], true);
+                        break;
+                    }
                 }
             }
         }
@@ -341,19 +399,26 @@ namespace Gorgon { namespace UI {
             erased = true;
         }
         
+        //if something to be erased is found
         if(erased) {
+            //go through all indices
             for(int i=0; i<indices; i++) {
+                //check entire stack
                 for(int j=stacksizes[i]-1; j>=0; j--) {
                     auto &comp = data[i + j*indices];
                     const auto &temp = comp.GetTemplate();
                     bool remove = false;
-
+                    
                     //do not remove repeating components
                     if(temp.GetRepeatMode() != ComponentTemplate::NoRepeat)
                         continue;
                     
+                    //check if this component is to be removed
+                    
                     if(from == ComponentCondition::Never)
-                        remove = temp.GetCondition() == to || temp.GetTargetCondition() == to;
+                        //allows removing reversed condition or non transition condition
+                        remove = (temp.GetCondition() == to && (!temp.IsTransition() || comp.reversed)) || 
+                                 temp.GetTargetCondition() == to;
                     else {
                         if(comp.reversed)
                             remove = temp.GetCondition() == to && temp.GetTargetCondition() == from;
@@ -361,29 +426,36 @@ namespace Gorgon { namespace UI {
                             remove = temp.GetCondition() == from && temp.GetTargetCondition() == to;
                     }
                     
-                    if(remove) {                            
+                    //if so
+                    if(remove) {
+                        //top of the stack
                         if(j == stacksizes[i]-1) {
+                            //requires update
                             updatereq = true;
 
+                            //if a placeholder ...
                             if(temp.GetType() == ComponentType::Placeholder) {
                                 const auto &ptemp = dynamic_cast<const PlaceholderTemplate&>(temp);
 
+                                //... and has a substack
                                 if(ptemp.HasTemplate() && substacks[&temp].HasParent()) {
+                                    //remove it
                                     substacks[&temp].GetParent().Remove(substacks[&temp]);
                                 }
                             }
 
+                            //destroy it
                             get(i, j).~Component();
                             stacksizes[i]--;
                         }
                         else {
-                            
                             //bubble the item to be deleted to the top of stack.
                             for(int k=j; k<stacksizes[i]-1; k++) {
                                 using std::swap;
                                 swap(get(i, k), get(i, k+1));
                             }
                             
+                            //destroy it
                             get(i, stacksizes[i]).~Component();
                             stacksizes[i]--;
                             
@@ -394,7 +466,9 @@ namespace Gorgon { namespace UI {
             }
         }
     
-        if(to == ComponentCondition::Disabled && handlingmouse) {
+        //if we are removing disabled state
+        if(to == ComponentCondition::Disabled) {
+            //add all mouse related conditions back
             for(auto d : disabled)
                 ReplaceCondition(ComponentCondition::Disabled, d);
             
@@ -423,7 +497,7 @@ namespace Gorgon { namespace UI {
         if(transitions.count({from, to}) || (future_transitions.count(from) && future_transitions[from] == to))
             return;
 
-        //the condition already exists
+        //the condition already exists without the reverse transition in effect 
         if(!transitions.count({to, from}) && (conditions.count(to) || to == ComponentCondition::Always)) {
             //source condition does not exist, thus there is nothing to do
             if(!conditions.count(from))
@@ -433,51 +507,77 @@ namespace Gorgon { namespace UI {
         
         //if a reverse animation exists, reverse the direction, reverse the time
         if(transitions.count({to, from})) {
+            //if the current transition is to be animated
             if(transition && temp.GetConditionDuration(from, to)) {
+                //calculate remaining time as factor of elapsed time, must be calculated before removing the condition
                 auto elapsed = Time::FrameStart() - transitions[{to, from}];
                 auto completion = 1.0 - (double)elapsed / temp.GetConditionDuration(to, from);
                 
+                //remove reversed condition
                 removecondition(to, from);
                 transitions.erase({to, from});
                 
+                //add the current condition with the remaining time
                 addcondition(from, to);
                 transitions[{from, to}] = Time::FrameStart() - (unsigned long)(completion * temp.GetConditionDuration(from, to));
             }
+            //not to be animated
             else {
+                //remove previous
                 removecondition(to, from);
                 transitions.erase({to, from});
-
+                
+                //add current one directly
                 addcondition(ComponentCondition::None, to);
             }
         }
+        //source condition is not in the stack. This probably will never happen.
         else if(!conditions.count(from) && from != ComponentCondition::Always) {
+            std::cout<<"Condition "<<((int)from)<<" does not exist!"<<std::endl;
+            //search if any of the transitions will lead to the source condition
+            //TODO investigate further, probably found transition should be removed from the transition list
             for(const auto &t : transitions) {
+                //if so
                 if(t.first.second == from) {
                     if(transition && temp.GetConditionDuration(t.first.first, to)) {
+                        //WARNING this may cause a jump in the animation
                         addcondition(t.first.first, to);
                     }
+                    //don't wait for target condition to be reached, start from always. Probably back will
+                    //lead to smoother transition
                     else if(transition && temp.GetConditionDuration(ComponentCondition::Always, to)) {
                         addcondition(ComponentCondition::Always, to);
                     }
                     else if(transition && temp.GetConditionDuration(from, to)) {
+                        //this is the only case where current transition should be kept
                         future_transitions.insert({from, to});
                     }
+                    //not to be animated
                     else {
+                        //to is directly added, but 
                         addcondition(ComponentCondition::None, to);
                     }
+                    
+                    break;
                 }
             }
-        }        
+        }
+        //to be animated
         else if(transition && temp.GetConditionDuration(from, to)) {
+            //remove the base condition
             removecondition(ComponentCondition::None, from);
+            //add the current condition
             addcondition(from, to);
         }
+        //not to be animated
         else {
+            //always will never be removed, so ignore it
             if(from != ComponentCondition::Always) {
                 removecondition(ComponentCondition::None, from);
                 removecondition(ComponentCondition::Always, from);
             }
             
+            //always will never be added, so ignore it
             if(to != ComponentCondition::Always) {
                 addcondition(ComponentCondition::Always, to);
             }
@@ -485,40 +585,52 @@ namespace Gorgon { namespace UI {
     }
     
     void ComponentStack::FinalizeTransitions() { //untested
-        for(auto iter = transitions.begin(); iter != transitions.end();) {
+        for(auto iter = transitions.begin(); iter != transitions.end(); ++iter) {
             auto c = *iter;
 
             if(future_transitions.count(c.first.second)) {
                 removecondition(c.first.first, c.first.second);
                 addcondition(ComponentCondition::None, future_transitions[c.first.second], c.first.first);
+                future_transitions.erase(c.first.second);
             }
             else {
                 removecondition(c.first.first, c.first.second);
                 addcondition(ComponentCondition::None, c.first.second, c.first.first);
             }
-            iter = transitions.erase(iter);
         }
+        
+        transitions.clear();
     }
 
     void ComponentStack::SetData(ComponentTemplate::DataEffect effect, const Graphics::Drawable &image) {
         bool wasset = imagedata.Exists(effect);
+        
+        //add or update the data
         imagedata.Add(effect, image);
         
         bool updatereq = false;
 
+        //search if this data is used
         for(int i=0; i<indices; i++) {
             if(stacksizes[i] > 0) {
                 const ComponentTemplate &temp = get(i).GetTemplate();
 
+                //it is used
                 if(temp.GetDataEffect() == effect) {
                     updatereq = true;
+                    
+                    break;
                 }
             }
         }
 
+        //if the data was missing to begin with
         if(!wasset) {
+            //now it is set, so add the related condition
             AddCondition((ComponentCondition)((int)ComponentCondition::DataEffectStart + (int)effect));
         }
+        
+        //update if necessary
         if(updatereq) {
             Update();
         }
@@ -526,30 +638,40 @@ namespace Gorgon { namespace UI {
     
     void ComponentStack::SetData(ComponentTemplate::DataEffect effect, const std::string &text) {
         bool wasset = stringdata.count(effect);
+
+        //add or update the data
         stringdata[effect] = text;
 
         bool updatereq = false;
-
+        
+        //search if this data is used
         for(int i=0; i<indices; i++) {
             if(stacksizes[i] > 0) {
                 const ComponentTemplate &temp = get(i).GetTemplate();
-
+                
+                //it is used
                 if(temp.GetDataEffect() == effect) {
                     updatereq = true;
+                    
                     break;
                 }
             }
         }
-
+        
+        //if the data was missing to begin with
         if(!wasset) {
+            //now it is set, so add the related condition
             AddCondition((ComponentCondition)((int)ComponentCondition::DataEffectStart + (int)effect));
         }
+        
+        //update if necessary
         if(updatereq) {
             Update();
         }
     }
     
     void ComponentStack::RemoveData(ComponentTemplate::DataEffect effect) {
+        //check if an update will be needed
         bool update = stringdata.count(effect) || imagedata.Exists(effect);
 
         if(!update)
@@ -557,42 +679,56 @@ namespace Gorgon { namespace UI {
         
         RemoveCondition((ComponentCondition)((int)ComponentCondition::DataEffectStart + (int)effect));
         
+        //remove the data from whichever storage it is in.
         stringdata.erase(effect);
         imagedata.Remove(effect);
 
         bool updatereq = false;
 
+        //search in the stack to see if any of the components will be affected
         for(int i=0; i<indices; i++) {
             if(stacksizes[i] > 0) {
                 const ComponentTemplate &temp = get(i).GetTemplate();
 
                 if(temp.GetDataEffect() == effect) {
                     updatereq = true;
+                    
+                    break;
                 }
             }
         }
 
+        //update if necessary
         if(updatereq)
             Update();
     }
 
     void ComponentStack::SetValue(float first, float second, float third, float fourth) {
+        //nothing is changed, nothing is to be done
         if(targetvalue[0] == first && targetvalue[1] == second && targetvalue[2]== third && targetvalue[3] == fourth)
             return;
 
+        //update the target value
         targetvalue = {{first, second, third, fourth}};
 
+        //for each value channel
         bool changed = false;
         auto tm = Time::DeltaTime();
         for(int i=0; i<4; i++) {
+            //if there is a change to be done, if there is a change, we will step the animation
+            //instantly. 
             if(targetvalue[i] != value[i]) {
+                //if the change is too small, or animation is disabled
                 if(valuespeed[i] == 0 || fabs(value[i] - targetvalue[i]) < valuespeed[i] * tm / 1000) {
+                    //set value to the target
                     value[i] = targetvalue[i];
                 }
                 else {
+                    //step the animation
                     value[i] += Sign(targetvalue[i] - value[i]) * valuespeed[i] * tm / 1000;
                 }
-
+                
+                //there is a change
                 changed = true;
             }
         }
@@ -605,18 +741,24 @@ namespace Gorgon { namespace UI {
 
         bool updatereq = false;
 
+        //if the change will effect something (potentially, can be refined further)
         for(int i=0; i<indices; i++) {
             if(stacksizes[i] > 0) {
                 const ComponentTemplate &temp = get(i).GetTemplate();
 
                 if(temp.GetValueModification() != temp.NoModification) {
                     updatereq = true;
+                    
+                    break;
                 }
             }
         }
 
+        //update if change has any effect
         if(updatereq)
             Update();
+        //if not, immediately set value to the target so that
+        //we will skip useless animation
         else
             value = targetvalue;
     }
@@ -624,7 +766,7 @@ namespace Gorgon { namespace UI {
     void ComponentStack::Update() {
         updaterequired = true;
     }
-
+    
     Component &ComponentStack::get(int ind, ComponentCondition condition) const {
         ASSERT(stacksizes[ind], String::Concat("Stack for index ", ind, " is empty"));
 
@@ -2296,6 +2438,21 @@ realign:
             stack.second.SetOtherMouseEvent([stack, this](ComponentTemplate::Tag tag, Input::Mouse::EventType type, Geometry::Point point, float amount) {
                 return other_fn(stack.first->GetTag() == ComponentTemplate::NoTag ? ComponentTemplate::UnknownTag : stack.first->GetTag(), type, point, amount);
             });
+        }
+    }
+    
+    void ComponentStack::grow() { 
+        stackcapacity += 2;
+        
+        auto ndata = (Component*)realloc(data, sizeof(Component) * indices * stackcapacity);
+        
+        //error check
+        if(ndata)
+            data = ndata;
+        else {
+            free(data);
+            
+            throw std::bad_alloc();
         }
     }
 } }

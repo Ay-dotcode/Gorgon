@@ -11,10 +11,20 @@
 
 namespace Gorgon { namespace UI {
 
+    /**
+     * Component stack is the backbone of a widget. It manages the components inside the 
+     * widget by showing/hiding components depending on the current state. Additionally,
+     * component stack arranges the components by adjusting their locations and sizes.
+     */
     class ComponentStack : public Layer, public Updatable {
     public:
+        
         /// should handle instantiation as well
         explicit ComponentStack(const Template &temp, Geometry::Size size);
+        
+        /// should handle instantiation as well
+        explicit ComponentStack(const Template &temp) : ComponentStack(temp, temp.GetSize()) 
+        { }
         
         virtual ~ComponentStack() {
             for(auto &p : storage) {
@@ -28,14 +38,20 @@ namespace Gorgon { namespace UI {
         /// to add all components in the given template
         void AddToStack(const ComponentTemplate &temp, bool reversed);
         
-        /// Adds a condition and its associated components to the stack
-        void AddCondition(ComponentCondition condition, bool transition = true) { ReplaceCondition(ComponentCondition::Always, condition, transition); }
-        
         /// Replaces a condition with another one
         void ReplaceCondition(ComponentCondition from, ComponentCondition to, bool transition = true);
         
+        /// Adds a condition and its associated components to the stack
+        void AddCondition(ComponentCondition condition, bool transition = true) { 
+            //redirect to replace condition
+            ReplaceCondition(ComponentCondition::Always, condition, transition); 
+        }
+        
         /// Removes a condition and its associated components
-        void RemoveCondition(ComponentCondition condition, bool transition = true)  { ReplaceCondition(condition, ComponentCondition::Always, transition); }
+        void RemoveCondition(ComponentCondition condition, bool transition = true)  { 
+            //redirect to replace condition
+            ReplaceCondition(condition, ComponentCondition::Always, transition); 
+        }
 
         /// Finalizes on-going transitions immediately
         void FinalizeTransitions();
