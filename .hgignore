@@ -43,3 +43,4 @@ syntax: regexp
 # ccls/emacs related
 .ccls-cache
 compile_commands.json
+.directory

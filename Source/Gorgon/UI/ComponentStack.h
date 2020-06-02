@@ -236,7 +236,10 @@ namespace Gorgon { namespace UI {
         }
 
         /// Updates the layout of the component stack
-        virtual void Update() override;
+        virtual void Update() override { Update(false); }
+        
+        /// Updates the layout of the component stack
+        void Update(bool immediate);
 
         void Render() override;
 
@@ -257,22 +260,17 @@ namespace Gorgon { namespace UI {
         }
         
         /// This function instructs stack to handle mouse to automatically change hover/down
-        /// states, unless disabled state is active.
+        /// states, unless disabled state is active. Propagates to substacks.
         void HandleMouse(Input::Mouse::Button accepted = Input::Mouse::Button::All);
         
         /// Returns whether the component marked with the tag has a substack. If multiple components
-        /// are marked to have substack, only the first one is considered.
-        bool TagHasSubStack(ComponentTemplate::Tag tag) const {
-            auto comp = gettag(tag);
-            
-            if(!comp)
-                return false;
-            else
-                return substacks.Exists(&comp->GetTemplate());
-        }
+        /// are marked to have substack, only the first one is considered. If the tag does not exist
+        /// this function will return false.
+        bool TagHasSubStack(ComponentTemplate::Tag tag) const;
         
         /// Translates the given coordinates back to values using value scaling and channel mapping.
-        /// Only works if the value affects the component location or size.
+        /// Only works if the value affects the component location or size. If component with the
+        /// specified tag does not exist, this function will simply return {0, 0, 0, 0}.
         std::array<float, 4> CoordinateToValue(ComponentTemplate::Tag tag, Geometry::Point location);
         
         /// Translates the given coordinates to component space in pixels.
@@ -323,8 +321,8 @@ namespace Gorgon { namespace UI {
             return Between(ind, 0, indices) && stacksizes[ind];
         }
 
-        /// Returns the template at the given index. If the index does not exists, this function may crash
-        /// use ComponentExists function to check if it is safe to use the index.
+        /// Returns the template at the given index. If the index does not exists, this function may crash.
+        /// Use ComponentExists function to check if it is safe to use the index.
         const ComponentTemplate &GetTemplate(int ind) const {
             return get(ind).GetTemplate();
         }
@@ -542,18 +540,7 @@ namespace Gorgon { namespace UI {
         //caller should erase transition
         bool removecondition(ComponentCondition from, ComponentCondition to);
         
-        Component *gettag(ComponentTemplate::Tag tag) const {
-            for(int i=0; i<indices; i++) {
-                if(stacksizes[i] > 0) {
-                    auto &comp = get(i);
-                    
-                    if(comp.GetTemplate().GetTag() == tag)
-                        return &comp;
-                }
-            }
-            
-            return nullptr;
-        }
+        Component *gettag(ComponentTemplate::Tag tag) const;
 
         int emsize = 10;
         

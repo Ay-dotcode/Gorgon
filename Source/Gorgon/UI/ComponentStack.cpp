@@ -9,6 +9,16 @@
 //NOTE if a transition does not exists, but it is in the stack, its completion will be counted as 100%
 
 namespace Gorgon { namespace UI {
+    
+    bool IsIn(Anchor left, Anchor right) {
+        if(IsLeft(left) == IsRight(right) && !IsCenter(left) && !IsCenter(right))
+            return false;
+        
+        if(IsTop(left) == IsBottom(right) && !IsMiddle(left) && !IsMiddle(right))
+            return false;
+        
+        return true;
+    }
 
     ComponentStack::ComponentStack(const Template& temp, Geometry::Size size) : 
         ConditionChanged(this),
@@ -585,20 +595,27 @@ namespace Gorgon { namespace UI {
     }
     
     void ComponentStack::FinalizeTransitions() { //untested
+        //go through transitions
         for(auto iter = transitions.begin(); iter != transitions.end(); ++iter) {
             auto c = *iter;
 
+            //remove transition condition
+            removecondition(c.first.first, c.first.second);
+
+            //if has any future transition
             if(future_transitions.count(c.first.second)) {
-                removecondition(c.first.first, c.first.second);
+                //add final condition after the future
                 addcondition(ComponentCondition::None, future_transitions[c.first.second], c.first.first);
+                //erase the future transition
                 future_transitions.erase(c.first.second);
             }
             else {
-                removecondition(c.first.first, c.first.second);
+                //add the destination condition
                 addcondition(ComponentCondition::None, c.first.second, c.first.first);
             }
         }
         
+        //remove all transitions
         transitions.clear();
     }
 
@@ -718,14 +735,16 @@ namespace Gorgon { namespace UI {
             //if there is a change to be done, if there is a change, we will step the animation
             //instantly. 
             if(targetvalue[i] != value[i]) {
+                auto change = valuespeed[i] * tm / 1000;
+                
                 //if the change is too small, or animation is disabled
-                if(valuespeed[i] == 0 || fabs(value[i] - targetvalue[i]) < valuespeed[i] * tm / 1000) {
+                if(valuespeed[i] == 0 || fabs(value[i] - targetvalue[i]) < change) {
                     //set value to the target
                     value[i] = targetvalue[i];
                 }
                 else {
                     //step the animation
-                    value[i] += Sign(targetvalue[i] - value[i]) * valuespeed[i] * tm / 1000;
+                    value[i] += Sign(targetvalue[i] - value[i]) * change;
                 }
                 
                 //there is a change
@@ -763,70 +782,1078 @@ namespace Gorgon { namespace UI {
             value = targetvalue;
     }
 
-    void ComponentStack::Update() {
-        updaterequired = true;
+    void ComponentStack::Update(bool immediate) {
+        if(immediate)  {
+            update();
+        }
+        else {
+            //update will be performed on next render
+            updaterequired = true;
+        }
     }
     
-    Component &ComponentStack::get(int ind, ComponentCondition condition) const {
-        ASSERT(stacksizes[ind], String::Concat("Stack for index ", ind, " is empty"));
-
-        for(int i=stacksizes[ind]-1; i>=0; i--) {
-            if(data[ind + i * indices].GetTemplate().GetCondition() == condition)
-                return data[ind + i * indices];
-        }
-
-        return data[ind + (stacksizes[ind]-1) * indices];
-    }
-
-    void ComponentStack::update() {
-        if(!stacksizes[0]) return;
+    void ComponentStack::Render() {
+        if(frame_fn)
+            frame_fn();
         
-        if(beforeupdate_fn)
-            beforeupdate_fn();
-
-        get(0).size = size;
-        get(0).location = {0,0};
-        get(0).parent = -1;
-
-        //update repeat counts
-        for(auto &r : repeated) {
-            if(repeats.count(r.first->GetRepeatMode()))
-                r.second.resize(repeats[r.first->GetRepeatMode()].size(), Component(*r.first));
-        }
+        //**** Transition processing ****
+        //This is to collect if any of the completed transitions are to be replaced with a
+        //future transition
+        std::vector<std::pair<ComponentCondition, ComponentCondition>> tobereplaced;
         
-        //calculate common emsize        
-        for(int i=0; i<indices; i++) {
-            if(stacksizes[i] > 0) {
-                if(get(i).GetTemplate().GetType() == ComponentType::Textholder) {
-                    const auto &th = dynamic_cast<const TextholderTemplate&>(get(i).GetTemplate());
+        for(auto iter = transitions.begin(); iter != transitions.end(); ) {
+            auto c = *iter;
+            
+            //time passed
+            auto delta = Time::FrameStart() - c.second;
+            
+            //total duration
+            auto dur = (unsigned)temp.GetConditionDuration(c.first.first, c.first.second);
+            
+            //if remaining time is less or equal it is time to end
+            if(dur <= delta) {
+                //check if there is a future transition waiting
+                if(future_transitions.count(c.first.second)) {
+                    //add the list to be replaced
+                    tobereplaced.push_back({c.first.second, future_transitions[c.first.second]});
+                    //we don't need this anymore
+                    future_transitions.erase(c.first.second);
+                }
+                else {
+                    //remove old
+                    removecondition(c.first.first, c.first.second);
+                    //replace with the new, since from is None there will not be another transition
+                    addcondition(ComponentCondition::None, c.first.second, c.first.first);
+                }
+                
+                //we are done with this
+                iter = transitions.erase(iter);
+            }
+            //there is still time
+            else {
+                //if any components use transition animation as value channel
+                //this loop will find and raise an update request
+                for(int i=0; i<indices; i++)  {
+                    //no components in this index
+                    if(!stacksizes[i]) continue;
                     
-                    if(th.IsReady()) {
-                        emsize = th.GetRenderer().GetEMSize();
-                        break;
+                    //if uses transition as value source
+                    if(get(i).GetTemplate().GetValueSource() == ComponentTemplate::UseTransition) {
+                        
+                        //modify animation will process automatically (?). If no modification, value source
+                        //will not be used
+                        if(get(i).GetTemplate().GetValueModification() != ComponentTemplate::ModifyAnimation &&
+                           get(i).GetTemplate().GetValueModification() != ComponentTemplate::NoModification) 
+                        {
+                            updaterequired = true;
+                        }
                     }
                 }
+                
+                //move to next
+                ++iter;
             }
         }
         
-        update(get(0));
-
-        updaterequired = false;
-
-        base.Clear();
-        for(auto &s : storage) 
-            if(s.second->layer)
-                s.second->layer->Hide();
-            
-        if(update_fn)
-            update_fn();
-            
-        //draw everything
-        render(get(0), base, {0,0});
+        //**** Value smoothing
+        bool changed = false;
+        auto tm = Time::DeltaTime();
+        for(int i=0; i<4; i++) {
+            //if it is not finalized already
+            if(targetvalue[i] != value[i]) {
+                auto change = valuespeed[i] * tm / 1000;
+                //if no animation will be performed or animation is about to be finished
+                if(valuespeed[i] == 0 || fabs(value[i] - targetvalue[i]) < change) {
+                    value[i] = targetvalue[i];
+                }
+                //process animation further
+                else {
+                    value[i] += Sign(targetvalue[i] - value[i]) * change;
+                }
+                
+                //there is a change
+                changed = true;
+            }
+        }
         
-        if(render_fn)
-            render_fn();
+        //replace any current transition with the future ones
+        for(auto it : tobereplaced)
+            ReplaceCondition(it.first, it.second);
+        
+        //if a value is changed, this will update the stack
+        if(changed) {
+            updaterequired = true;
+            
+            if(!returntarget && value_fn)
+                value_fn();
+        }
+        
+        //if an update is necessary perform it
+        if(updaterequired)
+            update();
+        
+        //progress controlled animations
+        for(int i=0; i<indices; i++)  {
+            if(!stacksizes[i]) continue;
+            
+            //if there is a timer in the storage, this component uses
+            //value for the animation progress
+            if(storage[&get(i).GetTemplate()]->timer) {
+                //set the progress to the first value channel
+                //next after provides the floating point number that is closest to 1 to ensure animation will not be rolled over. 
+                storage[&get(i).GetTemplate()]->timer->SetProgress(nextafter(1.0f, 0.0f) * calculatevalue(0, get(i))); 
+            }
+        }
+        
+        //Let the layer perform its own rendering
+        Gorgon::Layer::Render();
+    }
+    
+    void ComponentStack::HandleMouse(Input::Mouse::Button accepted) {
+        mousebuttonaccepted=accepted;
+
+        //propagate to substacks
+        for(auto s : substacks)
+            s.second.HandleMouse(mousebuttonaccepted);
+
+        handlingmouse = true;
     }
 
+    bool ComponentStack::TagHasSubStack(ComponentTemplate::Tag tag) const {
+        auto comp = gettag(tag);
+        
+        if(!comp)
+            return false;
+        else
+            return substacks.Exists(&comp->GetTemplate());
+    }
+
+    std::array<float, 4> ComponentStack::CoordinateToValue(ComponentTemplate::Tag tag, Geometry::Point location) {
+        Component *comp  = gettag(tag);
+        
+        //component does not exist
+        if(!comp)
+            return {{0.f, 0.f, 0.f, 0.f}};
+        
+        //get the template and index
+        const auto &ct = comp->GetTemplate();
+        int ind  = ct.GetIndex();
+        
+        //parent index
+        int pind = -1;
+        
+        //search for the parent index
+        for(int i=0; i<indices; i++) {
+            //look for components that are containers
+            if(stacksizes[i] > 0 && get(i).GetTemplate().GetType() == ComponentType::Container) {
+                const auto &cont = dynamic_cast<const ContainerTemplate &>(get(i).GetTemplate());
+                
+                //search the subcomponents
+                for(int j=0; j<cont.GetCount(); j++)
+                    //if the component is found, this is the parent index
+                    if(cont[j] == ind) {
+                        pind = cont.GetIndex();
+                        break;
+                    }
+            }
+        }
+        
+        //if the parent does not exist, it is not possible to perform any reverse translation
+        if(pind == -1)
+            return {{0.f, 0.f, 0.f, 0.f}};
+        
+        //before ordering, after ordering
+        std::array<float, 4> val = {{0, 0, 0, 0}}, ret = {{0, 0, 0, 0}};
+        
+        //translate the given coordinate to local coordinates
+        auto pnt    = TranslateCoordinates(pind, location);
+        
+        //get the parent bounds
+        //TODO margins??
+        auto bounds = BoundsOf(pind);
+        
+        //transformation will depend on the modification method
+        switch(ct.GetValueModification()) {
+            //default is position modification, if the mode is not valid
+            //for mouse coordinates, this will be used.
+            default: {
+                if(ct.GetPositioning() == ct.Absolute || ct.GetPositioning() == ct.AbsoluteSliding) {
+                    if(ct.GetPositioning() == ct.AbsoluteSliding) {
+                        bounds.Right -= comp->size.Width;
+                        bounds.Bottom -= comp->size.Height;
+                    }
+                    
+                    
+                    //get the rate
+                    val[0] = float(pnt.X) / bounds.Width();
+                    val[1] = float(pnt.Y) / bounds.Height();
+                    
+                    //if x or y is effected, this will adjust the value accordingly
+                    if(ct.GetValueModification() == ContainerTemplate::ModifyX)
+                        val[1] = 0;
+                    else if(ct.GetValueModification() == ContainerTemplate::ModifyY) {
+                        val[0] = val[1];
+                        val[1] = 0;
+                    }
+                }
+                else if(ct.GetPositioning() == ct.PolarAbsolute) {
+                    int emsize = getemsize(*comp);
+                    pnt -=  Convert(ct.GetCenter(), comp->size, emsize);
+                    
+                    //TODO
+                }
+                
+                break;
+            }
+            
+            case ComponentTemplate::ModifyRotation: {
+                int emsize = getemsize(*comp);
+                pnt -=  Convert(ct.GetCenter(), comp->size, emsize);
+                
+                //TODO calculate the angle from the center and use it
+                break;
+            }
+            case ComponentTemplate::ModifySize:
+            case ComponentTemplate::ModifyWidth:
+            case ComponentTemplate::ModifyHeight:
+                //calculate the value depending on the anchoring
+                if(IsLeft(ct.GetContainerAnchor())) {
+                    val[0] = float(pnt.X);
+                }
+                else if(IsCenter(ct.GetContainerAnchor())) {
+                    val[0] = float(abs(pnt.X - bounds.Width()) * 2);
+                }
+                else if(IsRight(ct.GetContainerAnchor())) {
+                    val[0] = float(bounds.Width() - pnt.X);
+                }
+
+                if(IsTop(ct.GetContainerAnchor())) {
+                    val[1] = float(pnt.Y);
+                }
+                else if(IsMiddle(ct.GetContainerAnchor())) {
+                    val[1] = float(abs(pnt.Y - bounds.Height()) * 2);
+                }
+                else if(IsBottom(ct.GetContainerAnchor())) {
+                    val[1] = float(bounds.Height() - pnt.Y);
+                }
+                
+                //scale it to 0-1
+                val[0] = float(val[0]) / bounds.Width();
+                val[1] = float(val[1]) / bounds.Height();
+
+                //single channel modifications
+                if(ct.GetValueModification() == ContainerTemplate::ModifyWidth)
+                    val[1] = 0;
+                else if(ct.GetValueModification() == ContainerTemplate::ModifyHeight) {
+                    val[0] = val[1];
+                    val[1] = 0;
+                }
+
+                break;
+        }
+        
+        //If only a single dimension will be modified, the dimension is dictated by the orientation.
+        //If it is vertical this will effect y position/height. Thus Y position should be moved to
+        //first value channel
+        if((ct.GetValueModification() == ComponentTemplate::ModifyPosition || ct.GetValueModification() == ComponentTemplate::ModifySize) && NumberOfSetBits(ct.GetValueSource()) == 1) {
+            if(stacksizes[pind] && dynamic_cast<const ContainerTemplate&>(get(pind).GetTemplate()).GetOrientation() == Graphics::Orientation::Vertical) {
+                val[0] = val[1];
+                val[1] = 0;
+            }
+        }
+        
+        //do channel mapping
+        switch(ct.GetValueSource()) {
+            case ComponentTemplate::UseFirst:
+            case ComponentTemplate::UseTransition:
+                val[1] = 0;
+                break;
+                
+            case ComponentTemplate::UseSecond:
+                val[0] = 0;
+                val[1] = val[0];
+                break;
+                
+            case ComponentTemplate::UseThird:
+                val[2] = val[0];
+                val[1] = 0;
+                val[0] = 0;
+                break;
+                
+            case ComponentTemplate::UseFourth:
+                val[3] = val[0];
+                val[1] = 0;
+                val[0] = 0;
+                break;
+                
+            case ComponentTemplate::UseXY:
+            case ComponentTemplate::UseXYZ:
+            case ComponentTemplate::UseRGA:
+            case ComponentTemplate::UseRGBA:
+                //do nothing
+                break;
+                
+            case ComponentTemplate::UseYZ:
+            case ComponentTemplate::UseGBA:
+                val[2] = val[1];
+                val[1] = val[0];
+                val[0] = 0;
+                break;
+                
+            case ComponentTemplate::UseXZ:
+            case ComponentTemplate::UseRBA:
+                val[2] = val[1];
+                val[1] = 0;
+                
+                break;
+                
+            case ComponentTemplate::UseRA:
+                val[3] = val[1];
+                val[1] = 0;
+                break;
+                
+            case ComponentTemplate::UseBA:
+                val[3] = val[1];
+                val[2] = val[0];
+                val[1] = 0;
+                val[0] = 0;                
+                break;
+                
+            case ComponentTemplate::UseGA:
+                val[3] = val[1];
+                val[1] = val[0];
+                val[0] = 0;                
+                break;
+                
+            case ComponentTemplate::UseGray:
+                val = {{val[0], val[0], val[0], val[0]}};
+                break;
+                
+            case ComponentTemplate::UseGrayAlpha:
+                val = {{val[0], val[0], val[0], val[1]}};
+                break;
+                
+            case ComponentTemplate::UseL:
+            case ComponentTemplate::UseC:
+            case ComponentTemplate::UseH:
+            case ComponentTemplate::UseLC:
+            case ComponentTemplate::UseCH:
+            case ComponentTemplate::UseLH:
+            case ComponentTemplate::UseLCH:
+            case ComponentTemplate::UseLCHA:
+                //TODO inverse transformation
+                break;
+        }
+        
+        //do ordering transformation
+        const auto valueordering = ct.GetValueOrdering();
+        ret[valueordering[0]] = val[0];
+        ret[valueordering[1]] = val[1];
+        ret[valueordering[2]] = val[2];
+        ret[valueordering[3]] = val[3];
+        
+        return ret;
+    }
+    
+    Geometry::Bounds ComponentStack::TagBounds(ComponentTemplate::Tag tag) {
+        Component *comp  = gettag(tag);
+        
+        //component not found
+        if(!comp)
+            return {0, 0, 0, 0};
+        
+        //update needed?
+        if(updaterequired)
+            update();
+        
+        //return the location and the size
+        return {comp->location, comp->size};
+    }
+
+    Geometry::Bounds ComponentStack::BoundsOf(int ind) {
+        //component does not exist
+        if(stacksizes[ind] == 0)
+            return {0, 0, 0, 0};
+        
+        //update needed?
+        if(updaterequired)
+            update();
+
+        //get the component
+        auto &comp = get(ind);
+
+        Geometry::Point off = {0, 0};
+        
+        //go through the parents of this component
+        Component *cur = &comp;
+        while(cur->parent != -1) {
+            //does not really exist, should not happen
+            if(stacksizes[cur->parent] == 0)
+                break;
+            
+            //get the parent
+            cur = &get(cur->parent);
+
+            //accumulate the parent offset
+            off += cur->location;
+        }
+
+        //return the bounds as the component location + parent location, and the size
+        return {comp.location + off, comp.size};
+    }
+
+    bool ComponentStack::HasLayer(int ind) const {
+        if(stacksizes[ind] == 0)
+            return false;
+
+        try {
+            return storage.at(&get(ind).GetTemplate())->layer != nullptr;
+        }
+        catch(...) {
+            return false;
+        }
+    }
+
+    Layer &ComponentStack::GetLayerOf(int ind) {
+        //if component does not exit, return this as the layer
+        if(stacksizes[ind] == 0)
+            return *this;
+
+        //if component does not have a layer
+        if(storage[&get(ind).GetTemplate()]->layer == nullptr) {
+            //create a new one
+            storage[&get(ind).GetTemplate()]->layer = new Graphics::Layer;
+            update();
+        }
+
+        //return the layer for the requested component
+        return *storage[&get(ind).GetTemplate()]->layer;
+    }
+
+    Geometry::Point ComponentStack::TranslateCoordinates(int ind, Geometry::Point location) {
+        Geometry::Bounds bounds;
+        
+        //no need to check if index is ok as it is done by bounds of function
+        
+        //If it is in a substack, the coordinate is relative to the top of the stack.
+        if(substacks.Exists(&temp.Get(ind)))
+            bounds.Move(0, 0);
+        else //otherwise get the effective bounds
+            bounds = BoundsOf(ind);
+        
+        //translate the location, and return
+        return location - bounds.TopLeft();
+    }
+    
+    Geometry::Point ComponentStack::TranslateCoordinates(ComponentTemplate::Tag tag, Geometry::Point location) {
+        //get component
+        Component *comp  = gettag(tag);
+        
+        //if component does not exists, return the original location
+        if(!comp)
+            return location;
+        
+        //transform to index
+        int ind  = comp->GetTemplate().GetIndex();        
+        
+        //delegate
+        return TranslateCoordinates(ind, location);
+    }
+
+    Geometry::Pointf ComponentStack::TransformCoordinates(int ind, Geometry::Point location) {
+        Geometry::Bounds bounds;
+        
+        //If it is in a substack, the coordinate is relative to the top of the stack.
+        if(substacks.Exists(&temp.Get(ind)))
+            bounds.Move(0, 0);
+        else //otherwise get the effective bounds
+            bounds = BoundsOf(ind);
+        
+        //if bounds is empty, it will cause division by zero, instead simply return 0
+        if(bounds.GetSize().Area() == 0)
+            return {0, 0};
+        
+        //undo the offset
+        location -= bounds.TopLeft();
+        
+        //perform the transformation
+        return {float(location.X) / bounds.Width(), float(location.Y) / bounds.Height()};
+    }
+    
+    Geometry::Pointf ComponentStack::TransformCoordinates(ComponentTemplate::Tag tag, Geometry::Point location) {
+        //transform tag to index and request translation.
+        Component *comp  = gettag(tag);
+        
+        //if component does not exists, return 0, 0
+        if(!comp)
+            return {0, 0};
+        
+        //transform to index
+        int ind  = comp->GetTemplate().GetIndex();
+        
+        //delegate
+        return TransformCoordinates(ind, location);
+    }
+
+    int ComponentStack::IndexOfTag(ComponentTemplate::Tag tag) {
+        Component *comp  = gettag(tag);
+
+        //if component not found, return -1
+        if(!comp)
+            return -1;
+
+        return comp->GetTemplate().GetIndex();
+    }
+
+
+    int ComponentStack::ComponentAt(Geometry::Point location, Geometry::Bounds &bounds) {
+        //the base should be there for this to work
+        if(!stacksizes[0]) 
+            return -1;
+
+        //this function will do a depth first search
+        //this is the list that collects indexes that will be searched
+        std::vector<std::pair<int, bool>> todo;
+        
+        //add the base to the list
+        todo.push_back({0, false});
+
+        //offset at depth
+        Geometry::Point off = {0, 0};
+
+        //while we have indexes to process
+        while(todo.size()) {
+            //no need to check stack sizes as index 0 is checked at the top
+            //and children is also checked
+
+            //get the component
+            auto &comp = get(todo.back().first);
+            //and the template
+            const auto &temp = comp.GetTemplate();
+
+            //if this is an undiscovered container
+            //this is necessary as we have to first check the inner components before
+            //checking the container. Thus the container component will stay in the
+            //the stack until its children is processed.
+            if(dynamic_cast<const ContainerTemplate *>(&temp) && !todo.back().second) {
+                //get the container
+                auto &cont = dynamic_cast<const ContainerTemplate &>(temp);
+                //we have discovered it
+                todo.back().second = true;
+
+                //add all children of this container to the list
+                //the index at the furthest is at the top so it
+                //will be added last to the stack to be processed
+                //first
+                for(int i=0; i<cont.GetCount(); i++) {
+                    //just to make sure
+                    if(cont[i] >= indices) continue;
+                    
+                    //if stack for this index is not empty
+                    if(stacksizes[cont[i]]) {
+                        //add this to be processed later
+                        todo.push_back({cont[i], false});
+                    }
+                }
+                
+                //we are delving deeper, move the offset
+                off += comp.location;
+            }
+            else {
+                //if this is a container, we have added the offset above, now
+                //it is time to revert back
+                if(dynamic_cast<const ContainerTemplate *>(&temp)) {
+                    off -= comp.location;
+                }
+
+                //get the bounds of the component
+                Geometry::Bounds b = {comp.location + off, comp.size};
+                //if the point is inside
+                if(IsInside(b, location)) {
+                    //we found our bounds
+                    bounds = b;
+
+                    //return the index
+                    return temp.GetIndex();
+                }
+
+                //remove the processed element from the list
+                todo.pop_back();
+            }
+        }
+
+        //not found
+        return -1;
+    }
+    
+    int ComponentStack::getemsize(const Component &comp) {
+        if(comp.GetTemplate().GetType() == ComponentType::Textholder) {
+            const auto &th = dynamic_cast<const TextholderTemplate&>(comp.GetTemplate());
+            
+            if(th.IsReady()) {
+                return th.GetRenderer().GetEMSize();
+            }
+        }
+        
+        return emsize;
+    }
+    
+    void ComponentStack::SetOtherMouseEvent(std::function<bool(ComponentTemplate::Tag, Input::Mouse::EventType, Geometry::Point, float)> handler) {
+        other_fn = handler;
+
+        //sets the handler for all other mouse event types
+        mouse.SetScroll([this](Geometry::Point location, float amount) {
+            if(other_fn)
+                return other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Scroll_Vert, location, amount);
+            
+            return false;
+        });
+
+        mouse.SetHScroll([this](Geometry::Point location, float amount) {
+            if(other_fn)
+                return other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Scroll_Hor, location, amount);
+            return false;
+        });
+
+        mouse.SetRotate([this](Geometry::Point location, float amount) {
+            if(other_fn)
+                return other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Rotate, location, amount);
+            return false;
+        });
+
+        mouse.SetZoom([this](Geometry::Point location, float amount) {
+            if(other_fn)
+                return other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Zoom, location, amount);
+            return false;
+        });
+
+        //forward the call to substacks
+        for(auto stack : substacks) {
+            stack.second.SetOtherMouseEvent([stack, this](ComponentTemplate::Tag, Input::Mouse::EventType type, Geometry::Point point, float amount) {
+                //tags do not bubble up, contents of a substack is completely opaque.
+                return other_fn(stack.first->GetTag() == ComponentTemplate::NoTag ? ComponentTemplate::UnknownTag : stack.first->GetTag(), type, point, amount);
+            });
+        }
+    }
+    
+    float ComponentStack::calculatevalue(const std::array<float, 4> &value, int channel, const Component &comp) const {
+        const auto &temp = comp.GetTemplate();
+        int vs = temp.GetValueSource();
+
+        float v = 0;
+        
+        if(vs == ComponentTemplate::UseTransition) {
+            auto dur = this->temp.GetConditionDuration(temp.GetCondition(), temp.GetTargetCondition());
+            auto cur = dur;
+            if(!comp.reversed) {
+                if(transitions.count({temp.GetCondition(), temp.GetTargetCondition()})) {
+                    cur = Time::FrameStart() - transitions.at({temp.GetCondition(), temp.GetTargetCondition()});
+                }
+            }
+            else {
+                if(transitions.count({temp.GetTargetCondition(), temp.GetCondition()})) {
+                    cur = Time::FrameStart() - transitions.at({temp.GetTargetCondition(), temp.GetCondition()});
+                }
+                else {
+                    cur = 0;
+                }
+                dur = this->temp.GetConditionDuration(temp.GetTargetCondition(), temp.GetCondition());
+            }
+            
+            const auto valueordering = temp.GetValueOrdering();
+            
+            if(valueordering[channel] == 0)
+                v = float(cur) / dur;
+            
+            if(comp.reversed)
+                v = 1 - v;
+            
+        }
+        else {
+            ComponentTemplate::ValueSource src = (ComponentTemplate::ValueSource)(1<<channel);
+
+            int c = channel;
+            int i=0;
+            while(c >= 0 && i <= ComponentTemplate::ValueSourceMaxPower) {
+                if(vs & (1<<i)) {
+                    if(!c) {
+                        src = (ComponentTemplate::ValueSource)(1<<i);
+                    }
+
+                    c--;
+                }
+
+                i++;
+            }
+            
+            const auto valueordering = temp.GetValueOrdering();
+
+            switch(src) {
+                case ComponentTemplate::UseFirst:
+                    v = value[valueordering[0]];
+                    break;
+
+                case ComponentTemplate::UseSecond:
+                    v = value[valueordering[1]];
+                    break;
+
+                case ComponentTemplate::UseThird:
+                    v = value[valueordering[2]];
+                    break;
+
+                case ComponentTemplate::UseFourth:
+                    v = value[valueordering[3]];
+                    break;
+
+                case ComponentTemplate::UseGray:
+                    v = value[valueordering[0]] * 0.2126f + value[valueordering[1]] * 0.7152f + value[valueordering[2]] * 0.0722f;
+                    break;
+                    
+                //missing: L C H
+                
+                default: ;//to silence warnings
+            }
+        }
+
+        return v * temp.GetValueRange(channel) + temp.GetValueMin(channel);
+    }
+
+    void ComponentStack::checkrepeatupdate(ComponentTemplate::RepeatMode mode) {
+        bool updatereq = false;
+
+        for(int i=0; i<indices; i++) {
+            if(stacksizes[i] > 0) {
+                const ComponentTemplate &temp = get(i).GetTemplate();
+
+                if(temp.GetRepeatMode() == mode) {
+                    updatereq = true;
+                }
+            }
+        }
+
+        if(updatereq)
+            Update();
+    }
+    
+    void anchortoparent(Component &comp, const ComponentTemplate &temp, 
+                        Geometry::Point offset, Geometry::Margin margin, Geometry::Size maxsize) {
+        
+        Anchor pa = temp.GetContainerAnchor();
+        Anchor ca = temp.GetMyAnchor();
+        
+        Geometry::Point pp, cp;
+        
+        switch(pa) {
+            default:
+            case Anchor::TopLeft:
+                pp = margin.TopLeft();
+                break;
+                
+            case Anchor::TopCenter:
+                pp = {margin.Left - margin.Right + maxsize.Width / 2, margin.Top};
+                break;
+                
+            case Anchor::TopRight:
+                pp = { -margin.Right + maxsize.Width, margin.Top};
+                break;
+                
+                
+            case Anchor::MiddleLeft:
+            case Anchor::FirstBaselineLeft:
+                pp = {margin.Left, margin.Top - margin.Bottom + maxsize.Height / 2};
+                break;
+                
+            case Anchor::MiddleCenter:
+                pp = {margin.Left - margin.Right + maxsize.Width / 2, margin.Top - margin.Bottom + maxsize.Height / 2};
+                break;
+                
+            case Anchor::MiddleRight:
+            case Anchor::FirstBaselineRight:
+                pp = { -margin.Right + maxsize.Width, margin.Top - margin.Bottom + maxsize.Height / 2};
+                break;
+                
+                
+            case Anchor::BottomLeft:
+            case Anchor::LastBaselineLeft:
+                pp = {margin.Left, -margin.Bottom + maxsize.Height};
+                break;
+                
+            case Anchor::BottomCenter:
+                pp = {margin.Left - margin.Right + maxsize.Width / 2, -margin.Bottom + maxsize.Height};
+                break;
+                
+            case Anchor::BottomRight:
+            case Anchor::LastBaselineRight:
+                pp = { -margin.Right + maxsize.Width, -margin.Bottom + maxsize.Height};
+                break;
+                
+        }
+        
+        auto csize = comp.size;
+        
+        if(temp.GetType() == ComponentType::Textholder && 
+            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight || ca == Anchor::LastBaselineLeft || ca == Anchor::LastBaselineRight)
+        ) {
+            const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
+            
+            if(th.IsReady()) {
+                
+                switch(ca) {
+                    case Anchor::FirstBaselineLeft:
+                        cp = {-offset.X, int(-offset.Y-th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
+                        break;
+                        
+                    case Anchor::FirstBaselineRight:
+                        cp = {-offset.X + csize.Width, int(-offset.Y-th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
+                        break;
+                        
+                    case Anchor::LastBaselineLeft:
+                        cp = {-offset.X, int(offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height)};
+                        break;
+                        
+                    case Anchor::LastBaselineRight:
+                        cp = {-offset.X + csize.Width, int(offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height)};
+                        break;
+                    default: ;//to silence warnings
+                }
+                
+                ca = Anchor::None;
+            }
+        }
+        
+        switch(ca) {
+            default:
+            case Anchor::TopLeft:
+                cp = {-offset.X, -offset.Y};
+                break;
+                
+            case Anchor::TopCenter:
+                cp = {-offset.X + csize.Width / 2, -offset.Y};
+                break;
+                
+            case Anchor::TopRight:
+                cp = { offset.X + csize.Width, -offset.Y};
+                break;
+                
+                
+            case Anchor::MiddleLeft:
+            case Anchor::FirstBaselineLeft:
+                cp = {-offset.X, csize.Height / 2 - offset.Y};
+                break;
+                
+            case Anchor::MiddleCenter:
+                cp = {-offset.X + csize.Width / 2, csize.Height / 2 - offset.Y};
+                break;
+                
+            case Anchor::MiddleRight:
+            case Anchor::FirstBaselineRight:
+                cp = { offset.X + csize.Width, csize.Height / 2 - offset.Y};
+                break;
+                
+                
+            case Anchor::BottomLeft:
+            case Anchor::LastBaselineLeft:
+                cp = {-offset.X, csize.Height + offset.Y};
+                break;
+                
+            case Anchor::BottomCenter:
+                cp = {-offset.X + csize.Width / 2, csize.Height + offset.Y};
+                break;
+                
+            case Anchor::BottomRight:
+            case Anchor::LastBaselineRight:
+                cp = { offset.X + csize.Width, csize.Height + offset.Y};
+                break;
+                
+        }
+        
+        comp.location = pp - cp;
+    }
+
+    void anchortoother(Component &comp, const ComponentTemplate &temp, 
+                        Geometry::Point offset, Geometry::Margin margin, Component &other, Graphics::Orientation orientation) {
+        
+        Anchor pa = temp.GetPreviousAnchor();
+        Anchor ca = temp.GetMyAnchor();
+        
+        Geometry::Point pp, cp;
+        
+        auto asize = other.size;
+        
+        if(IsIn(pa, ca))
+            margin = 0;
+        
+        if(orientation == Graphics::Orientation::Horizontal) 
+            margin.Top = margin.Bottom = 0;
+        else
+            margin.Left = margin.Right = 0;
+        
+        
+        if(other.GetTemplate().GetType() == ComponentType::Textholder && 
+            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight || ca == Anchor::LastBaselineLeft || ca == Anchor::LastBaselineRight)
+        ) {
+            const auto &th = dynamic_cast<const TextholderTemplate&>(other.GetTemplate());
+            
+            if(th.IsReady()) {
+                
+                switch(ca) {
+                    case Anchor::FirstBaselineLeft:
+                        pp = {-margin.Right, int(-margin.Bottom+th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
+                        break;
+                        
+                    case Anchor::FirstBaselineRight:
+                        pp = {margin.Left + asize.Width, int(-margin.Bottom+th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
+                        break;
+                        
+                    case Anchor::LastBaselineLeft:
+                        cp = {-margin.Right, int(-margin.Bottom-th.GetRenderer().GetGlyphRenderer().GetBaseLine()+th.GetRenderer().GetGlyphRenderer().GetHeight()+asize.Height)};
+                        break;
+                        
+                    case Anchor::LastBaselineRight:
+                        cp = {margin.Left + asize.Width, int(-margin.Bottom-th.GetRenderer().GetGlyphRenderer().GetBaseLine()+th.GetRenderer().GetGlyphRenderer().GetHeight()+asize.Height)};
+                        break;
+                    default: ;//to silence warnings
+                }
+                
+                pa = Anchor::None;
+            }
+        }
+        
+        switch(pa) {
+            case Anchor::None: //do nothing
+                break;
+                
+            default:
+            case Anchor::TopLeft:
+                pp = {-margin.Right,- margin.Bottom};
+                break;
+                
+            case Anchor::TopCenter:
+                pp = {asize.Width / 2, -margin.Bottom};
+                break;
+                
+            case Anchor::TopRight:
+                pp = {margin.Left + asize.Width, -margin.Bottom};
+                break;
+                
+                
+            case Anchor::MiddleLeft:
+            case Anchor::FirstBaselineLeft:
+                pp = {-margin.Right, asize.Height / 2};
+                break;
+                
+            case Anchor::MiddleCenter:
+                pp = {asize.Width / 2, asize.Height / 2};
+                break;
+                
+            case Anchor::MiddleRight:
+            case Anchor::FirstBaselineRight:
+                pp = {margin.Left + asize.Width, asize.Height / 2};
+                break;
+                
+                
+            case Anchor::BottomLeft:
+            case Anchor::LastBaselineLeft:
+                pp = {-margin.Right, margin.Top + asize.Height};
+                break;
+                
+            case Anchor::BottomCenter:
+                pp = {asize.Width / 2, margin.Top + asize.Height};
+                break;
+                
+            case Anchor::BottomRight:
+            case Anchor::LastBaselineRight:
+                pp = {margin.Left + asize.Width, margin.Top + asize.Height};
+                break;
+                
+        }
+        
+        auto csize = comp.size;
+        
+        if(temp.GetType() == ComponentType::Textholder && 
+            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight || ca == Anchor::LastBaselineLeft || ca == Anchor::LastBaselineRight)
+        ) {
+            const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
+            
+            if(th.IsReady()) {
+                
+                switch(ca) {
+                    case Anchor::FirstBaselineLeft:
+                        cp = {-offset.X, int(-offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
+                        break;
+                        
+                    case Anchor::FirstBaselineRight:
+                        cp = {-offset.X + csize.Width, int(-offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
+                        break;
+                        
+                    case Anchor::LastBaselineLeft:
+                        cp = {-offset.X, int(offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height)};
+                        break;
+                        
+                    case Anchor::LastBaselineRight:
+                        cp = {-offset.X + csize.Width, int(offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height)};
+                        break;
+                    default: ;//to silence warnings
+                }
+                
+                ca = Anchor::None;
+            }
+        }
+        
+        switch(ca) {
+            case Anchor::None: //do nothing
+                break;
+                
+            default:
+            case Anchor::TopLeft:
+                cp = {-offset.X, -offset.Y};
+                break;
+                
+            case Anchor::TopCenter:
+                cp = {-offset.X + csize.Width / 2, -offset.Y};
+                break;
+                
+            case Anchor::TopRight:
+                cp = { offset.X + csize.Width, -offset.Y};
+                break;
+                
+                
+            case Anchor::MiddleLeft:
+            case Anchor::FirstBaselineLeft:
+                cp = {-offset.X, csize.Height / 2 - offset.Y};
+                break;
+                
+            case Anchor::MiddleCenter:
+                cp = {-offset.X + csize.Width / 2, csize.Height / 2 - offset.Y};
+                break;
+                
+            case Anchor::MiddleRight:
+            case Anchor::FirstBaselineRight:
+                cp = { offset.X + csize.Width, csize.Height / 2 - offset.Y};
+                break;
+                
+                
+            case Anchor::BottomLeft:
+            case Anchor::LastBaselineLeft:
+                cp = {-offset.X, csize.Height + offset.Y};
+                break;
+                
+            case Anchor::BottomCenter:
+                cp = {-offset.X + csize.Width / 2, csize.Height + offset.Y};
+                break;
+                
+            case Anchor::BottomRight:
+            case Anchor::LastBaselineRight:
+                cp = { offset.X + csize.Width, csize.Height + offset.Y};
+                break;
+                
+        }
+        
+        comp.location = pp - cp + other.location;
+    }
+
+
+    
     void ComponentStack::render(Component &comp, Graphics::Layer &parent, Geometry::Point offset, Graphics::RGBAf color, int ind) {
         const ComponentTemplate &tempp = comp.GetTemplate();
         auto tempptr = &tempp;
@@ -1024,798 +2051,56 @@ namespace Gorgon { namespace UI {
             }
         }
     }
-
-    void anchortoparent(Component &comp, const ComponentTemplate &temp, 
-                        Geometry::Point offset, Geometry::Margin margin, Geometry::Size maxsize) {
-        
-        Anchor pa = temp.GetContainerAnchor();
-        Anchor ca = temp.GetMyAnchor();
-        
-        Geometry::Point pp, cp;
-        
-        switch(pa) {
-            default:
-            case Anchor::TopLeft:
-                pp = margin.TopLeft();
-                break;
-
-            case Anchor::TopCenter:
-                pp = {margin.Left - margin.Right + maxsize.Width / 2, margin.Top};
-                break;
-
-            case Anchor::TopRight:
-                pp = { -margin.Right + maxsize.Width, margin.Top};
-                break;
-
-
-            case Anchor::MiddleLeft:
-            case Anchor::FirstBaselineLeft:
-                pp = {margin.Left, margin.Top - margin.Bottom + maxsize.Height / 2};
-                break;
-
-            case Anchor::MiddleCenter:
-                pp = {margin.Left - margin.Right + maxsize.Width / 2, margin.Top - margin.Bottom + maxsize.Height / 2};
-                break;
-
-            case Anchor::MiddleRight:
-            case Anchor::FirstBaselineRight:
-                pp = { -margin.Right + maxsize.Width, margin.Top - margin.Bottom + maxsize.Height / 2};
-                break;
-
-        
-            case Anchor::BottomLeft:
-            case Anchor::LastBaselineLeft:
-                pp = {margin.Left, -margin.Bottom + maxsize.Height};
-                break;
-
-            case Anchor::BottomCenter:
-                pp = {margin.Left - margin.Right + maxsize.Width / 2, -margin.Bottom + maxsize.Height};
-                break;
-
-            case Anchor::BottomRight:
-            case Anchor::LastBaselineRight:
-                pp = { -margin.Right + maxsize.Width, -margin.Bottom + maxsize.Height};
-                break;
-
-        }
-        
-        auto csize = comp.size;
-        
-        if(temp.GetType() == ComponentType::Textholder && 
-            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight || ca == Anchor::LastBaselineLeft || ca == Anchor::LastBaselineRight)
-        ) {
-            const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
-            
-            if(th.IsReady()) {
-                
-                switch(ca) {
-                case Anchor::FirstBaselineLeft:
-                    cp = {-offset.X, int(-offset.Y-th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
-                    break;
-                    
-                case Anchor::FirstBaselineRight:
-                    cp = {-offset.X + csize.Width, int(-offset.Y-th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
-                    break;
-                    
-                case Anchor::LastBaselineLeft:
-                    cp = {-offset.X, int(offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height)};
-                    break;
-                    
-                case Anchor::LastBaselineRight:
-                    cp = {-offset.X + csize.Width, int(offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height)};
-                    break;
-                default: ;//to silence warnings
-                }
-                
-                ca = Anchor::None;
-            }
-        }
-        
-        switch(ca) {
-            default:
-            case Anchor::TopLeft:
-                cp = {-offset.X, -offset.Y};
-                break;
-
-            case Anchor::TopCenter:
-                cp = {-offset.X + csize.Width / 2, -offset.Y};
-                break;
-
-            case Anchor::TopRight:
-                cp = { offset.X + csize.Width, -offset.Y};
-                break;
-
-
-            case Anchor::MiddleLeft:
-            case Anchor::FirstBaselineLeft:
-                cp = {-offset.X, csize.Height / 2 - offset.Y};
-                break;
-
-            case Anchor::MiddleCenter:
-                cp = {-offset.X + csize.Width / 2, csize.Height / 2 - offset.Y};
-                break;
-
-            case Anchor::MiddleRight:
-            case Anchor::FirstBaselineRight:
-                cp = { offset.X + csize.Width, csize.Height / 2 - offset.Y};
-                break;
-
-        
-            case Anchor::BottomLeft:
-            case Anchor::LastBaselineLeft:
-                cp = {-offset.X, csize.Height + offset.Y};
-                break;
-
-            case Anchor::BottomCenter:
-                cp = {-offset.X + csize.Width / 2, csize.Height + offset.Y};
-                break;
-
-            case Anchor::BottomRight:
-            case Anchor::LastBaselineRight:
-                cp = { offset.X + csize.Width, csize.Height + offset.Y};
-                break;
-
-        }
-        
-        comp.location = pp - cp;
-    }
-
-    bool IsIn(Anchor left, Anchor right) {
-        bool ret = true;
-        
-        if(IsLeft(left) == IsRight(right) && !IsCenter(left) && !IsCenter(right))
-            ret = false;
-        
-        if(IsTop(left) == IsBottom(right) && !IsMiddle(left) && !IsMiddle(right))
-            ret = false;
-        
-        return ret;
-    }
     
-    void anchortoother(Component &comp, const ComponentTemplate &temp, 
-                        Geometry::Point offset, Geometry::Margin margin, Component &other, Graphics::Orientation orientation) {
+    void ComponentStack::update() {
+        if(!stacksizes[0]) return;
         
-        Anchor pa = temp.GetPreviousAnchor();
-        Anchor ca = temp.GetMyAnchor();
+        if(beforeupdate_fn)
+            beforeupdate_fn();
         
-        Geometry::Point pp, cp;
+        get(0).size = size;
+        get(0).location = {0,0};
+        get(0).parent = -1;
         
-        auto asize = other.size;
-        
-        if(IsIn(pa, ca))
-            margin = 0;
-        
-        if(orientation == Graphics::Orientation::Horizontal) 
-            margin.Top = margin.Bottom = 0;
-        else
-            margin.Left = margin.Right = 0;
-        
-        
-        if(other.GetTemplate().GetType() == ComponentType::Textholder && 
-            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight || ca == Anchor::LastBaselineLeft || ca == Anchor::LastBaselineRight)
-        ) {
-            const auto &th = dynamic_cast<const TextholderTemplate&>(other.GetTemplate());
-            
-            if(th.IsReady()) {
-                
-                switch(ca) {
-                case Anchor::FirstBaselineLeft:
-                    pp = {-margin.Right, int(-margin.Bottom+th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
-                    break;
-                    
-                case Anchor::FirstBaselineRight:
-                    pp = {margin.Left + asize.Width, int(-margin.Bottom+th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
-                    break;
-                    
-                case Anchor::LastBaselineLeft:
-                    cp = {-margin.Right, int(-margin.Bottom-th.GetRenderer().GetGlyphRenderer().GetBaseLine()+th.GetRenderer().GetGlyphRenderer().GetHeight()+asize.Height)};
-                    break;
-                    
-                case Anchor::LastBaselineRight:
-                    cp = {margin.Left + asize.Width, int(-margin.Bottom-th.GetRenderer().GetGlyphRenderer().GetBaseLine()+th.GetRenderer().GetGlyphRenderer().GetHeight()+asize.Height)};
-                    break;
-                default: ;//to silence warnings
-                }
-                
-                pa = Anchor::None;
-            }
+        //update repeat counts
+        for(auto &r : repeated) {
+            if(repeats.count(r.first->GetRepeatMode()))
+                r.second.resize(repeats[r.first->GetRepeatMode()].size(), Component(*r.first));
         }
         
-        switch(pa) {
-            case Anchor::None: //do nothing
-                break;
-                
-            default:
-            case Anchor::TopLeft:
-                pp = {-margin.Right,- margin.Bottom};
-                break;
-
-            case Anchor::TopCenter:
-                pp = {asize.Width / 2, -margin.Bottom};
-                break;
-
-            case Anchor::TopRight:
-                pp = {margin.Left + asize.Width, -margin.Bottom};
-                break;
-
-
-            case Anchor::MiddleLeft:
-            case Anchor::FirstBaselineLeft:
-                pp = {-margin.Right, asize.Height / 2};
-                break;
-
-            case Anchor::MiddleCenter:
-                pp = {asize.Width / 2, asize.Height / 2};
-                break;
-
-            case Anchor::MiddleRight:
-            case Anchor::FirstBaselineRight:
-                pp = {margin.Left + asize.Width, asize.Height / 2};
-                break;
-
-        
-            case Anchor::BottomLeft:
-            case Anchor::LastBaselineLeft:
-                pp = {-margin.Right, margin.Top + asize.Height};
-                break;
-
-            case Anchor::BottomCenter:
-                pp = {asize.Width / 2, margin.Top + asize.Height};
-                break;
-
-            case Anchor::BottomRight:
-            case Anchor::LastBaselineRight:
-                pp = {margin.Left + asize.Width, margin.Top + asize.Height};
-                break;
-
-        }
-        
-        auto csize = comp.size;
-    
-        if(temp.GetType() == ComponentType::Textholder && 
-            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight || ca == Anchor::LastBaselineLeft || ca == Anchor::LastBaselineRight)
-        ) {
-            const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
-            
-            if(th.IsReady()) {
-                
-                switch(ca) {
-                case Anchor::FirstBaselineLeft:
-                    cp = {-offset.X, int(-offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
-                    break;
-                    
-                case Anchor::FirstBaselineRight:
-                    cp = {-offset.X + csize.Width, int(-offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
-                    break;
-                    
-                case Anchor::LastBaselineLeft:
-                    cp = {-offset.X, int(offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height)};
-                    break;
-                    
-                case Anchor::LastBaselineRight:
-                    cp = {-offset.X + csize.Width, int(offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height)};
-                    break;
-                default: ;//to silence warnings
-                }
-                
-                ca = Anchor::None;
-            }
-        }
-        
-        switch(ca) {
-            case Anchor::None: //do nothing
-                break;
-                
-            default:
-            case Anchor::TopLeft:
-                cp = {-offset.X, -offset.Y};
-                break;
-
-            case Anchor::TopCenter:
-                cp = {-offset.X + csize.Width / 2, -offset.Y};
-                break;
-
-            case Anchor::TopRight:
-                cp = { offset.X + csize.Width, -offset.Y};
-                break;
-
-
-            case Anchor::MiddleLeft:
-            case Anchor::FirstBaselineLeft:
-                cp = {-offset.X, csize.Height / 2 - offset.Y};
-                break;
-
-            case Anchor::MiddleCenter:
-                cp = {-offset.X + csize.Width / 2, csize.Height / 2 - offset.Y};
-                break;
-
-            case Anchor::MiddleRight:
-            case Anchor::FirstBaselineRight:
-                cp = { offset.X + csize.Width, csize.Height / 2 - offset.Y};
-                break;
-
-        
-            case Anchor::BottomLeft:
-            case Anchor::LastBaselineLeft:
-                cp = {-offset.X, csize.Height + offset.Y};
-                break;
-
-            case Anchor::BottomCenter:
-                cp = {-offset.X + csize.Width / 2, csize.Height + offset.Y};
-                break;
-
-            case Anchor::BottomRight:
-            case Anchor::LastBaselineRight:
-                cp = { offset.X + csize.Width, csize.Height + offset.Y};
-                break;
-
-        }
-        
-        comp.location = pp - cp + other.location;
-    }
-
-    Geometry::Bounds ComponentStack::TagBounds(ComponentTemplate::Tag tag) {
-        Component *comp  = gettag(tag);
-        
-        if(!comp)
-            return {0, 0, 0, 0};
-        
-        //update needed?
-        if(updaterequired)
-            update();
-        
-        return {comp->location, comp->size};
-    }
-
-    bool ComponentStack::HasLayer(int ind) const {
-        if(stacksizes[ind] == 0)
-            return false;
-
-        try {
-            return storage.at(&get(ind).GetTemplate())->layer != nullptr;
-        }
-        catch(...) {
-            return false;
-        }
-    }
-
-    Layer &ComponentStack::GetLayerOf(int ind) {
-        if(stacksizes[ind] == 0)
-            return *this;
-
-        if(storage[&get(ind).GetTemplate()]->layer == nullptr) {
-            storage[&get(ind).GetTemplate()]->layer = new Graphics::Layer;
-            update();
-        }
-
-        return *storage[&get(ind).GetTemplate()]->layer;
-    }
-
-    Geometry::Bounds ComponentStack::BoundsOf(int ind) {
-        if(stacksizes[ind] == 0)
-            return {0, 0, 0, 0};
-        
-        //update needed?
-        if(updaterequired)
-            update();
-
-        
-        auto &comp = get(ind);
-
-        Component *t = &comp;
-
-        Geometry::Point off = {0, 0};
-
-        while(t->parent != -1) {
-            if(stacksizes[t->parent] == 0)
-                break;
-
-            t = &get(t->parent);
-
-            off += t->location;
-        }
-
-        return {comp.location + off, comp.size};
-    }
-
-    Geometry::Point ComponentStack::TranslateCoordinates(int ind, Geometry::Point location) {
-        Geometry::Bounds bounds = BoundsOf(ind);
-        
-        if(substacks.Exists(&temp.Get(ind)))
-            bounds.Move(0, 0);
-        
-        location -= bounds.TopLeft();
-        
-        return location;
-    }
-    
-    Geometry::Point ComponentStack::TranslateCoordinates(ComponentTemplate::Tag tag, Geometry::Point location) {
-        Component *comp  = gettag(tag);
-        
-        if(!comp)
-            return {0, 0};
-        
-        int ind  = comp->GetTemplate().GetIndex();
-        
-        return TranslateCoordinates(ind, location);
-    }
-
-    Geometry::Pointf ComponentStack::TransformCoordinates(int ind, Geometry::Point location) {
-        Geometry::Bounds bounds = BoundsOf(ind);
-        
-        if(substacks.Exists(&temp.Get(ind)))
-            bounds.Move(0, 0);
-        
-        location -= bounds.TopLeft();
-        
-        return {float(location.X) / bounds.Width(), float(location.Y) / bounds.Height()};
-    }
-    
-    Geometry::Pointf ComponentStack::TransformCoordinates(ComponentTemplate::Tag tag, Geometry::Point location) {
-        Component *comp  = gettag(tag);
-        
-        if(!comp)
-            return {0, 0};
-        
-        int ind  = comp->GetTemplate().GetIndex();
-        
-        return TransformCoordinates(ind, location);
-    }
-
-    int ComponentStack::IndexOfTag(ComponentTemplate::Tag tag) {
-        Component *comp  = gettag(tag);
-
-        if(!comp)
-            return -1;
-
-        return comp->GetTemplate().GetIndex();
-    }
-
-    std::array<float, 4> ComponentStack::CoordinateToValue(ComponentTemplate::Tag tag, Geometry::Point location) {
-        Component *comp  = gettag(tag);
-        
-        if(!comp)
-            return {{0.f, 0.f, 0.f, 0.f}};
-        
-        const auto &ct = comp->GetTemplate();
-        int ind  = ct.GetIndex();
-        int pind = -1;
-        
-        for(int i=0; i<indices; i++) {
-            if(stacksizes[i] > 0 && get(i).GetTemplate().GetType() == ComponentType::Container) {
-                const auto &cont = dynamic_cast<const ContainerTemplate &>(get(i).GetTemplate());
-                for(int j=0; j<cont.GetCount(); j++)
-                    if(cont[j] == ind) {
-                        pind = cont.GetIndex();
-                        break;
-                    }
-            }
-        }
-        
-        std::array<float, 4> val = {{0, 0, 0, 0}}, ret = {{0, 0, 0, 0}};
-        
-        auto pnt    = TranslateCoordinates(pind, location);
-        auto bounds = BoundsOf(pind);
-        
-        switch(ct.GetValueModification()) {
-            //default is position modification, if the mode is not valid
-            //for mouse coordinates, this will be used. We will assume
-            //absolute positioning.
-            default: {
-                bounds.Right -= comp->size.Width;
-                bounds.Bottom -= comp->size.Height;
-                
-                int emsize = getemsize(*comp);
-                pnt -=  Convert(ct.GetCenter(), comp->size, emsize);
-                
-                val[0] = float(pnt.X) / bounds.Width();
-                val[1] = float(pnt.Y) / bounds.Height();
-                
-                if(ct.GetValueModification() == ContainerTemplate::ModifyX)
-                    val[1] = 0;
-                else if(ct.GetValueModification() == ContainerTemplate::ModifyY) {
-                    val[0] = val[1];
-                    val[1] = 0;
-                }
-                break;
-            }
-            
-            case ComponentTemplate::ModifyRotation:
-                //todo
-                break;
-
-            case ComponentTemplate::ModifySize:
-            case ComponentTemplate::ModifyWidth:
-            case ComponentTemplate::ModifyHeight:
-                if(IsLeft(ct.GetContainerAnchor())) {
-                    val[0] = float(pnt.X);
-                }
-                else if(IsCenter(ct.GetContainerAnchor())) {
-                    val[0] = float(abs(pnt.X - bounds.Width()) * 2);
-                }
-                else if(IsRight(ct.GetContainerAnchor())) {
-                    val[0] = float(bounds.Width() - pnt.X);
-                }
-
-                if(IsTop(ct.GetContainerAnchor())) {
-                    val[1] = float(pnt.Y);
-                }
-                else if(IsMiddle(ct.GetContainerAnchor())) {
-                    val[1] = float(abs(pnt.Y - bounds.Height()) * 2);
-                }
-                else if(IsBottom(ct.GetContainerAnchor())) {
-                    val[1] = float(bounds.Height() - pnt.Y);
-                }
-                
-                val[0] = float(val[0]) / bounds.Width();
-                val[1] = float(val[1]) / bounds.Height();
-
-                if(ct.GetValueModification() == ContainerTemplate::ModifyWidth)
-                    val[1] = 0;
-                else if(ct.GetValueModification() == ContainerTemplate::ModifyHeight) {
-                    val[0] = val[1];
-                    val[1] = 0;
-                }
-
-                break;
-        }
-        
-        if((ct.GetValueModification() == ComponentTemplate::ModifyPosition || ct.GetValueModification() == ComponentTemplate::ModifySize) && NumberOfSetBits(ct.GetValueSource()) == 1) {
-            if(stacksizes[pind] && dynamic_cast<const ContainerTemplate&>(get(pind).GetTemplate()).GetOrientation() == Graphics::Orientation::Vertical) {
-                val[0] = val[1];
-                val[1] = 0;
-            }
-        }
-        
-        //do channel mapping
-        switch(ct.GetValueSource()) {
-            case ComponentTemplate::UseFirst:
-                val[1] = 0;
-                break;
-                
-            case ComponentTemplate::UseSecond:
-                val[1] = val[0];
-                break;
-                
-            case ComponentTemplate::UseThird:
-                val[2] = val[0];
-                val[1] = 0;
-                break;
-                
-            case ComponentTemplate::UseFourth:
-                val[3] = val[0];
-                val[1] = 0;
-                break;
-                
-            case ComponentTemplate::UseXY:
-            case ComponentTemplate::UseXYZ:
-            case ComponentTemplate::UseRGA:
-            case ComponentTemplate::UseRGBA:
-                //do nothing
-                break;
-                
-            case ComponentTemplate::UseYZ:
-            case ComponentTemplate::UseGBA:
-                val[2] = val[1];
-                val[1] = val[0];
-                val[0] = 0;
-                break;
-                
-            case ComponentTemplate::UseXZ:
-            case ComponentTemplate::UseRBA:
-                val[2] = val[1];
-                val[1] = 0;
-                
-                break;
-                
-            case ComponentTemplate::UseRA:
-                val[3] = val[1];
-                val[1] = 0;
-                break;
-                
-            case ComponentTemplate::UseBA:
-                val[3] = val[1];
-                val[2] = val[0];
-                val[1] = 0;
-                val[0] = 0;                
-                break;
-                
-            case ComponentTemplate::UseGA:
-                val[3] = val[1];
-                val[1] = val[0];
-                val[0] = 0;                
-                break;
-                
-            case ComponentTemplate::UseGray:
-                val = {{val[0], val[0], val[0], val[0]}};
-                break;
-                
-            case ComponentTemplate::UseGrayAlpha:
-                val = {{val[0], val[0], val[0], val[1]}};
-                break;
-                
-            case ComponentTemplate::UseL:
-            case ComponentTemplate::UseC:
-            case ComponentTemplate::UseH:
-            case ComponentTemplate::UseLC:
-            case ComponentTemplate::UseCH:
-            case ComponentTemplate::UseLH:
-            case ComponentTemplate::UseLCH:
-            case ComponentTemplate::UseLCHA:
-                //todo
-                break;
-        }
-        
-        //do ordering transformation
-        const auto valueordering = ct.GetValueOrdering();
-        ret[valueordering[0]] = val[0];
-        ret[valueordering[1]] = val[1];
-        ret[valueordering[2]] = val[2];
-        ret[valueordering[3]] = val[3];
-        
-        return ret;
-    }
-
-    int ComponentStack::ComponentAt(Geometry::Point location, Geometry::Bounds &bounds) {
-        if(!stacksizes[0]) return -1;
-
-        std::vector<std::pair<int, bool>> todo;
-        todo.push_back({0, false});
-
-        Geometry::Point off = {0, 0};
-
-        while(todo.size()) {
-            if(stacksizes[todo.back().first] == 0) {
-                todo.pop_back();
-                continue;
-            }
-
-            auto &comp = get(todo.back().first);
-            const auto &temp = comp.GetTemplate();
-
-            if(dynamic_cast<const ContainerTemplate *>(&temp) && !todo.back().second) {
-                auto &cont = dynamic_cast<const ContainerTemplate &>(temp);
-                todo.back().second = true;
-
-                for(int i=0; i<cont.GetCount(); i++) {
-                    if(cont[i] >= indices) continue;
-                    if(stacksizes[cont[i]]) {
-                        todo.push_back({cont[i], false});
-                    }
-                }
-
-                off += comp.location;
-            }
-            else {
-                if(dynamic_cast<const ContainerTemplate *>(&temp)) {
-                    off -= comp.location;
-                }
-
-                Geometry::Bounds b = {comp.location + off, comp.size};
-                if(IsInside(b, location)) {
-                    bounds = b;
-
-                    return temp.GetIndex();
-                }
-
-                todo.pop_back();
-            }
-        }
-
-        return -1;
-    }
-    
-    int ComponentStack::getemsize(const Component &comp) {
-        if(comp.GetTemplate().GetType() == ComponentType::Textholder) {
-            const auto &th = dynamic_cast<const TextholderTemplate&>(comp.GetTemplate());
-            
-            if(th.IsReady()) {
-                return th.GetRenderer().GetEMSize();
-            }
-        }
-        
-        return emsize;
-    }
-    
-    float ComponentStack::calculatevalue(const std::array<float, 4> &value, int channel, const Component &comp) const {
-        const auto &temp = comp.GetTemplate();
-        int vs = temp.GetValueSource();
-
-        float v = 0;
-        
-        if(vs == ComponentTemplate::UseTransition) {
-            auto dur = this->temp.GetConditionDuration(temp.GetCondition(), temp.GetTargetCondition());
-            auto cur = dur;
-            if(!comp.reversed) {
-                if(transitions.count({temp.GetCondition(), temp.GetTargetCondition()})) {
-                    cur = Time::FrameStart() - transitions.at({temp.GetCondition(), temp.GetTargetCondition()});
-                }
-            }
-            else {
-                if(transitions.count({temp.GetTargetCondition(), temp.GetCondition()})) {
-                    cur = Time::FrameStart() - transitions.at({temp.GetTargetCondition(), temp.GetCondition()});
-                }
-                else {
-                    cur = 0;
-                }
-                dur = this->temp.GetConditionDuration(temp.GetTargetCondition(), temp.GetCondition());
-            }
-            
-            const auto valueordering = temp.GetValueOrdering();
-            
-            if(valueordering[channel] == 0)
-                v = float(cur) / dur;
-            
-            if(comp.reversed)
-                v = 1 - v;
-            
-        }
-        else {
-            ComponentTemplate::ValueSource src = (ComponentTemplate::ValueSource)(1<<channel);
-
-            int c = channel;
-            int i=0;
-            while(c >= 0 && i <= ComponentTemplate::ValueSourceMaxPower) {
-                if(vs & (1<<i)) {
-                    if(!c) {
-                        src = (ComponentTemplate::ValueSource)(1<<i);
-                    }
-
-                    c--;
-                }
-
-                i++;
-            }
-            
-            const auto valueordering = temp.GetValueOrdering();
-
-            switch(src) {
-                case ComponentTemplate::UseFirst:
-                    v = value[valueordering[0]];
-                    break;
-
-                case ComponentTemplate::UseSecond:
-                    v = value[valueordering[1]];
-                    break;
-
-                case ComponentTemplate::UseThird:
-                    v = value[valueordering[2]];
-                    break;
-
-                case ComponentTemplate::UseFourth:
-                    v = value[valueordering[3]];
-                    break;
-
-                case ComponentTemplate::UseGray:
-                    v = value[valueordering[0]] * 0.2126f + value[valueordering[1]] * 0.7152f + value[valueordering[2]] * 0.0722f;
-                    break;
-                    
-                //missing: L C H
-                
-                default: ;//to silence warnings
-            }
-        }
-
-        return v * temp.GetValueRange(channel) + temp.GetValueMin(channel);
-    }
-
-    void ComponentStack::checkrepeatupdate(ComponentTemplate::RepeatMode mode) {
-        bool updatereq = false;
-
+        //calculate common emsize        
         for(int i=0; i<indices; i++) {
             if(stacksizes[i] > 0) {
-                const ComponentTemplate &temp = get(i).GetTemplate();
-
-                if(temp.GetRepeatMode() == mode) {
-                    updatereq = true;
+                if(get(i).GetTemplate().GetType() == ComponentType::Textholder) {
+                    const auto &th = dynamic_cast<const TextholderTemplate&>(get(i).GetTemplate());
+                    
+                    if(th.IsReady()) {
+                        emsize = th.GetRenderer().GetEMSize();
+                        break;
+                    }
                 }
             }
         }
-
-        if(updatereq)
-            Update();
+        
+        update(get(0));
+        
+        updaterequired = false;
+        
+        base.Clear();
+        for(auto &s : storage) 
+            if(s.second->layer)
+                s.second->layer->Hide();
+            
+            if(update_fn)
+                update_fn();
+            
+            //draw everything
+            render(get(0), base, {0,0});
+        
+        if(render_fn)
+            render_fn();
     }
-
+    
     //location depends on the container location
     void ComponentStack::update(Component &parent) {
         const ComponentTemplate &ctemp = parent.GetTemplate();
@@ -2323,122 +2608,16 @@ realign:
         }
     }
 
-    void ComponentStack::Render() {
-        if(frame_fn)
-            frame_fn();
-        
-        std::vector<std::pair<ComponentCondition, ComponentCondition>> tobereplaced;
-        for(auto iter = transitions.begin(); iter != transitions.end();) {
-            auto c = *iter;
-            auto delta = Time::FrameStart() - c.second;
-            auto dur = (unsigned)temp.GetConditionDuration(c.first.first, c.first.second);
-            if(dur < delta) {
-                if(future_transitions.count(c.first.second)) {
-                    tobereplaced.push_back({c.first.second, future_transitions[c.first.second]});
-                    future_transitions.erase(c.first.second);
-                }
-                else {
-                    removecondition(c.first.first, c.first.second);
-                    addcondition(ComponentCondition::None, c.first.second, c.first.first);
-                }
-                iter = transitions.erase(iter);
-            }
-            else {
-                for(int i=0; i<indices; i++)  {
-                    if(!stacksizes[i]) continue;
-                    
-                    if(get(i).GetTemplate().GetValueSource() == ComponentTemplate::UseTransition) {
-                        if(get(i).GetTemplate().GetValueModification() != ComponentTemplate::ModifyAnimation && get(i).GetTemplate().GetValueModification() != ComponentTemplate::NoModification)
-                            updaterequired = true;
-                    }
-                }
-                        
-                ++iter;
-            }
-        }
-
-        bool changed = false;
-        auto tm = Time::DeltaTime();
-        for(int i=0; i<4; i++) {
-            if(targetvalue[i] != value[i]) {
-                if(valuespeed[i] == 0 || fabs(value[i] - targetvalue[i]) < valuespeed[i] * tm / 1000) {
-                    value[i] = targetvalue[i];
-                }
-                else {
-                    value[i] += Sign(targetvalue[i] - value[i]) * valuespeed[i] * tm / 1000;
-                }
-
-                changed = true;
-            }
-        }
-
-        if(changed) {
-            updaterequired = true;
-
-            if(!returntarget && value_fn)
-                value_fn();
-        }
-
-        
-        for(auto it : tobereplaced)
-            ReplaceCondition(it.first, it.second);
-        
-        if(updaterequired)
-            update();
-        
-        for(int i=0; i<indices; i++)  {
-            if(!stacksizes[i]) continue;
-            
-            if(storage[&get(i).GetTemplate()]->timer) {
-                storage[&get(i).GetTemplate()]->timer->SetProgress(nextafter(1.0f, 0.0f) * calculatevalue(0, get(i))); 
-            }
-        }
-
-        Gorgon::Layer::Render();
-    }
     
-    void ComponentStack::HandleMouse(Input::Mouse::Button accepted) {
-        mousebuttonaccepted=accepted;
-
-        for(auto s : substacks)
-            s.second.HandleMouse(mousebuttonaccepted);
-
-        handlingmouse = true;
-    }
-
-    void ComponentStack::SetOtherMouseEvent(std::function<bool(ComponentTemplate::Tag, Input::Mouse::EventType, Geometry::Point, float)> handler) {
-        other_fn = handler;
-
-        mouse.SetScroll([this](Geometry::Point location, float amount) {
-            if(other_fn)
-                return other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Scroll_Vert, location, amount);
-            
-            return false;
-        });
-
-        mouse.SetHScroll([this](Geometry::Point location, float amount) {
-            if(other_fn)
-                return other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Scroll_Hor, location, amount);
-            return false;
-        });
-
-        mouse.SetRotate([this](Geometry::Point location, float amount) {
-            if(other_fn)
-                return other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Rotate, location, amount);
-            return false;
-        });
-
-        mouse.SetZoom([this](Geometry::Point location, float amount) {
-            if(other_fn)
-                return other_fn(ComponentTemplate::NoTag, Input::Mouse::EventType::Zoom, location, amount);
-            return false;
-        });
-
-        for(auto stack : substacks) {
-            stack.second.SetOtherMouseEvent([stack, this](ComponentTemplate::Tag tag, Input::Mouse::EventType type, Geometry::Point point, float amount) {
-                return other_fn(stack.first->GetTag() == ComponentTemplate::NoTag ? ComponentTemplate::UnknownTag : stack.first->GetTag(), type, point, amount);
-            });
+    Component &ComponentStack::get(int ind, ComponentCondition condition) const {
+        ASSERT(stacksizes[ind], String::Concat("Stack for index ", ind, " is empty"));
+        
+        for(int i=stacksizes[ind]-1; i>=0; i--) {
+            if(data[ind + i * indices].GetTemplate().GetCondition() == condition)
+                return data[ind + i * indices];
         }
+        
+        return data[ind + (stacksizes[ind]-1) * indices];
     }
     
     void ComponentStack::grow() { 
@@ -2454,5 +2633,18 @@ realign:
             
             throw std::bad_alloc();
         }
+    }
+
+    Component* ComponentStack::gettag(ComponentTemplate::Tag tag) const {
+        for(int i=0; i<indices; i++) {
+            if(stacksizes[i] > 0) {
+                auto &comp = get(i);
+
+                if(comp.GetTemplate().GetTag() == tag)
+                    return &comp;
+            }
+        }
+
+        return nullptr;
     }
 } }
