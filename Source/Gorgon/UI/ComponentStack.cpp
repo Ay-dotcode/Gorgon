@@ -110,6 +110,7 @@ namespace Gorgon { namespace UI {
             
         });
         
+        //set our initial size
         Resize(size);
         
         //search for emsize in textholders, use the first one found
@@ -133,6 +134,16 @@ namespace Gorgon { namespace UI {
                 AddToStack(temp[i], false);
             }
         }
+    }
+
+    ComponentStack::~ComponentStack() {
+        //delete items in the storage
+        for(auto &p : storage) {
+            delete p.second;
+        }
+        
+        //delete substack
+        substacks.Destroy();
     }
 
     void ComponentStack::AddToStack(const ComponentTemplate& temp, bool reversed) {
@@ -1305,7 +1316,6 @@ namespace Gorgon { namespace UI {
         return comp->GetTemplate().GetIndex();
     }
 
-
     int ComponentStack::ComponentAt(Geometry::Point location, Geometry::Bounds &bounds) {
         //the base should be there for this to work
         if(!stacksizes[0]) 
@@ -1385,19 +1395,7 @@ namespace Gorgon { namespace UI {
         //not found
         return -1;
     }
-    
-    int ComponentStack::getemsize(const Component &comp) {
-        if(comp.GetTemplate().GetType() == ComponentType::Textholder) {
-            const auto &th = dynamic_cast<const TextholderTemplate&>(comp.GetTemplate());
-            
-            if(th.IsReady()) {
-                return th.GetRenderer().GetEMSize();
-            }
-        }
         
-        return emsize;
-    }
-    
     void ComponentStack::SetOtherMouseEvent(std::function<bool(ComponentTemplate::Tag, Input::Mouse::EventType, Geometry::Point, float)> handler) {
         other_fn = handler;
 
@@ -1436,59 +1434,109 @@ namespace Gorgon { namespace UI {
         }
     }
     
+    int ComponentStack::getemsize(const Component &comp) {
+        //if the component is a text holder
+        if(comp.GetTemplate().GetType() == ComponentType::Textholder) {
+            const auto &th = dynamic_cast<const TextholderTemplate&>(comp.GetTemplate());
+            
+            //and ready
+            if(th.IsReady()) {
+                //return its own em size
+                return th.GetRenderer().GetEMSize();
+            }
+        }
+        
+        //otherwise return the global (first one found) emsize
+        return emsize;
+    }
+
     float ComponentStack::calculatevalue(const std::array<float, 4> &value, int channel, const Component &comp) const {
+        //get the template
         const auto &temp = comp.GetTemplate();
+        
+        //and value source
         int vs = temp.GetValueSource();
 
+        //to store the value
         float v = 0;
         
+        //if transition is used, value channels will not be checked
         if(vs == ComponentTemplate::UseTransition) {
-            auto dur = this->temp.GetConditionDuration(temp.GetCondition(), temp.GetTargetCondition());
-            auto cur = dur;
+            //total duration
+            int dur;
+            //it is fine to have int here as current time passed cannot be > 2e6 seconds (68 years)
+            int cur;
+            
+            //if the animation is running in normal order
             if(!comp.reversed) {
+                //get the duration for the transition
+                dur = this->temp.GetConditionDuration(temp.GetCondition(), temp.GetTargetCondition());
+                //if a transition exists
                 if(transitions.count({temp.GetCondition(), temp.GetTargetCondition()})) {
+                    //get the current progress
                     cur = Time::FrameStart() - transitions.at({temp.GetCondition(), temp.GetTargetCondition()});
+                }
+                else { //if not, transition is ended
+                    cur = dur;
                 }
             }
             else {
+                //get the duration for the reverse transition
+                dur = this->temp.GetConditionDuration(temp.GetTargetCondition(), temp.GetCondition());
+                
+                //if a reverse transition exists
                 if(transitions.count({temp.GetTargetCondition(), temp.GetCondition()})) {
+                    //get the current progress
                     cur = Time::FrameStart() - transitions.at({temp.GetTargetCondition(), temp.GetCondition()});
                 }
-                else {
-                    cur = 0;
+                else { //if not, transition is ended
+                    cur = dur;
                 }
-                dur = this->temp.GetConditionDuration(temp.GetTargetCondition(), temp.GetCondition());
             }
             
+            //get the order modification
             const auto valueordering = temp.GetValueOrdering();
             
+            //transition is used as value 0
             if(valueordering[channel] == 0)
-                v = float(cur) / dur;
+                v = float(cur) / dur; //normalize to the duration
             
+            //reverse if needed
             if(comp.reversed)
                 v = 1 - v;
-            
         }
         else {
+            //this is the value source, if not found, default is the channel index
             ComponentTemplate::ValueSource src = (ComponentTemplate::ValueSource)(1<<channel);
 
+            //search the nth bit set in the value channel
             int c = channel;
             int i=0;
-            while(c >= 0 && i <= ComponentTemplate::ValueSourceMaxPower) {
+            while(i <= ComponentTemplate::ValueSourceMaxPower) {
+                //if the bit is set
                 if(vs & (1<<i)) {
+                    //if this is our channel
                     if(!c) {
+                        //get the source
                         src = (ComponentTemplate::ValueSource)(1<<i);
+                        break;
                     }
 
+                    //otherwise, decrease the number of channels to be found
                     c--;
                 }
 
+                //next bit
                 i++;
             }
             
+            //we need to apply value ordering
             const auto valueordering = temp.GetValueOrdering();
 
             switch(src) {
+                //this is the default case, we are using the first
+                //value component
+                default:
                 case ComponentTemplate::UseFirst:
                     v = value[valueordering[0]];
                     break;
@@ -1510,29 +1558,85 @@ namespace Gorgon { namespace UI {
                     break;
                     
                 //missing: L C H
-                
-                default: ;//to silence warnings
             }
         }
 
+        //return scaled value
         return v * temp.GetValueRange(channel) + temp.GetValueMin(channel);
     }
 
     void ComponentStack::checkrepeatupdate(ComponentTemplate::RepeatMode mode) {
         bool updatereq = false;
 
+        //search all indexes
         for(int i=0; i<indices; i++) {
-            if(stacksizes[i] > 0) {
-                const ComponentTemplate &temp = get(i).GetTemplate();
+            //empty stack
+            if(stacksizes[i] == 0)
+                continue;
+            
+            //get the template
+            const ComponentTemplate &temp = get(i).GetTemplate();
 
-                if(temp.GetRepeatMode() == mode) {
-                    updatereq = true;
-                }
+            //if we have a template that matches with the repeat mode
+            if(temp.GetRepeatMode() == mode) {
+                //then update is in order
+                updatereq = true;
+                
+                break;
             }
         }
 
+        //trigger update if necessary
         if(updatereq)
             Update();
+    }
+
+    Component &ComponentStack::get(int ind, ComponentCondition condition) const {
+        //this should never be called on empty stack, check during debug
+        ASSERT(stacksizes[ind], String::Concat("Stack for index ", ind, " is empty"));
+        
+        //search the stack in the reverse order for the component with the requested condition.
+        for(int i=stacksizes[ind]-1; i>=0; i--) {
+            if(data[ind + i * indices].GetTemplate().GetCondition() == condition)
+                return data[ind + i * indices];
+        }
+        
+        //if not found, return the top of the stack
+        return data[ind + (stacksizes[ind]-1) * indices];
+    }
+    
+    void ComponentStack::grow() { 
+        stackcapacity += 2;
+        
+        auto ndata = (Component*)realloc(data, sizeof(Component) * indices * stackcapacity);
+        
+        //error check
+        if(ndata)
+            data = ndata;
+        else {
+            free(data);
+            
+            throw std::bad_alloc();
+        }
+    }
+
+    Component* ComponentStack::gettag(ComponentTemplate::Tag tag) const {
+        //search all indexes
+        for(int i=0; i<indices; i++) {
+            //dont do anything if stack is empty
+            if(stacksizes[i] == 0) 
+                continue;
+            
+            //get the component
+            auto &comp = get(i);
+
+            //if tag matches
+            if(comp.GetTemplate().GetTag() == tag)
+                return &comp; //return the component
+        }
+
+        //not found
+        return nullptr;
     }
     
     void anchortoparent(Component &comp, const ComponentTemplate &temp, 
@@ -1850,206 +1954,6 @@ namespace Gorgon { namespace UI {
         }
         
         comp.location = pp - cp + other.location;
-    }
-
-
-    
-    void ComponentStack::render(Component &comp, Graphics::Layer &parent, Geometry::Point offset, Graphics::RGBAf color, int ind) {
-        const ComponentTemplate &tempp = comp.GetTemplate();
-        auto tempptr = &tempp;
-        std::array<float, 4> val = value;
-
-        if(tempp.GetRepeatMode() != ComponentTemplate::NoRepeat) {
-            ComponentCondition rc = ComponentCondition::Always;
-            if(repeatconditions[tempp.GetRepeatMode()].count(ind))
-                rc = repeatconditions[tempp.GetRepeatMode()][ind];
-
-            tempptr = &get(tempp.GetIndex(), rc).GetTemplate();
-            
-            val = repeats[tempp.GetRepeatMode()][ind];
-            
-        }
-
-        const auto &temp = *tempptr;
-
-        Graphics::Layer *target = nullptr;
-        auto &st = *storage[&temp];
-        
-        if(st.layer) {
-            target = st.layer;
-            parent.Add(*target);
-            target->Resize(comp.size);
-            target->Move(comp.location);
-            if(st.layer) {
-                st.layer->Show();
-                st.layer->Clear();
-            }
-
-            offset -= comp.location;
-        }
-        else {
-            target = &parent;
-        }
-
-        if(temp.GetValueModification() == ComponentTemplate::ModifyColor) {
-            if(NumberOfSetBits(temp.GetValueSource()) == 1) {
-                color *= Graphics::RGBAf(calculatevalue(val, 0, comp));
-            }
-            else if(NumberOfSetBits(temp.GetValueSource()) == 2) {
-                color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
-            }
-            else if(NumberOfSetBits(temp.GetValueSource()) == 3) {
-                color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 1.f);
-            }
-            else
-                color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp));
-        }
-        else if(temp.GetValueModification() == ComponentTemplate::ModifyAlpha)
-            color *= Graphics::RGBAf(1.f, calculatevalue(val, 0, comp));
-
-        if(temp.GetType() == ComponentType::Container) {
-            const auto &cont = dynamic_cast<const ContainerTemplate&>(temp);
-            
-            offset += cont.GetBorderSize().TopLeft();
-            offset += comp.location;
-
-            if(st.primary && target) {
-                auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
-                if(rectangular)
-                    rectangular->DrawIn(*target, offset-cont.GetBorderSize().TopLeft(), comp.size, color);
-                else
-                    st.primary->Draw(*target, offset-cont.GetBorderSize().TopLeft(), color);
-            }
-            
-            for(int i=0; i<cont.GetCount(); i++) {
-                if(cont[i] >= indices) continue;
-                if(stacksizes[cont[i]]) {
-                    auto &compparent = get(cont[i]);
-                    auto &temp       = compparent.GetTemplate();
-                    if(temp.GetRepeatMode() == ComponentTemplate::NoRepeat) {
-                        render(compparent, target ? *target : parent, offset, color);
-                    }
-                    else if(repeats.count(temp.GetRepeatMode())) {
-                        int index = 0;
-                        for(auto &r : repeated[&temp])
-                            render(r, target ? *target : parent, offset, color, index++);
-                    }
-                }
-            }
-            
-            if(st.secondary && target) {
-                auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.secondary);
-                if(rectangular)
-                    rectangular->DrawIn(*target, offset-cont.GetBorderSize().TopLeft()+cont.GetOverlayExtent().TopLeft(), comp.size, color);
-                else
-                    st.secondary->Draw(*target, offset-cont.GetBorderSize().TopLeft()+cont.GetOverlayExtent().TopLeft(), color);
-            }
-            
-            offset -= cont.GetBorderSize().TopLeft();
-        }
-        else if(temp.GetType() == ComponentType::Graphics) {
-            if(st.primary && target) {
-                auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
-                const auto &gt = dynamic_cast<const GraphicsTemplate&>(temp);
-
-                auto c = gt.GetColor();
-
-                if(temp.GetValueModification() == temp.BlendColor)  {
-                    auto c2 = gt.GetTargetColor();
-                    switch(NumberOfSetBits(temp.GetValueSource())) {
-                        case 1:
-                            c.Blend(c2, calculatevalue(val, 0, comp));
-                            break;
-
-                        case 2:
-                            c.Blend(c2, calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
-                            break;
-
-                        case 3:
-                            c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 0});
-                            break;
-
-                        case 4:
-                            c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp)});
-                            break;
-
-                        default:
-                            break;
-                    }
-                }
-                
-                if(rectangular && gt.GetFillArea())
-                    rectangular->DrawIn(*target, comp.location+offset+gt.GetPadding().TopLeft(), comp.size, color * c);
-                else
-                    st.primary->Draw(*target, comp.location+offset+gt.GetPadding().TopLeft(), color * c);
-            }
-        }
-        else if(temp.GetType() == ComponentType::Textholder) {
-            const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
-
-            auto c = th.GetColor();
-
-            if(temp.GetValueModification() == temp.BlendColor) {
-                auto c2 = th.GetTargetColor();
-                switch(NumberOfSetBits(temp.GetValueSource())) {
-                    case 1:
-                        c.Blend(c2, calculatevalue(val, 0, comp));
-                        break;
-
-                    case 2:
-                        c.Blend(c2, calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
-                        break;
-
-                    case 3:
-                        c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 0});
-                        break;
-
-                    case 4:
-                        c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp)});
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-
-            target->SetColor(color * c);
-            if(th.IsReady()) {
-                if(valuetotext && (ind != -1 || !stringdata.count(temp.GetDataEffect())) ) {
-                    if(tagnowrap.count(temp.GetTag()))
-                        th.GetRenderer().PrintNoWrap(*target, valuetotext(temp.GetTag(), temp.GetDataEffect(), val), comp.location+offset, comp.size.Width);
-                    else
-                        th.GetRenderer().Print(*target, valuetotext(temp.GetTag(), temp.GetDataEffect(), val), comp.location+offset, comp.size.Width);
-                }
-                else if(stringdata.count(temp.GetDataEffect())) {
-                    if(tagnowrap.count(temp.GetTag()))
-                        th.GetRenderer().PrintNoWrap(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
-                    else
-                        th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
-                }
-            }
-            target->SetColor(1.f);
-        }
-        else if(temp.GetType() == ComponentType::Placeholder && comp.size.Area() > 0) {
-            const auto &ph = dynamic_cast<const PlaceholderTemplate&>(temp);
-            
-            if(ph.HasTemplate()) {
-                auto &stack = substacks[&temp];
-                target->Add(stack);
-                stack.Move(comp.location + offset);
-                stack.Resize(comp.size);
-            }
-
-            if(imagedata.Exists(ph.GetDataEffect())) {
-                auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(&imagedata[ph.GetDataEffect()]);
-                if(rectangular) {
-                    rectangular->DrawIn(*target, comp.location+offset, comp.size, color);
-                }
-                else {
-                    imagedata[ph.GetDataEffect()].Draw(*target, comp.location+offset, color);
-                }
-            }
-        }
     }
     
     void ComponentStack::update() {
@@ -2608,43 +2512,204 @@ realign:
         }
     }
 
-    
-    Component &ComponentStack::get(int ind, ComponentCondition condition) const {
-        ASSERT(stacksizes[ind], String::Concat("Stack for index ", ind, " is empty"));
         
-        for(int i=stacksizes[ind]-1; i>=0; i--) {
-            if(data[ind + i * indices].GetTemplate().GetCondition() == condition)
-                return data[ind + i * indices];
-        }
-        
-        return data[ind + (stacksizes[ind]-1) * indices];
-    }
-    
-    void ComponentStack::grow() { 
-        stackcapacity += 2;
-        
-        auto ndata = (Component*)realloc(data, sizeof(Component) * indices * stackcapacity);
-        
-        //error check
-        if(ndata)
-            data = ndata;
-        else {
-            free(data);
+    void ComponentStack::render(Component &comp, Graphics::Layer &parent, Geometry::Point offset, Graphics::RGBAf color, int ind) {
+        const ComponentTemplate &tempp = comp.GetTemplate();
+        auto tempptr = &tempp;
+        std::array<float, 4> val = value;
+
+        if(tempp.GetRepeatMode() != ComponentTemplate::NoRepeat) {
+            ComponentCondition rc = ComponentCondition::Always;
+            if(repeatconditions[tempp.GetRepeatMode()].count(ind))
+                rc = repeatconditions[tempp.GetRepeatMode()][ind];
+
+            tempptr = &get(tempp.GetIndex(), rc).GetTemplate();
             
-            throw std::bad_alloc();
+            val = repeats[tempp.GetRepeatMode()][ind];
+            
         }
-    }
 
-    Component* ComponentStack::gettag(ComponentTemplate::Tag tag) const {
-        for(int i=0; i<indices; i++) {
-            if(stacksizes[i] > 0) {
-                auto &comp = get(i);
+        const auto &temp = *tempptr;
 
-                if(comp.GetTemplate().GetTag() == tag)
-                    return &comp;
+        Graphics::Layer *target = nullptr;
+        auto &st = *storage[&temp];
+        
+        if(st.layer) {
+            target = st.layer;
+            parent.Add(*target);
+            target->Resize(comp.size);
+            target->Move(comp.location);
+            if(st.layer) {
+                st.layer->Show();
+                st.layer->Clear();
+            }
+
+            offset -= comp.location;
+        }
+        else {
+            target = &parent;
+        }
+
+        if(temp.GetValueModification() == ComponentTemplate::ModifyColor) {
+            if(NumberOfSetBits(temp.GetValueSource()) == 1) {
+                color *= Graphics::RGBAf(calculatevalue(val, 0, comp));
+            }
+            else if(NumberOfSetBits(temp.GetValueSource()) == 2) {
+                color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
+            }
+            else if(NumberOfSetBits(temp.GetValueSource()) == 3) {
+                color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 1.f);
+            }
+            else
+                color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp));
+        }
+        else if(temp.GetValueModification() == ComponentTemplate::ModifyAlpha)
+            color *= Graphics::RGBAf(1.f, calculatevalue(val, 0, comp));
+
+        if(temp.GetType() == ComponentType::Container) {
+            const auto &cont = dynamic_cast<const ContainerTemplate&>(temp);
+            
+            offset += cont.GetBorderSize().TopLeft();
+            offset += comp.location;
+
+            if(st.primary && target) {
+                auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
+                if(rectangular)
+                    rectangular->DrawIn(*target, offset-cont.GetBorderSize().TopLeft(), comp.size, color);
+                else
+                    st.primary->Draw(*target, offset-cont.GetBorderSize().TopLeft(), color);
+            }
+            
+            for(int i=0; i<cont.GetCount(); i++) {
+                if(cont[i] >= indices) continue;
+                if(stacksizes[cont[i]]) {
+                    auto &compparent = get(cont[i]);
+                    auto &temp       = compparent.GetTemplate();
+                    if(temp.GetRepeatMode() == ComponentTemplate::NoRepeat) {
+                        render(compparent, target ? *target : parent, offset, color);
+                    }
+                    else if(repeats.count(temp.GetRepeatMode())) {
+                        int index = 0;
+                        for(auto &r : repeated[&temp])
+                            render(r, target ? *target : parent, offset, color, index++);
+                    }
+                }
+            }
+            
+            if(st.secondary && target) {
+                auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.secondary);
+                if(rectangular)
+                    rectangular->DrawIn(*target, offset-cont.GetBorderSize().TopLeft()+cont.GetOverlayExtent().TopLeft(), comp.size, color);
+                else
+                    st.secondary->Draw(*target, offset-cont.GetBorderSize().TopLeft()+cont.GetOverlayExtent().TopLeft(), color);
+            }
+            
+            offset -= cont.GetBorderSize().TopLeft();
+        }
+        else if(temp.GetType() == ComponentType::Graphics) {
+            if(st.primary && target) {
+                auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
+                const auto &gt = dynamic_cast<const GraphicsTemplate&>(temp);
+
+                auto c = gt.GetColor();
+
+                if(temp.GetValueModification() == temp.BlendColor)  {
+                    auto c2 = gt.GetTargetColor();
+                    switch(NumberOfSetBits(temp.GetValueSource())) {
+                        case 1:
+                            c.Blend(c2, calculatevalue(val, 0, comp));
+                            break;
+
+                        case 2:
+                            c.Blend(c2, calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
+                            break;
+
+                        case 3:
+                            c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 0});
+                            break;
+
+                        case 4:
+                            c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp)});
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
+                
+                if(rectangular && gt.GetFillArea())
+                    rectangular->DrawIn(*target, comp.location+offset+gt.GetPadding().TopLeft(), comp.size, color * c);
+                else
+                    st.primary->Draw(*target, comp.location+offset+gt.GetPadding().TopLeft(), color * c);
             }
         }
+        else if(temp.GetType() == ComponentType::Textholder) {
+            const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
 
-        return nullptr;
+            auto c = th.GetColor();
+
+            if(temp.GetValueModification() == temp.BlendColor) {
+                auto c2 = th.GetTargetColor();
+                switch(NumberOfSetBits(temp.GetValueSource())) {
+                    case 1:
+                        c.Blend(c2, calculatevalue(val, 0, comp));
+                        break;
+
+                    case 2:
+                        c.Blend(c2, calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
+                        break;
+
+                    case 3:
+                        c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 0});
+                        break;
+
+                    case 4:
+                        c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp)});
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+
+            target->SetColor(color * c);
+            if(th.IsReady()) {
+                if(valuetotext && (ind != -1 || !stringdata.count(temp.GetDataEffect())) ) {
+                    if(tagnowrap.count(temp.GetTag()))
+                        th.GetRenderer().PrintNoWrap(*target, valuetotext(temp.GetTag(), temp.GetDataEffect(), val), comp.location+offset, comp.size.Width);
+                    else
+                        th.GetRenderer().Print(*target, valuetotext(temp.GetTag(), temp.GetDataEffect(), val), comp.location+offset, comp.size.Width);
+                }
+                else if(stringdata.count(temp.GetDataEffect())) {
+                    if(tagnowrap.count(temp.GetTag()))
+                        th.GetRenderer().PrintNoWrap(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
+                    else
+                        th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
+                }
+            }
+            target->SetColor(1.f);
+        }
+        else if(temp.GetType() == ComponentType::Placeholder && comp.size.Area() > 0) {
+            const auto &ph = dynamic_cast<const PlaceholderTemplate&>(temp);
+            
+            if(ph.HasTemplate()) {
+                auto &stack = substacks[&temp];
+                target->Add(stack);
+                stack.Move(comp.location + offset);
+                stack.Resize(comp.size);
+            }
+
+            if(imagedata.Exists(ph.GetDataEffect())) {
+                auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(&imagedata[ph.GetDataEffect()]);
+                if(rectangular) {
+                    rectangular->DrawIn(*target, comp.location+offset, comp.size, color);
+                }
+                else {
+                    imagedata[ph.GetDataEffect()].Draw(*target, comp.location+offset, color);
+                }
+            }
+        }
     }
+    
+
 } }

@@ -15,24 +15,22 @@ namespace Gorgon { namespace UI {
      * Component stack is the backbone of a widget. It manages the components inside the 
      * widget by showing/hiding components depending on the current state. Additionally,
      * component stack arranges the components by adjusting their locations and sizes.
+     * 
+     * WARNING: This class might be changed into a tiered class, allowing consumers to use
+     * the tier with the minimum necessary functionality.
      */
     class ComponentStack : public Layer, public Updatable {
     public:
         
-        /// should handle instantiation as well
-        explicit ComponentStack(const Template &temp, Geometry::Size size);
+        /// Initializes a component stack with the given size
+        ComponentStack(const Template &temp, Geometry::Size size);
         
-        /// should handle instantiation as well
+        /// Initiates a component stack with default size
         explicit ComponentStack(const Template &temp) : ComponentStack(temp, temp.GetSize()) 
         { }
         
-        virtual ~ComponentStack() {
-            for(auto &p : storage) {
-                delete p.second;
-            }
-
-            substacks.Destroy();
-        }
+        /// Destructor
+        virtual ~ComponentStack();
 
         /// Adds the given component to the top of the stack. This function will be called
         /// to add all components in the given template
@@ -200,7 +198,7 @@ namespace Gorgon { namespace UI {
         }
 
         /// Sets the condition of a specific repeat index. Nothing will happen if index is
-        /// out of bounds or condition does not exist. Setting condition to always will simply
+        /// out of bounds or condition does not exist. Setting condition to always will effectively
         /// remove the condition.
         void SetConditionOf(ComponentTemplate::RepeatMode mode, int index, ComponentCondition condition) {
             if(repeatconditions[mode][index] != condition) {
@@ -504,6 +502,9 @@ namespace Gorgon { namespace UI {
         
         
     private:
+        ///returns the element at the stack with the given stack offset.
+        ///If stack is -1, this function will return top of the stack.
+        ///0 is at the bottom of the stack
         Component &get(int ind, int stack = -1) const {
             ASSERT(stacksizes[ind], String::Concat("Stack for index ", ind, " is empty"));
 
@@ -514,70 +515,111 @@ namespace Gorgon { namespace UI {
             return data[ind + stack * indices];
         }
 
-        //returns top of stack if condition does not exist
+        ///Return the component at the given index with the requested condition. Returns top of stack if condition does not exist.
         Component &get(int ind, ComponentCondition condition) const;
 
+        ///starts update chain
         void update();
 
+        ///updates a specific container component
         void update(Component &parent);
 
+        ///renders the given component, rendering will use parent layer if the component does not have its own layer. Index is for
+        ///repeated components, it is the index of the repeat to be rendered. Unlike Layer::Render function, this function does not
+        ///run every frame.
         void render(Component &component, Graphics::Layer &parentlayer, Geometry::Point offset, Graphics::RGBAf color = 1.f, int ind = -1);
 
+        ///grows the size of the stack
         void grow();
         
+        ///returns the size of the emdash
         int getemsize(const Component &comp);
 
+        ///Calculates the value of the given channel for the given component. Uses stored value
         float calculatevalue(int channel, const Component &comp) const { return calculatevalue(value, channel, comp); }
 
+        ///Calculates the value of the given channel for the given component. Uses the supplied value.
         float calculatevalue(const std::array<float, 4> &data, int channel, const Component &comp) const;
 
+        ///Checks if a specific type of repeating component requires update
         void checkrepeatupdate(ComponentTemplate::RepeatMode mode);
         
-        //to should contain the final condition even if there is no transition
+        ///Adds the given condition. To should contain the final condition even if there is no transition. If there is no
+        ///transition, from should be None and hint should contain previous state if it exists.
         bool addcondition(ComponentCondition from, ComponentCondition to, ComponentCondition hint = ComponentCondition::None);
 
-        //to should contain the final condition to be removed
-        //caller should erase transition
+        ///Erases the given condition. To should contain the final condition to be removed.
+        ///Caller should erase transition
         bool removecondition(ComponentCondition from, ComponentCondition to);
         
+        ///Returns the component marked with the given tag. Returns nullptr if tag is not found
         Component *gettag(ComponentTemplate::Tag tag) const;
 
+        ///ComponentStack wide emsize
         int emsize = 10;
         
+        ///This vector contains data for components. This piece of memory will be managed by the stack
         Component *data = nullptr;
+        
+        ///Stores the sizes of each stack
         std::vector<int> stacksizes;
         
+        ///List of conditions that are not applied as the stack is disabled
         std::set<ComponentCondition> disabled;
+        
+        ///List of conditions applies to the stack. Always is never stored in here
         std::set<ComponentCondition> conditions;
+        
+        ///List of future transitions that will be performed once the current transition is
+        ///finished. The pair stores final condition to the next condition
         std::map<ComponentCondition, ComponentCondition> future_transitions;
         
-        std::map<ComponentTemplate::DataEffect, std::string> stringdata;
-        Containers::Hashmap<ComponentTemplate::DataEffect, const Graphics::Drawable> imagedata;
-        std::map<ComponentTemplate::RepeatMode, std::vector<std::array<float, 4>>> repeats;
-        std::map<ComponentTemplate::RepeatMode, std::map<int, ComponentCondition>> repeatconditions; 
-        std::array<float, 4> value ={{0.f, 0.f, 0.f, 0.f}};
-
-        //for animation
-        std::array<float, 4> targetvalue = {{0.f, 0.f, 0.f, 0.f}};
-        //value speed = 0 disables animation
-        std::array<float, 4> valuespeed = {{0.f, 0.f, 0.f, 0.f}};
-        bool returntarget = false;
-
-
+        ///List of currently running transitions.
         std::map<std::pair<ComponentCondition, ComponentCondition>, unsigned long> transitions;
         
+        ///Stores string data for given effect
+        std::map<ComponentTemplate::DataEffect, std::string> stringdata;
+        
+        ///Stores image data for a given effect
+        Containers::Hashmap<ComponentTemplate::DataEffect, const Graphics::Drawable> imagedata;
+        
+        ///Repeated values for each repeat mode
+        std::map<ComponentTemplate::RepeatMode, std::vector<std::array<float, 4>>> repeats;
+        
+        ///Conditions that apply to individual repeat modes.
+        std::map<ComponentTemplate::RepeatMode, std::map<int, ComponentCondition>> repeatconditions; 
+        
+        ///Current value stored in the stack
+        std::array<float, 4> value ={{0.f, 0.f, 0.f, 0.f}};
+
+        ///For value animation
+        std::array<float, 4> targetvalue = {{0.f, 0.f, 0.f, 0.f}};
+        
+        ///Dictates the speed which values reach to the target value. valuespeed = 0 disables animation
+        std::array<float, 4> valuespeed = {{0.f, 0.f, 0.f, 0.f}};
+        
+        ///??
+        bool returntarget = false;
+
+        ///Number of elements in each stack
         int stackcapacity = 3;
         
+        ///Number of indices used in the stack
         int indices = 0;
 
+        ///When set to true an update will be triggered during next render
         bool updaterequired = false;
         
+        ///Whether component stack will be handling the mouse events
         bool handlingmouse = false;
 
+        ///Size of the component stack
         Geometry::Size size;
         
+        ///The template that is being used. This might be changed to a pointer to be able to update it.
         const Template &temp;
 
+        ///Contains substacks of this component stack
         Containers::Hashmap<const ComponentTemplate *, ComponentStack> substacks;
 
         std::map<const ComponentTemplate*, ComponentStorage*> storage;
