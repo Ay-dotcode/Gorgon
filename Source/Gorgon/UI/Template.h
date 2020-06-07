@@ -149,7 +149,8 @@ namespace Gorgon {
         /// This anchor position should is only used to denote object will
         /// not be anchored to a previous object, only to its parent. If
         /// used as parent anchor it will be ignored and default anchor
-        /// will be used instead.
+        /// will be used instead. This should be paired with absolute 
+        /// positioning.
         None = 0,
         
         /// Top left
@@ -175,23 +176,19 @@ namespace Gorgon {
         BottomRight,
         
         /// Baseline left, for text, this aligns to the baseline of
-        /// the last line; if there is no text related data, this will
-        /// align to the middle left.
+        /// the first line
         FirstBaselineLeft,
         /// Baseline right, for text, this aligns to the baseline of
-        /// the last line; if there is no text related data, this will
-        /// align to the middle right.
+        /// the first line
         FirstBaselineRight,
         
         /// Baseline left, for text, this aligns to the baseline of
-        /// the last line; if there is no text related data, this will
-        /// align to the bottom left. This mode only works properly if
+        /// the last line. This mode only works properly if
         /// Sizing is set to automatic.
         LastBaselineLeft,
         
         /// Baseline right, for text, this aligns to the baseline of
-        /// the last line; if there is no text related data, this will
-        /// align to the bottom right. This mode only works properly if
+        /// the last line. This mode only works properly if
         /// Sizing is set to automatic.
         LastBaselineRight,
     };

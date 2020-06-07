@@ -213,6 +213,12 @@ namespace Gorgon { namespace Graphics {
         /// Returns the size of the EM dash
         virtual int GetEMSize() const = 0;
         
+        /// Get the distance of baseline from the top of the text
+        virtual float GetBaseLine() const = 0;
+        
+        /// Get the distance of baseline from the top of the text
+        virtual int GetHeight() const = 0;
+        
         /// Returns the size of the given text
         virtual Geometry::Size GetSize(const std::string &text) const = 0;
         
@@ -346,7 +352,15 @@ namespace Gorgon { namespace Graphics {
         virtual int GetEMSize() const override {
             return renderer->GetEMSize();
         }
-
+        
+        virtual float GetBaseLine() const override {
+            return renderer->GetBaseLine();
+        }
+        
+        virtual int GetHeight() const override {
+            return renderer->GetHeight();
+        }
+        
         virtual Geometry::Size GetSize(const std::string &text) const override;
         
         virtual Geometry::Size GetSize(const std::string &text, int width) const override;
@@ -717,6 +731,14 @@ namespace Gorgon { namespace Graphics {
         
         virtual int GetEMSize() const override {
             return renderer->GetEMSize();
+        }
+        
+        virtual float GetBaseLine() const override {
+            return renderer->GetBaseLine();
+        }
+        
+        virtual int GetHeight() const override {
+            return renderer->GetHeight();
         }
         
         virtual const GlyphRenderer &GetGlyphRenderer() const override {

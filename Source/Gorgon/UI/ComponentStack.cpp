@@ -6,7 +6,8 @@
 
 #include "math.h"
 
-//NOTE if a transition does not exists, but it is in the stack, its completion will be counted as 100%
+//NOTE when does the condition for a 
+
 
 namespace Gorgon { namespace UI {
     
@@ -113,14 +114,22 @@ namespace Gorgon { namespace UI {
         //set our initial size
         Resize(size);
         
-        //search for emsize in textholders, use the first one found
+        //search for emsize in textholders, find the maximum ones to ensure 
+        //when the default is to be used as size, it will be able to contain
+        //any font within the stack.
         for(int i=0; i<temp.GetCount(); i++) {
             if(temp[i].GetType() == ComponentType::Textholder) {
                 const auto &th = dynamic_cast<const TextholderTemplate&>(temp[i]);
                 
                 if(th.IsReady()) {
-                    emsize = th.GetRenderer().GetEMSize();
-                    break;
+                    if(emsize < th.GetRenderer().GetEMSize())
+                        emsize = th.GetRenderer().GetEMSize();
+                    
+                    if(textheight < th.GetRenderer().GetHeight())
+                        textheight = th.GetRenderer().GetHeight();
+                    
+                    if(baseline < th.GetRenderer().GetBaseLine())
+                        baseline = th.GetRenderer().GetBaseLine();
                 }
             }
         }
@@ -1450,6 +1459,38 @@ namespace Gorgon { namespace UI {
         return emsize;
     }
 
+    int ComponentStack::getbaseline(const Component &comp) {
+        //if the component is a text holder
+        if(comp.GetTemplate().GetType() == ComponentType::Textholder) {
+            const auto &th = dynamic_cast<const TextholderTemplate&>(comp.GetTemplate());
+            
+            //and ready
+            if(th.IsReady()) {
+                //return its own em size
+                return th.GetRenderer().GetBaseLine();
+            }
+        }
+        
+        //otherwise return the global (first one found) emsize
+        return baseline;
+    }
+
+    int ComponentStack::gettextheight(const Component &comp) {
+        //if the component is a text holder
+        if(comp.GetTemplate().GetType() == ComponentType::Textholder) {
+            const auto &th = dynamic_cast<const TextholderTemplate&>(comp.GetTemplate());
+            
+            //and ready
+            if(th.IsReady()) {
+                //return its own em size
+                return th.GetRenderer().GetHeight();
+            }
+        }
+        
+        //otherwise return the global (first one found) emsize
+        return baseline;
+    }
+
     float ComponentStack::calculatevalue(const std::array<float, 4> &value, int channel, const Component &comp) const {
         //get the template
         const auto &temp = comp.GetTemplate();
@@ -1639,14 +1680,19 @@ namespace Gorgon { namespace UI {
         return nullptr;
     }
     
-    void anchortoparent(Component &comp, const ComponentTemplate &temp, 
+    ///Determines the location of the component in relation to its parent. 
+    void ComponentStack::anchortoparent(Component &comp, const ComponentTemplate &temp, 
                         Geometry::Point offset, Geometry::Margin margin, Geometry::Size maxsize) {
         
+        //anchor on the parent
         Anchor pa = temp.GetContainerAnchor();
+        //component anchor
         Anchor ca = temp.GetMyAnchor();
         
+        //parent anchor point and component anchor point
         Geometry::Point pp, cp;
         
+        //determine parent anchor point
         switch(pa) {
             default:
             case Anchor::TopLeft:
@@ -1663,8 +1709,11 @@ namespace Gorgon { namespace UI {
                 
                 
             case Anchor::MiddleLeft:
-            case Anchor::FirstBaselineLeft:
                 pp = {margin.Left, margin.Top - margin.Bottom + maxsize.Height / 2};
+                break;
+                
+            case Anchor::FirstBaselineLeft:
+                pp = {margin.Left, -margin.Bottom + baseline};
                 break;
                 
             case Anchor::MiddleCenter:
@@ -1672,14 +1721,19 @@ namespace Gorgon { namespace UI {
                 break;
                 
             case Anchor::MiddleRight:
-            case Anchor::FirstBaselineRight:
                 pp = { -margin.Right + maxsize.Width, margin.Top - margin.Bottom + maxsize.Height / 2};
                 break;
                 
+            case Anchor::FirstBaselineRight:
+                pp = {-margin.Right + maxsize.Width, -margin.Bottom + baseline};
+                break;
                 
             case Anchor::BottomLeft:
-            case Anchor::LastBaselineLeft:
                 pp = {margin.Left, -margin.Bottom + maxsize.Height};
+                break;
+                
+            case Anchor::LastBaselineLeft:
+                pp = {margin.Left, -margin.Bottom + maxsize.Height - textheight + baseline};
                 break;
                 
             case Anchor::BottomCenter:
@@ -1687,44 +1741,19 @@ namespace Gorgon { namespace UI {
                 break;
                 
             case Anchor::BottomRight:
-            case Anchor::LastBaselineRight:
                 pp = { -margin.Right + maxsize.Width, -margin.Bottom + maxsize.Height};
+                break;
+                
+            case Anchor::LastBaselineRight:
+                pp = { -margin.Right + maxsize.Width, -margin.Bottom + maxsize.Height - textheight + baseline};
                 break;
                 
         }
         
+        //component size
         auto csize = comp.size;
         
-        if(temp.GetType() == ComponentType::Textholder && 
-            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight || ca == Anchor::LastBaselineLeft || ca == Anchor::LastBaselineRight)
-        ) {
-            const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
-            
-            if(th.IsReady()) {
-                
-                switch(ca) {
-                    case Anchor::FirstBaselineLeft:
-                        cp = {-offset.X, int(-offset.Y-th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
-                        break;
-                        
-                    case Anchor::FirstBaselineRight:
-                        cp = {-offset.X + csize.Width, int(-offset.Y-th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
-                        break;
-                        
-                    case Anchor::LastBaselineLeft:
-                        cp = {-offset.X, int(offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height)};
-                        break;
-                        
-                    case Anchor::LastBaselineRight:
-                        cp = {-offset.X + csize.Width, int(offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height)};
-                        break;
-                    default: ;//to silence warnings
-                }
-                
-                ca = Anchor::None;
-            }
-        }
-        
+        //determine where the anchor point is on the component
         switch(ca) {
             default:
             case Anchor::TopLeft:
@@ -1741,8 +1770,11 @@ namespace Gorgon { namespace UI {
                 
                 
             case Anchor::MiddleLeft:
-            case Anchor::FirstBaselineLeft:
                 cp = {-offset.X, csize.Height / 2 - offset.Y};
+                break;
+                
+            case Anchor::FirstBaselineLeft:
+                cp = {-offset.X, getbaseline(comp) - offset.Y};
                 break;
                 
             case Anchor::MiddleCenter:
@@ -1750,31 +1782,41 @@ namespace Gorgon { namespace UI {
                 break;
                 
             case Anchor::MiddleRight:
-            case Anchor::FirstBaselineRight:
                 cp = { offset.X + csize.Width, csize.Height / 2 - offset.Y};
+                break;
+
+            case Anchor::FirstBaselineRight:
+                cp = {offset.X + csize.Width, getbaseline(comp) - offset.Y};
                 break;
                 
                 
             case Anchor::BottomLeft:
-            case Anchor::LastBaselineLeft:
                 cp = {-offset.X, csize.Height + offset.Y};
                 break;
-                
+
+            case Anchor::LastBaselineLeft:
+                cp = {-offset.X, csize.Height - gettextheight(comp) + getbaseline(comp) + offset.Y};
+                break;
+
             case Anchor::BottomCenter:
                 cp = {-offset.X + csize.Width / 2, csize.Height + offset.Y};
                 break;
                 
             case Anchor::BottomRight:
-            case Anchor::LastBaselineRight:
                 cp = { offset.X + csize.Width, csize.Height + offset.Y};
+                break;
+                
+            case Anchor::LastBaselineRight:
+                cp = {offset.X + csize.Width, csize.Height - gettextheight(comp) + getbaseline(comp) + offset.Y};
                 break;
                 
         }
         
+        //calculate the final offset
         comp.location = pp - cp;
     }
 
-    void anchortoother(Component &comp, const ComponentTemplate &temp, 
+    void ComponentStack::anchortoother(Component &comp, const ComponentTemplate &temp, 
                         Geometry::Point offset, Geometry::Margin margin, Component &other, Graphics::Orientation orientation) {
         
         Anchor pa = temp.GetPreviousAnchor();
@@ -1957,543 +1999,614 @@ namespace Gorgon { namespace UI {
     }
     
     void ComponentStack::update() {
-        if(!stacksizes[0]) return;
-        
+        //honor before update notification
         if(beforeupdate_fn)
             beforeupdate_fn();
-        
-        get(0).size = size;
-        get(0).location = {0,0};
-        get(0).parent = -1;
-        
-        //update repeat counts
-        for(auto &r : repeated) {
-            if(repeats.count(r.first->GetRepeatMode()))
-                r.second.resize(repeats[r.first->GetRepeatMode()].size(), Component(*r.first));
+
+        //clear everything
+        base.Clear();
+        for(auto &s : storage) {
+            if(s.second->layer)
+                s.second->layer->Hide();
         }
         
-        //calculate common emsize        
-        for(int i=0; i<indices; i++) {
-            if(stacksizes[i] > 0) {
-                if(get(i).GetTemplate().GetType() == ComponentType::Textholder) {
-                    const auto &th = dynamic_cast<const TextholderTemplate&>(get(i).GetTemplate());
-                    
-                    if(th.IsReady()) {
-                        emsize = th.GetRenderer().GetEMSize();
-                        break;
+        //update is no more required, set beforehand so that
+        //if necessary can be set again during update to
+        //run update next frame
+        updaterequired = false;
+
+        //if root has something to be displayed
+        if(stacksizes[0]) {
+            //initial states
+            get(0).size = size;
+            get(0).location = {0,0};
+            get(0).parent = -1;
+            
+            //update the component storage for repeated components
+            for(auto &r : repeated) {
+                r.second.resize(
+                    repeats[r.first->GetRepeatMode()].size(), //size will be number of repeats
+                    Component(*r.first) //the components will be instantiated from the repeat template
+                );
+            }
+            
+            //search for emsize in textholders, find the maximum ones to ensure 
+            //when the default is to be used as size, it will be able to contain
+            //any font within the stack.
+            for(int i=0; i<indices; i++) {
+                if(stacksizes[i] > 0) {
+                    if(get(i).GetTemplate().GetType() == ComponentType::Textholder) {
+                        const auto &th = dynamic_cast<const TextholderTemplate&>(get(i).GetTemplate());
+                        
+                        if(th.IsReady()) {
+                            if(emsize < th.GetRenderer().GetEMSize())
+                                emsize = th.GetRenderer().GetEMSize();
+                            
+                            if(textheight < th.GetRenderer().GetHeight())
+                                textheight = th.GetRenderer().GetHeight();
+                            
+                            if(baseline < th.GetRenderer().GetBaseLine())
+                                baseline = th.GetRenderer().GetBaseLine();
+                        }
                     }
                 }
             }
+            
+            //start the update from the root
+            update(get(0));
         }
         
-        update(get(0));
+        //update is complete
+        if(update_fn)
+            update_fn();
         
-        updaterequired = false;
-        
-        base.Clear();
-        for(auto &s : storage) 
-            if(s.second->layer)
-                s.second->layer->Hide();
-            
-            if(update_fn)
-                update_fn();
-            
+        //if root has something to be displayed
+        if(stacksizes[0]) {
             //draw everything
             render(get(0), base, {0,0});
+        }
         
+        //this is called after the render
         if(render_fn)
             render_fn();
     }
     
+    int calculatemargin(int l, int r) {
+        if(l<0 || r<0)
+            return l+r;
+        else
+            return std::max(l, r);
+    }
+    
     //location depends on the container location
     void ComponentStack::update(Component &parent) {
+        //get the template
         const ComponentTemplate &ctemp = parent.GetTemplate();
 
-        if(ctemp.GetType() != ComponentType::Container) return;
+        //just in case
+        ASSERT(ctemp.GetType() == ComponentType::Container, "Only containers are needed to be updated") ;
 
+        //get the container
         const ContainerTemplate &cont = dynamic_cast<const ContainerTemplate&>(ctemp);
         
+        //we need the innersize to arrange components
         parent.innersize = parent.size - cont.GetBorderSize();
         
-        if(cont.GetHorizontalSizing() == cont.Fixed && parent.innersize.Width <= 0) return;
-        if(cont.GetVerticalSizing() == cont.Fixed && parent.innersize.Height <= 0) return;
+        //if sizing is fixed and the size is 0 and clipping is on, nothing can be displayed
+        if(cont.GetClip() && cont.GetHorizontalSizing() == cont.Fixed && parent.innersize.Width <= 0) 
+            return;
+        
+        //if sizing is fixed and the size is 0 and clipping is on, nothing can be displayed
+        if(cont.GetClip() && cont.GetVerticalSizing() == cont.Fixed && parent.innersize.Height <= 0) 
+            return;
 
+        //this function will loop through all components, including the repeats and calls the given
+        //function for each component
+        auto forallcomponents = [&](auto fn) {
+            for(int i=0; i<cont.GetCount(); i++) {
+                
+                //get the component index
+                int ci = cont[i];
+
+                //just in case
+                if(ci >= indices) continue;
+                
+                //if empty, this index is not currently available
+                //this is not an edge case
+                if(!stacksizes[ci]) continue;
+
+                //original component, used to distinguish from repeats
+                auto &comporg = get(cont[i]);
+
+                //original template
+                const auto &temporg = comporg.GetTemplate();
+                
+                
+                for(int j = 0; 
+                    temporg.GetRepeatMode() == temporg.NoRepeat ? //if not repeating
+                        j == 0 : //only do this once
+                        repeats.count(temporg.GetRepeatMode()) && j < repeats[temporg.GetRepeatMode()].size(); //if not, repeat for every repeat
+                    j++) 
+                {
+                    Component *compptr;
+                    const ComponentTemplate *tempptr;
+                    
+                    //stores the reference value for this component
+                    const std::array<float, 4> *val;
+
+                    //if not to be repeated
+                    if(temporg.GetRepeatMode() == temporg.NoRepeat) {
+                        //use originals
+                        compptr = &comporg;
+                        tempptr = &temporg;
+                        val     = &value;
+                    }
+                    else {
+                        //get the repeated component
+                        compptr = &repeated[&temporg][j];
+                        
+                        //determine condition of the repeat, default is always
+                        ComponentCondition rc = ComponentCondition::Always;
+
+                        //if condition is set
+                        if(repeatconditions[temporg.GetRepeatMode()].count(j))
+                            rc = repeatconditions[temporg.GetRepeatMode()][j]; //use it
+
+                        //get the template depending on the condition
+                        tempptr = &get(ci, rc).GetTemplate();
+                        val     = &repeats[temporg.GetRepeatMode()][j];
+                    }
+                    
+                    //call the function
+                    fn(*compptr, *tempptr, *val, getemsize(*compptr));
+                }
+            }
+        };
+        
+        //whether there is something requires a second pass
         bool requiresrepass = false;
+        
+        //when repass is done, it will be repeated
         bool repassdone = false;
         
+        //space left after the absolutely sized components are placed, will be used for percentage based
+        //components
         int spaceleft = 0;
-
+        
+        //for easy access
+        auto ishor = cont.GetOrientation() == Graphics::Orientation::Horizontal;
+        
 realign:
-        // first pass for size, second pass will cover the sizes that are percent based.
-        for(int i=0; i<cont.GetCount(); i++) {
-            
-            int ci = cont[i];
-
-            if(ci >= indices) continue;
-            if(!stacksizes[ci]) continue;
-
-
-            auto &compparent = get(cont[i]);
-
-            const auto &tempparent = compparent.GetTemplate();
-            
-            
-            for(int j = 0; tempparent.GetRepeatMode() == tempparent.NoRepeat ? j == 0 : repeats.count(tempparent.GetRepeatMode()) && j < repeats[tempparent.GetRepeatMode()].size(); j++) {
-                Component *compptr;
-                const ComponentTemplate *tempptr;
-
-                const std::array<float, 4> *val;
-
-                if(tempparent.GetRepeatMode() == tempparent.NoRepeat) {
-                    compptr = &compparent;
-                    tempptr = &tempparent;
-                    val     = &value;
+        // first operation is for size. Second pass will cover the sizes that are percent based.
+        forallcomponents([&](Component &comp, const ComponentTemplate &temp, const std::array<float, 4> &val, int emsize) {
+            //set the index to be accessed later
+            comp.parent = cont.GetIndex();
+    
+            //******************************** very dubious max size depends on where the component is anchored to
+            auto parentmargin = Convert(
+                temp.GetMargin(), parent.innersize, emsize
+                ).CombinePadding(
+                    Convert(cont.GetPadding(), parent.size, emsize)
+                ) + 
+                Convert(temp.GetIndent(), parent.innersize, emsize);
+        
+            auto maxsize = parent.innersize - parentmargin;
+        
+            if(temp.GetPositioning() != temp.Absolute && temp.GetPositioning() != temp.PolarAbsolute) {
+                if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
+                    maxsize.Width = spaceleft - parentmargin.TotalX();
+                    if(maxsize.Width < 0) 
+                        maxsize.Width = 0;
                 }
                 else {
-                    compptr = &repeated[&tempparent][j];
-                    ComponentCondition rc = ComponentCondition::Always;
-
-                    if(repeatconditions[tempparent.GetRepeatMode()].count(j))
-                        rc = repeatconditions[tempparent.GetRepeatMode()][j];
-
-                    tempptr = &get(ci, rc).GetTemplate();
-                    val     = &repeats[tempparent.GetRepeatMode()][j];
+                    maxsize.Height = spaceleft - parentmargin.TotalY();
+                    if(maxsize.Height < 0) 
+                        maxsize.Height = 0;
                 }
-
-                auto &comp = *compptr;
-                const auto &temp = *tempptr;
-
-                comp.parent = cont.GetIndex();
-
-                //check if textholder and if so use emsize from the font
-                int emsize = getemsize(comp);
+            }
+            //**************************************
+            
         
-                auto parentmargin = Convert(
-                        temp.GetMargin(), parent.innersize, emsize
-                    ).CombinePadding(
-                        Convert(cont.GetPadding(), parent.size, emsize)
-                    ) + 
-                    Convert(temp.GetIndent(), parent.innersize, emsize);
+            auto size = temp.GetSize();
             
-                auto maxsize = parent.innersize - parentmargin;
-            
-                if(temp.GetPositioning() != temp.Absolute && temp.GetPositioning() != temp.PolarAbsolute) {
+            //********** simplify this.
+            if(temp.GetValueModification() == temp.ModifySize) {
+                if(NumberOfSetBits(temp.GetValueSource()) == 1) {
                     if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-                        maxsize.Width = spaceleft - parentmargin.TotalX();
-                        if(maxsize.Width < 0) 
-                            maxsize.Width = 0;
+                        size = {
+                            {int(calculatevalue(val, 0, comp)*10000), Dimension::BasisPoint}, 
+                            size.Height
+                        };
                     }
                     else {
-                        maxsize.Height = spaceleft - parentmargin.TotalY();
-                        if(maxsize.Height < 0) 
-                            maxsize.Height = 0;
-                    }
-                }
-            
-                auto size = temp.GetSize();
-            
-            
-                if(temp.GetValueModification() == temp.ModifySize) {
-                    if(NumberOfSetBits(temp.GetValueSource()) == 1) {
-                        if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-                            size = {
-                                {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, 
-                                size.Height
-                            };
-                        }
-                        else {
-                            size = {
-                                size.Width, 
-                                {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}
-                            };
-                        }
-                    }
-                    else {
-                        size ={
-                            {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, 
-                            {int(calculatevalue(*val, 1, comp)*10000), Dimension::BasisPoint}
+                        size = {
+                            size.Width, 
+                            {int(calculatevalue(val, 0, comp)*10000), Dimension::BasisPoint}
                         };
                     }
                 }
-                else if(temp.GetValueModification() == temp.ModifyWidth) {
-                    size ={{int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, size.Height};
-                }
-                else if(temp.GetValueModification() == temp.ModifyHeight) {
-                    size ={size.Width, {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}};
-                }
-                
-                if(temp.GetValueModification() == temp.ModifySize && NumberOfSetBits(temp.GetValueSource()) > 1) {
-                    auto minimum = Convert(temp.GetSize(), maxsize, emsize);
-                    
-                    comp.size = Convert(size, maxsize - minimum, emsize) + minimum;
-                }
-                else if(temp.GetValueModification() == temp.ModifyWidth || (temp.GetValueModification() == temp.ModifySize && cont.GetOrientation() == Graphics::Orientation::Horizontal)) {
-                    auto minimum = Convert(temp.GetSize(), maxsize, emsize);
-                                        
-                    comp.size = Convert(size, {maxsize.Width - minimum.Width, maxsize.Height}, emsize) + Geometry::Size(minimum.Width, 0);
-                }
-                else if(temp.GetValueModification() == temp.ModifyHeight || (temp.GetValueModification() == temp.ModifySize && cont.GetOrientation() == Graphics::Orientation::Vertical)) {
-                    auto minimum = Convert(temp.GetSize(), maxsize, emsize);
-                                        
-                    comp.size = Convert(size, {maxsize.Width, maxsize.Height - minimum.Height}, emsize) + Geometry::Size(0, minimum.Height);
-                }
-                else if(tagsizes.count(temp.GetTag())) {
-                    comp.size = tagsizes[temp.GetTag()];
-                }
                 else {
-                    comp.size = Convert(size, maxsize, emsize);
-                }
-                
-                if(
-                    (temp.GetPositioning() == temp.Relative || temp.GetPositioning() == temp.AbsoluteSliding) && 
-                    (
-                        (cont.GetOrientation() == Graphics::Orientation::Horizontal && 
-                            (size.Width.GetUnit() == Dimension::Percent || size.Width.GetUnit() == Dimension::BasisPoint)) ||
-                        (cont.GetOrientation() == Graphics::Orientation::Vertical && 
-                            (size.Height.GetUnit() == Dimension::Percent || size.Height.GetUnit() == Dimension::BasisPoint))
-                    )
-                )
-                    requiresrepass = true;
-                
-                if(!(tagsizes.count(temp.GetTag())) && 
-                    (temp.GetHorizontalSizing() != temp.Fixed || temp.GetVerticalSizing() != temp.Fixed) &&
-                   !(temp.GetValueModification() == temp.ModifySize &&  NumberOfSetBits(temp.GetValueSource()) > 1)
-                ) {
-                    auto &st = *storage[&temp];
-
-                    auto orgsize = comp.size;
-
-                    if(temp.GetType() == ComponentType::Container) {
-                        comp.size = {0, 0};
-                        update(comp);
-                    }
-                    else if(temp.GetType() == ComponentType::Graphics) {
-                        if(st.primary) {
-                            auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
-                            if(rectangular)
-                                comp.size = rectangular->GetSize() + dynamic_cast<const GraphicsTemplate&>(temp).GetPadding();
-                        }
-                        else {
-                            comp.size = dynamic_cast<const GraphicsTemplate&>(temp).GetPadding().Total();
-                        }
-                    }
-                    else if(temp.GetType() == ComponentType::Textholder) {
-                        const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
-
-                        if(th.IsReady() && stringdata[temp.GetDataEffect()] != "") {
-                            auto s = size.Width(maxsize.Width, emsize);
-                            
-                            if(tagnowrap.count(temp.GetTag()))
-                                s = 0;
-
-                            if(s > 0)
-                                comp.size = th.GetRenderer().GetSize(stringdata[temp.GetDataEffect()], s);
-                            else
-                                comp.size = th.GetRenderer().GetSize(stringdata[temp.GetDataEffect()]);
-
-                        }
-                    }
-                    else if(temp.GetType() == ComponentType::Placeholder) {
-                        const auto &ph = dynamic_cast<const PlaceholderTemplate&>(temp);
-
-                        if(imagedata.Exists(ph.GetDataEffect())) {
-                            auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(&imagedata[ph.GetDataEffect()]);
-                            if(rectangular) {
-                                comp.size = rectangular->GetSize();
-                            }
-                        }
-                        else {
-                            comp.size = {0, 0};
-                        }
-                    }
-
-                    if(temp.GetHorizontalSizing() == ComponentTemplate::GrowOnly) {
-                        if(comp.size.Width < orgsize.Width)
-                            comp.size.Width = orgsize.Width;
-                    }
-                    else if(temp.GetHorizontalSizing() == ComponentTemplate::ShrinkOnly) {
-                        if(comp.size.Width > orgsize.Width)
-                            comp.size.Width = orgsize.Width;
-                    }
-
-                    if(temp.GetHorizontalSizing() == ComponentTemplate::GrowOnly) {
-                        if(comp.size.Height < orgsize.Height)
-                            comp.size.Height = orgsize.Height;
-                    }
-                    else if(temp.GetHorizontalSizing() == ComponentTemplate::ShrinkOnly) {
-                        if(comp.size.Height > orgsize.Height)
-                            comp.size.Height = orgsize.Height;
-                    }
-
-                    if(temp.GetValueModification() == temp.ModifySize) {
-                        if(cont.GetOrientation() == Graphics::Orientation::Horizontal)
-                            comp.size.Width = orgsize.Width;
-                        else
-                            comp.size.Height = orgsize.Height;
-                    }
-                    else if(temp.GetValueModification() == temp.ModifyWidth) {
-                        comp.size.Width = orgsize.Width;
-                    }
-                    else if(temp.GetValueModification() == temp.ModifyHeight) {
-                        comp.size.Height = orgsize.Height;
-                    }
-
-                    if(
-                        (cont.GetOrientation() == Graphics::Orientation::Horizontal &&
-                        (size.Width.GetUnit() == Dimension::Percent || size.Width.GetUnit() == Dimension::BasisPoint)) ||
-                        (cont.GetOrientation() == Graphics::Orientation::Vertical &&
-                        (size.Height.GetUnit() == Dimension::Percent || size.Height.GetUnit() == Dimension::BasisPoint))
-                        )
-                    {
-                        if(maxsize.Width == 0)
-                            comp.size.Width = 0;
-                        if(maxsize.Height == 0)
-                            comp.size.Height = 0;
-                    }
-
-                    if(comp.size.Width < 0)
-                        comp.size.Width = 0;
-                    if(comp.size.Height < 0)
-                        comp.size.Height = 0;
+                    size ={
+                        {int(calculatevalue(val, 0, comp)*10000), Dimension::BasisPoint}, 
+                        {int(calculatevalue(val, 1, comp)*10000), Dimension::BasisPoint}
+                    };
                 }
             }
-        }
-
-        Component *prev = nullptr, *next = nullptr;
-
-        //second pass will align everything
-        for(int i=0; i<cont.GetCount(); i++) {
-            
-            int ci = cont[i];
-
-            if(ci >= indices) continue;
-            if(!stacksizes[ci]) continue;
-
-
-            auto &compparent = get(cont[i]);
-            
-            const auto &temp = compparent.GetTemplate();
-
-            for(int j = 0; temp.GetRepeatMode() == temp.NoRepeat ? j == 0 : repeats.count(temp.GetRepeatMode()) && j < repeats[temp.GetRepeatMode()].size(); j++) {
-                Component *compptr;
-                const std::array<float, 4> *val;
-
-                if(temp.GetRepeatMode() == temp.NoRepeat) {
-                    compptr = &compparent;
-                    val     = &value;
-                }
-                else {
-                    compptr = &repeated[&temp][j];
-                    val     = &repeats[temp.GetRepeatMode()][j];
-                }
-
-                auto &comp = *compptr;
-
-                //check if textholder and if so use emsize from the font
-                int emsize = getemsize(comp);
-            
-                //check anchor object by observing temp.GetPreviousAnchor and direction
-                Component *anch = nullptr;
-            
-            
-                //if absolute, nothing to anchor to but to parent
-                if(temp.GetPositioning() == temp.Relative && temp.GetPreviousAnchor() != Anchor::None) {
-                    if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-                        if((IsLeft(temp.GetPreviousAnchor()) && IsRight(temp.GetMyAnchor())) || 
-                            (temp.GetPreviousAnchor() == Anchor::None && IsRight(temp.GetContainerAnchor()))) 
-                        {
-                            anch = prev;
-                            comp.anchorotherside = true;
-                        }
-                        else {
-                            anch = next;
-                        }
-                    }
-                    else {
-                        if((IsTop(temp.GetPreviousAnchor()) && IsBottom(temp.GetMyAnchor())) || 
-                            (temp.GetPreviousAnchor() == Anchor::None && IsBottom(temp.GetContainerAnchor()))) 
-                        {
-                            anch = prev;
-                            comp.anchorotherside = true;
-                        }
-                        else {
-                            anch = next;
-                        }
-                    }
-                }
-            
-                auto parentmargin = Convert(temp.GetMargin(), parent.innersize, emsize).CombinePadding(Convert(cont.GetPadding(), parent.size, emsize)) + Convert(temp.GetIndent(), parent.innersize, emsize);
-            
-                Geometry::Margin margin;
-            
-                if(anch) {
-                    margin = Convert(temp.GetMargin(), parent.innersize, emsize).CombineMargins(Convert(anch->GetTemplate().GetMargin(), parent.innersize, emsize));
-                }
-                else {
-                    margin = parentmargin;
-                }
-            
-                auto maxsize = parent.innersize - parentmargin;
-            
-                auto pos = temp.GetPosition();
-            
-                if(temp.GetValueModification() == temp.ModifyPosition) {
-                    if(NumberOfSetBits(temp.GetValueSource()) == 1) {
-                        if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-                            pos = {{int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, pos.Y};
-                        }
-                        else {
-                            pos = {pos.X, {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}};
-                        }
-                    }
-                    else {
-                        pos ={{int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, {int(calculatevalue(*val, 1, comp)*10000), Dimension::BasisPoint}};
-                    }
-                }
-                else if(temp.GetValueModification() == temp.ModifyX) {
-                    pos = {{int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}, pos.Y};
-                }
-                else if(temp.GetValueModification() == temp.ModifyY) {
-                    pos = {pos.X, {int(calculatevalue(*val, 0, comp)*10000), Dimension::BasisPoint}};
-                }
-                else if(taglocations.count(temp.GetTag())) {
-                    pos = {taglocations[temp.GetTag()]};
-                }
-                
-                if(temp.GetPositioning() == temp.PolarAbsolute) {
-                    auto pcenter = Geometry::Pointf(cont.GetCenter().X.CalculateFloat((float)maxsize.Width, (float)emsize), cont.GetCenter().Y.CalculateFloat((float)maxsize.Height, (float)emsize));
-                    auto center  = Geometry::Pointf(temp.GetCenter().X.CalculateFloat((float)comp.size.Width, (float)emsize), temp.GetCenter().Y.CalculateFloat((float)comp.size.Height, (float)emsize));
-
-                    pcenter += parentmargin.TopLeft();
-
-                    auto r = pos.X.CalculateFloat(Geometry::Point(maxsize).Distance()/(float)sqrt(2), (float)emsize);
-
-                    auto a = pos.Y.CalculateFloat(360, PI);
-
-                    a *= PI / 180.0f;
-
-                    comp.location = {int(std::round(r * cos(a) + pcenter.X - center.X)), int(std::round(r * sin(a) + pcenter.Y - center.Y))};
-                }
-                else {
-                    auto offset = Convert(pos, (temp.GetPositioning() == temp.AbsoluteSliding ?  maxsize - comp.size : comp.size), emsize);
-            
-                    if(anch) {
-                        anchortoother(comp, temp, offset, margin, *anch, cont.GetOrientation());
-                    }
-                    else {
-                        anchortoparent(comp, temp, offset, margin, parent.innersize);
-                    }
-                }
-
-                //Which anchor side is to be changed
-                if(temp.GetPositioning() == temp.Relative) {
-                    if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-                        if(IsRight(temp.GetMyAnchor())) {
-                            prev = &comp;
-                        }
-                        else {
-                            next = &comp;
-                        }
-                    }
-                    else {
-                        if(IsBottom(temp.GetMyAnchor())) {
-                            prev = &comp;
-                        }
-                        else {
-                            next = &comp;
-                        }
-                    }
-                }
+            else if(temp.GetValueModification() == temp.ModifyWidth) {
+                size ={{int(calculatevalue(val, 0, comp)*10000), Dimension::BasisPoint}, size.Height};
             }
-        }//for indices
-        
-        if(requiresrepass && !repassdone) {
-            if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-                int rightused = 0, leftused = 0;
+            else if(temp.GetValueModification() == temp.ModifyHeight) {
+                size ={size.Width, {int(calculatevalue(val, 0, comp)*10000), Dimension::BasisPoint}};
+            }
+            
+            
+            //****** combine with above
+            if(temp.GetValueModification() == temp.ModifySize && NumberOfSetBits(temp.GetValueSource()) > 1) {
+                auto minimum = Convert(temp.GetSize(), maxsize, emsize);
                 
-                for(int i=0; i<cont.GetCount(); i++) {
-                    
-                    int ci = cont[i];
-
-                    if(ci >= indices) continue;
-                    if(!stacksizes[ci]) continue;
-
-                    auto &compparent = get(cont[i]);
-                    const auto &temp = compparent.GetTemplate();
-
-                    for(int j = 0; temp.GetRepeatMode() == temp.NoRepeat ? j == 0 : repeats.count(temp.GetRepeatMode()) && j < repeats[temp.GetRepeatMode()].size(); j++) {
-                        Component *compptr;
-                        const std::array<float, 4> *val;
-
-                        if(temp.GetRepeatMode() == temp.NoRepeat) {
-                            compptr = &compparent;
-                            val     = &value;
-                        }
-                        else {
-                            compptr = &repeated[&temp][j];
-                            val     = &repeats[temp.GetRepeatMode()][j];
-                        }
-
-                        auto &comp = *compptr;
-
-                        //check if textholder and if so use emsize from the font
-                        int emsize = getemsize(comp);
-
-                        if(temp.GetPositioning() != temp.Absolute && temp.GetPositioning() != temp.PolarAbsolute) {
-                            if(comp.anchorotherside) {
-                                rightused = parent.innersize.Width - comp.location.X;
-                            }
-                            else if(comp.size.Width > 0) {
-                                leftused = (   
-                                    comp.location.X + comp.size.Width + 
-                                    std::max(temp.GetMargin().Right(parent.innersize.Width, emsize), cont.GetPadding().Right(parent.size.Width, emsize))
-                                
-                                );
-                            }
-                        }
-                    }
-                }
-                
-                spaceleft = parent.innersize.Width - rightused - leftused;
+                comp.size = Convert(size, maxsize - minimum, emsize) + minimum;
+            }
+            else if(temp.GetValueModification() == temp.ModifyWidth || (temp.GetValueModification() == temp.ModifySize && cont.GetOrientation() == Graphics::Orientation::Horizontal)) {
+                auto minimum = Convert(temp.GetSize(), maxsize, emsize);
+                                    
+                comp.size = Convert(size, {maxsize.Width - minimum.Width, maxsize.Height}, emsize) + Geometry::Size(minimum.Width, 0);
+            }
+            else if(temp.GetValueModification() == temp.ModifyHeight || (temp.GetValueModification() == temp.ModifySize && cont.GetOrientation() == Graphics::Orientation::Vertical)) {
+                auto minimum = Convert(temp.GetSize(), maxsize, emsize);
+                                    
+                comp.size = Convert(size, {maxsize.Width, maxsize.Height - minimum.Height}, emsize) + Geometry::Size(0, minimum.Height);
+            }
+            else if(tagsizes.count(temp.GetTag())) {
+                comp.size = tagsizes[temp.GetTag()]; //********* this should be combined with regular size + modified size
             }
             else {
-                int bottomused = 0, topused = 0;
-                
-                for(int i=0; i<cont.GetCount(); i++) {
-                    
-                    int ci = cont[i];
+                comp.size = Convert(size, maxsize, emsize);
+            }
+            
+            if( //if positioning is not free form
+                (temp.GetPositioning() == temp.Relative || temp.GetPositioning() == temp.AbsoluteSliding) && 
+                ( //and size along the orientation depends on the remaining size
+                    (cont.GetOrientation() == Graphics::Orientation::Horizontal && size.Width.IsRelative() ) ||
+                    (cont.GetOrientation() == Graphics::Orientation::Vertical   && size.Height.IsRelative())
+                )
+            )  //this component requires a repass
+                requiresrepass = true;
+            
+            if(!(tagsizes.count(temp.GetTag())) && 
+                (temp.GetHorizontalSizing() != temp.Fixed || temp.GetVerticalSizing() != temp.Fixed) &&
+                !(temp.GetValueModification() == temp.ModifySize &&  NumberOfSetBits(temp.GetValueSource()) > 1)
+            ) {
+                auto &st = *storage[&temp];
 
-                    if(ci >= indices) continue;
-                    if(!stacksizes[ci]) continue;
+                auto orgsize = comp.size;
 
-                    auto &comp = get(cont[i]);
-                    const auto &temp = comp.GetTemplate();
-                    
-                    //check if textholder and if so use emsize from the font
-                    int emsize = getemsize(comp);
+                if(temp.GetType() == ComponentType::Container) {
+                    comp.size = {0, 0};
+                    update(comp);
+                }
+                else if(temp.GetType() == ComponentType::Graphics) {
+                    if(st.primary) {
+                        auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
+                        if(rectangular)
+                            comp.size = rectangular->GetSize() + dynamic_cast<const GraphicsTemplate&>(temp).GetPadding();
+                    }
+                    else {
+                        comp.size = dynamic_cast<const GraphicsTemplate&>(temp).GetPadding().Total();
+                    }
+                }
+                else if(temp.GetType() == ComponentType::Textholder) {
+                    const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
 
-                    if(temp.GetPositioning() != temp.Absolute && temp.GetPositioning() != temp.PolarAbsolute) {
-                        if(comp.anchorotherside) {
-                            bottomused = parent.innersize.Height - comp.location.X;
+                    if(th.IsReady() && stringdata[temp.GetDataEffect()] != "") {
+                        auto s = size.Width(maxsize.Width, emsize);
+                        
+                        if(tagnowrap.count(temp.GetTag()))
+                            s = 0;
+
+                        if(s > 0)
+                            comp.size = th.GetRenderer().GetSize(stringdata[temp.GetDataEffect()], s);
+                        else
+                            comp.size = th.GetRenderer().GetSize(stringdata[temp.GetDataEffect()]);
+
+                    }
+                }
+                else if(temp.GetType() == ComponentType::Placeholder) {
+                    const auto &ph = dynamic_cast<const PlaceholderTemplate&>(temp);
+
+                    if(imagedata.Exists(ph.GetDataEffect())) {
+                        auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(&imagedata[ph.GetDataEffect()]);
+                        if(rectangular) {
+                            comp.size = rectangular->GetSize();
                         }
-                        else if(comp.size.Height) {
-                            topused = (   
-                                comp.location.X + comp.size.Height + 
-                                std::max(temp.GetMargin().Right(parent.innersize.Height, emsize), cont.GetPadding().Right(parent.size.Height, emsize))
-                                
-                            );
+                    }
+                    else {
+                        comp.size = {0, 0};
+                    }
+                }
+
+                if(temp.GetHorizontalSizing() == ComponentTemplate::GrowOnly) {
+                    if(comp.size.Width < orgsize.Width)
+                        comp.size.Width = orgsize.Width;
+                }
+                else if(temp.GetHorizontalSizing() == ComponentTemplate::ShrinkOnly) {
+                    if(comp.size.Width > orgsize.Width)
+                        comp.size.Width = orgsize.Width;
+                }
+
+                if(temp.GetHorizontalSizing() == ComponentTemplate::GrowOnly) {
+                    if(comp.size.Height < orgsize.Height)
+                        comp.size.Height = orgsize.Height;
+                }
+                else if(temp.GetHorizontalSizing() == ComponentTemplate::ShrinkOnly) {
+                    if(comp.size.Height > orgsize.Height)
+                        comp.size.Height = orgsize.Height;
+                }
+
+                if(temp.GetValueModification() == temp.ModifySize) {
+                    if(cont.GetOrientation() == Graphics::Orientation::Horizontal)
+                        comp.size.Width = orgsize.Width;
+                    else
+                        comp.size.Height = orgsize.Height;
+                }
+                else if(temp.GetValueModification() == temp.ModifyWidth) {
+                    comp.size.Width = orgsize.Width;
+                }
+                else if(temp.GetValueModification() == temp.ModifyHeight) {
+                    comp.size.Height = orgsize.Height;
+                }
+
+                if(
+                    (cont.GetOrientation() == Graphics::Orientation::Horizontal && size.Width.IsRelative()) ||
+                    (cont.GetOrientation() == Graphics::Orientation::Vertical && size.Height.IsRelative() )
+                    )
+                {
+                    if(maxsize.Width == 0)
+                        comp.size.Width = 0;
+                    if(maxsize.Height == 0)
+                        comp.size.Height = 0;
+                }
+
+                if(comp.size.Width < 0)
+                    comp.size.Width = 0;
+                if(comp.size.Height < 0)
+                    comp.size.Height = 0;
+            }
+        }); //for size
+
+        Component *startanch = nullptr, *endanch = nullptr;
+
+        //Positioning stage, second pass will align everything.
+        forallcomponents([&](Component &comp, const ComponentTemplate &temp, const std::array<float, 4> &val, int emsize) {
+            //check anchor object by observing temp.GetPreviousAnchor and direction
+            Component *anch = nullptr;
+            
+            //if absolute, nothing to anchor to but to parent
+            if(temp.GetPositioning() == temp.Relative && temp.GetPreviousAnchor() != Anchor::None) {
+                if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
+                    if((IsLeft(temp.GetPreviousAnchor()) && IsRight(temp.GetMyAnchor())) || 
+                        (temp.GetPreviousAnchor() == Anchor::None && IsRight(temp.GetContainerAnchor()))) 
+                    {
+                        anch = startanch;
+                        comp.anchorotherside = true;
+                    }
+                    else {
+                        anch = endanch;
+                    }
+                }
+                else {
+                    if((IsTop(temp.GetPreviousAnchor()) && IsBottom(temp.GetMyAnchor())) || 
+                        (temp.GetPreviousAnchor() == Anchor::None && IsBottom(temp.GetContainerAnchor()))) 
+                    {
+                        anch = startanch;
+                        comp.anchorotherside = true;
+                    }
+                    else {
+                        anch = endanch;
+                    }
+                }
+            }
+        
+            auto parentmargin = Convert(temp.GetMargin(), parent.innersize, emsize).CombinePadding(Convert(cont.GetPadding(), parent.size, emsize)) + Convert(temp.GetIndent(), parent.innersize, emsize);
+        
+            Geometry::Margin margin;
+        
+            if(anch) {
+                margin = Convert(temp.GetMargin(), parent.innersize, emsize).CombineMargins(Convert(anch->GetTemplate().GetMargin(), parent.innersize, emsize));
+            }
+            else {
+                margin = parentmargin;
+            }
+        
+            auto maxsize = parent.innersize - parentmargin;
+        
+            auto pos = temp.GetPosition();
+        
+            if(temp.GetValueModification() == temp.ModifyPosition) {
+                if(NumberOfSetBits(temp.GetValueSource()) == 1) {
+                    if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
+                        pos = {{int(calculatevalue(val, 0, comp)*10000), Dimension::BasisPoint}, pos.Y};
+                    }
+                    else {
+                        pos = {pos.X, {int(calculatevalue(val, 0, comp)*10000), Dimension::BasisPoint}};
+                    }
+                }
+                else {
+                    pos ={{int(calculatevalue(val, 0, comp)*10000), Dimension::BasisPoint}, {int(calculatevalue(val, 1, comp)*10000), Dimension::BasisPoint}};
+                }
+            }
+            else if(temp.GetValueModification() == temp.ModifyX) {
+                pos = {{int(calculatevalue(val, 0, comp)*10000), Dimension::BasisPoint}, pos.Y};
+            }
+            else if(temp.GetValueModification() == temp.ModifyY) {
+                pos = {pos.X, {int(calculatevalue(val, 0, comp)*10000), Dimension::BasisPoint}};
+            }
+            else if(taglocations.count(temp.GetTag())) {
+                pos = {taglocations[temp.GetTag()]};
+            }
+            
+            if(temp.GetPositioning() == temp.PolarAbsolute) {
+                auto pcenter = Geometry::Pointf(cont.GetCenter().X.CalculateFloat((float)maxsize.Width, (float)emsize), cont.GetCenter().Y.CalculateFloat((float)maxsize.Height, (float)emsize));
+                auto center  = Geometry::Pointf(temp.GetCenter().X.CalculateFloat((float)comp.size.Width, (float)emsize), temp.GetCenter().Y.CalculateFloat((float)comp.size.Height, (float)emsize));
+
+                pcenter += parentmargin.TopLeft();
+
+                auto r = pos.X.CalculateFloat(Geometry::Point(maxsize).Distance()/(float)sqrt(2), (float)emsize);
+
+                auto a = pos.Y.CalculateFloat(360, PI);
+
+                a *= PI / 180.0f;
+
+                comp.location = {int(std::round(r * cos(a) + pcenter.X - center.X)), int(std::round(r * sin(a) + pcenter.Y - center.Y))};
+            }
+            else {
+                auto offset = Convert(pos, (temp.GetPositioning() == temp.AbsoluteSliding ?  maxsize - comp.size : comp.size), emsize);
+        
+                if(anch) {
+                    anchortoother(comp, temp, offset, margin, *anch, cont.GetOrientation());
+                }
+                else {
+                    anchortoparent(comp, temp, offset, margin, parent.innersize);
+                }
+            }
+
+            //Which anchor side is to be changed
+            if(temp.GetPositioning() == temp.Relative) {
+                if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
+                    if(IsRight(temp.GetMyAnchor())) {
+                        startanch = &comp;
+                    }
+                    else {
+                        endanch = &comp;
+                    }
+                }
+                else {
+                    if(IsBottom(temp.GetMyAnchor())) {
+                        startanch = &comp;
+                    }
+                    else {
+                        endanch = &comp;
+                    }
+                }
+            }
+        }); //position pass
+        
+        if(requiresrepass && !repassdone) {
+            int startused = 0, endused = 0;
+            
+            Component *startmost = nullptr, *endmost = nullptr;
+            
+            //go through the components to see where they end
+            forallcomponents([&](Component &comp, const ComponentTemplate &temp, const std::array<float, 4> &, int) {
+                //only relatively sided components take up space
+                if(temp.GetPositioning() == temp.Relative) {
+                    //the values will be overwritten successively to find the last ones
+                    if(ishor) {
+                        if(comp.anchorotherside) { //anchored to right
+                            startmost = &comp;
+                        }
+                        else { //to left
+                            startmost = &comp;
+                        }
+                    }
+                    else {
+                        if(comp.anchorotherside) { //to bottom
+                            endmost = &comp;
+                        }
+                        else { //to top
+                            startmost = &comp;
                         }
                     }
                 }
-                
-                spaceleft = parent.innersize.Height - bottomused - topused;
+            });
+            
+            //this will calculate the necessary spacing between the last item(s)
+            int lastspacing = 0;
+            
+            if(ishor) {
+                if(startmost) {
+                    //calculate the used space on the left
+                    startused = startmost->location.X + startmost->size.Width;
+                    
+                    //both sides exist, so we will be using the margins between them
+                    if(endmost) {
+                        //calculate the used space on the right
+                        endused = parent.innersize.Width - endmost->location.X;
+                        
+                        //calculate margin
+                        auto s = startmost->GetTemplate().GetMargin().Right(0, getemsize(*startmost));
+                        auto e = endmost->GetTemplate().GetMargin().Left(0, getemsize(*startmost));
+                        
+                        //add indent
+                        lastspacing = calculatemargin(s, e);
+                    }
+                    else { //only start side is there
+                        //calculate margin
+                        auto s = startmost->GetTemplate().GetMargin().Right(0, getemsize(*startmost));
+                        auto e = cont.GetPadding().Right(parent.innersize.Width, getemsize(*startmost));
+                        
+                        //add indent
+                        lastspacing = calculatemargin(s, e) + startmost->GetTemplate().GetIndent().Right(0, getemsize(*startmost));
+                    }
+                }
+                else if(endmost) { //only end side is there
+                    //calculate the used space on the right
+                    endused = parent.innersize.Width - endmost->location.X;
+                    
+                    //calculate margin
+                    auto s = cont.GetPadding().Left(parent.innersize.Width, getemsize(*startmost));
+                    auto e = endmost->GetTemplate().GetMargin().Left(0, getemsize(*startmost));
+                    
+                    //add indent
+                    lastspacing = calculatemargin(s, e) + endmost->GetTemplate().GetIndent().Left(0, getemsize(*startmost));
+                }
             }
+            else {
+                if(startmost) {
+                    //calculate the space used on the top side
+                    startused = startmost->location.Y + startmost->size.Height;
+                    
+                    //both sides exist, so we will be using the margins between them
+                    if(endmost) {
+                        //calculate the space used on the bottom side
+                        endused = parent.innersize.Height - endmost->location.Y;
+                        
+                        //calculate margin
+                        auto s = startmost->GetTemplate().GetMargin().Bottom(0, getemsize(*startmost));
+                        auto e = endmost->GetTemplate().GetMargin().Top(0, getemsize(*startmost));
+                        
+                        lastspacing = calculatemargin(s, e);
+                    }
+                    else { //only start side is there
+                        //calculate margin
+                        auto s = startmost->GetTemplate().GetMargin().Bottom(0, getemsize(*startmost));
+                        auto e = cont.GetPadding().Bottom(parent.innersize.Width, getemsize(*startmost));
+                        
+                        //add indent
+                        lastspacing = calculatemargin(s, e) + startmost->GetTemplate().GetIndent().Bottom(0, getemsize(*startmost));
+                    }
+                }
+                else if(endmost) { //only end side is there
+                    //calculate the space used on the bottom side
+                    endused = parent.innersize.Height - endmost->location.Y;
+                    
+                    //calculate margin
+                    auto s = cont.GetPadding().Top(parent.innersize.Width, getemsize(*startmost));
+                    auto e = endmost->GetTemplate().GetMargin().Top(0, getemsize(*startmost));
+                    
+                    //add indent
+                    lastspacing = calculatemargin(s, e) + endmost->GetTemplate().GetIndent().Top(0, getemsize(*startmost));
+                }
+            }
+            
+            //calculate remaining space for percent based components
+            spaceleft = parent.innersize.Width - startused - endused - lastspacing;
 
             repassdone = true;
             goto realign;
         }
 
 
+        //update the containers
         for(int i=0; i<cont.GetCount(); i++) {
 
             int ci = cont[i];
@@ -2512,7 +2625,7 @@ realign:
         }
     }
 
-        
+    
     void ComponentStack::render(Component &comp, Graphics::Layer &parent, Geometry::Point offset, Graphics::RGBAf color, int ind) {
         const ComponentTemplate &tempp = comp.GetTemplate();
         auto tempptr = &tempp;
@@ -2569,16 +2682,17 @@ realign:
         if(temp.GetType() == ComponentType::Container) {
             const auto &cont = dynamic_cast<const ContainerTemplate&>(temp);
             
-            offset += cont.GetBorderSize().TopLeft();
             offset += comp.location;
 
             if(st.primary && target) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
                 if(rectangular)
-                    rectangular->DrawIn(*target, offset-cont.GetBorderSize().TopLeft(), comp.size, color);
+                    rectangular->DrawIn(*target, offset, comp.size, color);
                 else
-                    st.primary->Draw(*target, offset-cont.GetBorderSize().TopLeft(), color);
+                    st.primary->Draw(*target, offset, color);
             }
+            
+            offset += cont.GetBorderSize().TopLeft();
             
             for(int i=0; i<cont.GetCount(); i++) {
                 if(cont[i] >= indices) continue;
@@ -2596,6 +2710,8 @@ realign:
                 }
             }
             
+            offset -= cont.GetBorderSize().TopLeft();
+            
             if(st.secondary && target) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.secondary);
                 if(rectangular)
@@ -2603,8 +2719,6 @@ realign:
                 else
                     st.secondary->Draw(*target, offset-cont.GetBorderSize().TopLeft()+cont.GetOverlayExtent().TopLeft(), color);
             }
-            
-            offset -= cont.GetBorderSize().TopLeft();
         }
         else if(temp.GetType() == ComponentType::Graphics) {
             if(st.primary && target) {

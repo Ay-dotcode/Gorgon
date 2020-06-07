@@ -517,8 +517,18 @@ namespace Gorgon { namespace UI {
 
         ///Return the component at the given index with the requested condition. Returns top of stack if condition does not exist.
         Component &get(int ind, ComponentCondition condition) const;
-
-        ///starts update chain
+        
+        ///Calculates the position results from the anchoring the given component to the area determined by the
+        ///given size and margin. Offset is used to move away from the anchor and may result reversing of direction.
+        void anchortoparent(Component &comp, const ComponentTemplate &temp, 
+                                Geometry::Point offset, Geometry::Margin margin, Geometry::Size maxsize);
+        
+        
+        ///Calculates the position results from the anchoring the given component to another component
+        void anchortoother(Component &comp, const ComponentTemplate &temp, 
+                        Geometry::Point offset, Geometry::Margin margin, Component &other, Graphics::Orientation orientation);
+        
+        ///starts the update chain
         void update();
 
         ///updates a specific container component
@@ -534,6 +544,12 @@ namespace Gorgon { namespace UI {
         
         ///returns the size of the emdash
         int getemsize(const Component &comp);
+        
+        ///returns the baseline point of the component
+        int getbaseline(const Component &comp);
+        
+        ///returns the height of the component
+        int gettextheight(const Component &comp);
 
         ///Calculates the value of the given channel for the given component. Uses stored value
         float calculatevalue(int channel, const Component &comp) const { return calculatevalue(value, channel, comp); }
@@ -556,7 +572,13 @@ namespace Gorgon { namespace UI {
         Component *gettag(ComponentTemplate::Tag tag) const;
 
         ///ComponentStack wide emsize
-        int emsize = 10;
+        int emsize = 0;
+        
+        ///ComponentStack wide baseline
+        int baseline = 0;
+        
+        ///ComponentStack wide baseline
+        int textheight = 0;
         
         ///This vector contains data for components. This piece of memory will be managed by the stack
         Component *data = nullptr;
