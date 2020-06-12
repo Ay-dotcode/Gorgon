@@ -65,6 +65,7 @@ public:
         int sz = 11;
 #ifdef WIN32
         fnt.LoadFile("C:/Windows/Fonts/tahoma.ttf", sz);
+        fntlarge.LoadFile("C:/Windows/Fonts/tahoma.ttf", sz*1.5);
 #else
         bool found = false;
         std::streambuf *buf;
@@ -81,6 +82,8 @@ public:
                     auto fname = String::Extract(line, '"', true);
                     std::cout<<fname<<std::endl;
                     found = fnt.LoadFile(fname, sz);
+                    if(found) 
+                        fntlarge.LoadFile(fname, sz*1.5);
                     break;
                 }
             }
@@ -88,8 +91,10 @@ public:
             delete buf;
         }
         
-        if(!found)
+        if(!found) {
             fnt.LoadFile("/usr/share/fonts/gnu-free/FreeSans.ttf", sz);
+            fntlarge.LoadFile("/usr/share/fonts/gnu-free/FreeSans.ttf", sz*1.5);
+        }
 #endif
         if(!fnt.HasKerning()) {
             auto bmpfnt = new Graphics::BitmapFont(fnt.MoveOutBitmap());
@@ -101,12 +106,16 @@ public:
 		sty.SetColor({0.6f, 1.f, 1.f});
 		sty.JustifyLeft();
 
+		stylarge.UseFlatShadow({0.f, 1.0f}, {1.f, 1.f});
+		stylarge.SetColor({1.f, 1.f, 1.f});
+		stylarge.AlignCenter();
+
 		sty.SetTabWidthInLetters(4);
 		sty.SetParagraphSpacing(4);
-		/*sty.Print(l,
+		sty.Print(l,
 				  helptext
-				  , 500, 10, wind.GetWidth()-505
-		);*/
+				  , 600, 10, wind.GetWidth()-605
+		);
 
 		wind.KeyEvent.Register([this](Input::Key key, bool state) {
 			if(!state && (key == 27 || key == 65307))
@@ -119,8 +128,8 @@ public:
 	W_ wind;
 	Graphics::Layer l;
 	Bitmap bgimage, icon;
-	Graphics::FreeType fnt;
-    Graphics::StyledRenderer sty = {fnt};
+	Graphics::FreeType fnt, fntlarge;
+    Graphics::StyledRenderer sty = {fnt}, stylarge = {fntlarge};
     WM::Icon ico;
 
 	std::string appname;

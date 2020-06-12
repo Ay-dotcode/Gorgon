@@ -1048,7 +1048,7 @@ namespace Gorgon { namespace Graphics {
             [&](Glyph) { cur.Y += (int)std::round(renderer->GetLineGap() * vspace + pspace); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
         );
 
-        return{maxx > 0 ? maxx + 1 : 0, cur.Y > 0 ? (cur.Y + 1 - pspace + renderer->GetLineGap() * (1 - vspace)) : 0};
+        return{maxx > 0 ? maxx + 1 : 0, cur.Y > 0 ? (cur.Y + 1 - pspace + (int)std::round(renderer->GetLineGap() * (1 - vspace))) : 0};
     }
     
     Geometry::Size StyledRenderer::GetSize(const std::string &text, int width) const {
@@ -1079,7 +1079,7 @@ namespace Gorgon { namespace Graphics {
             std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth ? tabwidth : 16)
         );
 
-        return {maxx > 0 ? maxx + 1 : 0, y > 0 ?  y - pspace + renderer->GetLineGap() * (1 - vspace) + 1 : 0};
+        return {maxx > 0 ? maxx + 1 : 0, y > 0 ?  y - pspace + (int)std::round(renderer->GetLineGap() * (1 - vspace)) + 1 : 0};
     }
     
     int StyledRenderer::GetCharacterIndex(const std::string &text, Geometry::Point location) const{ 
