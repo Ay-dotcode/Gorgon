@@ -189,7 +189,7 @@ int main(int argc, char* argv[]){
         int check;
         
         std::ifstream f1;
-        f1.open("/home/luca/gorgon-game-engine/Docs/xml/_time_8h.xml");
+        f1.open("/home/luca/Gorgon/Docs/xml/_time_8h.xml");
         
         f1.seekg(0, std::ios::end);
         size_t len = f1.tellg();
@@ -241,21 +241,46 @@ int main(int argc, char* argv[]){
     ////////////////////////////////Creation of new Gscripting file/////////////////////////
     std::ofstream file1;
     file1.open(fileOut, std::ios::app);
-    std::string t1 = "\n#include \"Gorgon/Scripting/Embedding.h\"\n#include \"Gorgon/Scripting/Reflection.h\"\n#include \"Gorgon/Scripting.h\"\n\n";
+    std::string t1 = "\n#include \"Gorgon/Scripting/Embedding.h\"\n#include \"Gorgon/Scripting/Reflection.h\"\n#include \"Gorgon/Scripting.h\"\n";
     bool initialized = false;
+    bool dataType = false;
     int i = 0;
+    std::string tempData;
+    std::string previous = "null";
     for(auto e : elements){
+        
+        if(e.name == "compoundname" && e.atrName == "null5" && e.value == "null4"){
+            t1 += "#include \"" + e.data + "\"\n";
+        }
+        
         if(e.name == "compoundname"){
             e.data.resize(e.data.size()-2);
-            t1 += "\n\n namespace Gorgon { namespace " + e.data + "{\n\t Scripting::Library Lib" + e.data + "(\"" + e.data + "\",\"Data types under " + e.data + " module and their member functions and operators\");\n\n" ;
+            
+            tempData = e.data;
+            t1 += "\n\n namespace Gorgon { namespace " + tempData + "{\n\t Gorgon::Scripting::Library Lib" + tempData + "(\"" + tempData + "\",\"Data types under " + tempData + " module and their member functions and operators\");\n\n" ;
             initialized = true;
         }
         
         if(initialized == true){
-            t1 += "\tvoid init_scripting() { \n";
+            t1 += "\tvoid init_scripting() { /*\n \t\tif(Lib" + tempData + ".Members.GetCount()) return;\n\n";
             initialized = false;
         }
         
+        if(e.name == "highlight" && e.atrName == "class" && e.value == "normal" && e.data != "null" && dataType == false){
+            if(e.data == previous && e.data != "#include" && e.data != "}"){
+                
+                std::string dt = e.data;
+                std::for_each(dt.begin(),dt.end(),[](char &c){
+                    c = std::tolower(c);
+                });
+                
+                t1 += "\t\tauto " + 
+                 dt
+                 + " = new Scripting::MappedValueType<" + e.data + ">(\n\t\t\t\"" + e.data + "\", \n\t\t\t\"This is a" + e.data + " object.\"\n\t\t); \n\n\n\t\t" + dt + "->AddMembers({";
+                dataType = true;
+            }
+            previous = e.data;
+        }
 //         if(e.name == "highlight" && e.atrName == "class" && e.value == "keyword"){
 //             t1 += "\n\t\t //" + e.data;
 //             t1 += " " + elements.at(i + 1).data;
@@ -263,7 +288,7 @@ int main(int argc, char* argv[]){
         
         if(e.name == "ref" && e.atrName == "kindref" && e.value == "member"){
             if( !(elements.at(i - 1).data == "null" && (elements.at(i + 1).data == "null" || elements.at(i + 1).data == "};"))){
-                t1 += "\n\t\t/*new Scripting::Function(\"" + e.data + "\",\n\t\t\t\"DESCRIPTION\", Gorgon::Date,\n\t\t\t{ \n\n\t\t\t}\n\t\t),*/";
+                t1 += "\n\t\t\tnew Scripting::Function(\"" + e.data + "\",\n\t\t\t\t\"DESCRIPTION\", Gorgon::Date,\n\t\t\t\t{ \n\n\t\t\t\t}\n\t\t\t),";
             }
             //t1 += " " + elements.at(i + 1).data;
         }
@@ -272,7 +297,7 @@ int main(int argc, char* argv[]){
     }
     
     //t1 += "\n\n namespace Gorgon { namespace Time {\n\t  \n\t}\n} \n ";
-    t1 += "\n\n\n\t}\n\n}  } \n ";
+    t1 += "\n\t\t});\n*/\n\n\t}\n\n}  } \n ";
     //Scripting::Library LibTime(\"Time\",\"Data types under Time.h module and their member functions and operators\");
     file1 << t1;
     file1.close();
