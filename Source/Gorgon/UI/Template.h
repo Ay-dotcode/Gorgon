@@ -16,8 +16,53 @@ namespace Gorgon {
         class TextRenderer;
     }
     
+    /// This namespace contains User interface related functionality. This namespace
+    /// does not contain the actual widgets that can be used. For that purpose, use
+    /// Gorgon::Widgets namespace.
+    namespace UI {
+
     /**
     * @page ui User interface
+    * 
+    * The user interface in Gorgon Library is based on the components system and is highly
+    * customizable. ComponentStack manages these components within a widget. There are
+    * different component types: containers (see @ref ContainerTemplate), placeholders (see
+    * @ref PlaceholderTemplate), graphics (see @ref GraphicsTemplate), and textholder (see 
+    * @ref TextholderTemplate). All subcomponents should be created from the main Template.
+    * 
+    * Each component has an index and containers have the index of the components that resides
+    * in them. There can be multiple components with the same index. ComponentCondition system
+    * is used to decide which components will exist at a given time. 
+    * 
+    * It is possible to control the transition of the widget from state to state by giving
+    * a specific component for the transition. This is generally used to animate state changes.
+    * It is also possible to use transition value channel to have value based animations. These
+    * animations can be reversed, even at the middle. In fact, even for regular bitmap
+    * animations, this is recommended as it can time the animation perfectly, allow it to be
+    * reversed at the middle of the transition (imagine mouse over). 
+    * 
+    * Components can be modified by ValueModification system. There are 4 widget controlled
+    * value channels and a fifth controlled by the transition. Values are expected to be in
+    * range from 0 to 1. But this can be changed by modifying value ranges. The aspect of the
+    * component that the value affects can also be controlled. Channels can be reordered to
+    * fit into the necessary order. Value changes can also be asked to be applied smoothly. But
+    * this is controlled through the widget.
+    * 
+    * Component data can be obtained by DataEffect. Data can currently be a text or an image.
+    * There are various data effects that can be used by graphics and textholder templates. 
+    * There are also conditions that trigger if a data channel has any data in it.
+    * 
+    * Components can be repeated. The repeats are controlled by the widget. Containers are not
+    * fully supported to be repeating structures. Other component types can be used with this
+    * system. Each repeat can have a different set value and condition. There are different
+    * repeating systems (such as minor and major) and each of these can be adjusted separately.
+    * 
+    * Components can have tags to be accessed from the widgets. Some widgets needs specific
+    * tags to exist in the template to work. 
+    * 
+    * Components are placed according to a series of complicated but intuitive rules. For 
+    * details of this system see @ref boxmodel.
+    * 
     *
     * @subpage components
     * 
@@ -26,11 +71,6 @@ namespace Gorgon {
     * @subpage validators
     */
     
-    /// This namespace contains User interface related functionality. This namespace
-    /// does not contain the actual widgets that can be used. For that purpose, use
-    /// Gorgon::Widgets namespace.
-    namespace UI {
-
 
     /**
     * @page components Components
@@ -60,7 +100,8 @@ namespace Gorgon {
     * See @ref boxmodel to learn how the components are spaced out.
     * 
     * 
-    * ### How to create a simple button using components
+    * How to create a simple button using components
+    * ==============================================
     * Create the following templates:
     * 
     * @code
@@ -93,7 +134,7 @@ namespace Gorgon {
     * is generally done by adding a focus rectangle like the following:
     * 
     * @code
-    * VisualTemplate, index = 1, Drawable = focus rectangle, Positioning = Absolute, 
+    * GraphicsTemplate, index = 1, Drawable = focus rectangle, Positioning = Absolute, 
     * Size = 100, 100, Unit::Percent, set margin, condition = Focused
     * @endcode
     * 
@@ -108,35 +149,139 @@ namespace Gorgon {
 
 
     /**
-    * @page boxmodel Box Model
+    * @page boxmodel Component placement
     * 
-    * Component template defines any component that can be placed on a widget. This includes
-    * non-visual elements, fixed and user defined visual elements, and containers.
-    * Container components defines an area that can contain more objects and optionally 
-    * has a background and an overlay. This object also has margin to control how it
-    * will be placed in relation to other objects at the same level. Shadow extension
-    * control the drawing of background, while overlay extension controls the drawing
-    * of the overlay image. Positive extension will enlarge the image in that
-    * direction. Negative extensions also work. Extensions should not cover the border
-    * size, border margin should be within the object, extensions can be used to align
-    * overlay to background and to ignore shadows, which should stay outside the
-    * object. Border size controls the size of the border. (0, 0) of the object
-    * starts from this point. Padding controls the distance of the sub-objects from
-    * the border. Padding and the margin collapse on edge, the maximum value of
-    * margin or the padding is used. However, negative values are always subtracted.
-    * Finally, indent offsets the object from edges of its container. This offset is
-    * calculated after margin and padding is applied and only to the edges touching to
-    * its container.
-    *
-    * Objects are aligned and placed using anchor points. 
-    *
-    * This system is quite close to HTML box model, however, there are differences:
-    * background and overlay can be extended beyond the area, margin collapses with
-    * padding of container and there is indent to control distance from edges. 
-    * All objects have margin and indent while only containers have extensions, 
-    * border size, and padding.
+    * Apart from the top level container, each component should be in container. Components
+    * arrangement in a container first depends on component positioning. If a component is 
+    * relatively positioned, then it will follow the container orientation to be stacked with 
+    * the other relatively positioned components.
     * 
-    * [Might need rewording.]
+    * Sizing
+    * ======
+    * Components have multiple sizing modes. The first set of options control how the component
+    * will be sized in case it contains an image, text, or another component stack. If the size
+    * is Fixed, the size of the contents is ignored. Automatic uses the size of the contents.
+    * GrowOnly, ShrinkOnly options allow component to grow/shrink if the contents is larger/
+    * smaller than the given size. Sizing can be adjusted separately for X and Y axis. When
+    * grow only and shrink only options are combined with relative sizing the size calculation
+    * is performed between fixed and always relative size calculation time. Mixing multiple
+    * automatic grow/shrink only, relatively sized components in the same container is not 
+    * recommended. The system will try to fit automatic grow/shrink relatively sized components
+    * as best as possible with a single pass. Ex: There are two components, both are 50% in
+    * width and one of them is shrink only, container has 100px usable size. If the shrink only
+    * component has a content of 40px, the other component will be grown to fill the remaining
+    * 60px, even though it will be more than 50%. If this is not desired, shrink only component
+    * can be placed inside a 50% sized container, and its relative size should be set 100%.
+    * 
+    * Component size can also be relative. In this case, container orientation plays an 
+    * important role. If the relatively sized axis is not in the oriented direction, then the 
+    * entire usable size of the parent is used for the calculation. However, if the axis is the
+    * oriented direction, then only the unused space is considered during the relative size
+    * calculation. For instance, in a horizontally oriented container, assume there are two
+    * components. One has a fixed width of 50px and the other is set to 100% and the container
+    * has 200px usable width. Assuming no additional spacing, second component will have 150px
+    * width. This calculation depends on how the components are anchored and margin/padding/
+    * indent/border size.
+    * 
+    * Size of the component can be influenced by the value channels. In this case, the size of
+    * component is used as additional size on top of the relative size depending on the channel
+    * value. 
+    * 
+    * 
+    * Spacing
+    * =======
+    * In this system 4 spacing methods are used. First method is border size. Border size is
+    * excluded from the internal area of a container. Thus (0, 0), does not include the border.
+    * In this system, borders are not drawn automatically, they are a part of the background
+    * image, therefore, border size is not calculated. It should be supplied.
+    * 
+    * The second spacing is provided by the padding of the container. Main difference of
+    * padding is that it collapses with the margin of the components as well as being counted
+    * in the container. If the padding for any edge is negative, it will not be collapsed.
+    * 
+    * Margins are spacing around the components. Unless negative, they collapse. This means if
+    * two components are anchored together, the margin between them is the maximum of the
+    * margin their touching edges. Negative margins are always added. 
+    * 
+    * Indent is the last spacing. It is additive and only used if a component is anchored to
+    * its parent. This is very useful in repeated or conditional components. For instance, if
+    * a button can have icon with text. You may want extra spacing on the text if there is no
+    * icon. This can be facilitated using Icon1IsSet condition and indent.
+    * 
+    * All spacing except for border size can be relative. For padding, the size of the
+    * component excluding the borders is used. For margin and indent, size of the parent 
+    * excluding the borders is used. 50% margin left will effectively start a component from 
+    * the center. However, anchoring should be used for this case.
+    * 
+    * 
+    * Anchoring
+    * =========
+    * All components are placed according to their anchor points. Relatively positioned 
+    * components can be anchored to another component, but absolutely positioned components
+    * are always anchored to their parent. Depending on the orientation, relative anchoring
+    * will be done to left/right or top/bottom. It is possible for anchoring to cause 
+    * artifacts, thus it should be used properly. 
+    * 
+    * Absolute anchoring is simple. It uses parent and anchor point. In this anchoring, the 
+    * component should be inside the parent. This means, if horizontal part of the anchor point
+    * is left, then parent anchor should either be left or center, so that the component will
+    * be placed in the parent. Otherwise the component will be placed outside the parent. If
+    * an absolutely positioned object is attached to left/top or right/bottom of its parent's
+    * center/middle, then the effective size of the container if only include right/bottom or
+    * left/top portion of the container. If spacing for both sides are equal, this will cut the
+    * usable size by half. This feature makes it easier to deal with center starting 
+    * components.
+    * 
+    * Relative anchoring requires previous component anchor dictated by the current component
+    * and parent anchor. These target anchor points should match. Following previous example,
+    * where anchor point was left, parent anchor should again either be left or center.
+    * Assuming orientation is horizontal, previous anchor should be right, anchoring the
+    * component to the end of the previous one. In a container, there can be two separate
+    * anchor stacks, one starting from left to right and the other starting from right to
+    * left. This also works with vertical layouts (top to bottom and bottom to top). This is
+    * controlled by the combination of the anchor and previous component anchor. If anchor is
+    * specified as right and previous anchor is left (or none and parent anchor is right),
+    * then the component will be anchored from the right. If previous anchor is none, component
+    * is always anchored to the parent. This may cause components to overlap. Components can
+    * only be anchored to their parents or other relative components.
+    * 
+    * First baseline anchor uses the baseline of the first text line. In the calculations, it
+    * is considered centered. Last baseline uses the baseline of the last text line. It is 
+    * considered as bottom alignment. If there is no text, first baseline is calculated from
+    * the top, last baseline is calculated from the bottom.
+    * 
+    * Positioning
+    * ===========
+    * The position of the component effects its place from the anchor. If anchored by left/top
+    * or center/middle x/y position is added to the anchor point. If anchored by right/bottom, 
+    * x/y position is subtracted. 
+    *
+    * In AbsoluteSliding positioning the component anchors to its parent. For relative size, 
+    * entire usable area of the parent is used. If the position is specified as percentage,
+    * remaining area after the component is placed is used. Ex: parent width: 100, component 
+    * width: 50, parent padding: 10, component x position: 50%, margin: 0. In this case,
+    * component width and padding is subtracted from parent width, 30px remains. This size is 
+    * used to calculate percentage position, which is 15px. If an component's size is 100%, 
+    * percentage base positioning will not have any effect on the position of the component.
+    * 
+    * Relative positioning is very similar to absolute positioning except the component can be
+    * anchored to other components and its percent based metrics uses remaining size of the
+    * parent in the oriented direction.
+    * 
+    * Absolute positioning is classical absolute positioning in many systems. It uses entirety 
+    * of the parent size to calculate percentage based positioning. In other aspects, it is 
+    * same with absolute sliding positioning.
+    * 
+    * PolarAbsolute changes coordinate system to polar coordinates. X axis becomes radius and
+    * Y axis becomes angle in degrees. Anchor and center is used to calculate transformation
+    * point. While calculating center point Absolute positioning is used. If radius is 
+    * percentage based, the maximum size that will ensure component will stay within the parent
+    * will be used. If desired em size could also be used for angle, which is set to 45deg.
+    * Component is then placed according to its center point.
+    * 
+    * Position can be affected by the value modification system. In this case specified
+    * position is used as an addition to the percentage based value. 
+    *  
     */
 
     // TextPlaceholder
@@ -714,18 +859,25 @@ namespace Gorgon {
             
             Label,
 
+            //Value texts can automatically be calculated depending on the widget
             ValueText1,
 
+            //Value texts can automatically be calculated depending on the widget
             ValueText2,
 
+            //Value texts can automatically be calculated depending on the widget
             ValueText3,
 
+            //Value texts can automatically be calculated depending on the widget
             ValueText4,
             
             State1Text,
             State2Text,
             State3Text,
             State4Text,
+            
+            AutoStart = ValueText1,
+            AutoEnd   = State4Text,
 
             /// Data will effect the displayed graphics
             Icon,
@@ -1364,7 +1516,7 @@ namespace Gorgon {
         
         /// Anchor point of the container that this component will be attached to, if it
         /// is attaching to its parent.
-        Anchor container = Anchor::MiddleLeft;
+        Anchor container = Anchor::FirstBaselineLeft;
 
         /// Anchor point of the current component. This point will be matched to the
         /// previous component's anchor point
@@ -1581,24 +1733,7 @@ namespace Gorgon {
             return ComponentType::Graphics;
         }
         
-        /// Changes the padding of the component. Padding is the minimum spacing inside the component.
-        void SetPadding(int value) { padding = {value}; ChangedEvent(); }
-
-        /// Changes the padding of the component. Padding is the minimum spacing inside the component.
-        void SetPadding(int hor, int ver) { padding = {hor, ver}; ChangedEvent(); }
-
-        /// Changes the padding of the component. Padding is the minimum spacing inside the component.
-        void SetPadding(int left, int top, int right, int bottom) {
-            padding ={left, top, right, bottom};
-            ChangedEvent();
-        }
-
-        /// Changes the padding of the component. Padding is the minimum spacing inside the component.
-        void SetPadding(Geometry::Margin value) { padding = value; ChangedEvent(); }
-
-        /// Returns the padding.
-        Geometry::Margin GetPadding() const { return padding; }
-
+        /// TODO: add size controller
         
         /// Set to true if you want to fill the region with the given graphics. This will
         /// only work if the given animation/drawable is rectangular
