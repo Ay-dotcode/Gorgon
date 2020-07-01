@@ -159,7 +159,7 @@ namespace Gorgon {
 		 * skip defaults to 1, depth defaults to 4, expanded defaults to false, original defaults to false
 		 */
 		#define ASSERT(expression, message, ...) do { if(!bool(expression)) { \
-			(Gorgon::Utils::CrashHandler(#expression, message, ##__VA_ARGS__)); } } while(0)
+			auto temp = Gorgon::Utils::CrashHandler(#expression, message, ##__VA_ARGS__); } } while(0)
 		
 		/** 
 		 * Replaces regular assert to allow messages and backtrace. Has four additional parameters:
@@ -169,7 +169,7 @@ namespace Gorgon {
 		 * skip defaults to 1, depth defaults to 4, expanded defaults to true, original defaults to true
 		 */
 		#define ASSERT_ALL(expression, message, ...) do { if(!bool(expression)) { \
-			(Gorgon::Utils::CrashHandler(Gorgon::Utils::CrashHandler::AllTag, #expression, message, ##__VA_ARGS__)); } } while(0)
+			auto temp = Gorgon::Utils::CrashHandler(Gorgon::Utils::CrashHandler::AllTag, #expression, message, ##__VA_ARGS__); } } while(0)
 
 		/** 
 		 * Replaces regular assert to allow messages and backtrace.  This variant does not crash or exit the 
@@ -180,7 +180,7 @@ namespace Gorgon {
 		 * skip defaults to 1, depth defaults to 4, expanded defaults to false, original defaults to false
 		 */
 		#define ASSERT_DUMP(expression, message, ...) do { if(!bool(expression)) { \
-			(Gorgon::Utils::CrashHandler(Gorgon::Utils::CrashHandler::DumpOnlyTag,#expression, message, ##__VA_ARGS__)); } } while(0)
+			auto temp = Gorgon::Utils::CrashHandler(Gorgon::Utils::CrashHandler::DumpOnlyTag,#expression, message, ##__VA_ARGS__); } } while(0)
 			
 #	endif			
 		

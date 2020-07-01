@@ -186,6 +186,10 @@ namespace Gorgon {
     * Size of the component can be influenced by the value channels. In this case, the size of
     * component is used as additional size on top of the relative size depending on the channel
     * value. 
+    *
+    * It is possible for widgets to specify additional size to tags. In these cases, the given
+    * size will be used as an addition to the original size. It is not recommended to use
+    * automatic sizing with tags that the widgets can use (e.g., ContentsTag).
     * 
     * 
     * Spacing
@@ -273,14 +277,23 @@ namespace Gorgon {
     * same with absolute sliding positioning.
     * 
     * PolarAbsolute changes coordinate system to polar coordinates. X axis becomes radius and
-    * Y axis becomes angle in degrees. Anchor and center is used to calculate transformation
-    * point. While calculating center point Absolute positioning is used. If radius is 
-    * percentage based, the maximum size that will ensure component will stay within the parent
-    * will be used. If desired em size could also be used for angle, which is set to 45deg.
-    * Component is then placed according to its center point.
+    * Y axis becomes angle in degrees. Center is used to calculate transformation point. While
+    * calculating center point Absolute positioning is used. If radius is percentage based, the
+    * maximum size that will ensure component will stay within the parent will be used. Parent
+    * anchor is used to decide how to calculate this length. For instance, if the anchor point
+    * is TopCenter, then the max radius calculation assumes angle will change from 180-360. This
+    * currently does not take value range into consideration. If desired, em size could also be
+    * used for angle, which is set to 45deg. Component is then placed according to its center 
+    * point. To use PolarAbsolute correctly, you should set center of parent, center of component
+    * as well as parent anchor of the component (not self anchor) correctly.
     * 
     * Position can be affected by the value modification system. In this case specified
-    * position is used as an addition to the percentage based value. 
+    * position is used as an addition with a percentage based value. 
+    * 
+    * It is possible for widgets to specify additional position for a specific tag. It is
+    * recommended to anchor such components to top left and instead of using position to place
+    * them, use spacing. Only one tag currently is used for position modification: ContentsTag.
+    * 
     *  
     */
 

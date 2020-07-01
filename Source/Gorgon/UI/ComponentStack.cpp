@@ -127,7 +127,7 @@ namespace Gorgon { namespace UI {
                         textheight = th.GetRenderer().GetHeight();
                     
                     if(baseline < th.GetRenderer().GetBaseLine())
-                        baseline = th.GetRenderer().GetBaseLine();
+                        baseline = (int)th.GetRenderer().GetBaseLine();
                 }
             }
         }
@@ -1465,7 +1465,7 @@ namespace Gorgon { namespace UI {
             //and ready
             if(th.IsReady()) {
                 //return its own em size
-                return th.GetRenderer().GetBaseLine();
+                return (int)th.GetRenderer().GetBaseLine();
             }
         }
         
@@ -1711,7 +1711,7 @@ namespace Gorgon { namespace UI {
                 break;
                 
             case Anchor::FirstBaselineLeft:
-                pp = {margin.Left, -margin.Bottom + baseline};
+                pp = {margin.Left, margin.Top + baseline};
                 break;
                 
             case Anchor::MiddleCenter:
@@ -1723,7 +1723,7 @@ namespace Gorgon { namespace UI {
                 break;
                 
             case Anchor::FirstBaselineRight:
-                pp = {-margin.Right + maxsize.Width, -margin.Bottom + baseline};
+                pp = {-margin.Right + maxsize.Width, margin.Top + baseline};
                 break;
                 
             case Anchor::BottomLeft:
@@ -2044,7 +2044,7 @@ namespace Gorgon { namespace UI {
                                 textheight = th.GetRenderer().GetHeight();
                             
                             if(baseline < th.GetRenderer().GetBaseLine())
-                                baseline = th.GetRenderer().GetBaseLine();
+                                baseline = (int)th.GetRenderer().GetBaseLine();
                         }
                     }
                 }
@@ -2275,8 +2275,21 @@ realign:
             }
             
             if(!yfree) {
-                maxsize.Height = spaceleft;
-                
+                if(stage == middle) {
+                    //automatic cannot be relative, if sizing is not fixed and relative, this is the
+                    //stage where we determine if we are going to use content size in pixels or
+                    //relative size.
+                    if(temp.GetVerticalSizing() != ComponentTemplate::Fixed && size.Height.IsRelative()) {
+                        maxsize.Height = spaceleft;
+                    }
+                    else {
+                        maxsize.Height = 0;
+                    }
+                }
+                else {
+                    maxsize.Height = spaceleft;
+                }
+
                 if(size.Height.IsRelative())
                     finalpass = true;
             }
@@ -2349,10 +2362,7 @@ realign:
             
             
             //**** Automatic sizing
-            
-            /////************************************/////
-            if(!tagsizes.count(temp.GetTag()) && 
-                (temp.GetHorizontalSizing() != temp.Fixed || temp.GetVerticalSizing() != temp.Fixed)
+            if((temp.GetHorizontalSizing() != temp.Fixed || temp.GetVerticalSizing() != temp.Fixed)
             ) {
                 auto &st = *storage[&temp];
 
@@ -2437,7 +2447,7 @@ realign:
                     }
                 }
                 
-                
+                //automatic sizing restrictions
                 if(temp.GetHorizontalSizing() == ComponentTemplate::GrowOnly) {
                     if(comp.size.Width < orgsize.Width)
                         comp.size.Width = orgsize.Width;
@@ -2447,11 +2457,11 @@ realign:
                         comp.size.Width = orgsize.Width;
                 }
 
-                if(temp.GetHorizontalSizing() == ComponentTemplate::GrowOnly) {
+                if(temp.GetVerticalSizing() == ComponentTemplate::GrowOnly) {
                     if(comp.size.Height < orgsize.Height)
                         comp.size.Height = orgsize.Height;
                 }
-                else if(temp.GetHorizontalSizing() == ComponentTemplate::ShrinkOnly) {
+                else if(temp.GetVerticalSizing() == ComponentTemplate::ShrinkOnly) {
                     if(comp.size.Height > orgsize.Height)
                         comp.size.Height = orgsize.Height;
                 }
@@ -2464,94 +2474,265 @@ realign:
             }
         }); //for size
 
+        //anchor compontents for left/top (start) and right/bottom (end)
         Component *startanch = nullptr, *endanch = nullptr;
 
-        //Positioning stage, second pass will align everything.
+        //Positioning stage
         forallcomponents([&](Component &comp, const ComponentTemplate &temp, const std::array<float, 4> &val, int emsize) {
             //check anchor object by observing temp.GetPreviousAnchor and direction
             Component *anch = nullptr;
             
+            //**** Find anchor
+            
             //if absolute, nothing to anchor to but to parent
             if(temp.GetPositioning() == temp.Relative && temp.GetPreviousAnchor() != Anchor::None) {
-                if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-                    if((IsLeft(temp.GetPreviousAnchor()) && IsRight(temp.GetMyAnchor())) || 
-                        (temp.GetPreviousAnchor() == Anchor::None && IsRight(temp.GetContainerAnchor()))) 
-                    {
-                        anch = startanch;
+                if(ishor) {
+                    if(
+                        IsRight(temp.GetMyAnchor()) && ( //if my anchor is on the right
+                            IsLeft(temp.GetPreviousAnchor()) || //and previous anchor exists and on the left
+                            (temp.GetPreviousAnchor() == Anchor::None && IsRight(temp.GetContainerAnchor())) //or parent anchor is on the right
+                        ) 
+                    ) {
+                        anch = endanch;
                         comp.anchorotherside = true;
                     }
                     else {
-                        anch = endanch;
+                        anch = startanch;
                     }
                 }
                 else {
-                    if((IsTop(temp.GetPreviousAnchor()) && IsBottom(temp.GetMyAnchor())) || 
-                        (temp.GetPreviousAnchor() == Anchor::None && IsBottom(temp.GetContainerAnchor()))) 
-                    {
-                        anch = startanch;
+                    if(
+                        IsBottom(temp.GetMyAnchor()) && ( //if my anchor is on bottom
+                            IsTop(temp.GetPreviousAnchor()) || //and previous anchor exists and on the top
+                            (temp.GetPreviousAnchor() == Anchor::None && IsBottom(temp.GetContainerAnchor())) //or parent anchor is on the bottom
+                        ) 
+                    ) {
+                        anch = endanch;
                         comp.anchorotherside = true;
                     }
                     else {
-                        anch = endanch;
+                        anch = startanch;
                     }
                 }
             }
-        
-            auto parentmargin = Convert(temp.GetMargin(), parent.innersize, emsize).CombinePadding(Convert(cont.GetPadding(), parent.size, emsize)) + Convert(temp.GetIndent(), parent.innersize, emsize);
-        
+            
+            
+           
+            //***** Calculating maximum usable size.
+            
+            //axis that are not bound to other components
+            bool xfree = false, yfree = false;
+    
+            //calculate maximum size for non-oriented direction and oriented direction for absolutely placed
+            //components.
+            auto parentmargin = Convert(
+                temp.GetMargin(), parent.innersize, emsize
+                ).CombinePadding(
+                    Convert(cont.GetPadding(), parent.size, emsize)
+                ) + 
+                Convert(temp.GetIndent(), parent.innersize, emsize);
+            
+            auto maxsize = parent.innersize - parentmargin;
+            
+            //Determine sides that are free to move
+            if(temp.GetPositioning() != temp.Relative) {
+                xfree = yfree = true;
+            }
+            else if(!ishor) {
+                xfree = true;
+            }            
+            else {
+                yfree = true;
+            }
+
+            //defined position
+            auto pos = temp.GetPosition();
+
+
+
+            //if relatively positioned, then the space left will be used. Space left will not
+            //be available in the first pass.
+            if(!xfree) {
+                //there is no middle stage for position pass
+                if(stage == middle) {
+                    maxsize.Width = 0;
+                }
+                else {
+                    maxsize.Width = spaceleft;
+                }
+
+                if(pos.X.IsRelative())
+                    finalpass = true;
+            }
+
+            if(!yfree) {
+                //there is no middle stage for position pass
+                if(stage == middle) {
+                    maxsize.Height = 0;
+                }
+                else {
+                    maxsize.Height = spaceleft;
+                }
+
+                if(pos.Y.IsRelative())
+                    finalpass = true;
+            }
+
+            //position dictated by tag
+            Geometry::Point tagpos = {0, 0};
+
+            //tag location
+            if(taglocations.count(temp.GetTag())) {
+                tagpos = taglocations[temp.GetTag()];
+            }
+
+            //margin calculation. 
             Geometry::Margin margin;
-        
+
+            //if to be anchored
             if(anch) {
-                margin = Convert(temp.GetMargin(), parent.innersize, emsize).CombineMargins(Convert(anch->GetTemplate().GetMargin(), parent.innersize, emsize));
+                //use the margin from the component to be anchored. All sides are calculated, one will be used.
+                margin = Convert(temp.GetMargin(), parent.innersize, emsize).CombineMargins(Convert(anch->GetTemplate().GetMargin(), parent.innersize, getemsize(*anch)));
+
+                //revert back the unoriented direction
+                if(ishor) {
+                    margin.Top = parentmargin.Top;
+                    margin.Bottom = parentmargin.Bottom;
+                }
+                else {
+                    margin.Left = parentmargin.Left;
+                    margin.Right = parentmargin.Right;
+                }
             }
             else {
+                //no other component to anchor to, so anchor to parent
                 margin = parentmargin;
             }
-        
-            auto maxsize = parent.innersize - parentmargin;
-        
-            auto pos = temp.GetPosition();
-        
+
+            
+
+            //**** Value modification
+
+            //determine the channel each dimension is affected by, -1: value has no effect
+            int xch = -1, ych = -1;
             if(temp.GetValueModification() == temp.ModifyPosition) {
                 if(NumberOfSetBits(temp.GetValueSource()) == 1) {
-                    if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
-                        pos = {{int(calculatevalue(val, 0, comp)*10000), Dimension::BasisPoint}, pos.Y};
-                    }
-                    else {
-                        pos = {pos.X, {int(calculatevalue(val, 0, comp)*10000), Dimension::BasisPoint}};
-                    }
+                    (ishor ? xch : ych) = 0;
                 }
                 else {
-                    pos ={{int(calculatevalue(val, 0, comp)*10000), Dimension::BasisPoint}, {int(calculatevalue(val, 1, comp)*10000), Dimension::BasisPoint}};
+                    xch = 0;
+                    ych = 1;
                 }
             }
             else if(temp.GetValueModification() == temp.ModifyX) {
-                pos = {{int(calculatevalue(val, 0, comp)*10000), Dimension::BasisPoint}, pos.Y};
+                xch = 0;
             }
             else if(temp.GetValueModification() == temp.ModifyY) {
-                pos = {pos.X, {int(calculatevalue(val, 0, comp)*10000), Dimension::BasisPoint}};
+                ych = 0;
             }
-            else if(taglocations.count(temp.GetTag())) {
-                pos = {taglocations[temp.GetTag()]};
-            }
+
+            //****** Pixel conversion
             
             if(temp.GetPositioning() == temp.PolarAbsolute) {
-                auto pcenter = Geometry::Pointf(cont.GetCenter().X.CalculateFloat((float)maxsize.Width, (float)emsize), cont.GetCenter().Y.CalculateFloat((float)maxsize.Height, (float)emsize));
-                auto center  = Geometry::Pointf(temp.GetCenter().X.CalculateFloat((float)comp.size.Width, (float)emsize), temp.GetCenter().Y.CalculateFloat((float)comp.size.Height, (float)emsize));
+                //center of parent
+                auto pcenter = Geometry::Pointf(
+                    cont.GetCenter().X.CalculateFloat((float)maxsize.Width, (float)emsize), 
+                    cont.GetCenter().Y.CalculateFloat((float)maxsize.Height, (float)emsize));
+
+                //center of object
+                auto center  = Geometry::Pointf(
+                    temp.GetCenter().X.CalculateFloat((float)comp.size.Width, (float)emsize), 
+                    temp.GetCenter().Y.CalculateFloat((float)comp.size.Height, (float)emsize)
+                );
 
                 pcenter += parentmargin.TopLeft();
 
-                //to be changed
-                auto r = pos.X.CalculateFloat(Geometry::Point(maxsize).Distance()/(float)sqrt(2), (float)emsize);
+                //anchor point of the object.
+                auto panch = temp.GetContainerAnchor();
 
-                auto a = pos.Y.CalculateFloat(360, 45);
+                //maximum x and y axis radii
+                float xrad = 0, yrad = 0;
+                //x and y offsets necessary to keep object in its parent
+                float xoff = 0, yoff = 0;
 
+                //determine xrad and xoff according to the anchor point
+                if(IsLeft(panch)) {
+                    xrad = maxsize.Width - pcenter.X - comp.size.Width;
+                    xoff = center.X;
+                }
+                else if(IsCenter(panch)) {
+                    xrad = std::min(pcenter.X - center.X, maxsize.Width - pcenter.X - (comp.size.Width - center.X));
+                }
+                else {
+                    xrad = pcenter.X - comp.size.Width;
+                    xoff = comp.size.Width - center.X;
+                }
+
+                //determine yrad and yoff according to the anchor point
+                if(IsTop(panch)) {
+                    yrad = maxsize.Height - pcenter.Y - comp.size.Height;
+                    yoff = center.Y;
+                }
+                else if(IsMiddle(panch)) {
+                    yrad = std::min(pcenter.Y - center.Y, maxsize.Height - pcenter.Y - (comp.size.Height - center.Y));
+                }
+                else {
+                    yrad = pcenter.Y - comp.size.Height;
+                    yoff = comp.size.Height - center.Y;
+                }
+
+                //calculate radius
+                auto r = pos.X.CalculateFloat(std::min(xrad, yrad), (float)emsize);
+
+                auto a = pos.Y.CalculateFloat(360, 45); //em size for angle is 45
+
+                //convert to radians
                 a *= PI / 180.0f;
 
-                comp.location = {int(std::round(r * cos(a) + pcenter.X - center.X)), int(std::round(r * sin(a) + pcenter.Y - center.Y))};
+                comp.location = {int(std::round(r * cos(a) + pcenter.X - center.X + xoff)), int(std::round(r * sin(a) + pcenter.Y - center.Y + yoff))};
             }
             else {
-                auto offset = Convert(pos, (temp.GetPositioning() == temp.AbsoluteSliding ?  maxsize - comp.size : comp.size), emsize);
+                bool sliding = temp.GetPositioning() == temp.AbsoluteSliding;
+
+                Geometry::Point offset;
+
+                //this will convert x to pixels
+                if(xch == -1) { //value channel is not in effect
+                    offset.X = pos.X(
+                        maxsize.Width - (sliding ? tagpos.X + comp.size.Width : 0), emsize
+                    ) + tagpos.X;
+                }
+                else {//calculate and use value channel
+                    //original width will be used as minimum size
+                    offset.X = pos.X(
+                        maxsize.Width - (sliding ? tagpos.X + comp.size.Width : 0), emsize
+                    ) + tagpos.X;
+
+                    //calculate value and use it as basis point as relative size, then covert to pixels
+                    offset.X +=
+                        Dimension{
+                            int(calculatevalue(val, xch, comp)*10000), Dimension::BasisPoint
+                    } (maxsize.Width - (sliding ? offset.X + comp.size.Width : 0), emsize);
+                }
+
+                //this will convert y to piyels
+                if(ych == -1) { //value channel is not in effect
+                    offset.Y = pos.Y(
+                        maxsize.Height - (sliding ? tagpos.Y + comp.size.Height : 0), emsize
+                    ) + tagpos.Y;
+                }
+                else {//calculate and use value channel
+                    //original width will be used as minimum size
+                    offset.Y = pos.Y(
+                        maxsize.Height - (sliding ? tagpos.Y + comp.size.Height : 0), emsize
+                    ) + tagpos.Y;
+
+                    //calculate value and use it as basis point as relative size, then covert to piyels
+                    offset.Y +=
+                        Dimension{
+                            int(calculatevalue(val, ych, comp)*10000), Dimension::BasisPoint
+                    } (maxsize.Height - (sliding ? offset.Y + comp.size.Height : 0), emsize);
+                }
         
                 if(anch) {
                     anchortoother(comp, temp, offset, margin, *anch, cont.GetOrientation());
@@ -2560,6 +2741,7 @@ realign:
                     anchortoparent(comp, temp, offset, margin, parent.innersize);
                 }
             }
+
 
             //Which anchor side is to be changed
             if(temp.GetPositioning() == temp.Relative) {
@@ -2625,19 +2807,19 @@ realign:
                         endused = parent.innersize.Width - endmost->location.X;
                         
                         //calculate margin
-                        auto s = startmost->GetTemplate().GetMargin().Right(0, getemsize(*startmost));
-                        auto e = endmost->GetTemplate().GetMargin().Left(0, getemsize(*startmost));
+                        auto s = startmost->GetTemplate().GetMargin().Right(parent.innersize.Width, getemsize(*startmost));
+                        auto e = endmost->GetTemplate().GetMargin().Left(parent.innersize.Width, getemsize(*endmost));
                         
                         //add indent
                         lastspacing = calculatemargin(s, e);
                     }
                     else { //only start side is there
                         //calculate margin
-                        auto s = startmost->GetTemplate().GetMargin().Right(0, getemsize(*startmost));
+                        auto s = startmost->GetTemplate().GetMargin().Right(parent.innersize.Width, getemsize(*startmost));
                         auto e = cont.GetPadding().Right(parent.innersize.Width, getemsize(*startmost));
                         
                         //add indent
-                        lastspacing = calculatemargin(s, e) + startmost->GetTemplate().GetIndent().Right(0, getemsize(*startmost));
+                        lastspacing = calculatemargin(s, e) + startmost->GetTemplate().GetIndent().Right(parent.innersize.Width, getemsize(*startmost));
                     }
                 }
                 else if(endmost) { //only end side is there
@@ -2645,14 +2827,14 @@ realign:
                     endused = parent.innersize.Width - endmost->location.X;
                     
                     //calculate margin
-                    auto s = cont.GetPadding().Left(parent.innersize.Width, getemsize(*startmost));
-                    auto e = endmost->GetTemplate().GetMargin().Left(0, getemsize(*startmost));
+                    auto s = cont.GetPadding().Left(parent.innersize.Width, getemsize(*endmost));
+                    auto e = endmost->GetTemplate().GetMargin().Left(parent.innersize.Width, getemsize(*endmost));
                     
                     //add indent
-                    lastspacing = calculatemargin(s, e) + endmost->GetTemplate().GetIndent().Left(0, getemsize(*startmost));
+                    lastspacing = calculatemargin(s, e) + endmost->GetTemplate().GetIndent().Left(parent.innersize.Width, getemsize(*endmost));
                 }
             }
-            else {
+            else { //vertical
                 if(startmost) {
                     //calculate the space used on the top side
                     startused = startmost->location.Y + startmost->size.Height;
@@ -2663,15 +2845,15 @@ realign:
                         endused = parent.innersize.Height - endmost->location.Y;
                         
                         //calculate margin
-                        auto s = startmost->GetTemplate().GetMargin().Bottom(0, getemsize(*startmost));
-                        auto e = endmost->GetTemplate().GetMargin().Top(0, getemsize(*startmost));
+                        auto s = startmost->GetTemplate().GetMargin().Bottom(parent.innersize.Height, getemsize(*startmost));
+                        auto e = endmost->GetTemplate().GetMargin().Top(parent.innersize.Height, getemsize(*endmost));
                         
                         lastspacing = calculatemargin(s, e);
                     }
                     else { //only start side is there
                         //calculate margin
-                        auto s = startmost->GetTemplate().GetMargin().Bottom(0, getemsize(*startmost));
-                        auto e = cont.GetPadding().Bottom(parent.innersize.Width, getemsize(*startmost));
+                        auto s = startmost->GetTemplate().GetMargin().Bottom(parent.innersize.Height, getemsize(*startmost));
+                        auto e = cont.GetPadding().Bottom(parent.innersize.Height, getemsize(*startmost));
                         
                         //add indent
                         lastspacing = calculatemargin(s, e) + startmost->GetTemplate().GetIndent().Bottom(0, getemsize(*startmost));
@@ -2682,11 +2864,11 @@ realign:
                     endused = parent.innersize.Height - endmost->location.Y;
                     
                     //calculate margin
-                    auto s = cont.GetPadding().Top(parent.innersize.Width, getemsize(*startmost));
-                    auto e = endmost->GetTemplate().GetMargin().Top(0, getemsize(*startmost));
+                    auto s = cont.GetPadding().Top(parent.innersize.Height, getemsize(*endmost));
+                    auto e = endmost->GetTemplate().GetMargin().Top(0, getemsize(*endmost));
                     
                     //add indent
-                    lastspacing = calculatemargin(s, e) + endmost->GetTemplate().GetIndent().Top(0, getemsize(*startmost));
+                    lastspacing = calculatemargin(s, e) + endmost->GetTemplate().GetIndent().Top(0, getemsize(*endmost));
                 }
             }
             
@@ -2699,6 +2881,7 @@ realign:
 
         //TODO: autosized container
         if(parent.size.Width == 0) {
+
         }
 
         //update the containers

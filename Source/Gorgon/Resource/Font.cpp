@@ -51,7 +51,7 @@ namespace Gorgon { namespace Resource {
             writer.WriteInt32(bf->GetGlyphSpacing());
             writer.WriteFloat(bf->GetBaseLine());
             writer.WriteInt32(bf->GetHeight());
-            writer.WriteInt32(bf->GetLineThickness());
+            writer.WriteInt32((int)bf->GetLineThickness()); //this is stored as in for bitmap fonts
             writer.WriteInt32(bf->GetUnderlineOffset());
             writer.WriteInt32(bf->GetMaxWidth());
             
