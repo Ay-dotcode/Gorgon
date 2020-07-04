@@ -61,8 +61,57 @@ Graphics::BlankImage &whiteimg() {
     return img;
 }
 
+Graphics::BlankImage &greenimg() {
+    static auto &img = blankimage(Graphics::Color::Green);
+    
+    return img;
+}
+
+Graphics::BlankImage &redimg() {
+    static auto &img = blankimage(Graphics::Color::Red);
+    
+    return img;
+}
+
 Graphics::BlankImage &blackimg() {
     static auto &img = blankimage(Graphics::Color::Black);
+    
+    return img;
+}
+
+Graphics::BlankImage &brownimg() {
+    static auto &img = blankimage(Graphics::Color::Brown);
+    
+    return img;
+}
+
+
+Graphics::BlankImage &blueimg() {
+    static auto &img = blankimage(Graphics::Color::Blue);
+    
+    return img;
+}
+
+Graphics::BlankImage &yellowimg() {
+    static auto &img = blankimage(Graphics::Color::Yellow);
+    
+    return img;
+}
+
+Graphics::BlankImage &purpleimg() {
+    static auto &img = blankimage(Graphics::Color::Purple);
+    
+    return img;
+}
+
+Graphics::BlankImage &grayimg() {
+    static auto &img = blankimage(Graphics::Color::Grey);
+    
+    return img;
+}
+
+Graphics::BlankImage &orangeimg() {
+    static auto &img = blankimage(Graphics::Color::Orange);
     
     return img;
 }
@@ -103,6 +152,29 @@ TestData test_setborder(Layer &layer) {
 }
 
 
+TestData test_setborder2(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(70, 70);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetBorderSize(10,20,30,40);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenrect());
+    cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont2.SetPosition(0,0);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set border", "This has a white border around a green rectangle 30x10 in size. Border size should be left: 10, top: 20, right: 30, bottom: 40", stack};
+}
+
+
 TestData test_setpadding(Layer &layer) {
     auto &temp = *new Template;
     temp.SetSize(50, 50);
@@ -125,11 +197,349 @@ TestData test_setpadding(Layer &layer) {
     return {"Set padding", "Two empty squares inside each other. Cyan on the outside, red inside. There should be 10x10 empty square at the middle. Borders should be 10px in size and should touch each other.", stack};
 }
 
+TestData test_setpadding2(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(70, 70);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetPadding(20, 10, 30, 40);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont2.SetPosition(0,0);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set padding", "This has a cyan border around a green rectangle 20x20 in size. Padding should be left: 20, top: 10, right: 30, bottom: 40.", stack};
+}
 
+TestData test_setpadding_percent(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(100, 100);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetPadding(20, 10, 30, 40, Gorgon::UI::Dimension::Percent);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redimg());
+    cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont2.SetPosition(0,0);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set padding percent", "This has a cyan border around a red rectangle 50x50 in size. Padding should be left: 20, top: 10, right: 30, bottom: 40.", stack};
+}
+
+TestData test_setpadding_border(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(120, 120);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    cont1.SetPadding(20, 10, 30, 40, Gorgon::UI::Dimension::Percent);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont2.SetPosition(0,0);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set border and padding", "This has a cyan border around a red rectangle 50x50 in size. There is 10px border as well as padding. Padding should be left: 20, top: 10, right: 30, bottom: 40.", stack};
+}
+
+TestData test_setmargin_parent(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont2.SetPosition(0,0);
+    cont2.SetMargin(10);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set margin", "Two empty squares inside each other. Cyan on the outside, red inside. There should be 10x10 empty square at the middle. Borders should be 10px in size and should touch each other.", stack};
+}
+
+TestData test_setmargin_parent_percent(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont2.SetPosition(0,0);
+    cont2.SetMargin(20, Gorgon::UI::Dimension::Percent);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set margin percent", "Two empty squares inside each other. Cyan on the outside, red inside. There should be 10x10 empty square at the middle. Borders should be 10px in size and should touch each other.", stack};
+}
+
+TestData test_margin_parent_padding(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 60);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetPadding(10,20,10,10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont2.SetPosition(0,0);
+    cont2.SetMargin(10);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Margin padding collapse", "Two empty squares inside each other. Cyan on the outside, red inside. There should be 10x10 empty square at the middle. Borders should be 10px in size and should touch each other apart from the top where it should have 10px space between two borders..", stack};
+}
+
+TestData test_setindent(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont2.SetPosition(0,0);
+    cont2.SetIndent(10);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set indent", "Two empty squares inside each other. Cyan on the outside, red inside. There should be 10x10 empty square at the middle. Borders should be 10px in size and should touch each other.", stack};
+}
+
+TestData test_indent_padding(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetPadding(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont2.SetPosition(0,0);
+    cont2.SetIndent(10);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set indent", "Two empty squares inside each other. Cyan on the outside, red inside. Inner border should be 10x10 and there should be 10px space between borders", stack};
+}
+
+TestData test_setpadding_negative(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetPadding(0, -10, 0, 0);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont2.SetPosition(0,0);
+    cont2.SetMargin(10);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set padding negative", "Two empty squares inside each other. Cyan on the outside, red inside. There should be 10x20 empty square at the middle. Borders should be 10px in size and should touch each other apart from top which they should be on top of each other.", stack};
+}
+
+TestData test_setmargin_negative(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetPadding(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont2.SetPosition(0,0);
+    cont2.SetMargin(-10, 0, -10, 0);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set margin negative", "Two empty squares inside each other. Cyan on the outside, red inside. There should be 10x20 empty square at the middle. Borders should be 10px in size and should touch each other apart from left and right which they should be on top of each other.", stack};
+}
+
+TestData test_absanch_samepoint(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(70, 70);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    for(int i=1; i<=9; i++) 
+        cont1.AddIndex(i);
+    
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetPadding(10);
+    
+    Containers::Collection<Graphics::BlankImage> images = {
+        redimg(), yellowimg(), orangeimg(),
+        blueimg(), purpleimg(), brownimg(),
+        greenimg(), grayimg(), whiteimg(),
+    };
+    
+    for(int i=1; i<=9; i++) {
+        auto &cont = temp.AddContainer(i, Gorgon::UI::ComponentCondition::Always);
+        cont.Background.SetAnimation(images[i-1]);
+        cont.SetPositioning(Gorgon::UI::ComponentTemplate::Absolute);
+        cont.SetAnchor(Gorgon::UI::Anchor(i), Gorgon::UI::Anchor(i), Gorgon::UI::Anchor(i));
+        cont.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+        cont.SetPosition(0,0);
+    }
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Absolute anchoring", "9 components will be anchored in a cyan rectangle. Colors at top from left: red, yellow, orange; middle: blue, purple, brown; bottom: green, gray, white. Apart from the center component, all component should touch cyan border. No component should touch (not even corner to corner) each other (10px space around all).", stack};
+}
+
+TestData test_paranch_samepoint(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(70, 70);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    for(int i=1; i<=9; i++) 
+        cont1.AddIndex(i);
+    
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetPadding(10);
+    
+    Containers::Collection<Graphics::BlankImage> images = {
+        redimg(), yellowimg(), orangeimg(),
+        blueimg(), purpleimg(), brownimg(),
+        greenimg(), grayimg(), whiteimg(),
+    };
+    
+    for(int i=1; i<=9; i++) {
+        auto &cont = temp.AddContainer(i, Gorgon::UI::ComponentCondition::Always);
+        cont.Background.SetAnimation(images[i-1]);
+        cont.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor(i), Gorgon::UI::Anchor(i));
+        cont.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+        cont.SetPosition(0,0);
+    }
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Parent anchoring", "9 components will be anchored in a cyan rectangle. Colors at top from left: red, yellow, orange; middle: blue, purple, brown; bottom: green, gray, white. Apart from the center component, all component should touch cyan border. No component should touch (not even corner to corner) each other (10px space around all).", stack};
+}
+
+TestData test_absanch_centertopoint(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 80);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    for(int i=1; i<=9; i++) 
+        cont1.AddIndex(i);
+    
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetPadding(10);
+    
+    Containers::Collection<Graphics::BlankImage> images = {
+        redimg(), yellowimg(), orangeimg(),
+        blueimg(), purpleimg(), brownimg(),
+        greenimg(), grayimg(), whiteimg(),
+    };
+    
+    for(int i=1; i<=9; i++) {
+        auto &cont = temp.AddContainer(i, Gorgon::UI::ComponentCondition::Always);
+        cont.Background.SetAnimation(images[i-1]);
+        cont.SetPositioning(Gorgon::UI::ComponentTemplate::Absolute);
+        cont.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor(i), Gorgon::UI::Anchor::MiddleCenter);
+        cont.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+        cont.SetPosition(0,0);
+    }
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Absolute anchoring center to anchor", "9 components will be anchored in a cyan rectangle. Colors at top from left: red, yellow, orange; middle: blue, purple, brown; bottom: green, gray, white. Apart from the center component, all component should overlap cyan border. No component should touch (not even corner to corner) each other (10px space around all).", stack};
+}
 
 std::vector<std::function<TestData(Layer &)>> tests = {
     &test_setborder,
-    &test_setpadding
+    &test_setborder2,
+    &test_setpadding,
+    &test_setpadding2,
+    &test_setpadding_percent,
+    &test_setpadding_border,
+    &test_setmargin_parent,
+    &test_setmargin_parent_percent,
+    &test_margin_parent_padding,
+    &test_setindent,
+    &test_indent_padding,
+    &test_setpadding_negative,
+    &test_setmargin_negative,
+    &test_absanch_samepoint,
+    &test_paranch_samepoint,
+    &test_absanch_centertopoint,
 };
 
 

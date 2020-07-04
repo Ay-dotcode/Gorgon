@@ -312,14 +312,14 @@ namespace Gorgon {
         None = 0,
         
         /// Top left
-        TopLeft,
+        TopLeft = 1,
         /// Top center
         TopCenter,
         /// Top right
         TopRight,
 
         /// Middle left
-        MiddleLeft,
+        MiddleLeft = 4,
         /// Middle center, using this position ensures that the
         /// components will be inside each other.
         MiddleCenter,
@@ -327,7 +327,7 @@ namespace Gorgon {
         MiddleRight,
         
         /// Bottom left
-        BottomLeft,
+        BottomLeft = 7,
         /// Bottom center
         BottomCenter,
         /// Bottom right
@@ -1525,15 +1525,15 @@ namespace Gorgon {
         /// Anchor point of the previous component that this component will be attached
         /// to. If the component positioning is absolute or this is the first component, 
         /// it will be anchored to the container and parent anchor point will be used.
-        Anchor previous = Anchor::FirstBaselineRight;
+        Anchor previous = Anchor::TopRight;
         
         /// Anchor point of the container that this component will be attached to, if it
         /// is attaching to its parent.
-        Anchor container = Anchor::FirstBaselineLeft;
+        Anchor container = Anchor::TopLeft;
 
         /// Anchor point of the current component. This point will be matched to the
         /// previous component's anchor point
-        Anchor my = Anchor::FirstBaselineLeft;
+        Anchor my = Anchor::TopLeft;
 
         /// Component index. Only one component can exist for a specific index position.
         /// The ordering and visibility of the components will be determined from the condition.
@@ -1583,9 +1583,17 @@ namespace Gorgon {
         const Template *temp = nullptr;
     };
 
+    /**
+     * Textholder is designed to hold text data. This data is set by the widget through
+     * DataEffect.
+     */
     class TextholderTemplate : public ComponentTemplate {
     public:
-        
+        TextholderTemplate() {
+            my = Anchor::FirstBaselineLeft;
+            previous = Anchor::FirstBaselineRight;
+            container = Anchor::FirstBaselineLeft;
+        }
 
         /// Returns the type of the component.
         virtual ComponentType GetType() const noexcept override {
@@ -1631,11 +1639,25 @@ namespace Gorgon {
         Graphics::RGBAf GetTargetColor() const {
             return targetcolor;
         }
+        
+        /// Sets the default text for the textholder. This text can be overriden
+        /// by DataEffect
+        void SetText(const std::string &value) {
+            text = value;
+            
+            ChangedEvent();
+        }
+        
+        /// Returns the default text for the textholder.
+        std::string GetText() const {
+            return text;
+        }
     
     private:
         const Graphics::TextRenderer *renderer = nullptr;
         Graphics::RGBAf color = 1.0f;
         Graphics::RGBAf targetcolor = 0.f;
+        std::string text;
     };
 
     class VisualProvider {

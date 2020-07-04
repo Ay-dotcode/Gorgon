@@ -6,6 +6,7 @@
 
 #include "math.h"
 
+//TODO: Textholder default text
 
 namespace Gorgon { namespace UI {
     
@@ -2202,7 +2203,7 @@ realign:
             auto parentmargin = Convert(
                 temp.GetMargin(), parent.innersize, emsize
                 ).CombinePadding(
-                    Convert(cont.GetPadding(), parent.size, emsize)
+                    Convert(cont.GetPadding(), parent.innersize, emsize)
                 ) + 
                 Convert(temp.GetIndent(), parent.innersize, emsize);
             
@@ -2412,6 +2413,9 @@ realign:
                         else if(valuetotext && d >= ComponentTemplate::AutoStart && d <= ComponentTemplate::AutoEnd) {
                             text = valuetotext(temp.GetIndex(), d, value);
                         }
+                        else {
+                            text = th.GetText();
+                        }
                         
                         //if there is some text data
                         if(text != "") {
@@ -2528,7 +2532,7 @@ realign:
             auto parentmargin = Convert(
                 temp.GetMargin(), parent.innersize, emsize
                 ).CombinePadding(
-                    Convert(cont.GetPadding(), parent.size, emsize)
+                    Convert(cont.GetPadding(), parent.innersize, emsize)
                 ) + 
                 Convert(temp.GetIndent(), parent.innersize, emsize);
             
@@ -2879,11 +2883,37 @@ realign:
             goto realign;
         }
 
-        //TODO: autosized container
+        //Width should be autosized
         if(parent.size.Width == 0) {
-
+            int w = 0;
+            
+            //calculate max right as width
+            forallcomponents([&](Component &comp, const ComponentTemplate &, const std::array<float, 4> &, int) {
+                int r = comp.size.Width + comp.location.X;
+                
+                if(w < r)
+                    w = r;
+            });
+            
+            parent.size.Width = w + cont.GetBorderSize().TotalX();
         }
 
+        //Height should be autosized
+        if(parent.size.Height == 0) {
+            int h = 0;
+            
+            //calculate max right as width
+            forallcomponents([&](Component &comp, const ComponentTemplate &, const std::array<float, 4> &, int) {
+                int b = comp.size.Height + comp.location.X;
+                
+                if(h < b)
+                    h = b;
+            });
+            
+            parent.size.Height = h + cont.GetBorderSize().TotalY();
+        }
+        
+        
         //update the containers
         for(int i=0; i<cont.GetCount(); i++) {
 
@@ -3066,17 +3096,23 @@ realign:
 
             target->SetColor(color * c);
             if(th.IsReady()) {
-                if(valuetotext && (ind != -1 || !stringdata.count(temp.GetDataEffect())) ) {
+                if(stringdata.count(temp.GetDataEffect())) {
+                    if(tagnowrap.count(temp.GetTag()))
+                        th.GetRenderer().PrintNoWrap(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
+                    else
+                        th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
+                }
+                else if(valuetotext && (ind != -1 || !stringdata.count(temp.GetDataEffect())) ) {
                     if(tagnowrap.count(temp.GetTag()))
                         th.GetRenderer().PrintNoWrap(*target, valuetotext(temp.GetTag(), temp.GetDataEffect(), val), comp.location+offset, comp.size.Width);
                     else
                         th.GetRenderer().Print(*target, valuetotext(temp.GetTag(), temp.GetDataEffect(), val), comp.location+offset, comp.size.Width);
                 }
-                else if(stringdata.count(temp.GetDataEffect())) {
+                else if(th.GetText() != "") {
                     if(tagnowrap.count(temp.GetTag()))
-                        th.GetRenderer().PrintNoWrap(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
+                        th.GetRenderer().PrintNoWrap(*target, th.GetText(), comp.location+offset, comp.size.Width);
                     else
-                        th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
+                        th.GetRenderer().Print(*target, th.GetText(), comp.location+offset, comp.size.Width);
                 }
             }
             target->SetColor(1.f);
