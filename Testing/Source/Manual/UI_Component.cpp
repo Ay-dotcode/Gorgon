@@ -12,6 +12,7 @@ std::string helptext =
     "Key list:\n"
     "d\tToggle disabled\n"
     "left, right\tPrevious, next test\n"
+    "c\tCopy title of the active test\n"
     "1-8\tModify value of the stack [not active yet]\n"
     "esc\tClose\n"
 ;
@@ -21,7 +22,7 @@ namespace Color = Gorgon::Graphics::Color;
 
 Graphics::RectangleProvider &coloredrect(Graphics::RGBA color) {
     //this will not leak
-    auto &img = *new Graphics::BlankImage(10, 10, {color, 0.5});
+    auto &img = *new Graphics::BlankImage(10, 10, {color, 0.6});
     
     //as long as rectangle is destroyed
     auto &ret = *new Graphics::RectangleProvider(img);
@@ -49,7 +50,7 @@ Graphics::RectangleProvider &greenrect() {
 }
 
 Graphics::BlankImage &blankimage(Graphics::RGBA color) {
-    auto &img = *new Graphics::BlankImage(10, 10, {color, 0.5});
+    auto &img = *new Graphics::BlankImage(10, 10, {color, 0.6});
     
     return img;
 }
@@ -129,6 +130,140 @@ struct TestData {
     ComponentStack &stack;
 };
 
+TestData test_setsize(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(20, 30);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set size", "20x30 green object on a 50x50 white background, should be aligned to top left.", stack};
+}
+
+TestData test_setsizepercent(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(5000, 3333, Gorgon::UI::Dimension::BasisPoint);
+
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+
+    layer.Add(stack);
+
+    return {"Set size percent", "30x20 green object on a 60x60 white background, should be aligned to top left.", stack};
+}
+
+TestData test_setsizepercent_percent(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(3333, 3333, Gorgon::UI::Dimension::BasisPoint);
+
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetSize(50, 50, Gorgon::UI::Dimension::Percent);
+
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+
+    layer.Add(stack);
+
+    return {"Set size percent x2", "Size 20x20 and 30x30 objects on a 60x60 white background, should be aligned to top left. Objects are green and red and should be touching.", stack};
+}
+
+TestData test_setsizepercent_rel(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPosition(0, 0);
+
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetSize(50, 50, Gorgon::UI::Dimension::Percent);
+
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+
+    layer.Add(stack);
+
+    return {"Set size percent relative", "Size 20x20 and 20x30 objects on a 60x60 white background, should be aligned to top left. Objects are green and red and should be touching.", stack};
+}
+
+TestData test_sizepercent_center(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 80);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(50, 50, Gorgon::UI::Dimension::Percent);
+    cont2.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::TopLeft);
+
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+
+    layer.Add(stack);
+
+    return {"Set size percent from center", "20x20 green object on a 80x80 white background, should be aligned to center from its top left.", stack};
+}
+
+TestData test_sizepercent_centerabs(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 80);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(50, 50, Gorgon::UI::Dimension::Percent);
+    cont2.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::TopLeft);
+    cont2.SetPositioning(cont2.Absolute);
+
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+
+    layer.Add(stack);
+
+    return {"Set size percent from center absolute", "20x20 green object on a 80x80 white background, should be aligned to center from its top left.", stack};
+}
+
 TestData test_setborder(Layer &layer) {
     auto &temp = *new Template;
     temp.SetSize(50, 50);
@@ -141,7 +276,6 @@ TestData test_setborder(Layer &layer) {
     auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
     cont2.Background.SetAnimation(greenrect());
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
-    cont2.SetPosition(0,0);
     
     auto &stack = *new ComponentStack(temp);
     stack.HandleMouse();
@@ -150,7 +284,6 @@ TestData test_setborder(Layer &layer) {
     
     return {"Set border", "White background (50x50) and a green border (starting from 10,10, size of 30x30). Result should be concentric squares, 10px size difference, white, green, white.", stack};
 }
-
 
 TestData test_setborder2(Layer &layer) {
     auto &temp = *new Template;
@@ -164,7 +297,6 @@ TestData test_setborder2(Layer &layer) {
     auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
     cont2.Background.SetAnimation(greenrect());
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
-    cont2.SetPosition(0,0);
     
     auto &stack = *new ComponentStack(temp);
     stack.HandleMouse();
@@ -187,7 +319,6 @@ TestData test_setpadding(Layer &layer) {
     auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
     cont2.Background.SetAnimation(redrect());
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
-    cont2.SetPosition(0,0);
     
     auto &stack = *new ComponentStack(temp);
     stack.HandleMouse();
@@ -209,7 +340,6 @@ TestData test_setpadding2(Layer &layer) {
     auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
     cont2.Background.SetAnimation(redrect());
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
-    cont2.SetPosition(0,0);
     
     auto &stack = *new ComponentStack(temp);
     stack.HandleMouse();
@@ -231,7 +361,6 @@ TestData test_setpadding_percent(Layer &layer) {
     auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
     cont2.Background.SetAnimation(redimg());
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
-    cont2.SetPosition(0,0);
     
     auto &stack = *new ComponentStack(temp);
     stack.HandleMouse();
@@ -254,7 +383,6 @@ TestData test_setpadding_border(Layer &layer) {
     auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
     cont2.Background.SetAnimation(redrect());
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
-    cont2.SetPosition(0,0);
     
     auto &stack = *new ComponentStack(temp);
     stack.HandleMouse();
@@ -275,7 +403,6 @@ TestData test_setmargin_parent(Layer &layer) {
     auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
     cont2.Background.SetAnimation(redrect());
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
-    cont2.SetPosition(0,0);
     cont2.SetMargin(10);
     
     auto &stack = *new ComponentStack(temp);
@@ -297,7 +424,6 @@ TestData test_setmargin_parent_percent(Layer &layer) {
     auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
     cont2.Background.SetAnimation(redrect());
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
-    cont2.SetPosition(0,0);
     cont2.SetMargin(20, Gorgon::UI::Dimension::Percent);
     
     auto &stack = *new ComponentStack(temp);
@@ -320,7 +446,6 @@ TestData test_margin_parent_padding(Layer &layer) {
     auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
     cont2.Background.SetAnimation(redrect());
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
-    cont2.SetPosition(0,0);
     cont2.SetMargin(10);
     
     auto &stack = *new ComponentStack(temp);
@@ -342,7 +467,6 @@ TestData test_setindent(Layer &layer) {
     auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
     cont2.Background.SetAnimation(redrect());
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
-    cont2.SetPosition(0,0);
     cont2.SetIndent(10);
     
     auto &stack = *new ComponentStack(temp);
@@ -365,7 +489,6 @@ TestData test_indent_padding(Layer &layer) {
     auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
     cont2.Background.SetAnimation(redrect());
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
-    cont2.SetPosition(0,0);
     cont2.SetIndent(10);
     
     auto &stack = *new ComponentStack(temp);
@@ -388,7 +511,6 @@ TestData test_setpadding_negative(Layer &layer) {
     auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
     cont2.Background.SetAnimation(redrect());
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
-    cont2.SetPosition(0,0);
     cont2.SetMargin(10);
     
     auto &stack = *new ComponentStack(temp);
@@ -411,7 +533,6 @@ TestData test_setmargin_negative(Layer &layer) {
     auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
     cont2.Background.SetAnimation(redrect());
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
-    cont2.SetPosition(0,0);
     cont2.SetMargin(-10, 0, -10, 0);
     
     auto &stack = *new ComponentStack(temp);
@@ -419,7 +540,36 @@ TestData test_setmargin_negative(Layer &layer) {
     
     layer.Add(stack);
     
-    return {"Set margin negative", "Two empty squares inside each other. Cyan on the outside, red inside. There should be 10x20 empty square at the middle. Borders should be 10px in size and should touch each other apart from left and right which they should be on top of each other.", stack};
+    return {"Set margin negative", "Two empty squares inside each other. Cyan on the outside, red inside. There should be 30x10 empty square at the middle. Borders should be 10px in size and should touch each other apart from left and right which they should be on top of each other.", stack};
+}
+
+TestData test_border_padding_margin_size(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(120, 120);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    cont1.SetPadding(20, 10, 10, 40, Gorgon::UI::Dimension::Percent);
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redimg());
+    cont2.SetSize({50, Gorgon::UI::Dimension::Percent}, 40);
+    cont2.SetMargin(10, 20, 30, -10, Gorgon::UI::Dimension::Pixel);
+
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(greenimg());
+    cont3.SetSize(20, 60, Gorgon::UI::Dimension::Pixel);
+    cont3.SetMargin(30, -10, 0, 0, Gorgon::UI::Dimension::Pixel);
+
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+
+    layer.Add(stack);
+
+    return {"Set border, padding, margin and check relative sizing", "This has a cyan border around a 10x40 red object and 20x60 green object. There should be 30px between object. Red object should be 20px from top border, green object should be aligned to the red object from top.", stack};
 }
 
 TestData test_absanch_samepoint(Layer &layer) {
@@ -523,7 +673,132 @@ TestData test_absanch_centertopoint(Layer &layer) {
     return {"Absolute anchoring center to anchor", "9 components will be anchored in a cyan rectangle. Colors at top from left: red, yellow, orange; middle: blue, purple, brown; bottom: green, gray, white. Apart from the center component, all component should overlap cyan border. No component should touch (not even corner to corner) each other (10px space around all).", stack};
 }
 
+TestData test_absanchoff(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(blueimg());
+    cont2.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPosition(10, 20);
+
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+
+    layer.Add(stack);
+
+    return {"Absolute anchoring from top-left", "Blue object of size 20x20 on white background with 10, 20 pixel from top.", stack};
+}
+
+TestData test_absanchoffsize(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont2.SetPositioning(UI::ComponentTemplate::Absolute);
+    cont2.SetPosition(10, 20);
+
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+
+    layer.Add(stack);
+
+    return {"Absolute anchoring from top-left", "Green object in a cyan rectangle with 10, 20 pixel from border. It should fill the rest of the space.", stack};
+}
+
+TestData test_absanchoffrev(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(blueimg());
+    cont2.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+    cont2.SetAnchor(UI::Anchor::None, UI::Anchor::BottomRight, UI::Anchor::BottomRight);
+    cont2.SetPositioning(UI::ComponentTemplate::Absolute);
+    cont2.SetPosition(10, 20);
+
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+
+    layer.Add(stack);
+
+    return {"Absolute anchoring from bottom-right", "Blue object of size 20x20 on white background with 10, 20 pixel from bottom right.", stack};
+}
+
+TestData test_relanch(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+
+    layer.Add(stack);
+
+    return {"Relative anchoring", "Size 20x20 and 20x20 objects on a 60x60 white background, should be aligned to top left. Objects are green and red and should be touching.", stack};
+}
+
+TestData test_relanch2(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+    cont3.SetAnchor(UI::Anchor::BottomRight, UI::Anchor::BottomLeft, UI::Anchor::TopLeft);
+
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+
+    layer.Add(stack);
+
+    return {"Relative anchoring", "Size 20x20 and 20x20 objects on a 60x60 white background, first should be aligned to top left. Objects are green and red and should be touching from the corners.", stack};
+}
+
 std::vector<std::function<TestData(Layer &)>> tests = {
+    &test_setsize,
+    &test_setsizepercent,
+    &test_setsizepercent_percent,
+    &test_setsizepercent_rel,
+    &test_sizepercent_center,
+    &test_sizepercent_centerabs,
+
     &test_setborder,
     &test_setborder2,
     &test_setpadding,
@@ -537,9 +812,17 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_indent_padding,
     &test_setpadding_negative,
     &test_setmargin_negative,
+    &test_border_padding_margin_size,
+
     &test_absanch_samepoint,
     &test_paranch_samepoint,
     &test_absanch_centertopoint,
+    &test_absanchoff,
+    &test_absanchoffsize,
+    &test_absanchoffrev,
+    
+    &test_relanch,
+    &test_relanch2
 };
 
 
@@ -655,6 +938,10 @@ int main() {
                 }
                 break;
                 
+            case Keycodes::C:
+                WindowManager::SetClipboardText(info[ind].first);
+                break;
+
             case Keycodes::Escape:
                 exit(0);
                 break;

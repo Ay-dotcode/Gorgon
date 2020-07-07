@@ -6,7 +6,8 @@
 
 #include "math.h"
 
-//TODO: Textholder default text
+//TODO: in a relatively placed, relatively sized component, anchor/offset should effect maximum size in free direction.
+//      unless offset is also percentage based.
 
 namespace Gorgon { namespace UI {
     
@@ -2184,6 +2185,18 @@ namespace Gorgon { namespace UI {
         
         //for easy access
         auto ishor = cont.GetOrientation() == Graphics::Orientation::Horizontal;
+
+        //offsets will be stored here
+        std::map<Component *, Geometry::Point> offsets;
+
+        //reset all components
+        forallcomponents([&](Component &comp, const ComponentTemplate &temp, const std::array<float, 4> &val, int emsize) {
+            comp.location = {0, 0};
+            comp.size = {0, 0};
+            comp.innersize = {0, 0};
+            offsets[&comp] = {0, 0};
+        });
+
         
 realign:
 
@@ -2219,8 +2232,11 @@ realign:
             else {
                 yfree = true;
             }
+
+            //***** Left/top, right/bottom to center/middle alignment
             
-            //to be attached to left or right of the center reduces the effective size by half
+            //to be attached to left or right of the center reduces the effective size by half,
+            //this will work automatically with non-free direction
             if(xfree && IsCenter(temp.GetContainerAnchor()) && !IsCenter(temp.GetMyAnchor())) {
                 maxsize.Width = 
                     parent.innersize.Width/2 - 
@@ -2230,9 +2246,15 @@ realign:
                     )
                 ;
             }
+
+            //if there is an offset in the free direction, reduce it from the maximum size
+            if(xfree) {
+                maxsize.Width -= offsets[&comp].X;
+            }
             
-            //to be attached to top or bottom of the middle reduces the effective size by half
-            if(xfree && IsMiddle(temp.GetContainerAnchor()) && !IsMiddle(temp.GetMyAnchor())) {
+            //to be attached to top or bottom of the middle reduces the effective size by half,
+            //this will work automatically with non-free direction
+            if(yfree && IsMiddle(temp.GetContainerAnchor()) && !IsMiddle(temp.GetMyAnchor())) {
                 maxsize.Height = 
                     parent.innersize.Height/2 - 
                     (IsTop(temp.GetMyAnchor()) ? 
@@ -2241,6 +2263,13 @@ realign:
                     )
                 ;
             }
+
+            //if there is an offset in the free direction, reduce it from the maximum size
+            if(yfree) {
+                maxsize.Height -= offsets[&comp].Y;
+            }
+
+            //****** Max size calculation (cont.)
             
             //defined size of the component
             auto size = temp.GetSize();
@@ -2452,6 +2481,7 @@ realign:
                 }
                 
                 //automatic sizing restrictions
+                //TODO: if relative size turns to content size, this should adjust maximum usable width
                 if(temp.GetHorizontalSizing() == ComponentTemplate::GrowOnly) {
                     if(comp.size.Width < orgsize.Width)
                         comp.size.Width = orgsize.Width;
@@ -2719,7 +2749,7 @@ realign:
                     } (maxsize.Width - (sliding ? offset.X + comp.size.Width : 0), emsize);
                 }
 
-                //this will convert y to piyels
+                //this will convert y to pixels
                 if(ych == -1) { //value channel is not in effect
                     offset.Y = pos.Y(
                         maxsize.Height - (sliding ? tagpos.Y + comp.size.Height : 0), emsize
@@ -2737,7 +2767,16 @@ realign:
                             int(calculatevalue(val, ych, comp)*10000), Dimension::BasisPoint
                     } (maxsize.Height - (sliding ? offset.Y + comp.size.Height : 0), emsize);
                 }
+
+                offsets[&comp] = offset;
         
+                //if there is an offset in a relatively sized sub-component, final pass might be necessary.
+                if(
+                    (offset.X != 0 && temp.GetSize().Width.IsRelative()) ||
+                    (offset.Y != 0 && temp.GetSize().Height.IsRelative())
+                    )
+                    finalpass = true;
+
                 if(anch) {
                     anchortoother(comp, temp, offset, margin, *anch, cont.GetOrientation());
                 }
@@ -2751,18 +2790,18 @@ realign:
             if(temp.GetPositioning() == temp.Relative) {
                 if(cont.GetOrientation() == Graphics::Orientation::Horizontal) {
                     if(IsRight(temp.GetMyAnchor())) {
-                        startanch = &comp;
+                        endanch = &comp;
                     }
                     else {
-                        endanch = &comp;
+                        startanch = &comp;
                     }
                 }
                 else {
                     if(IsBottom(temp.GetMyAnchor())) {
-                        startanch = &comp;
+                        endanch = &comp;
                     }
                     else {
-                        endanch = &comp;
+                        startanch = &comp;
                     }
                 }
             }

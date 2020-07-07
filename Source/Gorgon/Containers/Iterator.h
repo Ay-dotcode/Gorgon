@@ -6,6 +6,7 @@
 
 #include <stdexcept>
 #include <iterator>
+#include <iostream>
 
 
 namespace Gorgon {
