@@ -6,8 +6,7 @@
 
 #include "math.h"
 
-//TODO: in a relatively placed, relatively sized component, anchor/offset should effect maximum size in free direction.
-//      unless offset is also percentage based.
+//TODO: add baseline to image data
 
 namespace Gorgon { namespace UI {
     
@@ -1455,11 +1454,15 @@ namespace Gorgon { namespace UI {
             }
         }
         
-        //otherwise return the global (first one found) emsize
+        //otherwise return the global (largest) emsize
         return emsize;
     }
 
     int ComponentStack::getbaseline(const Component &comp) {
+        //if baseline exists, use it
+        if(comp.GetTemplate().GetBaseline() != 0)
+            return comp.GetTemplate().GetBaseline();
+        
         //if the component is a text holder
         if(comp.GetTemplate().GetType() == ComponentType::Textholder) {
             const auto &th = dynamic_cast<const TextholderTemplate&>(comp.GetTemplate());
@@ -1471,7 +1474,7 @@ namespace Gorgon { namespace UI {
             }
         }
         
-        //otherwise return the global (first one found) emsize
+        //otherwise return the global (first one found)
         return baseline;
     }
 
@@ -1487,7 +1490,7 @@ namespace Gorgon { namespace UI {
             }
         }
         
-        //otherwise return the global (first one found) emsize
+        //otherwise return the global (first one found)
         return baseline;
     }
 
@@ -1681,7 +1684,7 @@ namespace Gorgon { namespace UI {
     }
     
     ///Determines the location of the component in relation to its parent. 
-    void ComponentStack::anchortoparent(Component &comp, const ComponentTemplate &temp, 
+    void ComponentStack::anchortoparent(Component &parent, Component &comp, const ComponentTemplate &temp, 
                         Geometry::Point offset, Geometry::Margin margin, Geometry::Size maxsize) {
         
         //anchor on the parent
@@ -1691,6 +1694,9 @@ namespace Gorgon { namespace UI {
         
         //parent anchor point and component anchor point
         Geometry::Point pp, cp;
+        
+        int bl = getbaseline(parent);
+        int th = gettextheight(parent);
         
         //determine parent anchor point
         switch(pa) {
@@ -1713,7 +1719,7 @@ namespace Gorgon { namespace UI {
                 break;
                 
             case Anchor::FirstBaselineLeft:
-                pp = {margin.Left, margin.Top + baseline};
+                pp = {margin.Left, margin.Top + bl};
                 break;
                 
             case Anchor::MiddleCenter:
@@ -1725,7 +1731,7 @@ namespace Gorgon { namespace UI {
                 break;
                 
             case Anchor::FirstBaselineRight:
-                pp = {-margin.Right + maxsize.Width, margin.Top + baseline};
+                pp = {-margin.Right + maxsize.Width, margin.Top + bl};
                 break;
                 
             case Anchor::BottomLeft:
@@ -1733,7 +1739,7 @@ namespace Gorgon { namespace UI {
                 break;
                 
             case Anchor::LastBaselineLeft:
-                pp = {margin.Left, -margin.Bottom + maxsize.Height - textheight + baseline};
+                pp = {margin.Left, -margin.Bottom + maxsize.Height - th + bl};
                 break;
                 
             case Anchor::BottomCenter:
@@ -1745,13 +1751,16 @@ namespace Gorgon { namespace UI {
                 break;
                 
             case Anchor::LastBaselineRight:
-                pp = { -margin.Right + maxsize.Width, -margin.Bottom + maxsize.Height - textheight + baseline};
+                pp = { -margin.Right + maxsize.Width, -margin.Bottom + maxsize.Height - th + bl};
                 break;
                 
         }
         
         //component size
         auto csize = comp.size;
+        
+        bl = getbaseline(comp);
+        th = gettextheight(comp);
         
         //determine where the anchor point is on the component
         switch(ca) {
@@ -1774,7 +1783,7 @@ namespace Gorgon { namespace UI {
                 break;
                 
             case Anchor::FirstBaselineLeft:
-                cp = {-offset.X, getbaseline(comp) - offset.Y};
+                cp = {-offset.X, bl - offset.Y};
                 break;
                 
             case Anchor::MiddleCenter:
@@ -1786,7 +1795,7 @@ namespace Gorgon { namespace UI {
                 break;
 
             case Anchor::FirstBaselineRight:
-                cp = {offset.X + csize.Width, getbaseline(comp) - offset.Y};
+                cp = {offset.X + csize.Width, bl - offset.Y};
                 break;
                 
                 
@@ -1795,7 +1804,7 @@ namespace Gorgon { namespace UI {
                 break;
 
             case Anchor::LastBaselineLeft:
-                cp = {-offset.X, csize.Height - gettextheight(comp) + getbaseline(comp) + offset.Y};
+                cp = {-offset.X, csize.Height - th + bl + offset.Y};
                 break;
 
             case Anchor::BottomCenter:
@@ -1807,7 +1816,7 @@ namespace Gorgon { namespace UI {
                 break;
                 
             case Anchor::LastBaselineRight:
-                cp = {offset.X + csize.Width, csize.Height - gettextheight(comp) + getbaseline(comp) + offset.Y};
+                cp = {offset.X + csize.Width, csize.Height - th + bl + offset.Y};
                 break;
                 
         }
@@ -1835,35 +1844,8 @@ namespace Gorgon { namespace UI {
             margin.Left = margin.Right = 0;
         
         
-        if(other.GetTemplate().GetType() == ComponentType::Textholder && 
-            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight || ca == Anchor::LastBaselineLeft || ca == Anchor::LastBaselineRight)
-        ) {
-            const auto &th = dynamic_cast<const TextholderTemplate&>(other.GetTemplate());
-            
-            if(th.IsReady()) {
-                
-                switch(ca) {
-                    case Anchor::FirstBaselineLeft:
-                        pp = {-margin.Right, int(-margin.Bottom+th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
-                        break;
-                        
-                    case Anchor::FirstBaselineRight:
-                        pp = {margin.Left + asize.Width, int(-margin.Bottom+th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
-                        break;
-                        
-                    case Anchor::LastBaselineLeft:
-                        cp = {-margin.Right, int(-margin.Bottom-th.GetRenderer().GetGlyphRenderer().GetBaseLine()+th.GetRenderer().GetGlyphRenderer().GetHeight()+asize.Height)};
-                        break;
-                        
-                    case Anchor::LastBaselineRight:
-                        cp = {margin.Left + asize.Width, int(-margin.Bottom-th.GetRenderer().GetGlyphRenderer().GetBaseLine()+th.GetRenderer().GetGlyphRenderer().GetHeight()+asize.Height)};
-                        break;
-                    default: ;//to silence warnings
-                }
-                
-                pa = Anchor::None;
-            }
-        }
+        int bl = getbaseline(other);
+        int th = gettextheight(other);
         
         switch(pa) {
             case Anchor::None: //do nothing
@@ -1883,8 +1865,16 @@ namespace Gorgon { namespace UI {
                 break;
                 
                 
-            case Anchor::MiddleLeft:
             case Anchor::FirstBaselineLeft:
+                pp = {-margin.Right, -margin.Bottom + bl};
+                break;
+                
+            case Anchor::FirstBaselineRight:
+                pp = {margin.Left + asize.Width, -margin.Bottom + bl};
+                break;
+                
+                
+            case Anchor::MiddleLeft:
                 pp = {-margin.Right, asize.Height / 2};
                 break;
                 
@@ -1893,13 +1883,20 @@ namespace Gorgon { namespace UI {
                 break;
                 
             case Anchor::MiddleRight:
-            case Anchor::FirstBaselineRight:
                 pp = {margin.Left + asize.Width, asize.Height / 2};
                 break;
                 
                 
-            case Anchor::BottomLeft:
             case Anchor::LastBaselineLeft:
+                pp = {-margin.Right, -margin.Bottom - bl + th + asize.Height};
+                break;
+                
+            case Anchor::LastBaselineRight:
+                pp = {margin.Left + asize.Width, -bl + th + asize.Height};
+                break;
+                
+                
+            case Anchor::BottomLeft:
                 pp = {-margin.Right, margin.Top + asize.Height};
                 break;
                 
@@ -1908,43 +1905,14 @@ namespace Gorgon { namespace UI {
                 break;
                 
             case Anchor::BottomRight:
-            case Anchor::LastBaselineRight:
                 pp = {margin.Left + asize.Width, margin.Top + asize.Height};
                 break;
-                
         }
         
         auto csize = comp.size;
         
-        if(temp.GetType() == ComponentType::Textholder && 
-            (ca == Anchor::FirstBaselineLeft || ca == Anchor::FirstBaselineRight || ca == Anchor::LastBaselineLeft || ca == Anchor::LastBaselineRight)
-        ) {
-            const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
-            
-            if(th.IsReady()) {
-                
-                switch(ca) {
-                    case Anchor::FirstBaselineLeft:
-                        cp = {-offset.X, int(-offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
-                        break;
-                        
-                    case Anchor::FirstBaselineRight:
-                        cp = {-offset.X + csize.Width, int(-offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine())};
-                        break;
-                        
-                    case Anchor::LastBaselineLeft:
-                        cp = {-offset.X, int(offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height)};
-                        break;
-                        
-                    case Anchor::LastBaselineRight:
-                        cp = {-offset.X + csize.Width, int(offset.Y+th.GetRenderer().GetGlyphRenderer().GetBaseLine()-th.GetRenderer().GetGlyphRenderer().GetHeight()-csize.Height)};
-                        break;
-                    default: ;//to silence warnings
-                }
-                
-                ca = Anchor::None;
-            }
-        }
+        bl = getbaseline(comp);
+        th = gettextheight(comp);
         
         switch(ca) {
             case Anchor::None: //do nothing
@@ -1964,8 +1932,16 @@ namespace Gorgon { namespace UI {
                 break;
                 
                 
-            case Anchor::MiddleLeft:
             case Anchor::FirstBaselineLeft:
+                cp = {-offset.X, -offset.Y + bl};
+                break;
+                
+            case Anchor::FirstBaselineRight:
+                cp = {-offset.X + csize.Width, -offset.Y + bl};
+                break;
+               
+                
+            case Anchor::MiddleLeft:
                 cp = {-offset.X, csize.Height / 2 - offset.Y};
                 break;
                 
@@ -1974,13 +1950,20 @@ namespace Gorgon { namespace UI {
                 break;
                 
             case Anchor::MiddleRight:
-            case Anchor::FirstBaselineRight:
                 cp = { offset.X + csize.Width, csize.Height / 2 - offset.Y};
                 break;
                 
                 
-            case Anchor::BottomLeft:
             case Anchor::LastBaselineLeft:
+                cp = {-offset.X, offset.Y + bl - th - csize.Height};
+                break;
+                
+            case Anchor::LastBaselineRight:
+                cp = {-offset.X + csize.Width, offset.Y + bl - th - csize.Height};
+                break;
+            
+                
+            case Anchor::BottomLeft:
                 cp = {-offset.X, csize.Height + offset.Y};
                 break;
                 
@@ -1989,7 +1972,6 @@ namespace Gorgon { namespace UI {
                 break;
                 
             case Anchor::BottomRight:
-            case Anchor::LastBaselineRight:
                 cp = { offset.X + csize.Width, csize.Height + offset.Y};
                 break;
                 
@@ -2781,7 +2763,7 @@ realign:
                     anchortoother(comp, temp, offset, margin, *anch, cont.GetOrientation());
                 }
                 else {
-                    anchortoparent(comp, temp, offset, margin, parent.innersize);
+                    anchortoparent(parent, comp, temp, offset, margin, parent.innersize);
                 }
             }
 

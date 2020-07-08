@@ -148,9 +148,9 @@ namespace Gorgon { namespace Graphics {
         ~BitmapFont() {
 			destroylist.Destroy();
         }
-                
+        
         /// Adds a new glyph bitmap to the list. If a previous one exists, it will be replaced.
-        /// Ownership of bitmap is not transferred.
+        /// Ownership of bitmap is not transferred. TODO: better baseline handling
         void AddGlyph(Glyph glyph, const RectangularDrawable &bitmap, int baseline = 0) {
             AddGlyph(glyph, bitmap, {0, this->baseline - baseline}, float(bitmap.GetWidth() + spacing));
         }

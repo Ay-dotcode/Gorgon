@@ -520,7 +520,7 @@ namespace Gorgon { namespace UI {
         
         ///Calculates the position results from the anchoring the given component to the area determined by the
         ///given size and margin. Offset is used to move away from the anchor and may result reversing of direction.
-        void anchortoparent(Component &comp, const ComponentTemplate &temp, 
+        void anchortoparent(Component &parent, Component &comp, const ComponentTemplate &temp, 
                                 Geometry::Point offset, Geometry::Margin margin, Geometry::Size maxsize);
         
         

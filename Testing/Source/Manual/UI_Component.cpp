@@ -7,7 +7,6 @@
 #include <Gorgon/Graphics/Rectangle.h>
 #include <Gorgon/Graphics/TintedObject.h>
 
-
 std::string helptext = 
     "Key list:\n"
     "d\tToggle disabled\n"
@@ -19,6 +18,8 @@ std::string helptext =
 
 using namespace Gorgon::UI;
 namespace Color = Gorgon::Graphics::Color;
+
+//BEGIN Helpers
 
 Graphics::RectangleProvider &coloredrect(Graphics::RGBA color) {
     //this will not leak
@@ -49,8 +50,8 @@ Graphics::RectangleProvider &greenrect() {
     return rect;
 }
 
-Graphics::BlankImage &blankimage(Graphics::RGBA color) {
-    auto &img = *new Graphics::BlankImage(10, 10, {color, 0.6});
+Graphics::BlankImage &blankimage(Graphics::RGBA color, Geometry::Size size = {1, 1}) {
+    auto &img = *new Graphics::BlankImage(size * 10, {color, 0.6});
     
     return img;
 }
@@ -58,6 +59,24 @@ Graphics::BlankImage &blankimage(Graphics::RGBA color) {
 
 Graphics::BlankImage &whiteimg() {
     static auto &img = blankimage(Graphics::Color::White);
+    
+    return img;
+}
+
+Graphics::BlankImage &greenimg2x1() {
+    static auto &img = blankimage(Graphics::Color::Green, {2, 1});
+    
+    return img;
+}
+
+Graphics::BlankImage &greenimg1x2() {
+    static auto &img = blankimage(Graphics::Color::Green, {1, 2});
+    
+    return img;
+}
+
+Graphics::BlankImage &greenimg2x2() {
+    static auto &img = blankimage(Graphics::Color::Green, {1, 2});
     
     return img;
 }
@@ -117,6 +136,10 @@ Graphics::BlankImage &orangeimg() {
     return img;
 }
 
+//END helpers
+
+
+//BEGIN tests
 
 /***********
  * Tests
@@ -124,7 +147,6 @@ Graphics::BlankImage &orangeimg() {
  * will live until the program ends. Create the function and
  * add it to the tests vector.
  ***********/
-
 struct TestData {
     std::string name, description;
     ComponentStack &stack;
@@ -791,6 +813,114 @@ TestData test_relanch2(Layer &layer) {
     return {"Relative anchoring", "Size 20x20 and 20x20 objects on a 60x60 white background, first should be aligned to top left. Objects are green and red and should be touching from the corners.", stack};
 }
 
+TestData test_anchbaseline(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.AddIndex(3);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+    cont2.SetAnchor(UI::Anchor::FirstBaselineRight, UI::Anchor::FirstBaselineLeft, UI::Anchor::FirstBaselineLeft);
+
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+    cont3.SetAnchor(UI::Anchor::FirstBaselineRight, UI::Anchor::FirstBaselineLeft, UI::Anchor::FirstBaselineLeft);
+    
+    static Graphics::BitmapFont fnt;
+    fnt.SetBaseline(20);
+    auto &cont4 = temp.AddTextholder(3, Gorgon::UI::ComponentCondition::Always);
+    cont4.SetRenderer(fnt);
+
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+
+    layer.Add(stack);
+
+    return {"Baseline anchoring", "Size 20x20 and 20x20 objects on a 60x60 white background, first should be aligned to top left. Objects are green and red and should be touching from the corners.", stack};
+}
+
+TestData test_anchsetbaseline(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.AddIndex(3);
+    cont1.SetBaseline(30);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+    cont2.SetBaseline(10);
+    cont2.SetAnchor(UI::Anchor::FirstBaselineRight, UI::Anchor::FirstBaselineLeft, UI::Anchor::FirstBaselineLeft);
+
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+    cont3.SetBaseline(20);
+    cont3.SetAnchor(UI::Anchor::FirstBaselineRight, UI::Anchor::FirstBaselineLeft, UI::Anchor::FirstBaselineLeft);
+    
+    static Graphics::BitmapFont fnt;
+    fnt.SetBaseline(20);
+    auto &cont4 = temp.AddTextholder(3, Gorgon::UI::ComponentCondition::Always);
+    cont4.SetRenderer(fnt);
+
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+
+    layer.Add(stack);
+
+    return {"Baseline anchoring using set baseline", "Size 20x20 and 20x20 objects on a 60x60 white background, first should be aligned to left, 20px from the top; second should be touching first object, should be from 10px from the top border. Objects are green and red.", stack};
+}
+
+TestData test_anchbaseline2(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.SetBaseline(30);
+    cont1.Background.SetAnimation(whiteimg());
+
+    static Graphics::BitmapFont fnt;
+    fnt.AddGlyph(' ', redimg());
+    fnt.SetBaseline(10);
+    
+    static Graphics::BitmapFont fnt2;
+    fnt2.AddGlyph(' ', greenimg1x2());
+    fnt2.SetBaseline(20);
+    
+    auto &cont2 = temp.AddTextholder(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetRenderer(fnt);
+    cont2.SetAnchor(UI::Anchor::FirstBaselineRight, UI::Anchor::FirstBaselineLeft, UI::Anchor::FirstBaselineLeft);
+    cont2.SetText(" ");
+    cont2.SetSize(10,10);
+    
+    auto &cont3 = temp.AddTextholder(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.SetRenderer(fnt2);
+    cont3.SetAnchor(UI::Anchor::FirstBaselineRight, UI::Anchor::FirstBaselineLeft, UI::Anchor::FirstBaselineLeft);
+    cont3.SetText(" ");
+    cont3.SetSize(10,10);
+    
+
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+
+    layer.Add(stack);
+
+    return {"Baseline anchoring between textholders", "Size 10x10 and 10x20 objects on a 60x60 white background, first should be aligned to left, 20px from the top; second should be touching first object, should be from 10px from the top border. Objects are red and green.", stack};
+}
+
 std::vector<std::function<TestData(Layer &)>> tests = {
     &test_setsize,
     &test_setsizepercent,
@@ -822,10 +952,14 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_absanchoffrev,
     
     &test_relanch,
-    &test_relanch2
+    &test_relanch2,
+    
+    &test_anchbaseline,
+    &test_anchsetbaseline,
+    &test_anchbaseline2,
 };
 
-
+//END tests
 
 Containers::Collection<Layer> layers;
 Containers::Collection<ComponentStack> stacks;

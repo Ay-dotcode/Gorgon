@@ -11,6 +11,8 @@
 #include "../Graphics/Animations.h"
 #include "Dimension.h"
 
+//TODO: Add baseline for all components
+
 namespace Gorgon { 
     namespace Graphics {
         class TextRenderer;
@@ -250,9 +252,11 @@ namespace Gorgon {
     * only be anchored to their parents or other relative components.
     * 
     * First baseline anchor uses the baseline of the first text line. In the calculations, it
-    * is considered centered. Last baseline uses the baseline of the last text line. It is 
+    * is considered top aligned. Last baseline uses the baseline of the last text line. It is 
     * considered as bottom alignment. If there is no text, first baseline is calculated from
-    * the top, last baseline is calculated from the bottom.
+    * the top, last baseline is calculated from the bottom. Baseline can be specified in 
+    * template. When it is specified, that value will be used instead of calculated baseline.
+    * Last baseline alignments should only be used for textholders.
     * 
     * Positioning
     * ===========
@@ -397,6 +401,8 @@ namespace Gorgon {
             case Anchor::TopRight:
             case Anchor::TopLeft:
             case Anchor::TopCenter:
+            case Anchor::FirstBaselineLeft:
+            case Anchor::FirstBaselineRight:
                 return true;
             default:
                 return false;
@@ -423,8 +429,6 @@ namespace Gorgon {
             case Anchor::MiddleLeft:
             case Anchor::MiddleRight:
             case Anchor::MiddleCenter:
-            case Anchor::FirstBaselineLeft:
-            case Anchor::FirstBaselineRight:
                 return true;
             default:
                 return false;
@@ -1411,6 +1415,14 @@ namespace Gorgon {
 
 
 
+        /// Changes the baseline of the current component. If set to 0, it will be determined automatically.
+        void SetBaseline(int value) { baseline = value; ChangedEvent(); } 
+
+        /// Returns the baseline. If set to 0, it will be detected automatically
+        int GetBaseline() const { return baseline; }
+
+
+
         /// Changes the index of the current component. Only one component can be rendered at an index which is
         /// determined by the component condition. See component indexing for more information.
         void SetIndex(int value) { index = value; ChangedEvent(); } 
@@ -1534,6 +1546,9 @@ namespace Gorgon {
         /// Anchor point of the current component. This point will be matched to the
         /// previous component's anchor point
         Anchor my = Anchor::TopLeft;
+        
+        /// Manually set baseline for this component. When 0, it will not be effective.
+        int baseline = 0;
 
         /// Component index. Only one component can exist for a specific index position.
         /// The ordering and visibility of the components will be determined from the condition.
