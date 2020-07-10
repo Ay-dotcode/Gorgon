@@ -921,6 +921,115 @@ TestData test_anchbaseline2(Layer &layer) {
     return {"Baseline anchoring between textholders", "Size 10x10 and 10x20 objects on a 60x60 white background, first should be aligned to left, 20px from the top; second should be touching first object, should be from 10px from the top border. Objects are red and green.", stack};
 }
 
+TestData test_abssliding(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 40);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(20, 0, Gorgon::UI::Dimension::Percent);
+    
+    
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(greenrect());
+    cont3.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+    cont3.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont3.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont3.SetMargin(10, 0, 10, 0);
+    cont3.SetPosition(3333, 10000, Gorgon::UI::Dimension::BasisPoint);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"AbsoluteSliding", "80x40 cyan rectangle contains 10x10 red and green rectangle. Red rectangle should be touching cyan from top, it should be 10px from the left border. Green rectangle should be touching to the bottom of cyan border, 20px from the left. Inner rectangles should be touching on the corners.", stack};
+}
+
+TestData test_abspolar(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(100, 60);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::PolarAbsolute);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::MiddleCenter, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(10, 90);
+    
+    
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(greenrect());
+    cont3.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+    cont3.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::MiddleCenter, Gorgon::UI::Anchor::TopLeft);
+    cont3.SetPositioning(Gorgon::UI::ComponentTemplate::PolarAbsolute);
+    cont3.SetMargin(10, 0, 10, 0);
+    cont3.SetPosition(50, 50, Gorgon::UI::Dimension::Percent);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+        
+    layer.Add(stack);
+    
+    return {"PolarAbsolute", "100x60 white background contains 20x20 red and green rectangle. Red rectangle should be 10px from top, centered. Green rectangle should be at the middle 30px from the left.", stack};
+}
+
+TestData test_abspolar2(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(120, 70);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.SetCenter(50, 0, Gorgon::UI::Dimension::Percent);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::PolarAbsolute);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopCenter, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition({40, UI::Dimension::Percent}, {200, UI::Dimension::EM});
+    cont2.SetCenter(50, 0, Gorgon::UI::Dimension::Percent);
+    
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(greenrect());
+    cont3.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+    cont3.SetPositioning(Gorgon::UI::ComponentTemplate::PolarAbsolute);
+    cont3.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::BottomCenter, Gorgon::UI::Anchor::TopLeft);
+    cont3.SetPosition(100, 100, Gorgon::UI::Dimension::Percent);
+    cont3.SetCenter(50, 100, Gorgon::UI::Dimension::Percent);
+    cont3.SetMargin(0, 100, Gorgon::UI::Dimension::Percent);
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+        
+    layer.Add(stack);
+    
+    return {"PolarAbsolute 2", "100x60 white background contains 20x20 red and green rectangle. Red rectangle should be 20px from top, in centered. Green rectangle should be at bottom left corner.", stack};
+}
+
+
+
 std::vector<std::function<TestData(Layer &)>> tests = {
     &test_setsize,
     &test_setsizepercent,
@@ -957,6 +1066,10 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_anchbaseline,
     &test_anchsetbaseline,
     &test_anchbaseline2,
+    
+    &test_abssliding,
+    &test_abspolar,
+    &test_abspolar2
 };
 
 //END tests
@@ -966,6 +1079,7 @@ Containers::Collection<ComponentStack> stacks;
 std::vector<std::pair<std::string, std::string>> info;
     
 int main() {
+    helptext += String::Concat("\nTotal tests:\t", tests.size());
     Application app("uitest", "UI Component Test", helptext, 10, 8);
 
     Graphics::Layer grid;

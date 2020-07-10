@@ -6,7 +6,7 @@
 
 #include "math.h"
 
-//TODO: add baseline to image data
+//TODO:
 
 namespace Gorgon { namespace UI {
     
@@ -2668,44 +2668,83 @@ realign:
 
                 //maximum x and y axis radii
                 float xrad = 0, yrad = 0;
-                //x and y offsets necessary to keep object in its parent
-                float xoff = 0, yoff = 0;
 
                 //determine xrad and xoff according to the anchor point
                 if(IsLeft(panch)) {
                     xrad = maxsize.Width - pcenter.X - comp.size.Width;
-                    xoff = center.X;
                 }
                 else if(IsCenter(panch)) {
                     xrad = std::min(pcenter.X - center.X, maxsize.Width - pcenter.X - (comp.size.Width - center.X));
                 }
                 else {
                     xrad = pcenter.X - comp.size.Width;
-                    xoff = comp.size.Width - center.X;
                 }
 
                 //determine yrad and yoff according to the anchor point
                 if(IsTop(panch)) {
                     yrad = maxsize.Height - pcenter.Y - comp.size.Height;
-                    yoff = center.Y;
                 }
                 else if(IsMiddle(panch)) {
                     yrad = std::min(pcenter.Y - center.Y, maxsize.Height - pcenter.Y - (comp.size.Height - center.Y));
                 }
                 else {
                     yrad = pcenter.Y - comp.size.Height;
-                    yoff = comp.size.Height - center.Y;
+                }
+                
+                int maxang = 360, stang = 0;
+                
+                switch(panch) {
+                case Anchor::TopLeft:
+                case Anchor::FirstBaselineLeft:
+                    maxang = 90;
+                    stang = 270;
+                    break;
+                case Anchor::TopCenter:
+                    maxang = 180;
+                    stang = 180;
+                    break;
+                case Anchor::TopRight:
+                case Anchor::FirstBaselineRight:
+                    maxang = 90;
+                    stang = 180;
+                    break;
+                case Anchor::MiddleLeft:
+                    maxang = 180;
+                    stang = 270;
+                    break;
+                default:
+                    maxang = 360;
+                    stang = 0;
+                    break;
+                case Anchor::MiddleRight:
+                    maxang = 180;
+                    stang = 90;
+                    break;
+                case Anchor::BottomLeft:
+                case Anchor::LastBaselineLeft:
+                    maxang = 90;
+                    stang = 0;
+                    break;
+                case Anchor::BottomCenter:
+                    maxang = 180;
+                    stang = 0;
+                    break;
+                case Anchor::BottomRight:
+                case Anchor::LastBaselineRight:
+                    maxang = 90;
+                    stang = 90;
+                    break;
                 }
 
                 //calculate radius
                 auto r = pos.X.CalculateFloat(std::min(xrad, yrad), (float)emsize);
-
-                auto a = pos.Y.CalculateFloat(360, 45); //em size for angle is 45
-
+                
+                auto a = pos.Y.CalculateFloat(maxang, 45) + stang; //em size for angle is 45
+                
                 //convert to radians
-                a *= PI / 180.0f;
+                a *= -PI / 180.0f;
 
-                comp.location = {int(std::round(r * cos(a) + pcenter.X - center.X + xoff)), int(std::round(r * sin(a) + pcenter.Y - center.Y + yoff))};
+                comp.location = {int(std::round(r * cos(a) + pcenter.X - center.X)), int(std::round(r * sin(a) + pcenter.Y - center.Y))};
             }
             else {
                 bool sliding = temp.GetPositioning() == temp.AbsoluteSliding;

@@ -289,7 +289,13 @@ namespace Gorgon {
     * currently does not take value range into consideration. If desired, em size could also be
     * used for angle, which is set to 45deg. Component is then placed according to its center 
     * point. To use PolarAbsolute correctly, you should set center of parent, center of component
-    * as well as parent anchor of the component (not self anchor) correctly.
+    * as well as parent anchor of the component (not self anchor) correctly. Setting parent anchor
+    * also adjusts maximum and starting angle so that the both radius 0-100% and angle 0-100%
+    * will stay within the container. Angle always works counter clockwise. Angle EM size is not
+    * changed by the anchor point, however, it is also affected by the starting point. Also, when
+    * percentages or value modification is involved, it is adviced to set center point of the 
+    * component so that it will be within the object. This offset will not be automatically done 
+    * and will leave portions of the object outside its parent.
     * 
     * Position can be affected by the value modification system. In this case specified
     * position is used as an addition with a percentage based value. 
@@ -1532,7 +1538,7 @@ namespace Gorgon {
         Margin indent = {0};
         
         /// Center point for rotation
-        Point center = {0, 0};
+        Point center = {{50, Dimension::Percent}, {50, Dimension::Percent}};
 
         /// Anchor point of the previous component that this component will be attached
         /// to. If the component positioning is absolute or this is the first component, 
