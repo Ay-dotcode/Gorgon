@@ -6,13 +6,17 @@
 #include <Gorgon/Graphics/BlankImage.h>
 #include <Gorgon/Graphics/Rectangle.h>
 #include <Gorgon/Graphics/TintedObject.h>
+#include <Gorgon/Input/KeyRepeater.h>
 
 std::string helptext = 
     "Key list:\n"
     "d\tToggle disabled\n"
     "left, right\tPrevious, next test\n"
     "c\tCopy title of the active test\n"
-    "1-8\tModify value of the stack [not active yet]\n"
+    "1234\tIncrease the value of the stack\n"
+    "qwer\tDecrease the value of the stack\n"
+    "Shift\tSlower value change\n"
+    "Ctrl\tFaster value change, snaps to nearest 20%\n"
     "esc\tClose\n"
 ;
 
@@ -1077,18 +1081,27 @@ std::vector<std::function<TestData(Layer &)>> tests = {
 Containers::Collection<Layer> layers;
 Containers::Collection<ComponentStack> stacks;
 std::vector<std::pair<std::string, std::string>> info;
+Input::KeyRepeater repeater;
     
 int main() {
     helptext += String::Concat("\nTotal tests:\t", tests.size());
     Application app("uitest", "UI Component Test", helptext, 10, 8);
 
+    int xs = 50, ys = 20, w = 500, h = 400;
+    
     Graphics::Layer grid;
     app.wind.Add(grid);
     
     Graphics::Layer textlayer;
     app.wind.Add(textlayer);
+    textlayer.Move(xs, ys+h+20);
+    textlayer.Resize(w, 600-ys+h+20);
     
-    int xs = 50, ys = 20, w = 500, h = 400;
+    Graphics::Layer datalayer;
+    app.wind.Add(datalayer);
+    datalayer.Move(w + xs *2, h-50);
+    datalayer.Resize(app.wind.GetWidth() - w - xs*2 - 10, 50);
+    
     grid.Draw(xs-20, ys-2, 20, 2, Graphics::Color::White);
     grid.Draw(xs-2, ys-20, 2, 20, Graphics::Color::White);
     
@@ -1121,8 +1134,6 @@ int main() {
         grid.Draw(xs+w, ys-1+y*50, 5, 2, Graphics::Color::White);
     }
     
-    textlayer.Move(xs, ys+h+20);
-    textlayer.Resize(w, 600-ys+h+20);
 
     
     Layer *activelayer = nullptr;
@@ -1147,17 +1158,90 @@ int main() {
     
     int ind = layers.GetSize() - 1;
     
+    auto displayvalue = [&]() {
+        datalayer.Clear();
+        if(activestack)
+            app.stylarge.Print(datalayer, 
+                String::Concat(
+                    "Value 1:\t", int(activestack->GetValue()[0]*100),"\n",
+                    "Value 2:\t", int(activestack->GetValue()[1]*100),"\n",
+                    "Value 3:\t", int(activestack->GetValue()[2]*100),"\n",
+                    "Value 4:\t", int(activestack->GetValue()[3]*100),"\n"
+                ),
+                0,0, datalayer.GetWidth(), Gorgon::Graphics::TextAlignment::Left
+            );
+    };
+    
     auto displaytext = [&]() {
         textlayer.Clear();
         
         app.stylarge.Print(textlayer, info[ind].first, 0,0, w);
         app.sty.Print(textlayer, info[ind].second, 0, app.stylarge.GetSize(info[ind].first, w).Height, w);
+        
+        displayvalue();
     };
     
     displaytext();
     
+    namespace Keycodes = Gorgon::Input::Keyboard::Keycodes;
+    repeater.Register(
+        Keycodes::Number_1,
+        Keycodes::Number_2,
+        Keycodes::Number_3,
+        Keycodes::Number_4,
+        Keycodes::Q,
+        Keycodes::W,
+        Keycodes::E,
+        Keycodes::R
+    );
+    repeater.SetInitialDelay(200);
+    repeater.SetDelay(50);
+    
+    repeater.Repeat.Register([&](Gorgon::Input::Key key) {
+        if(!activestack)
+            return;
+        
+        auto v = activestack->GetValue();
+        
+        float p = 100.f;
+        float ch = 0.01f;
+        
+        if(Input::Keyboard::CurrentModifier & Input::Keyboard::Modifier::Ctrl) {
+            p = 10.f;
+            ch = 0.1f;
+        }
+        
+        switch(key) {
+        case Keycodes::Number_1:
+            activestack->SetValue(std::round(Clamp(v[0]+ch, 0.0f, 1.0f)*p)/p);
+            break;
+        case Keycodes::Number_2:
+            activestack->SetValue(v[0], std::round(Clamp(v[1]+ch, 0.0f, 1.0f)*p)/p);
+            break;
+        case Keycodes::Number_3:
+            activestack->SetValue(v[0], v[1], std::round(Clamp(v[2]+ch, 0.0f, 1.0f)*p)/p);
+            break;
+        case Keycodes::Number_4:
+            activestack->SetValue(v[0], v[1], v[2], std::round(Clamp(v[3]+ch, 0.0f, 1.0f)*p)/p);
+            break;
+        case Keycodes::Q:
+            activestack->SetValue(std::round(Clamp(v[0]-ch, 0.0f, 1.0f)*p)/p);
+            break;
+        case Keycodes::W:
+            activestack->SetValue(v[0], std::round(Clamp(v[1]-ch, 0.0f, 1.0f)*p)/p);
+            break;
+        case Keycodes::E:
+            activestack->SetValue(v[0], v[1], std::round(Clamp(v[2]-ch, 0.0f, 1.0f)*p)/p);
+            break;
+        case Keycodes::R:
+            activestack->SetValue(v[0], v[1], v[2], std::round(Clamp(v[3]-ch, 0.0f, 1.0f)*p)/p);
+            break;
+        }
+        
+        displayvalue();
+    });
+    
     app.wind.KeyEvent.Register([&](Gorgon::Input::Key key, float amount) {
-        namespace Keycodes = Gorgon::Input::Keyboard::Keycodes;
         if(amount) {
             switch(key) {
             case Keycodes::Left:
@@ -1193,15 +1277,29 @@ int main() {
             case Keycodes::Escape:
                 exit(0);
                 break;
+                
+            case Keycodes::Shift:
+                repeater.SetInitialDelay(500);
+                repeater.SetDelay(500);
+                break;
             }
         }
+        else {
+            switch(key) {
+            case Keycodes::Shift:
+                repeater.SetInitialDelay(200);
+                repeater.SetDelay(50);
+                break;
+            }
+        }
+        
+        repeater.KeyEvent(key, amount);
         
         return true;
     });
 
     while(true) {
         Gorgon::NextFrame();
-        
     }
 
     return 0;

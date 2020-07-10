@@ -105,6 +105,16 @@ namespace Gorgon { namespace Input {
             registeredkeys.insert(key);
         }
         
+        /// Registers the given keys to be repeated. Registering keys are necessary only for
+        /// automatic key acquisition from an event.
+        template<class ... T_>
+        void Register(Key key, T_ &&... args) {
+            registeredkeys.insert(key);
+            
+            this->Register(std::forward<T_>(args)...);
+        }
+        
+        
         /// Unregisters a key from this repeater. Unregistering a key will trigger a release
         /// if key is pressed. The key can be pressed again later on using Press function
         /// however, it will not automatically be acquired from the event that this repeater
@@ -250,7 +260,7 @@ namespace Gorgon { namespace Input {
         std::set<Key> registeredkeys;
         
         
-        bool repeatonpress    = false;
+        bool repeatonpress    = true;
         
         bool repeatonrelease  = false;
         
