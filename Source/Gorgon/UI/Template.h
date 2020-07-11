@@ -1284,7 +1284,7 @@ namespace Gorgon {
         /// Returns how the data will affect this component
         DataEffect GetDataEffect() const { return dataeffect; }
         
-        /// Changes the ordering of the values. This allows swaps like X-Y. 
+        /// Changes the ordering of the values. This allows swaps like X-Y. You should specify which channel will receive which value. 
         void SetValueOrdering(int first, int second, int third, int fourth) {
             valueordering = {{first, second, third, fourth}};
             

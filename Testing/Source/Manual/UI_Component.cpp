@@ -788,7 +788,34 @@ TestData test_relanch(Layer &layer) {
 
     layer.Add(stack);
 
-    return {"Relative anchoring", "Size 20x20 and 20x20 objects on a 60x60 white background, should be aligned to top left. Objects are green and red and should be touching.", stack};
+    return {"Relative anchoring", "Size 20x20 and 20x20 objects on a 60x60 white background, first one should be aligned to top left, second should be left of first one. Objects are green and red and should be touching.", stack};
+}
+
+TestData test_relanchvert(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.SetOrientation(Gorgon::Graphics::Orientation::Vertical);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+    cont3.SetAnchor(Gorgon::UI::Anchor::BottomLeft, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+
+    layer.Add(stack);
+
+    return {"Relative anchoring vertical", "Size 20x20 and 20x20 objects on a 60x60 white background, first one should be aligned to top left, second should be under the first one. Objects are green and red and should be touching.", stack};
 }
 
 TestData test_relanch2(Layer &layer) {
@@ -1034,6 +1061,451 @@ TestData test_abspolar2(Layer &layer) {
 
 
 
+TestData test_modify_position_sliding(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 40);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyPosition);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Modify position sliding", "80x40 cyan rectangle contains 10x10 red rectangle. It should move from left to right with the change with the value of channel 1.", stack};
+}
+
+TestData test_modify_position_slidingvert(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(40, 80);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    cont1.SetOrientation(Gorgon::Graphics::Orientation::Vertical);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyPosition);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Modify position sliding vertical", "40x80 cyan rectangle contains 10x10 red rectangle. It should move from left to right with the change with the value of channel 1.", stack};
+}
+
+TestData test_modify_rev(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 40);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyPosition);
+    cont2.SetValueRange(0, 1, 0);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Reverse modify", "80x40 cyan rectangle contains 10x10 red rectangle. It should move from right to left with the change with the value of channel 1.", stack};
+}
+
+TestData test_modify_minmax(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 40);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyPosition);
+    cont2.SetValueRange(0, 0.2, 0.8);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Value range", "80x40 cyan rectangle contains 10x10 red rectangle. It should move from 10px left to 10px to right with the change with the value of channel 1.", stack};
+}
+
+TestData test_modify_chmap2(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 40);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyPosition);
+    cont2.SetValueOrdering(1, 0, 0, 0);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Channel mapping 2", "80x40 cyan rectangle contains 10x10 red rectangle. It should move from left to right with the change with the value of channel 2.", stack};
+}
+
+TestData test_modify_chmap3(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 40);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyPosition);
+    cont2.SetValueOrdering(2, 0, 0, 0);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Channel mapping 3", "80x40 cyan rectangle contains 10x10 red rectangle. It should move from left to right with the change with the value of channel 3.", stack};
+}
+
+TestData test_modify_chmap4(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 40);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyPosition);
+    cont2.SetValueOrdering(3, 0, 0, 0);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Channel mapping 4", "80x40 cyan rectangle contains 10x10 red rectangle. It should move from left to right with the change with the value of channel 4.", stack};
+}
+
+TestData test_modify_ch4_minmax(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 40);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyPosition);
+    cont2.SetValueOrdering(3, 0, 0, 0);
+    cont2.SetValueRange(0, 0.2, 0.8);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Channel map value range", "80x40 cyan rectangle contains 10x10 red rectangle. It should move from 10px left to 10px to right with the change with the value of channel 1.", stack};
+}
+
+TestData test_modify_position_2ch(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 80);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyPosition);
+    cont2.SetValueSource(cont2.UseXY);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Modify XY position sliding", "80x80 cyan rectangle contains 10x10 red rectangle. It should move from left to right with the change with the value of channel 1, top to bottom with 2.", stack};
+}
+
+TestData test_modify_position_absolute(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(70, 70);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::Absolute);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyPosition);
+    cont2.SetValueSource(cont2.UseXY);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Modify XY position absolute", "70x70 cyan rectangle contains 10x10 red rectangle. It should move from left to right with the change with the value of channel 1, top to bottom with 2. At the right and bottom, component should pass the boundaries.", stack};
+}
+
+TestData test_modify_x(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 80);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyX);
+    cont2.SetValueSource(cont2.UseX);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Modify X", "80x80 cyan rectangle contains 10x10 red rectangle. It should move from left to right with the change with the value of channel 1. Other channel should not have any effect.", stack};
+}
+
+TestData test_modify_y(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 80);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyY);
+    cont2.SetValueSource(cont2.UseX);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Modify Y", "80x80 cyan rectangle contains 10x10 red rectangle. It should move from top to bottom with the change with the value of channel 1. Other channel should not have any effect.", stack};
+}
+
+TestData test_modify_size(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 40);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redimg());
+    cont2.SetSize(0, 10, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifySize);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Modify size", "80x40 cyan rectangle contains 10px high red rectangle. It should scale from left to right with the change with the value of channel 1.", stack};
+}
+
+TestData test_modify_sizevert(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(40, 80);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetOrientation(Gorgon::Graphics::Orientation::Vertical);
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redimg());
+    cont2.SetSize(10, 0, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifySize);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Modify size vertical", "40x80 cyan rectangle contains 10px wide red rectangle. It should scale from top to bottom with the change with the value of channel 1.", stack};
+}
+
+TestData test_modify_sizemin(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 40);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redimg());
+    cont2.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifySize);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Modify size set minimum", "80x40 cyan rectangle contains 10px high red rectangle. It should scale from left to right with the change with the value of channel 1 but it should have minimum of 10px.", stack};
+}
+
+TestData test_modify_sizexy(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 40);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redimg());
+    cont2.SetSize(0, 0, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifySize);
+    cont2.SetValueSource(Gorgon::UI::ComponentTemplate::UseSize);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Modify size width & height", "80x40 cyan rectangle contains red rectangle. It should scale from left to right with the change with the value of channel 1 and top to bottom with the value of channel 2.", stack};
+}
+
+
 std::vector<std::function<TestData(Layer &)>> tests = {
     &test_setsize,
     &test_setsizepercent,
@@ -1066,6 +1538,7 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     
     &test_relanch,
     &test_relanch2,
+    &test_relanchvert,
     
     &test_anchbaseline,
     &test_anchsetbaseline,
@@ -1073,7 +1546,25 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     
     &test_abssliding,
     &test_abspolar,
-    &test_abspolar2
+    &test_abspolar2,
+    
+    &test_modify_position_sliding,
+    &test_modify_position_slidingvert,
+    &test_modify_rev,
+    &test_modify_minmax,
+    &test_modify_chmap2,
+    &test_modify_chmap3,
+    &test_modify_chmap4,
+    &test_modify_ch4_minmax,
+    &test_modify_position_2ch,    
+    &test_modify_position_absolute,
+    &test_modify_x,
+    &test_modify_y,
+    
+    &test_modify_size,
+    &test_modify_sizevert,
+    &test_modify_sizemin,
+    &test_modify_sizexy,
 };
 
 //END tests
