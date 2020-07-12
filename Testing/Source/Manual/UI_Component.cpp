@@ -140,6 +140,32 @@ Graphics::BlankImage &orangeimg() {
     return img;
 }
 
+Graphics::BitmapAnimationProvider &makecoloranim() {
+    auto &anim = *new Graphics::BitmapAnimationProvider;
+    
+    static decltype(Color::Red) colors[] = {Color::Red, Color::Orange, Color::Yellow, Color::Green, Color::Cyan, Color::Blue, Color::Magenta, Color::White, Color::Grey, Color::Black};
+    
+    for(auto color : colors) {
+        auto &img = *new Graphics::Bitmap(10, 10, Gorgon::Graphics::ColorMode::RGBA);
+        
+        img.ForAllPixels([&](int x, int y) {
+            img.SetRGBAAt(x, y, color);
+        });
+        
+        img.Prepare();
+        anim.Add(img, 100);
+        anim.Own(img);
+    }
+    
+    return anim;
+}
+
+Graphics::BitmapAnimationProvider &coloranim() {
+    static auto &anim = makecoloranim();
+    
+    return anim;
+}
+
 //END helpers
 
 
@@ -1505,6 +1531,132 @@ TestData test_modify_sizexy(Layer &layer) {
     return {"Modify size width & height", "80x40 cyan rectangle contains red rectangle. It should scale from left to right with the change with the value of channel 1 and top to bottom with the value of channel 2.", stack};
 }
 
+TestData test_modify_alpha(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 80);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redimg());
+    cont2.SetSize(60, 60, Gorgon::UI::Dimension::Pixel);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyAlpha);
+    cont2.SetValueSource(cont2.UseFirst);
+    
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Modify blend", "80x80 cyan rectangle contains 60x60 red rectangle. It should appear with the change with the value of channel 1.", stack};
+}
+
+TestData test_modify_blend1(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 80);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(whiteimg());
+    cont2.SetSize(60, 60, Gorgon::UI::Dimension::Pixel);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::BlendColor);
+    cont2.SetValueSource(cont2.UseFirst);
+    cont2.SetColor(Color::Red);
+    cont2.SetTargetColor(Color::AppleGreen);
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Blend", "80x80 cyan rectangle contains 60x60 red rectangle. Its color should change to green with the change with the value of channel 1.", stack};
+}
+
+TestData test_modify_blend2(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 80);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(whiteimg());
+    cont2.SetSize(60, 60, Gorgon::UI::Dimension::Pixel);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::BlendColor);
+    cont2.SetValueSource(cont2.UseRA);
+    cont2.SetColor(Color::Red);
+    cont2.SetTargetColor({Color::AppleGreen, 0.f});
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Blend color & alpha", "80x80 cyan rectangle contains 60x60 red rectangle. Its color should change to green with the change with the value of channel 1, alpha will be modified from 60% to 0% with the value of channel 4.", stack};
+}
+
+TestData test_modify_blend4(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 80);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(whiteimg());
+    cont2.SetSize(60, 60, Gorgon::UI::Dimension::Pixel);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::BlendColor);
+    cont2.SetValueSource(cont2.UseRGBA);
+    cont2.SetColor(Color::Black);
+    cont2.SetTargetColor({Color::White, 0.f});
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Blend color & alpha", "80x80 cyan rectangle contains 60x60 black rectangle. Its color should be controllable using all channels. Alpha is reversed.", stack};
+}
+
+TestData test_modify_animation(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 80);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(coloranim());
+    cont2.SetSize(60, 60, Gorgon::UI::Dimension::Pixel);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyAnimation);
+    cont2.SetValueSource(cont2.UseFirst);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Blend", "80x80 cyan rectangle contains a 60x60 rectangle. It is an animation with 10 colors (red, orange, yellow, green, cyan, blue, magenta, white, grey, black), channel 1 can be used to control the animation frame. 0-10 should be red, orange starts from 11, yellow starts from 21 and so on.", stack};
+}
+
 
 std::vector<std::function<TestData(Layer &)>> tests = {
     &test_setsize,
@@ -1565,6 +1717,13 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_modify_sizevert,
     &test_modify_sizemin,
     &test_modify_sizexy,
+    
+    &test_modify_alpha,
+    &test_modify_blend1,
+    &test_modify_blend2,
+    &test_modify_blend4,
+    
+    &test_modify_animation,
 };
 
 //END tests
