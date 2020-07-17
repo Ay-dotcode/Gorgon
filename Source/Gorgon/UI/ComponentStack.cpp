@@ -2250,20 +2250,23 @@ realign:
             if(yfree) {
                 maxsize.Height -= offsets[&comp].Y;
             }
-
+            
             //****** Max size calculation (cont.)
             
             //defined size of the component
             auto size = temp.GetSize();
             
-            //ensure unused size will not cause a repass
-            if(temp.GetHorizontalSizing() == ComponentTemplate::Automatic) {
-                size.Width = 0; //will not be used, set to 0px
+            //ensure unused size will not cause a repass except for text component which requires width
+            //to calculate exact text size.
+            if(temp.GetType() != ComponentType::Textholder) {
+                if(temp.GetHorizontalSizing() == ComponentTemplate::Automatic) {
+                    size.Width = 0; //will not be used, set to 0px
+                }
+                if(temp.GetVerticalSizing() == ComponentTemplate::Automatic) {
+                    size.Height = 0; //will not be used, set to 0px
+                }
             }
-            if(temp.GetVerticalSizing() == ComponentTemplate::Automatic) {
-                size.Height = 0; //will not be used, set to 0px
-            }
-        
+            
             //if relatively positioned, then the space left will be used. Space left will not
             //be available in the first pass.
             if(!xfree) {
@@ -2431,7 +2434,7 @@ realign:
                         //if there is some text data
                         if(text != "") {
                             //if not to be wrapped
-                            if(tagnowrap.count(temp.GetTag()))
+                            if(tagnowrap.count(temp.GetTag()) || width == 0)
                                 comp.size = th.GetRenderer().GetSize(text);
                             else
                                 comp.size = th.GetRenderer().GetSize(text, width);

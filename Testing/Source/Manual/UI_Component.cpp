@@ -11,17 +11,34 @@
 std::string helptext = 
     "Key list:\n"
     "d\tToggle disabled\n"
-    "left, right\tPrevious, next test\n"
+    "left\tPrevious\n"
+    "right\tNext test\n"
     "c\tCopy title of the active test\n"
     "1234\tIncrease the value of the stack\n"
     "qwer\tDecrease the value of the stack\n"
     "Shift\tSlower value change\n"
     "Ctrl\tFaster value change, snaps to nearest 20%\n"
+    "56\tChange text, title\n"
+    "78\tChange icon1, icon2\n"
     "esc\tClose\n"
 ;
 
 using namespace Gorgon::UI;
 namespace Color = Gorgon::Graphics::Color;
+
+struct TestData {
+    std::string name, description;
+    ComponentStack &stack;
+};
+
+extern std::vector<std::function<TestData(Layer &)>> tests;
+
+Application &getapp() {
+    auto help = helptext + String::Concat("\nTotal tests:\t", tests.size());
+    static Application app("uitest", "UI Component Test", help, 10, 8);
+    
+    return app;
+}
 
 //BEGIN Helpers
 
@@ -80,7 +97,7 @@ Graphics::BlankImage &greenimg1x2() {
 }
 
 Graphics::BlankImage &greenimg2x2() {
-    static auto &img = blankimage(Graphics::Color::Green, {1, 2});
+    static auto &img = blankimage(Graphics::Color::Green, {2, 2});
     
     return img;
 }
@@ -166,6 +183,22 @@ Graphics::BitmapAnimationProvider &coloranim() {
     return anim;
 }
 
+
+const std::string teststrings[] = {
+    "Hi",
+    "Hello",
+    "Hello world!",
+    "This is a very long text."
+};
+
+const Graphics::BlankImage *testimages[] = {
+    &orangeimg(),
+    &greenimg1x2(),
+    &greenimg2x1(),
+    &greenimg2x2(),
+    &redimg()
+};
+
 //END helpers
 
 
@@ -177,10 +210,48 @@ Graphics::BitmapAnimationProvider &coloranim() {
  * will live until the program ends. Create the function and
  * add it to the tests vector.
  ***********/
-struct TestData {
-    std::string name, description;
-    ComponentStack &stack;
-};
+
+TestData test_graphic(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Graphic component", "10x10 green object on a 50x50 white background, should be aligned to top left.", stack};
+}
+
+TestData test_text(Layer &layer) {
+    auto &app = getapp();
+
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddTextholder(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetText("Hello");
+    cont2.SetColor(Color::Brown);
+    cont2.SetRenderer(app.fntlarge);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Text component", "Brown Hello on 50x50 white background, should be aligned to top left.", stack};
+}
 
 TestData test_setsize(Layer &layer) {
     auto &temp = *new Template;
@@ -1657,8 +1728,179 @@ TestData test_modify_animation(Layer &layer) {
     return {"Blend", "80x80 cyan rectangle contains a 60x60 rectangle. It is an animation with 10 colors (red, orange, yellow, green, cyan, blue, magenta, white, grey, black), channel 1 can be used to control the animation frame. 0-10 should be red, orange starts from 11, yellow starts from 21 and so on.", stack};
 }
 
+TestData test_data_settext(Layer &layer) {
+    auto &app = getapp();
+
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddTextholder(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetDataEffect(Gorgon::UI::ComponentTemplate::Text);
+    cont2.SetColor(Color::Brown);
+    cont2.SetRenderer(app.fntlarge);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set text data", "Brown text obtained from text data on 50x50 white background, should be aligned to top left. Extra text should overflow.", stack};
+}
+
+TestData test_data_textwrap(Layer &layer) {
+    auto &app = getapp();
+
+    auto &temp = *new Template;
+    temp.SetSize(70, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddTextholder(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetDataEffect(Gorgon::UI::ComponentTemplate::Text);
+    cont2.SetColor(Color::Brown);
+    cont2.SetRenderer(app.fntlarge);
+    cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Text wrap", "Brown text obtained from text data on 70x50 white background, should be aligned to top left. Extra text should wrap but completely visible.", stack};
+}
+
+TestData test_data_textclip(Layer &layer) {
+    auto &app = getapp();
+
+    auto &temp = *new Template;
+    temp.SetSize(70, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddTextholder(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetDataEffect(Gorgon::UI::ComponentTemplate::Text);
+    cont2.SetColor(Color::Brown);
+    cont2.SetRenderer(app.fntlarge);
+    cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont2.SetClip(true);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Text clipping", "Brown text obtained from text data on 70x50 white background, should be aligned to top left. Extra text should wrap and clipped.", stack};
+}
+
+TestData test_data_settitle(Layer &layer) {
+    auto &app = getapp();
+
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddTextholder(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetDataEffect(Gorgon::UI::ComponentTemplate::Title);
+    cont2.SetColor(Color::Brown);
+    cont2.SetRenderer(app.fntlarge);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set title data", "Brown text obtained from title data on 50x50 white background, should be aligned to top left. Extra text should overflow.", stack};
+}
+
+TestData test_data_settexttitle(Layer &layer) {
+    auto &app = getapp();
+
+    auto &temp = *new Template;
+    temp.SetSize(120, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddTextholder(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetDataEffect(Gorgon::UI::ComponentTemplate::Title);
+    cont2.SetColor(Color::Brown);
+    cont2.SetRenderer(app.fntlarge);
+    
+    auto &cont3 = temp.AddTextholder(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.SetDataEffect(Gorgon::UI::ComponentTemplate::Text);
+    cont3.SetColor(Color::DarkGreen);
+    cont3.SetRenderer(app.fnt);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set text data, title", "Brown text obtained from title data followed by small green text obtained from text on 120x50 white background, should be aligned to top left. Extra text should overflow. Two text components should be aligned from the baseline.", stack};
+}
+
+TestData test_data_setimage(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddPlaceholder(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetDataEffect(Gorgon::UI::ComponentTemplate::Icon1);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set image data", "Selected image obtained from icon 1 data on 50x50 white background, should be aligned to top left.", stack};
+}
+
+TestData test_data_setimage2(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddPlaceholder(1, Gorgon::UI::ComponentCondition::Icon1IsSet);
+    cont2.SetDataEffect(Gorgon::UI::ComponentTemplate::Icon1);
+    
+    auto &cont3 = temp.AddPlaceholder(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.SetDataEffect(Gorgon::UI::ComponentTemplate::Icon2);
+    cont3.SetAnchor(Gorgon::UI::Anchor::BottomRight, Gorgon::UI::Anchor::BottomLeft, Gorgon::UI::Anchor::BottomLeft);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set image data 2", "Selected image obtained from icon 1 data and icon 2 data on 50x50 white background, should be aligned to top left. Second image should be aligned to bottom right of the first one. If the first one is empty, it should anchor to the bottom left of its parent.", stack};
+}
+
 
 std::vector<std::function<TestData(Layer &)>> tests = {
+    
+    &test_graphic,
+    &test_text,
+    
     &test_setsize,
     &test_setsizepercent,
     &test_setsizepercent_percent,
@@ -1724,6 +1966,15 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_modify_blend4,
     
     &test_modify_animation,
+    
+    &test_data_settext,
+    &test_data_textwrap,
+    &test_data_textclip,
+    &test_data_settitle,
+    &test_data_settexttitle,
+    
+    &test_data_setimage,
+    &test_data_setimage2,
 };
 
 //END tests
@@ -1734,8 +1985,7 @@ std::vector<std::pair<std::string, std::string>> info;
 Input::KeyRepeater repeater;
     
 int main() {
-    helptext += String::Concat("\nTotal tests:\t", tests.size());
-    Application app("uitest", "UI Component Test", helptext, 10, 8);
+    auto &app = getapp();
 
     int xs = 50, ys = 20, w = 500, h = 400;
     
@@ -1816,7 +2066,9 @@ int main() {
                     "Value 1:\t", int(activestack->GetValue()[0]*100),"\n",
                     "Value 2:\t", int(activestack->GetValue()[1]*100),"\n",
                     "Value 3:\t", int(activestack->GetValue()[2]*100),"\n",
-                    "Value 4:\t", int(activestack->GetValue()[3]*100),"\n"
+                    "Value 4:\t", int(activestack->GetValue()[3]*100),"\n",
+                    "Text   :\t", activestack->GetTextData(Gorgon::UI::ComponentTemplate::Text), "\n",
+                    "Title  :\t", activestack->GetTextData(Gorgon::UI::ComponentTemplate::Title), "\n"
                 ),
                 0,0, datalayer.GetWidth(), Gorgon::Graphics::TextAlignment::Left
             );
@@ -1928,6 +2180,108 @@ int main() {
                 exit(0);
                 break;
                 
+            case Keycodes::Number_5: {
+                std::string text = activestack->GetTextData(Gorgon::UI::ComponentTemplate::Text);
+                
+                switch(text.length()) {
+                case 0:
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Text, teststrings[0]);
+                    break;
+                case 2:
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Text, teststrings[1]);
+                    break;
+                case 5:
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Text, teststrings[2]);
+                    break;
+                case 12:
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Text, teststrings[3]);
+                    break;
+                default:
+                    activestack->RemoveData(Gorgon::UI::ComponentTemplate::Text);
+                    break;
+                }
+                
+                displayvalue();
+                
+                break;
+            }
+            
+            case Keycodes::Number_6: {
+                std::string text = activestack->GetTextData(Gorgon::UI::ComponentTemplate::Title);
+                
+                switch(text.length()) {
+                case 0:
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Title, teststrings[0]);
+                    break;
+                case 2:
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Title, teststrings[1]);
+                    break;
+                case 5:
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Title, teststrings[2]);
+                    break;
+                case 12:
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Title, teststrings[3]);
+                    break;
+                default:
+                    activestack->RemoveData(Gorgon::UI::ComponentTemplate::Title);
+                    break;
+                }
+                
+                displayvalue();
+                
+                break;
+            }
+                
+            case Keycodes::Number_7: {
+                auto img = activestack->GetImageData(Gorgon::UI::ComponentTemplate::Icon1);
+                
+                if(img == testimages[4]) {
+                    activestack->RemoveData(Gorgon::UI::ComponentTemplate::Icon1);
+                }
+                else if(img == testimages[0]) {
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Icon1, *testimages[1]);
+                }
+                else if(img == testimages[1]) {
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Icon1, *testimages[2]);
+                }
+                else if(img == testimages[2]) {
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Icon1, *testimages[3]);
+                }
+                else if(img == testimages[3]) {
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Icon1, *testimages[4]);
+                }
+                else {
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Icon1, *testimages[0]);
+                }
+                
+                break;
+            }
+            
+            case Keycodes::Number_8: {
+                auto img = activestack->GetImageData(Gorgon::UI::ComponentTemplate::Icon2);
+                
+                if(img == testimages[4]) {
+                    activestack->RemoveData(Gorgon::UI::ComponentTemplate::Icon2);
+                }
+                else if(img == testimages[0]) {
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Icon2, *testimages[1]);
+                }
+                else if(img == testimages[1]) {
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Icon2, *testimages[2]);
+                }
+                else if(img == testimages[2]) {
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Icon2, *testimages[3]);
+                }
+                else if(img == testimages[3]) {
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Icon2, *testimages[4]);
+                }
+                else {
+                    activestack->SetData(Gorgon::UI::ComponentTemplate::Icon2, *testimages[0]);
+                }
+                
+                break;
+            }
+            
             case Keycodes::Shift:
                 repeater.SetInitialDelay(500);
                 repeater.SetDelay(500);

@@ -117,7 +117,7 @@ public:
 				  , 600, 10, wind.GetWidth()-605
 		);
 
-		wind.KeyEvent.Register([this](Input::Key key, bool state) {
+		wind.KeyEvent.Register([](Input::Key key, bool state) {
 			if(!state && (key == 27 || key == 65307))
 				exit(0);
 

@@ -62,6 +62,16 @@ namespace Gorgon { namespace UI {
         /// the stack for condition changes. This variant supports image based data.
         /// Ownership of the image stays with the caller.
         void SetData(ComponentTemplate::DataEffect effect, const Graphics::Drawable &image);
+        
+        /// Returns the text data. If data is not set, this will return empty string.
+        std::string GetTextData(ComponentTemplate::DataEffect effect) {
+            return stringdata.count(effect) ? stringdata[effect] : "";
+        }
+        
+        /// Returns the image data. If data is not set, this will return nullptr.
+        const Graphics::Drawable *GetImageData(ComponentTemplate::DataEffect effect) {
+            return imagedata.Exists(effect) ? &imagedata[effect] : nullptr;
+        }
 
         /// Removes the data associated with data effect. This will remove all data
         /// variants together.
@@ -98,6 +108,9 @@ namespace Gorgon { namespace UI {
 
         /// Sets the value for the stack using a color
         void SetValue(Graphics::RGBA color) { SetValue((Graphics::RGBAf)color); }
+        
+        /// Returns the value of the stack
+        std::array<float, 4> GetValue() const { return returntarget ? targetvalue : value; }
 
         /// Changes the value transition speed. A speed of 0 will disable smooth transition.
         /// The unit is values per second
@@ -105,13 +118,13 @@ namespace Gorgon { namespace UI {
             valuespeed = val;
         }
 
-        /// GetValue returns the current transitional value, this will also enable value event
+        /// Whether GetValue returns the current transitional value, this will also enable value event
         /// to be called every time transitional value is updated
         void ReturnTransitionalValue() {
             returntarget = false;
         }
 
-        /// GetValue returns the target value. This is the default mode.
+        /// Whether GetValue returns the target value. This is the default mode.
         void ReturnTargetValue() {
             returntarget = true;
         }
@@ -121,8 +134,6 @@ namespace Gorgon { namespace UI {
             value_fn = handler;
         }
 
-        /// Returns the value of the stack
-        std::array<float, 4> GetValue() const { return returntarget ? targetvalue : value; }
 
         /// Sets the function that will be used to convert a value to a string. The handler will receive the value channel, data effect
         /// that is causing the translation and the value that needs to be transformed.
