@@ -92,7 +92,8 @@ namespace Gorgon { namespace Graphics {
 	public:
 		/// Data type for each channel
 		typedef Byte ChannelType;
-
+        
+        // cppcheck-suppress uninitMemberVar
 		/// Default constructor does not perform initialization
 		RGBA() {}
 
@@ -133,11 +134,13 @@ namespace Gorgon { namespace Graphics {
 		/// Constructs a grayscale color from the given luminance
 		explicit RGBA(int lum, int a) : RGBA(Byte(lum), Byte(lum), Byte(lum), Byte(a)) {}
 
+		// cppcheck-suppress noExplicitConstructor
 		/// Conversion from integer
 		constexpr RGBA(int color) : R((color>>0)&0xff), G((color>>8)&0xff), B((color>>16)&0xff), A((color>>24)&0xff) {
 			static_assert(sizeof(int)>=4, "This conversion requires size of int to be at least 4 bytes");
 		}
 
+		// cppcheck-suppress noExplicitConstructor
 		/// Conversion from uint32_t
 		constexpr RGBA(uint32_t color) : R((color>>0)&0xff), G((color>>8)&0xff), B((color>>16)&0xff), A((color>>24)&0xff) {
 			static_assert(sizeof(int)>=4, "This conversion requires size of int to be at least 4 bytes");
@@ -401,12 +404,14 @@ namespace Gorgon { namespace Graphics {
 		/// Filling constructor
 		RGBAf(float r, float g, float b, float a=1.f) : R(r), G(g), B(b), A(a) { }
 
+		// cppcheck-suppress noExplicitConstructor
 		/// Constructor that sets all color channels to the given value to create a grayscale color. Alpha is set to 1.0f
 		RGBAf(float lum, float a=1.0f) : RGBAf(lum, lum, lum, a) { }
 
 		/// Constructor that sets all color channels to the given value to create a grayscale color. Alpha is set to 1.0f
 		explicit RGBAf(double lum, float a=1.0f) : RGBAf((float)lum, (float)lum, (float)lum, a) { }
 
+		// cppcheck-suppress noExplicitConstructor
 		/// Converts a RGBA to RGBAf
 		RGBAf(const RGBA &color) : R(color.R/255.f), G(color.G/255.f), B(color.B/255.f), A(color.A/255.f) { }
 
@@ -416,6 +421,7 @@ namespace Gorgon { namespace Graphics {
 		/// Converts a RGBA to RGBAf
 		RGBAf(const RGBA &color, double alpha) : R(color.R/255.f), G(color.G/255.f), B(color.B/255.f), A(float(color.A/255. * alpha)) { }
 
+		// cppcheck-suppress noExplicitConstructor
 		/// Converts from an unsigned int
 		RGBAf(unsigned color) : RGBAf(RGBA(color)) { }
 

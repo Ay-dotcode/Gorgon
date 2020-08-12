@@ -37,10 +37,11 @@ namespace Gorgon {
 
 		/// Constructor to create a new guid. Use `Gorgon::SGuid guid{Gorgon::SGuid::CreateNew}`
 		/// to create a new guid
-		SGuid(const CreateNewTag&) { 
+		explicit SGuid(const CreateNewTag&) { 
 			New();
 		}
 
+		// cppcheck-suppress noExplicitConstructor
 		/// Creates a new GUID from the given data
 		SGuid(const Byte data[8]) {
 			if(data==nullptr) {
@@ -56,6 +57,7 @@ namespace Gorgon {
 			}
 		}
 
+		// cppcheck-suppress noExplicitConstructor
 		/// Creates a new GUID from the given data
 		SGuid(unsigned long long data) {
 			Integer=data;
@@ -68,7 +70,7 @@ namespace Gorgon {
 		}
 
 		/// Reads a new GUID from the given stream
-		SGuid(std::istream &in) {
+		explicit SGuid(std::istream &in) {
 			Load(in);
 		}
 
@@ -199,10 +201,10 @@ namespace Gorgon {
 			c=tolower(c);
 			
 			if(c>='0' && c<='9') {
-				guid.Bytes[i/2]+=(c-'0')<<(i%2 ? 4 : 0);
+				guid.Bytes[i/2]+=(c-'0')<<((i%2) ? 4 : 0);
 			}
 			else if(c>='a' && c<='f') {
-				guid.Bytes[i/2]+=(c-'a'+10)<<(i%2 ? 4 : 0);
+				guid.Bytes[i/2]+=(c-'a'+10)<<((i%2) ? 4 : 0);
 			}
 			else if(c=='-' || c==' ' || c=='\t') i++;
 		

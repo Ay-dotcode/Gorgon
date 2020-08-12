@@ -60,10 +60,10 @@ namespace Gorgon {
 
 			/// Duplicates this image, essentially performing the work of copy constructor
 			basic_Image Duplicate() const {
-				basic_Image data;
-				data.Assign(this->data, size, mode);
+				basic_Image n;
+				n.Assign(data, size, mode);
 
-				return data;
+				return n;
 			}
 
 			/// Resizes the image to the given size and color mode. This function discards the contents
@@ -310,6 +310,7 @@ namespace Gorgon {
 				mode = Graphics::ColorMode::RGBA;
 			}
 			
+            // cppcheck-suppress constParameter
 			/// Copies data from one image to another. This operation does not perform
 			/// blending. Additionally, color modes should be the same. However, this
 			/// function will do clipping for overflows. Do not use negative values for
@@ -342,6 +343,7 @@ namespace Gorgon {
                 return true;
             }
 			
+            // cppcheck-suppress constParameter
 			/// Copies data from one image to another. This operation does not perform
 			/// blending. Additionally, color modes should be the same. However, this
 			/// function will do clipping. Source bounds should be within the image.
@@ -371,7 +373,7 @@ namespace Gorgon {
                 
                 if(source.Top  >= source.Bottom) return false;
                 
-                int dw = dest.GetWidth(), dh = dest.GetHeight();
+                int dw = dest.GetWidth();
                 int sw = source.Width();
                 Byte *dd = dest.RawData();
                 const Byte *sd = RawData();
@@ -426,8 +428,8 @@ namespace Gorgon {
 						}
 						break;
 
-					case Graphics::ColorMode::Alpha: {
-						for(i=0; i<size.Area(); i++) 
+					case Graphics::ColorMode::Alpha:
+						for(i=0; i<size.Area(); i++) {
 							buffer[i*4+0] = 255;
 							buffer[i*4+1] = 255;
 							buffer[i*4+2] = 255;
@@ -497,8 +499,8 @@ namespace Gorgon {
 						}
 						break;
 
-					case Graphics::ColorMode::Alpha: {
-						for(i=0; i<size.Area(); i++) 
+					case Graphics::ColorMode::Alpha:
+						for(i=0; i<size.Area(); i++) {
 							buffer[i*4+0] = 255;
 							buffer[i*4+1] = 255;
 							buffer[i*4+2] = 255;
@@ -616,7 +618,6 @@ namespace Gorgon {
 				int width = 0, height = 0;
 				int bpp = 0;
 				bool upsidedown = false;
-				bool bitcompress = false;
 				bool grayscalepalette = true;
 				int colorsused = 0;
 				bool alpha = false;
@@ -654,7 +655,7 @@ namespace Gorgon {
 
 					if(compress != 0 && compress != 3) return false;
 
-					bitcompress = compress != 0;
+					bool bitcompress = compress != 0;
 
 					ReadUInt32(file); //size of bitmap
 
@@ -805,25 +806,25 @@ namespace Gorgon {
 					for(int y = ys; y!=ye; y += yc) {
 						int bytes = 0;
 						for(int x=0; x<width; x++) {
-							uint32_t data;
+							uint32_t pix;
 							
 							if(bpp == 16)
-								data = ReadUInt16(file);
+								pix = ReadUInt16(file);
 							else
-								data = ReadUInt32(file);
+								pix = ReadUInt32(file);
 
 							if(redmask != 0 || greenmask != 0 || bluemask != 0) {
-								this->operator ()({x, y}, 0) = (Byte)std::round(((data&redmask)>>redshift) * redmult);
-								this->operator ()({x, y}, 1) = (Byte)std::round(((data&greenmask)>>greenshift) * greenmult);
-								this->operator ()({x, y}, 2) = (Byte)std::round(((data&bluemask)>>blueshift) * bluemult);
+								this->operator ()({x, y}, 0) = (Byte)std::round(((pix&redmask)>>redshift) * redmult);
+								this->operator ()({x, y}, 1) = (Byte)std::round(((pix&greenmask)>>greenshift) * greenmult);
+								this->operator ()({x, y}, 2) = (Byte)std::round(((pix&bluemask)>>blueshift) * bluemult);
 							}
 
 							if(alpha) {
 								if(redmask != 0 || greenmask != 0 || bluemask != 0) {
-									this->operator ()({x, y}, 3) = (Byte)std::round(((data&alphamask)>>alphashift) * alphamult);
+									this->operator ()({x, y}, 3) = (Byte)std::round(((pix&alphamask)>>alphashift) * alphamult);
 								}
 								else {
-									this->operator ()({x, y}, 0) = (Byte)std::round(((data&alphamask)>>alphashift) * alphamult);
+									this->operator ()({x, y}, 0) = (Byte)std::round(((pix&alphamask)>>alphashift) * alphamult);
 								}
 							}
 							
@@ -835,7 +836,7 @@ namespace Gorgon {
 						}
 					}
 				}
-				else {
+				else if(bpp < 8) {
 					Byte bitmask = (1 << bpp) - 1;
 					bitmask = bitmask << (8-bpp);
 					for(int y = ys; y!=ye; y += yc) {
@@ -954,8 +955,8 @@ namespace Gorgon {
 					datasize = stride * size.Height;
 
 					headersize = 108;
-					datasize = stride * size.Height;
-					compression = 3;
+
+                    compression = 3;
 					bpp = 16;
 					break;
 
