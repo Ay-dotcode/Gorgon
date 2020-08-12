@@ -38,6 +38,9 @@ namespace Gorgon { namespace Widgets {
             
             Progress_Regular,
             
+            Layerbox_Regular,
+            Layerbox_Blank,
+            
             ///Do not use this value
             Max 
         };

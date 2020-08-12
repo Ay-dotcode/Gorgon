@@ -12,6 +12,7 @@
 #include <Gorgon/Widgets/Numberbox.h>
 #include <Gorgon/Widgets/GeometryBoxes.h>
 #include <Gorgon/Widgets/Progressbar.h>
+#include <Gorgon/Widgets/Layerbox.h>
 #include <Gorgon/UI/RadioControl.h>
 #include <Gorgon/UI/Organizers/List.h>
 #include <Gorgon/Graphics/BlankImage.h>
@@ -188,8 +189,8 @@ int main() {
     pnl.Add(error);
     pnl.Add(rad);
     pnl.Add(ib);
-    pnl.SetHeight(500);
-    mainpanel.Resize(140, 550);
+    pnl.SetHeight(300);
+    mainpanel.Resize(140, 350);
     //pnl.Disable();
     
     pnl.CreateOrganizer<Gorgon::UI::Organizers::List>();
@@ -199,6 +200,13 @@ int main() {
     //error.Move(lbl.GetLocation().X,lbl.GetLocation().Y + 25);
     lbl.OwnIcon(prep(*new Graphics::Bitmap(Triangle(8, 8))));
     
+    Widgets::Layerbox lb;
+    lb.Move(140, 450);
+    
+    Graphics::Layer mydrawinglayer;
+    lb.GetLayer().Add(mydrawinglayer);
+    ico.Draw(mydrawinglayer, 0,0);
+    app.wind.Add(lb);
     
     app.wind.Run();
 

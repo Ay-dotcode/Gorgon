@@ -16,6 +16,9 @@ SET(Local
 	Label.h
 	Label.cpp
 	
+	Layerbox.h
+	Layerbox.cpp
+	
 	Panel.h
 	Panel.cpp
 	

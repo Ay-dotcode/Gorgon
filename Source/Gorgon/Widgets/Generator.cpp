@@ -1363,4 +1363,50 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
+    UI::Template SimpleGenerator::BlankLayerbox() {
+        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 3, WidgetHeight * 4 + Spacing * 3};
+        
+        UI::Template temp;
+        temp.SetSize(defsize);
+        
+        
+        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
+        bg.SetClip(true);
+        
+        bg.AddIndex(1);
+        
+        auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always);
+        cont.SetTag(UI::ComponentTemplate::ContentsTag);
+        cont.SetSize(100, 100, UI::Dimension::Percent);
+        cont.SetPositioning(cont.Absolute);
+        cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        cont.SetPosition(0, 0);
+        
+        return temp;
+    }
+    
+    UI::Template SimpleGenerator::Layerbox() {
+        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 3, WidgetHeight * 4 + Spacing * 3};
+        
+        UI::Template temp;
+        temp.SetSize(defsize);
+        
+        
+        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
+        bg.Background.SetAnimation(PanelBorder(0));
+        bg.AddIndex(1);
+        
+        bg.SetPadding(Border.Width + Spacing);
+        
+        auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always);
+        cont.SetTag(UI::ComponentTemplate::ContentsTag);
+        cont.SetSize(100, 100, UI::Dimension::Percent);
+        cont.SetSizing(UI::ComponentTemplate::Fixed);
+        cont.SetPositioning(cont.Absolute);
+        cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        cont.SetPosition(0, 0);
+        
+        return temp;
+    }
+    
 }}

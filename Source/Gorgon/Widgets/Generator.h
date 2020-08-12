@@ -56,6 +56,10 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template Progressbar() = 0;
         
+        virtual UI::Template Layerbox() = 0;
+        
+        virtual UI::Template BlankLayerbox() = 0;
+        
     protected:
         
         virtual UI::Template &generate(Gorgon::Widgets::Registry::TemplateType type) override {
@@ -90,6 +94,10 @@ namespace Gorgon { namespace Widgets {
                 return *new UI::Template(RightPanel());
             case Progress_Regular:
                 return *new UI::Template(Progressbar());
+            case Layerbox_Regular:
+                return *new UI::Template(Layerbox());
+            case Layerbox_Blank:
+                return *new UI::Template(BlankLayerbox());
             default:
                 return *new UI::Template();
             }
@@ -153,6 +161,11 @@ namespace Gorgon { namespace Widgets {
         
         
         virtual UI::Template Progressbar() override;
+        
+        
+        virtual UI::Template BlankLayerbox() override;
+        
+        virtual UI::Template Layerbox() override;
         
 
 		virtual int GetSpacing()const override {

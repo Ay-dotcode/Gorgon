@@ -28,31 +28,31 @@ namespace Gorgon { namespace Widgets {
 
         std::string GetText() const { return text; }
         
-        /// Changes the icon on the button. The ownership of the bitmap
+        /// Changes the icon on the label. The ownership of the bitmap
         /// is not transferred. If you wish the bitmap to be destroyed
-        /// with the button, use OwnIcon instead.
+        /// with the label, use OwnIcon instead.
         void SetIcon(const Graphics::Bitmap &value);
         
-        /// Changes the icon on the button. The ownership of the animation
+        /// Changes the icon on the label. The ownership of the animation
         /// is not transferred. If you wish the animation to be destroyed
-        /// with the button, use OwnIcon instead.
+        /// with the label, use OwnIcon instead.
         void SetIcon(const Graphics::Animation &value);
         
-        /// Changes the icon on the button. This will create a new animation
+        /// Changes the icon on the label. This will create a new animation
         /// from the given provider and will own the resultant animation.
         void SetIconProvider(const Graphics::AnimationProvider &value);
         
-        /// Changes the icon on the button. This will move in the provider,
+        /// Changes the icon on the label. This will move in the provider,
         /// create a new animation and own both the provider and the animation
         void SetIconProvider(Graphics::AnimationProvider &&provider);
         
-        /// Removes the icon on the button
+        /// Removes the icon on the label
         void RemoveIcon();
         
-        /// Returns if the button has an icon
+        /// Returns if the label has an icon
         bool HasIcon() const { return icon != nullptr; }
         
-        /// Returns the icon on the button. If the button does not have an
+        /// Returns the icon on the label. If the label does not have an
         /// icon, this function will throw
         const Graphics::Animation &GetIcon() const {
             if(!HasIcon())
@@ -67,7 +67,7 @@ namespace Gorgon { namespace Widgets {
         /// Sets the icon while transferring the ownership
         void OwnIcon(const Graphics::Animation &value);
         
-        /// Moves the given animation to the icon of the button
+        /// Moves the given animation to the icon of the label
         void OwnIcon(Graphics::Bitmap &&value);
         
         virtual bool Activate() override;
