@@ -17,6 +17,11 @@ namespace Gorgon { namespace Widgets {
         {
         }
 
+        explicit Layerbox(Registry::TemplateType type) : 
+            Layerbox(Registry::Active()[type]) 
+        {
+        }
+
 
         explicit Layerbox(const UI::Template &temp, std::string text = "");
 

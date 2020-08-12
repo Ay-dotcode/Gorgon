@@ -17,6 +17,11 @@ namespace Gorgon { namespace Widgets {
         {
         }
 
+        Label(Registry::TemplateType type) : 
+            Label(Registry::Active()[type], "") 
+        {
+        }
+
 
         explicit Label(const UI::Template &temp, std::string text = "");
 
