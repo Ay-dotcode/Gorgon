@@ -81,6 +81,8 @@ namespace Gorgon { namespace IO {
 		static_assert(sizeof(float) == 4, "Current implementation only supports 32bit floats");
 
 		float r;
+        // cppcheck-suppress invalidPointerCast
+        //this is ok due to requirement of standard float and double is necessary for Gorgon library
 		stream.read(reinterpret_cast<char*>(&r), 4);
 
 		return r;
@@ -92,6 +94,8 @@ namespace Gorgon { namespace IO {
 		static_assert(sizeof(double) == 8, "Current implementation only supports 64bit floats");
 
 		float r;
+        // cppcheck-suppress invalidPointerCast
+        //this is ok due to requirement of standard float and double is necessary for Gorgon library
 		stream.read(reinterpret_cast<char*>(&r), 4);
 
 		return r;
@@ -233,6 +237,8 @@ namespace Gorgon { namespace IO {
 	inline void WriteFloat(std::ostream &stream, float value) {
 		static_assert(sizeof(float) == 4, "Current implementation only supports 32bit floats");
 
+        // cppcheck-suppress invalidPointerCast
+        //this is ok due to requirement of standard float and double is necessary for Gorgon library
 		stream.write(reinterpret_cast<const char*>(&value), 4);
 	}
 
@@ -241,6 +247,8 @@ namespace Gorgon { namespace IO {
 	inline void WriteDouble(std::ostream &stream, double value) {
 		static_assert(sizeof(double) == 8, "Current implementation only supports 64bit floats");
 
+        // cppcheck-suppress invalidPointerCast
+        //this is ok due to requirement of standard float and double is necessary for Gorgon library
 		stream.write(reinterpret_cast<const char*>(&value), 4);
 	}
 

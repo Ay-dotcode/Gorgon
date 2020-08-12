@@ -22,4 +22,6 @@ SET(Local
 	Progressbar.h
 	
 	RadioButtons.h
+	
+	Registry.h
 )
