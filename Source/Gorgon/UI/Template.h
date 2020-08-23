@@ -1644,7 +1644,7 @@ namespace Gorgon {
 
         /// Changes the overlay extent of the component. Overlay extent stays within the object area, but excluded
         /// from the interior area.
-        void SetOverlayExtent(int value) { padding ={value}; ChangedEvent(); }
+        void SetOverlayExtent(int value) { overlayextent ={value}; ChangedEvent(); }
 
         /// Changes the overlay extent of the component. Overlay extent stays within the object area, but excluded
         /// from the interior area.

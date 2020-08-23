@@ -2397,7 +2397,14 @@ realign:
                     update(comp);
                 }
                 else if(temp.GetType() == ComponentType::Graphics) {
-                    if(st.primary) {
+                    if(imagedata.Exists(temp.GetDataEffect())) {
+                        auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(&imagedata[temp.GetDataEffect()]);
+                        
+                        if(rectangular) {
+                            comp.size = rectangular->GetSize();
+                        }
+                    }
+                    else if(st.primary) {
                         auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
                         
                         //if we have a rectangular graphic, get its size
@@ -2998,188 +3005,271 @@ realign:
 
     
     void ComponentStack::render(Component &comp, Graphics::Layer &parent, Geometry::Point offset, Graphics::RGBAf color, int ind) {
+        //parent template, used in determining repeat mode condition
         const ComponentTemplate &tempp = comp.GetTemplate();
+        
+        //pointer to the template
         auto tempptr = &tempp;
+        
+        //value for the current component
         std::array<float, 4> val = value;
 
+        //if a repeated component, find its state through repeated component states
         if(tempp.GetRepeatMode() != ComponentTemplate::NoRepeat) {
+            //if not found use Always
             ComponentCondition rc = ComponentCondition::Always;
+            
+            //check and set repeat condition
             if(repeatconditions[tempp.GetRepeatMode()].count(ind))
                 rc = repeatconditions[tempp.GetRepeatMode()][ind];
 
+            //update template
             tempptr = &get(tempp.GetIndex(), rc).GetTemplate();
             
+            //change the value to the repeat value
             val = repeats[tempp.GetRepeatMode()][ind];
-            
         }
 
+        //obtain reference for the template
         const auto &temp = *tempptr;
 
+        //this is the target layer to draw on
         Graphics::Layer *target = nullptr;
+        
+        //storage for this component
         auto &st = *storage[&temp];
         
+        //if component has its own layer
         if(st.layer) {
+            //change target layer
             target = st.layer;
+            
+            //add it to the parent
             parent.Add(*target);
+            
+            //set the size and location of this layer
             target->Resize(comp.size);
             target->Move(comp.location);
-            if(st.layer) {
-                st.layer->Show();
-                st.layer->Clear();
-            }
+            
+            //show the layer
+            st.layer->Show();
+            
+            //clear it
+            st.layer->Clear();
 
+            //offset should now be relative to the layer
             offset -= comp.location;
         }
         else {
+            //use parent layer
             target = &parent;
         }
-
+        
+        //if there is color modification tint the color based on values
         if(temp.GetValueModification() == ComponentTemplate::ModifyColor) {
-            if(NumberOfSetBits(temp.GetValueSource()) == 1) {
+            //act depending on the number of set bits
+            if(NumberOfSetBits(temp.GetValueSource()) == 1) { //use the value as gray
                 color *= Graphics::RGBAf(calculatevalue(val, 0, comp));
             }
-            else if(NumberOfSetBits(temp.GetValueSource()) == 2) {
+            else if(NumberOfSetBits(temp.GetValueSource()) == 2) { //use gray + alpha
                 color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
             }
-            else if(NumberOfSetBits(temp.GetValueSource()) == 3) {
+            else if(NumberOfSetBits(temp.GetValueSource()) == 3) { //use RGB
                 color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 1.f);
             }
-            else
+            else //use RGBA
                 color *= Graphics::RGBAf(calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp));
         }
-        else if(temp.GetValueModification() == ComponentTemplate::ModifyAlpha)
+        else if(temp.GetValueModification() == ComponentTemplate::ModifyAlpha) //use alpha
             color *= Graphics::RGBAf(1.f, calculatevalue(val, 0, comp));
 
+        
+        //Rendering container
         if(temp.GetType() == ComponentType::Container) {
+            //get specific template
             const auto &cont = dynamic_cast<const ContainerTemplate&>(temp);
             
+            //modify the offset so its children will inherit the same offset
             offset += comp.location;
 
-            if(st.primary && target) {
+            //if there is primary image
+            if(st.primary) {
+                
+                //test if it is RectangularDrawable to force the size of the container
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
                 if(rectangular)
                     rectangular->DrawIn(*target, offset, comp.size, color);
-                else
+                else //not rectangular means we cannot control size, directly draw on the layer
                     st.primary->Draw(*target, offset, color);
             }
             
+            //offset the children further by border size
             offset += cont.GetBorderSize().TopLeft();
             
+            //render children, go through indexes
             for(int i=0; i<cont.GetCount(); i++) {
+                //should not happen but we don't want to crash as it is possible to continue without issues
                 if(cont[i] >= indices) continue;
+                
+                //if a component exists at the location
                 if(stacksizes[cont[i]]) {
+                    //this is the child component, parent of repeats if it is repeated
                     auto &compparent = get(cont[i]);
+                    //get the template
                     auto &temp       = compparent.GetTemplate();
+                    
+                    //if not repeating
                     if(temp.GetRepeatMode() == ComponentTemplate::NoRepeat) {
-                        render(compparent, target ? *target : parent, offset, color);
+                        //render this component
+                        render(compparent, *target, offset, color);
                     }
+                    //if repeating
                     else if(repeats.count(temp.GetRepeatMode())) {
+                        //call render for each repeat
                         int index = 0;
                         for(auto &r : repeated[&temp])
-                            render(r, target ? *target : parent, offset, color, index++);
+                            render(r, *target, offset, color, index++);
                     }
                 }
             }
             
+            //get offset back by border size
             offset -= cont.GetBorderSize().TopLeft();
             
-            if(st.secondary && target) {
+            //secondary is overlay image
+            if(st.secondary) {
+                //if rectangular force the size
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.secondary);
                 if(rectangular)
-                    rectangular->DrawIn(*target, offset-cont.GetBorderSize().TopLeft()+cont.GetOverlayExtent().TopLeft(), comp.size, color);
-                else
-                    st.secondary->Draw(*target, offset-cont.GetBorderSize().TopLeft()+cont.GetOverlayExtent().TopLeft(), color);
+                    rectangular->DrawIn(*target, offset+cont.GetOverlayExtent().TopLeft(), comp.size-cont.GetOverlayExtent(), color);
+                else //if not simply draw it
+                    st.secondary->Draw(*target, offset+cont.GetOverlayExtent().TopLeft(), color);
             }
+            
+            //we are done, no need to undo the offset further
         }
+        //rendering graphics template
         else if(temp.GetType() == ComponentType::Graphics) {
-            if(st.primary && target) {
-                auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(st.primary);
-                const auto &gt = dynamic_cast<const GraphicsTemplate&>(temp);
-
+            //get specialized template
+            const auto &gt = dynamic_cast<const GraphicsTemplate&>(temp);
+            
+            auto img = st.primary;
+            
+            //allow overriding the image
+            if(imagedata.Exists(gt.GetDataEffect())) {
+                img = &imagedata[gt.GetDataEffect()];
+            }
+            
+            //if has an image to be drawn
+            if(img) {
+                
+                //set tint
                 auto c = gt.GetColor();
-
+                
+                //if blend modification is set then perform blending using target color
                 if(temp.GetValueModification() == temp.BlendColor)  {
+                    //get target color
                     auto c2 = gt.GetTargetColor();
+                    
+                    //blend to tint that is set
                     switch(NumberOfSetBits(temp.GetValueSource())) {
-                        case 1:
+                        case 1: //single alpha blending
                             c.Blend(c2, calculatevalue(val, 0, comp));
                             break;
 
-                        case 2:
+                        case 2: //alpha and grayscale has different blending factors
                             c.Blend(c2, calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
                             break;
 
-                        case 3:
+                        case 3: //separate blending factors for RGB
                             c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 0});
                             break;
 
-                        case 4:
+                        case 4: //separate blending factors for all channels
                             c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp)});
                             break;
 
+                        //to silence warnings
                         default:
                             break;
                     }
                 }
                 
-                if(rectangular && gt.GetFillArea())
+                //check if set image is rectangular and filling is requested
+                auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(img);
+                if(rectangular && gt.GetFillArea()) // ask image to fill the area, multiply tint and parent color
                     rectangular->DrawIn(*target, comp.location+offset, comp.size, color * c);
-                else
-                    st.primary->Draw(*target, comp.location+offset, color * c);
+                else //directly draw to the location, multiply tint and parent color
+                    img->Draw(*target, comp.location+offset, color * c);
             }
         }
+        //render text
         else if(temp.GetType() == ComponentType::Textholder) {
+            //get specific template
             const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
 
-            auto c = th.GetColor();
-
-            if(temp.GetValueModification() == temp.BlendColor) {
-                auto c2 = th.GetTargetColor();
-                switch(NumberOfSetBits(temp.GetValueSource())) {
-                    case 1:
-                        c.Blend(c2, calculatevalue(val, 0, comp));
-                        break;
-
-                    case 2:
-                        c.Blend(c2, calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
-                        break;
-
-                    case 3:
-                        c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 0});
-                        break;
-
-                    case 4:
-                        c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp)});
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-
-            target->SetColor(color * c);
-            if(th.IsReady()) {
+            //find the text to be printed
+            std::string text;
+            
+            if(th.IsReady()) { //if th is not ready do not bother finding the text
                 if(stringdata.count(temp.GetDataEffect())) {
-                    if(tagnowrap.count(temp.GetTag()))
-                        th.GetRenderer().PrintNoWrap(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
-                    else
-                        th.GetRenderer().Print(*target, stringdata[temp.GetDataEffect()], comp.location+offset, comp.size.Width);
+                    text = stringdata[temp.GetDataEffect()];
                 }
                 else if(valuetotext && (ind != -1 || !stringdata.count(temp.GetDataEffect())) ) {
-                    if(tagnowrap.count(temp.GetTag()))
-                        th.GetRenderer().PrintNoWrap(*target, valuetotext(temp.GetTag(), temp.GetDataEffect(), val), comp.location+offset, comp.size.Width);
-                    else
-                        th.GetRenderer().Print(*target, valuetotext(temp.GetTag(), temp.GetDataEffect(), val), comp.location+offset, comp.size.Width);
+                    text = valuetotext(temp.GetTag(), temp.GetDataEffect(), val);
                 }
-                else if(th.GetText() != "") {
-                    if(tagnowrap.count(temp.GetTag()))
-                        th.GetRenderer().PrintNoWrap(*target, th.GetText(), comp.location+offset, comp.size.Width);
-                    else
-                        th.GetRenderer().Print(*target, th.GetText(), comp.location+offset, comp.size.Width);
+                else {
+                    text = th.GetText();
                 }
             }
-            target->SetColor(1.f);
+            
+            //only perform operations if renderer is ready
+            if(th.IsReady() && !text.empty()) {
+                //get text color
+                auto c = th.GetColor();
+
+                //if color blending is set
+                if(temp.GetValueModification() == temp.BlendColor) {
+                    //get target color
+                    auto c2 = th.GetTargetColor();
+                    
+                    //blend to tint that is set
+                    switch(NumberOfSetBits(temp.GetValueSource())) {
+                        case 1: //single alpha blending
+                            c.Blend(c2, calculatevalue(val, 0, comp));
+                            break;
+
+                        case 2: //alpha and grayscale has different blending factors
+                            c.Blend(c2, calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
+                            break;
+
+                        case 3: //separate blending factors for RGB
+                            c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 0});
+                            break;
+
+                        case 4: //separate blending factors for all channels
+                            c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp)});
+                            break;
+
+                        //to silence warnings
+                        default:
+                            break;
+                    }
+                }
+
+                //save current tint and change it
+                auto old = target->GetColor();
+                target->SetColor(color * c);
+                
+                if(tagnowrap.count(temp.GetTag()))
+                    th.GetRenderer().PrintNoWrap(*target, text, comp.location+offset, comp.size.Width);
+                else
+                    th.GetRenderer().Print(*target, text, comp.location+offset, comp.size.Width);
+                
+                target->SetColor(old);
+            }
         }
+        //render placeholder
         else if(temp.GetType() == ComponentType::Placeholder && comp.size.Area() > 0) {
             const auto &ph = dynamic_cast<const PlaceholderTemplate&>(temp);
             
@@ -3189,7 +3279,7 @@ realign:
                 stack.Move(comp.location + offset);
                 stack.Resize(comp.size);
             }
-
+            
             if(imagedata.Exists(ph.GetDataEffect())) {
                 auto rectangular = dynamic_cast<const Graphics::RectangularDrawable*>(&imagedata[ph.GetDataEffect()]);
                 if(rectangular) {

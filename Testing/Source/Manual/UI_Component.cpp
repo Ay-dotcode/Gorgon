@@ -429,6 +429,24 @@ TestData test_setborder2(Layer &layer) {
     return {"Set border", "This has a white border around a green rectangle 30x10 in size. Border size should be left: 10, top: 20, right: 30, bottom: 40", stack};
 }
 
+TestData test_setoverlay(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetOverlayExtent(10);
+    cont1.SetBorderSize(10);
+    cont1.Overlay.SetAnimation(greenrect());
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set overlay", "White background (50x50) and a green border (starting from 10,10, size of 30x30). Result should be concentric squares, 10px size difference, white, green, white.", stack};
+}
+
 
 TestData test_setpadding(Layer &layer) {
     auto &temp = *new Template;
@@ -1725,7 +1743,7 @@ TestData test_modify_animation(Layer &layer) {
     
     layer.Add(stack);
     
-    return {"Blend", "80x80 cyan rectangle contains a 60x60 rectangle. It is an animation with 10 colors (red, orange, yellow, green, cyan, blue, magenta, white, grey, black), channel 1 can be used to control the animation frame. 0-10 should be red, orange starts from 11, yellow starts from 21 and so on.", stack};
+    return {"Animation", "80x80 cyan rectangle contains a 60x60 rectangle. It is an animation with 10 colors (red, orange, yellow, green, cyan, blue, magenta, white, grey, black), channel 1 can be used to control the animation frame. 0-10 should be red, orange starts from 11, yellow starts from 21 and so on.", stack};
 }
 
 TestData test_data_settext(Layer &layer) {
@@ -1871,6 +1889,25 @@ TestData test_data_setimage(Layer &layer) {
     return {"Set image data", "Selected image obtained from icon 1 data on 50x50 white background, should be aligned to top left.", stack};
 }
 
+TestData test_data_setimagegt(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetDataEffect(Gorgon::UI::ComponentTemplate::Icon1);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    layer.Add(stack);
+    
+    return {"Set image data graphics", "Selected image obtained from icon 1 data on 50x50 white background, should be aligned to top left.", stack};
+}
+
 TestData test_data_setimage2(Layer &layer) {
     auto &temp = *new Template;
     temp.SetSize(50, 50);
@@ -1910,6 +1947,7 @@ std::vector<std::function<TestData(Layer &)>> tests = {
 
     &test_setborder,
     &test_setborder2,
+    &test_setoverlay,
     &test_setpadding,
     &test_setpadding2,
     &test_setpadding_percent,
@@ -1974,6 +2012,7 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_data_settexttitle,
     
     &test_data_setimage,
+    &test_data_setimagegt,
     &test_data_setimage2,
 };
 
