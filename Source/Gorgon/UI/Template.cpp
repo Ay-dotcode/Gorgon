@@ -35,10 +35,12 @@ namespace Gorgon { namespace UI {
     * There are various data effects that can be used by graphics and textholder templates. 
     * There are also conditions that trigger if a data channel has any data in it.
     * 
-    * Components can be repeated. The repeats are controlled by the widget. Containers are not
-    * fully supported to be repeating structures. Other component types can be used with this
-    * system. Each repeat can have a different set value and condition. There are different
-    * repeating systems (such as minor and major) and each of these can be adjusted separately.
+    * Components can be repeated. The repeats are controlled by the widget. Containers are 
+    * supported to be repeating structures, however, if it has subcomponents they should also
+    * set to repeat with the same repeat mode. This will not duplicate subcomponents into the
+    * container but rather uses the parent component's information in the subcomponents. Each
+    * repeat can have a different set value and condition. There are different repeating
+    * systems (such as minor and major) and each of these can be adjusted separately.
     * 
     * Components can have tags to be accessed from the widgets. Some widgets needs specific
     * tags to exist in the template to work. 

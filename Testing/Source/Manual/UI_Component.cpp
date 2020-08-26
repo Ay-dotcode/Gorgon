@@ -447,7 +447,6 @@ TestData test_setoverlay(Layer &layer) {
     return {"Set overlay", "White background (50x50) and a green border (starting from 10,10, size of 30x30). Result should be concentric squares, 10px size difference, white, green, white.", stack};
 }
 
-
 TestData test_setpadding(Layer &layer) {
     auto &temp = *new Template;
     temp.SetSize(50, 50);
@@ -1173,8 +1172,6 @@ TestData test_abspolar2(Layer &layer) {
     
     return {"PolarAbsolute 2", "100x60 white background contains 20x20 red and green rectangle. Red rectangle should be 20px from top, in centered. Green rectangle should be at bottom left corner.", stack};
 }
-
-
 
 TestData test_modify_position_sliding(Layer &layer) {
     auto &temp = *new Template;
@@ -1932,6 +1929,221 @@ TestData test_data_setimage2(Layer &layer) {
     return {"Set image data 2", "Selected image obtained from icon 1 data and icon 2 data on 50x50 white background, should be aligned to top left. Second image should be aligned to bottom right of the first one. If the first one is empty, it should anchor to the bottom left of its parent.", stack};
 }
 
+TestData test_data_setstate(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(90, 30);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetPadding(0, 10);
+    
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyX);
+    cont2.SetSize(10, 10);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetRepeatMode(Gorgon::UI::ComponentTemplate::XTick);
+    
+    auto &cont3 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::State2);
+    cont3.Content.SetAnimation(blueimg());
+    cont3.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyX);
+    cont3.SetSize(10, 10);
+    cont3.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont3.SetRepeatMode(Gorgon::UI::ComponentTemplate::XTick);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.25);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.5);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.75);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 1);
+    
+    stack.SetConditionOf(Gorgon::UI::ComponentTemplate::XTick, 1, Gorgon::UI::ComponentCondition::State2);
+    
+    layer.Add(stack);
+    
+    return {"Repeat set state", "On a white background there should be 5 10x10 rectangles with 10px spacing, all but second should be green.", stack};
+}
+
+TestData test_repeat_pos(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(90, 30);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetPadding(0, 10);
+    
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyX);
+    cont2.SetSize(10, 10);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetRepeatMode(Gorgon::UI::ComponentTemplate::XTick);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.25);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.5);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.75);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 1);
+    
+    layer.Add(stack);
+    
+    return {"Repeat position", "On a white background there should be 5 10x10 green rectangles with 10px spacing.", stack};
+}
+
+TestData test_repeat_size(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(90, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetPadding(0, 10);
+    
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(redimg());
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyHeight);
+    cont2.SetSize(10, 10);
+    cont2.SetMargin(10, 0, 0, 0);
+    cont2.SetIndent(-10, 0, 0, 0);
+    cont2.SetRepeatMode(Gorgon::UI::ComponentTemplate::XTick);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.25);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.5);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.75);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 1);
+    
+    layer.Add(stack);
+    
+    return {"Repeat size", "On a white background there should be 5 10px wide red rectangles with 10px spacing. Sizes should start from 10 and should go up by 5px.", stack};
+}
+
+TestData test_repeat_alpha(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(90, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetPadding(0, 10);
+    
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(redimg());
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyAlpha);
+    cont2.SetSize(10, 10);
+    cont2.SetMargin(10, 0, 0, 0);
+    cont2.SetIndent(-10, 0, 0, 0);
+    cont2.SetRepeatMode(Gorgon::UI::ComponentTemplate::XTick);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.25);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.5);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.75);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 1);
+    
+    layer.Add(stack);
+    
+    return {"Repeat alpha", "On a white background there should be 5 10x10 red rectangles with 10px spacing. First rectangle should be completely transparent while opacity increases with every step.", stack};
+}
+
+TestData test_repeat_sizealpha(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(90, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetPadding(0, 10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.AddIndex(2);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyHeight);
+    cont2.SetSize(10, 10);
+    cont2.SetMargin(10, 0, 0, 0);
+    cont2.SetIndent(-10, 0, 0, 0);
+    cont2.SetRepeatMode(Gorgon::UI::ComponentTemplate::XTick);
+    
+    auto &cont3 = temp.AddGraphics(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Content.SetAnimation(redimg());
+    cont3.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyAlpha);
+    cont3.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont3.SetSizing(Gorgon::UI::ComponentTemplate::Fixed);
+    cont3.SetMargin(0);
+    cont3.SetRepeatMode(Gorgon::UI::ComponentTemplate::XTick);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.25);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.5);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.75);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 1);
+    
+    layer.Add(stack);
+    
+    return {"Repeat size and alpha", "On a white background there should be 5 10px wide red rectangles with 10px spacing. First rectangle should be completely transparent while opacity increases with every step while the height should start from 10px and increases 5px every step.", stack};
+}
+
+TestData test_repeat_possizealpha(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(90, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetPadding(0, 10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.AddIndex(2);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyX);
+    cont2.SetSize(10, {100, Gorgon::UI::Dimension::Percent});
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetRepeatMode(Gorgon::UI::ComponentTemplate::XTick);
+    
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.AddIndex(3);
+    cont3.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyHeight);
+    cont3.SetSize(10, 10);
+    cont3.SetPosition(0, 0);
+    cont3.SetRepeatMode(Gorgon::UI::ComponentTemplate::XTick);
+    
+    auto &cont4 = temp.AddGraphics(3, Gorgon::UI::ComponentCondition::Always);
+    cont4.Content.SetAnimation(redimg());
+    cont4.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyAlpha);
+    cont4.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont4.SetSizing(Gorgon::UI::ComponentTemplate::Fixed);
+    cont4.SetMargin(0);
+    cont4.SetRepeatMode(Gorgon::UI::ComponentTemplate::XTick);
+    
+    auto &stack = *new ComponentStack(temp);
+    stack.HandleMouse();
+    
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.25);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.5);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.75);
+    stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 1);
+    
+    layer.Add(stack);
+    
+    return {"Repeat size and alpha", "On a white background there should be 5 10px wide red rectangles with 10px spacing. First rectangle should be completely transparent while opacity increases with every step while the height should start from 10px and increases 5px every step.", stack};
+}
+
 
 std::vector<std::function<TestData(Layer &)>> tests = {
     
@@ -2014,6 +2226,13 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_data_setimage,
     &test_data_setimagegt,
     &test_data_setimage2,
+    
+    &test_repeat_pos,
+    &test_data_setstate,
+    &test_repeat_size,
+    &test_repeat_alpha,
+    &test_repeat_sizealpha,
+    test_repeat_possizealpha
 };
 
 //END tests

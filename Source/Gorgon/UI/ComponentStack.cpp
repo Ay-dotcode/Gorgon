@@ -133,12 +133,18 @@ namespace Gorgon { namespace UI {
             }
         }
 
-        //this is here to simplify the update process, we are making sure that always is
-        //at the top of the stack
+        //Add all repeated components to the stack, ensuring always is at the top of the stack
         for(int i=0; i<temp.GetCount(); i++) {
             const auto &t = temp[i];
 
             if(t.GetRepeatMode() != ComponentTemplate::NoRepeat && t.GetCondition() != ComponentCondition::Always) {
+                AddToStack(temp[i], false);
+            }
+        }
+        for(int i=0; i<temp.GetCount(); i++) {
+            const auto &t = temp[i];
+
+            if(t.GetRepeatMode() != ComponentTemplate::NoRepeat && t.GetCondition() == ComponentCondition::Always) {
                 AddToStack(temp[i], false);
             }
         }
@@ -2035,7 +2041,7 @@ namespace Gorgon { namespace UI {
             }
             
             //start the update from the root
-            update(get(0));
+            update(get(0), value, -1);
         }
         
         //update is complete
@@ -2045,7 +2051,7 @@ namespace Gorgon { namespace UI {
         //if root has something to be displayed
         if(stacksizes[0]) {
             //draw everything
-            render(get(0), base, {0,0});
+            render(get(0), base, {0,0}, value);
         }
         
         //this is called after the render
@@ -2061,7 +2067,7 @@ namespace Gorgon { namespace UI {
     }
     
     //location depends on the container location
-    void ComponentStack::update(Component &parent) {
+    void ComponentStack::update(Component &parent, const std::array<float, 4> &value, int ind) {
         //get the template
         const ComponentTemplate &ctemp = parent.GetTemplate();
 
@@ -2103,13 +2109,24 @@ namespace Gorgon { namespace UI {
                 //original template
                 const auto &temporg = comporg.GetTemplate();
                 
+                int j = 0;
+                int jtarget = 1;
+                if(temporg.GetRepeatMode() != temporg.NoRepeat) {
+                    if(temporg.GetRepeatMode() == ctemp.GetRepeatMode()) {
+                        j = ind;
+                        jtarget = ind+1;
+                    }
+                    else {
+                        if(repeats.count(temporg.GetRepeatMode())) {
+                            jtarget = repeats[temporg.GetRepeatMode()].size();
+                        }
+                        else {
+                            jtarget = 0;
+                        }
+                    }
+                }
                 
-                for(int j = 0; 
-                    temporg.GetRepeatMode() == temporg.NoRepeat ? //if not repeating
-                        j == 0 : //only do this once
-                        repeats.count(temporg.GetRepeatMode()) && j < repeats[temporg.GetRepeatMode()].size(); //if not, repeat for every repeat
-                    j++) 
-                {
+                while(j < jtarget) {
                     Component *compptr;
                     const ComponentTemplate *tempptr;
                     
@@ -2140,7 +2157,9 @@ namespace Gorgon { namespace UI {
                     }
                     
                     //call the function
-                    fn(*compptr, *tempptr, *val, getemsize(*compptr));
+                    fn(*compptr, *tempptr, *val, getemsize(*compptr), j);
+                    
+                    j++;
                 }
             }
         };
@@ -2172,7 +2191,7 @@ namespace Gorgon { namespace UI {
         std::map<Component *, Geometry::Point> offsets;
 
         //reset all components
-        forallcomponents([&](Component &comp, const ComponentTemplate &temp, const std::array<float, 4> &val, int emsize) {
+        forallcomponents([&](Component &comp, const ComponentTemplate &temp, const std::array<float, 4> &val, int emsize, int) {
             comp.location = {0, 0};
             comp.size = {0, 0};
             comp.innersize = {0, 0};
@@ -2183,7 +2202,7 @@ namespace Gorgon { namespace UI {
 realign:
 
         // first operation is for size. Second pass will cover the sizes that are percent based.
-        forallcomponents([&](Component &comp, const ComponentTemplate &temp, const std::array<float, 4> &val, int emsize) {
+        forallcomponents([&](Component &comp, const ComponentTemplate &temp, const std::array<float, 4> &val, int emsize, int index) {
             //set the index to be accessed later
             comp.parent = cont.GetIndex();
             
@@ -2394,7 +2413,7 @@ realign:
                         comp.size.Height = 0;
                     
                     //do an update
-                    update(comp);
+                    update(comp, val, index);
                 }
                 else if(temp.GetType() == ComponentType::Graphics) {
                     if(imagedata.Exists(temp.GetDataEffect())) {
@@ -2504,7 +2523,7 @@ realign:
         Component *startanch = nullptr, *endanch = nullptr;
 
         //Positioning stage
-        forallcomponents([&](Component &comp, const ComponentTemplate &temp, const std::array<float, 4> &val, int emsize) {
+        forallcomponents([&](Component &comp, const ComponentTemplate &temp, const std::array<float, 4> &val, int emsize, int) {
             //check anchor object by observing temp.GetPreviousAnchor and direction
             Component *anch = nullptr;
             
@@ -2844,7 +2863,7 @@ realign:
             Component *startmost = nullptr, *endmost = nullptr;
             
             //go through the components to see where they end
-            forallcomponents([&](Component &comp, const ComponentTemplate &temp, const std::array<float, 4> &, int) {
+            forallcomponents([&](Component &comp, const ComponentTemplate &temp, const std::array<float, 4> &, int, int ind) {
                 //only relatively sided components take up space
                 if(temp.GetPositioning() == temp.Relative) {
                     //the values will be overwritten successively to find the last ones
@@ -2958,7 +2977,7 @@ realign:
             int w = 0;
             
             //calculate max right as width
-            forallcomponents([&](Component &comp, const ComponentTemplate &, const std::array<float, 4> &, int) {
+            forallcomponents([&](Component &comp, const ComponentTemplate &, const std::array<float, 4> &, int, int) {
                 int r = comp.size.Width + comp.location.X;
                 
                 if(w < r)
@@ -2973,7 +2992,7 @@ realign:
             int h = 0;
             
             //calculate max right as width
-            forallcomponents([&](Component &comp, const ComponentTemplate &, const std::array<float, 4> &, int) {
+            forallcomponents([&](Component &comp, const ComponentTemplate &, const std::array<float, 4> &, int, int) {
                 int b = comp.size.Height + comp.location.X;
                 
                 if(h < b)
@@ -2984,27 +3003,15 @@ realign:
         }
         
         
-        //update the containers
-        for(int i=0; i<cont.GetCount(); i++) {
-
-            int ci = cont[i];
-
-            if(ci >= indices) continue;
-            if(!stacksizes[ci]) continue;
-
-
-            auto &comp = get(cont[i]);
-
-            const auto &temp = comp.GetTemplate();
-
+        forallcomponents([&](Component &comp, const ComponentTemplate &temp, const std::array<float, 4> &val, int, int index) {
             if(temp.GetType() == ComponentType::Container) {
-                update(comp);
+                update(comp, val, index);
             }
-        }
+        });
     }
 
     
-    void ComponentStack::render(Component &comp, Graphics::Layer &parent, Geometry::Point offset, Graphics::RGBAf color, int ind) {
+    void ComponentStack::render(Component &comp, Graphics::Layer &parent, Geometry::Point offset, const std::array<float, 4> &value, Graphics::RGBAf color, int ind) {
         //parent template, used in determining repeat mode condition
         const ComponentTemplate &tempp = comp.GetTemplate();
         
@@ -3012,7 +3019,7 @@ realign:
         auto tempptr = &tempp;
         
         //value for the current component
-        std::array<float, 4> val = value;
+        const std::array<float, 4> *valptr = &value;
 
         //if a repeated component, find its state through repeated component states
         if(tempp.GetRepeatMode() != ComponentTemplate::NoRepeat) {
@@ -3027,8 +3034,10 @@ realign:
             tempptr = &get(tempp.GetIndex(), rc).GetTemplate();
             
             //change the value to the repeat value
-            val = repeats[tempp.GetRepeatMode()][ind];
+            valptr = &repeats[tempp.GetRepeatMode()][ind];
         }
+        
+        auto val = *valptr;
 
         //obtain reference for the template
         const auto &temp = *tempptr;
@@ -3121,14 +3130,20 @@ realign:
                     //if not repeating
                     if(temp.GetRepeatMode() == ComponentTemplate::NoRepeat) {
                         //render this component
-                        render(compparent, *target, offset, color);
+                        render(compparent, *target, offset, val, color);
                     }
                     //if repeating
                     else if(repeats.count(temp.GetRepeatMode())) {
-                        //call render for each repeat
-                        int index = 0;
-                        for(auto &r : repeated[&temp])
-                            render(r, *target, offset, color, index++);
+                        //if we are also repeating and the repeat modes match, we will not further repeat these elements
+                        if(ind > -1 && temp.GetRepeatMode() == comp.GetTemplate().GetRepeatMode()) {
+                            render(repeated[&temp][ind], *target, offset, val, color, ind);
+                        }
+                        else {
+                            //call render for each repeat
+                            int index = 0;
+                            for(auto &r : repeated[&temp])
+                                render(r, *target, offset, val, color, index++);
+                        }
                     }
                 }
             }
