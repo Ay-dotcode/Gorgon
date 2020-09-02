@@ -33,7 +33,77 @@ Graphics::Bitmap &prep(Graphics::Bitmap &bmp) {
 
 int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
+
+    ///Blank Panel & elements with Registry & Regulars 
+
+    Widgets::Panel blank(Gorgon::Widgets::Registry::Panel_Blank);
+    blank.Resize({ 100,600 });
+    Gorgon::Widgets::Button btn("press",Gorgon::Widgets::Registry::Button_Regular);
+    Gorgon::Widgets::Button icnbtn("+", Gorgon::Widgets::Registry::Button_Icon);
+    Gorgon::Widgets::Button icnbtn2("-", Gorgon::Widgets::Registry::Button_Icon);
+
+    Gorgon::Widgets::Label l("Coffee:");
+
+    Gorgon::Widgets::RadioButtons<int> radio(Gorgon::Widgets::Registry::Radio_Regular);
+    radio.Add(0,"Americano");
+    radio.Add(1,"Latte");
+
+    Gorgon::Widgets::Inputbox<std::string> input;
+  
+
+    Gorgon::Widgets::Checkbox chk("Black",Gorgon::Widgets::Registry::Checkbox_Regular);
+    Gorgon::Widgets::Checkbox chk2("Latte");
+    Gorgon::Widgets::Progressbar bar(Gorgon::Widgets::Registry::Progress_Regular);
+    Gorgon::Widgets::Panel toppanel(Gorgon::Widgets::Registry::Panel_Top);
+    toppanel.Resize({ 50,80 });
+    Gorgon::Widgets::Label toplabel("Panel Top");
+    Gorgon::Widgets::Button topbtn("regular",Gorgon::Widgets::Registry::Button_Regular);
+    toppanel.Add(toplabel);
+    toppanel.Add(topbtn);
+    topbtn.Move(toplabel.GetLocation().X, toplabel.GetLocation().Y + toplabel.GetSize().Height);
+
+    Gorgon::Widgets::Panel leftpanel(Gorgon::Widgets::Registry::Panel_Left);
+    leftpanel.Resize({ 30,30 });
+    Gorgon::Widgets::Label leftlabel("Panel Left");
+    leftpanel.Add(leftlabel);
+
+    Gorgon::Widgets::Panel rightpanel(Gorgon::Widgets::Registry::Panel_Right);
+    Gorgon::Widgets::Label rightlabel("Panel Right");
+    rightpanel.Add(rightlabel);
+
+    Gorgon::Widgets::Panel bottompanel(Gorgon::Widgets::Registry::Panel_Bottom);
+    Gorgon::Widgets::Label bottomlabel("Panel bottom");
+    bottompanel.Add(bottomlabel);
     
+  
+    input.ChangedEvent.Register([&] {
+        std::cout << input.GetText() << std::endl;
+    });
+
+    icnbtn.PressEvent.Register([&] {
+        bar.Set(bar.Get() + 10);
+    });
+
+    icnbtn2.PressEvent.Register([&] {
+        bar.Set(bar.Get() - 10);
+    });
+    blank.CreateOrganizer<Gorgon::UI::Organizers::List>().SetSpacing(Gorgon::Widgets::Registry::Active().GetSpacing());
+    blank.Add(btn);
+    blank.Add(icnbtn);
+    blank.Add(icnbtn2);
+    blank.Add(l);
+    blank.Add(radio);
+    blank.Add(input);
+    blank.Add(chk);
+    blank.Add(chk2);
+    blank.Add(bar);
+    blank.Add(toppanel);
+    blank.Add(leftpanel);
+    blank.Add(bottompanel);
+    blank.Add(rightpanel);
+
+    app.wind.Add(blank);
+    /*
     Widgets::SimpleGenerator gen;
     Widgets::SimpleGenerator gen2(12, "", false);
     gen.Init(15);
@@ -199,7 +269,7 @@ int main() {
     //error.Move(lbl.GetLocation().X,lbl.GetLocation().Y + 25);
     lbl.OwnIcon(prep(*new Graphics::Bitmap(Triangle(8, 8))));
     
-    
+    */
     app.wind.Run();
 
     return 0;
