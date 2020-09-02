@@ -223,7 +223,6 @@ TestData test_graphic(Layer &layer) {
     cont2.Content.SetAnimation(greenimg());
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -246,7 +245,6 @@ TestData test_text(Layer &layer) {
     cont2.SetRenderer(app.fntlarge);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -266,7 +264,6 @@ TestData test_setsize(Layer &layer) {
     cont2.SetSize(20, 30);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -286,7 +283,6 @@ TestData test_setsizepercent(Layer &layer) {
     cont2.SetSize(5000, 3333, Gorgon::UI::Dimension::BasisPoint);
 
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
 
     layer.Add(stack);
 
@@ -311,7 +307,6 @@ TestData test_setsizepercent_percent(Layer &layer) {
     cont3.SetSize(50, 50, Gorgon::UI::Dimension::Percent);
 
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
 
     layer.Add(stack);
 
@@ -337,7 +332,6 @@ TestData test_setsizepercent_rel(Layer &layer) {
     cont3.SetSize(50, 50, Gorgon::UI::Dimension::Percent);
 
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
 
     layer.Add(stack);
 
@@ -358,7 +352,6 @@ TestData test_sizepercent_center(Layer &layer) {
     cont2.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::TopLeft);
 
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
 
     layer.Add(stack);
 
@@ -380,7 +373,6 @@ TestData test_sizepercent_centerabs(Layer &layer) {
     cont2.SetPositioning(cont2.Absolute);
 
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
 
     layer.Add(stack);
 
@@ -401,7 +393,6 @@ TestData test_setborder(Layer &layer) {
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -422,7 +413,6 @@ TestData test_setborder2(Layer &layer) {
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -440,7 +430,6 @@ TestData test_setoverlay(Layer &layer) {
     cont1.Overlay.SetAnimation(greenrect());
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -461,7 +450,6 @@ TestData test_setpadding(Layer &layer) {
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -482,7 +470,6 @@ TestData test_setpadding2(Layer &layer) {
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -503,7 +490,6 @@ TestData test_setpadding_percent(Layer &layer) {
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -525,7 +511,6 @@ TestData test_setpadding_border(Layer &layer) {
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -546,7 +531,6 @@ TestData test_setmargin_parent(Layer &layer) {
     cont2.SetMargin(10);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -567,7 +551,6 @@ TestData test_setmargin_parent_percent(Layer &layer) {
     cont2.SetMargin(20, Gorgon::UI::Dimension::Percent);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -589,7 +572,6 @@ TestData test_margin_parent_padding(Layer &layer) {
     cont2.SetMargin(10);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -610,7 +592,6 @@ TestData test_setindent(Layer &layer) {
     cont2.SetIndent(10);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -632,7 +613,6 @@ TestData test_indent_padding(Layer &layer) {
     cont2.SetIndent(10);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -654,7 +634,6 @@ TestData test_setpadding_negative(Layer &layer) {
     cont2.SetMargin(10);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -676,7 +655,6 @@ TestData test_setmargin_negative(Layer &layer) {
     cont2.SetMargin(-10, 0, -10, 0);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -705,7 +683,6 @@ TestData test_border_padding_margin_size(Layer &layer) {
     cont3.SetMargin(30, -10, 0, 0, Gorgon::UI::Dimension::Pixel);
 
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
 
     layer.Add(stack);
 
@@ -739,7 +716,6 @@ TestData test_absanch_samepoint(Layer &layer) {
     }
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -772,7 +748,6 @@ TestData test_paranch_samepoint(Layer &layer) {
     }
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -806,7 +781,6 @@ TestData test_absanch_centertopoint(Layer &layer) {
     }
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -827,7 +801,6 @@ TestData test_absanchoff(Layer &layer) {
     cont2.SetPosition(10, 20);
 
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
 
     layer.Add(stack);
 
@@ -850,7 +823,6 @@ TestData test_absanchoffsize(Layer &layer) {
     cont2.SetPosition(10, 20);
 
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
 
     layer.Add(stack);
 
@@ -873,7 +845,6 @@ TestData test_absanchoffrev(Layer &layer) {
     cont2.SetPosition(10, 20);
 
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
 
     layer.Add(stack);
 
@@ -898,7 +869,6 @@ TestData test_relanch(Layer &layer) {
     cont3.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
 
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
 
     layer.Add(stack);
 
@@ -925,7 +895,6 @@ TestData test_relanchvert(Layer &layer) {
     cont3.SetAnchor(Gorgon::UI::Anchor::BottomLeft, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
 
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
 
     layer.Add(stack);
 
@@ -951,7 +920,6 @@ TestData test_relanch2(Layer &layer) {
     cont3.SetAnchor(UI::Anchor::BottomRight, UI::Anchor::BottomLeft, UI::Anchor::TopLeft);
 
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
 
     layer.Add(stack);
 
@@ -984,7 +952,6 @@ TestData test_anchbaseline(Layer &layer) {
     cont4.SetRenderer(fnt);
 
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
 
     layer.Add(stack);
 
@@ -1020,7 +987,6 @@ TestData test_anchsetbaseline(Layer &layer) {
     cont4.SetRenderer(fnt);
 
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
 
     layer.Add(stack);
 
@@ -1059,7 +1025,6 @@ TestData test_anchbaseline2(Layer &layer) {
     
 
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
 
     layer.Add(stack);
 
@@ -1095,7 +1060,6 @@ TestData test_abssliding(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1130,7 +1094,6 @@ TestData test_abspolar(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
         
     layer.Add(stack);
     
@@ -1166,7 +1129,6 @@ TestData test_abspolar2(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
         
     layer.Add(stack);
     
@@ -1193,7 +1155,6 @@ TestData test_modify_position_sliding(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1221,7 +1182,6 @@ TestData test_modify_position_slidingvert(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1249,7 +1209,6 @@ TestData test_modify_rev(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1277,7 +1236,6 @@ TestData test_modify_minmax(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1305,7 +1263,6 @@ TestData test_modify_chmap2(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1333,7 +1290,6 @@ TestData test_modify_chmap3(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1361,7 +1317,6 @@ TestData test_modify_chmap4(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1388,11 +1343,10 @@ TestData test_modify_ch4_minmax(Layer &layer) {
     cont2.SetValueRange(0, 0.2, 0.8);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
-    return {"Channel map value range", "80x40 cyan rectangle contains 10x10 red rectangle. It should move from 10px left to 10px to right with the change with the value of channel 1.", stack};
+    return {"Channel map value range", "80x40 cyan rectangle contains 10x10 red rectangle. It should move from 10px left to 10px to right with the change with the value of channel 4.", stack};
 }
 
 TestData test_modify_position_2ch(Layer &layer) {
@@ -1416,7 +1370,6 @@ TestData test_modify_position_2ch(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1444,7 +1397,6 @@ TestData test_modify_position_absolute(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1472,7 +1424,6 @@ TestData test_modify_x(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1500,7 +1451,6 @@ TestData test_modify_y(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1527,7 +1477,6 @@ TestData test_modify_size(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1555,7 +1504,6 @@ TestData test_modify_sizevert(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1582,7 +1530,6 @@ TestData test_modify_sizemin(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1610,7 +1557,6 @@ TestData test_modify_sizexy(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1635,7 +1581,6 @@ TestData test_modify_alpha(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1661,7 +1606,6 @@ TestData test_modify_blend1(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1687,7 +1631,6 @@ TestData test_modify_blend2(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1713,7 +1656,6 @@ TestData test_modify_blend4(Layer &layer) {
     
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1736,7 +1678,6 @@ TestData test_modify_animation(Layer &layer) {
     cont2.SetValueSource(cont2.UseFirst);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1759,7 +1700,6 @@ TestData test_data_settext(Layer &layer) {
     cont2.SetRenderer(app.fntlarge);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1783,7 +1723,6 @@ TestData test_data_textwrap(Layer &layer) {
     cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1808,7 +1747,6 @@ TestData test_data_textclip(Layer &layer) {
     cont2.SetClip(true);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1831,7 +1769,6 @@ TestData test_data_settitle(Layer &layer) {
     cont2.SetRenderer(app.fntlarge);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1860,7 +1797,6 @@ TestData test_data_settexttitle(Layer &layer) {
     cont3.SetRenderer(app.fnt);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1879,7 +1815,6 @@ TestData test_data_setimage(Layer &layer) {
     cont2.SetDataEffect(Gorgon::UI::ComponentTemplate::Icon1);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1898,7 +1833,6 @@ TestData test_data_setimagegt(Layer &layer) {
     cont2.SetDataEffect(Gorgon::UI::ComponentTemplate::Icon1);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1922,7 +1856,6 @@ TestData test_data_setimage2(Layer &layer) {
     cont3.SetAnchor(Gorgon::UI::Anchor::BottomRight, Gorgon::UI::Anchor::BottomLeft, Gorgon::UI::Anchor::BottomLeft);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     layer.Add(stack);
     
@@ -1953,7 +1886,6 @@ TestData test_data_setstate(Layer &layer) {
     cont3.SetRepeatMode(Gorgon::UI::ComponentTemplate::XTick);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0);
     stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.25);
@@ -1985,7 +1917,6 @@ TestData test_repeat_pos(Layer &layer) {
     cont2.SetRepeatMode(Gorgon::UI::ComponentTemplate::XTick);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0);
     stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.25);
@@ -2016,7 +1947,6 @@ TestData test_repeat_size(Layer &layer) {
     cont2.SetRepeatMode(Gorgon::UI::ComponentTemplate::XTick);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0);
     stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.25);
@@ -2047,7 +1977,6 @@ TestData test_repeat_alpha(Layer &layer) {
     cont2.SetRepeatMode(Gorgon::UI::ComponentTemplate::XTick);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0);
     stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.25);
@@ -2086,7 +2015,6 @@ TestData test_repeat_sizealpha(Layer &layer) {
     cont3.SetRepeatMode(Gorgon::UI::ComponentTemplate::XTick);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0);
     stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.25);
@@ -2131,7 +2059,6 @@ TestData test_repeat_possizealpha(Layer &layer) {
     cont4.SetRepeatMode(Gorgon::UI::ComponentTemplate::XTick);
     
     auto &stack = *new ComponentStack(temp);
-    stack.HandleMouse();
     
     stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0);
     stack.AddRepeat(Gorgon::UI::ComponentTemplate::XTick, 0.25);
@@ -2144,9 +2071,376 @@ TestData test_repeat_possizealpha(Layer &layer) {
     return {"Repeat size and alpha", "On a white background there should be 5 10px wide red rectangles with 10px spacing. First rectangle should be completely transparent while opacity increases with every step while the height should start from 10px and increases 5px every step.", stack};
 }
 
+TestData test_gettagbounds1(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    return {"Get tag bounds 1", String::Concat((b.operator ==({0,0,10,10}) ? "Passed" : "Failed"), ". Returned bounds = ", b, " should be [(0, 0) - (10, 10)]"), stack};
+}
+
+TestData test_gettagbounds2(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Fixed);
+    cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    return {"Get tag bounds 2", String::Concat((b.operator ==({0,0,50,50}) ? "Passed" : "Failed"), ". Returned bounds = ", b, " should be [(0, 0) - (50, 50)]"), stack};
+}
+
+TestData test_gettagbounds3(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Fixed);
+    cont2.SetSize(50, 100, Gorgon::UI::Dimension::Percent);
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    auto &cont3 = temp.AddGraphics(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Content.SetAnimation(redimg());
+    cont3.SetTag(Gorgon::UI::ComponentTemplate::RightTag);
+
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::RightTag);
+
+    return {"Get tag bounds 3", String::Concat((b.operator ==({20,0,30,10}) ? "Passed" : "Failed"), ". Returned bounds = ", b, " should be [(20, 0) - (30, 50)]"), stack};
+}
+
+TestData test_gettagbounds_modifysize(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(70, 80);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redimg());
+    cont2.SetSize(0, 10, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifySize, Gorgon::UI::ComponentTemplate::UseSize);
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    
+    layer.Add(stack);
+    
+    stack.SetValue(0.2, 0.5);
+    
+    auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
+    
+
+    return {"Get tag bounds modify size", String::Concat((b.operator ==({0, 0, 10, 35}) ? "Passed" : "Failed"), ". Returned bounds = ", b, " should be [(0, 0) - (10, 35)]"), stack};
+}
+
+TestData test_gettagbounds_modifypos(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 80);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(cyanrect());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(redimg());
+    cont2.SetSize(10, 10, Gorgon::UI::Dimension::Pixel);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyPosition, Gorgon::UI::ComponentTemplate::UseXY);
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+    
+    
+    auto &stack = *new ComponentStack(temp);
+    
+    layer.Add(stack);
+    
+    stack.SetValue(0.2, 0.5);
+    
+    auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
+    
+
+    return {"Get tag bounds modify position", String::Concat((b.operator ==({10, 25, 20, 35}) ? "Passed" : "Failed"), ". Returned bounds = ", b, " should be [(10, 25) - (20, 35)]"), stack};
+}
+
+TestData test_indexoftag(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    auto i = stack.IndexOfTag(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    return {"Get index of tag", String::Concat((i==1) ? "Passed" : "Failed", ". Returned index = ", i, " should be 1"), stack};
+}
+
+TestData test_haslayer(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+
+    auto &cont3 = temp.AddGraphics(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Content.SetAnimation(redimg());
+    cont3.SetClip(true);
+ 
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    return {"Has layer", String::Concat((!stack.HasLayer(1) && stack.HasLayer(2)) ? "Passed" : "Failed"), stack};
+}
+
+TestData test_componentat1(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+
+    auto &cont3 = temp.AddGraphics(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Content.SetAnimation(redimg());
+ 
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    return {"Component at 1", String::Concat((
+            stack.ComponentAt({1, 1}) == 1 && 
+            stack.ComponentAt({10, 0}) == 2 && 
+            stack.ComponentAt({20, 0}) == 0 && 
+            stack.ComponentAt({50, 0}) == -1
+        ) ? "Passed" : "Failed", ". ",
+        stack.ComponentAt({1, 1}), " = 1, ", 
+        stack.ComponentAt({10, 0}), " = 2, ", 
+        stack.ComponentAt({20, 0}), " = 0, ", 
+        stack.ComponentAt({50, 0}), " = -1, "
+    ), stack};
+}
+
+TestData test_componentat2(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+
+    auto &cont3 = temp.AddGraphics(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.SetMargin(-5, 0, 0, 0);
+    cont3.Content.SetAnimation(redimg());
+ 
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+    
+    Geometry::Bounds b;
+    int ind = stack.ComponentAt({5, 0}, b);
+
+    return {"ComponentAt stacking", String::Concat((
+            stack.ComponentAt({1, 1}) == 1 && 
+            ind == 2 &&
+            b == Geometry::Bounds(5, 0, 15, 10)
+        ) ? "Passed" : "Failed", ". ",
+        stack.ComponentAt({1, 1}), " = 1, ", 
+        stack.ComponentAt({5, 0}), " = 2, ",
+        b," = [(5, 0) - (15, 10)]"
+    ), stack};
+}
+
+TestData test_componentexists(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.AddIndex(3);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+
+    auto &cont3 = temp.AddGraphics(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.SetMargin(-5, 0, 0, 0);
+    cont3.Content.SetAnimation(redimg());
+ 
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    return {"ComponentExists", String::Concat((
+            stack.ComponentExists(1) && 
+            stack.ComponentExists(2) && 
+            !stack.ComponentExists(3) && 
+            !stack.ComponentExists(4)
+        ) ? "Passed" : "Failed"
+    ), stack};
+}
+
+TestData test_settagpos(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    stack.SetTagLocation(Gorgon::UI::ComponentTemplate::LeftTag, {10, 10});
+    auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    return {"Set tag position", String::Concat((b.operator ==({10,10,20,20}) ? "Passed" : "Failed"), ". Returned bounds = ", b, " should be [(10, 10) - (20, 20)]. Green rectangle should be 10, 10 from top left."), stack};
+}
+
+TestData test_settagposabs(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::Absolute);
+    cont2.SetPosition(10, 10);
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    stack.SetTagLocation(Gorgon::UI::ComponentTemplate::LeftTag, {10, 10});
+    auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    return {"Set tag position absolute", String::Concat((b.operator ==({20,20,30,30}) ? "Passed" : "Failed"), ". Returned bounds = ", b, " should be [(20, 20) - (30, 30)]. Green rectangle should be 20, 20 from top left."), stack};
+}
+
+TestData test_settagposval(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(70, 70);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::AbsoluteSliding);
+    cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyPosition, Gorgon::UI::ComponentTemplate::UseXY);
+
+    auto &stack = *new ComponentStack(temp);
+    stack.SetValue(0.50, 0.50);
+
+    layer.Add(stack);
+
+    stack.SetTagLocation(Gorgon::UI::ComponentTemplate::LeftTag, {10, 10});
+    auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    return {"Set tag position value", String::Concat((b.operator ==({35,35,45,45}) ? "Passed" : "Failed"), ". Returned bounds = ", b, " should be [(35, 35) - (45, 45)]. Green rectangle should be 35, 35 from top left."), stack};
+}
+
+TestData test_settagposrem(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    stack.SetTagLocation(Gorgon::UI::ComponentTemplate::LeftTag, {10, 10});
+    stack.RemoveTagLocation(Gorgon::UI::ComponentTemplate::LeftTag);
+    auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    return {"Set tag position and remove", String::Concat((b.operator ==({0,0,10,10}) ? "Passed" : "Failed"), ". Returned bounds = ", b, " should be [(0, 0) - (10, 10)]. Green rectangle should be at top left."), stack};
+}
+
 
 std::vector<std::function<TestData(Layer &)>> tests = {
-    
     &test_graphic,
     &test_text,
     
@@ -2232,7 +2526,22 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_repeat_size,
     &test_repeat_alpha,
     &test_repeat_sizealpha,
-    test_repeat_possizealpha
+    &test_repeat_possizealpha,
+    
+    &test_gettagbounds1,
+    &test_gettagbounds2,
+    &test_gettagbounds3,
+    &test_gettagbounds_modifysize,
+    &test_gettagbounds_modifypos,
+    &test_indexoftag,
+    &test_haslayer,
+    &test_componentat1,
+    &test_componentat2,
+    &test_componentexists,
+    &test_settagpos,
+    &test_settagposabs,
+    &test_settagposval,
+    &test_settagposrem,
 };
 
 //END tests
@@ -2243,6 +2552,7 @@ std::vector<std::pair<std::string, std::string>> info;
 Input::KeyRepeater repeater;
     
 int main() {
+    bool quit = false;
     auto &app = getapp();
 
     int xs = 50, ys = 20, w = 500, h = 400;
@@ -2435,7 +2745,7 @@ int main() {
                 break;
 
             case Keycodes::Escape:
-                exit(0);
+                quit = true;
                 break;
                 
             case Keycodes::Number_5: {
@@ -2560,7 +2870,7 @@ int main() {
         return true;
     });
 
-    while(true) {
+    while(!quit) {
         Gorgon::NextFrame();
     }
 

@@ -1048,14 +1048,14 @@ namespace Gorgon { namespace Graphics {
                     miny = int(g.offset.Y + firsty);
 
                 if(g.offset.Y + lasty > maxy)
-                    maxy = g.offset.Y + lasty;
+                    maxy = int(g.offset.Y + lasty);
             }
             else {
                 if(g.offset.Y < miny)
-                    miny = g.offset.Y;
+                    miny = int(g.offset.Y);
                 
                 if(g.offset.Y + g.image->GetHeight() > maxy)
-                    maxy = g.offset.Y + g.image->GetHeight();
+                    maxy = int(g.offset.Y + g.image->GetHeight());
             }
         }
 

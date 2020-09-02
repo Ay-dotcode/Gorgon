@@ -336,6 +336,17 @@ namespace Gorgon { namespace UI {
             return get(ind).GetTemplate();
         }
 
+        /// Set a fixed location for a tagged component
+        void SetTagLocation(ComponentTemplate::Tag tag, Geometry::Point location) {
+            taglocations[tag] = location;
+            Update();
+        }
+
+        /// Removes the fixed location for a set tagged component
+        void RemoveTagLocation(ComponentTemplate::Tag tag) {
+            taglocations.erase(tag);
+        }
+
         /// Set a fixed size for a tagged component
         void SetTagSize(ComponentTemplate::Tag tag, Geometry::Size size) {
             tagsizes[tag] = size;
@@ -355,18 +366,6 @@ namespace Gorgon { namespace UI {
         /// Enables text wrapping on a specific tag, default is enabled.
         void EnableTagWrap(ComponentTemplate::Tag tag) {
             tagnowrap.erase(tag);
-        }
-
-
-        /// Set a fixed location for a tagged component
-        void SetTagLocation(ComponentTemplate::Tag tag, Geometry::Point location) {
-            taglocations[tag] = location;
-            Update();
-        }
-
-        /// Removes the fixed location for a set tagged component
-        void RemoveTagLocation(ComponentTemplate::Tag tag) {
-            taglocations.erase(tag);
         }
 
         /// Sets a function to be called before update check
@@ -443,7 +442,7 @@ namespace Gorgon { namespace UI {
                     up_fn(stack.first->GetTag() == ComponentTemplate::NoTag ? ComponentTemplate::UnknownTag : stack.first->GetTag(), point, btn);
                 });
             }
-    }
+        }
         
         /// Sets the mouse down event. If HandleMouse function is called, this function will first
         /// perform mouse event transition, then it will call this handler.

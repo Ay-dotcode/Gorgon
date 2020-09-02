@@ -1,6 +1,7 @@
 #include "DWM.h"
 
 #include "../../Window.h"
+#include "../../Main.h"
 
 namespace Gorgon { 
 

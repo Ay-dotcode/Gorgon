@@ -65,7 +65,7 @@ public:
         int sz = 11;
 #ifdef WIN32
         fnt.LoadFile("C:/Windows/Fonts/tahoma.ttf", sz);
-        fntlarge.LoadFile("C:/Windows/Fonts/tahoma.ttf", sz*1.5);
+        fntlarge.LoadFile("C:/Windows/Fonts/tahoma.ttf", int(std::round(sz*1.5)));
 #else
         bool found = false;
         std::streambuf *buf;

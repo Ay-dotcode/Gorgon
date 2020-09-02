@@ -1335,6 +1335,10 @@ namespace Gorgon { namespace UI {
         if(!stacksizes[0]) 
             return -1;
 
+        //update needed?
+        if(updaterequired)
+            update();
+
         //this function will do a depth first search
         //this is the list that collects indexes that will be searched
         std::vector<std::pair<int, bool>> todo;
@@ -2118,7 +2122,7 @@ namespace Gorgon { namespace UI {
                     }
                     else {
                         if(repeats.count(temporg.GetRepeatMode())) {
-                            jtarget = repeats[temporg.GetRepeatMode()].size();
+                            jtarget = int(repeats[temporg.GetRepeatMode()].size());
                         }
                         else {
                             jtarget = 0;
@@ -2768,7 +2772,7 @@ realign:
                 //calculate radius
                 auto r = pos.X.CalculateFloat(std::min(xrad, yrad), (float)emsize);
                 
-                auto a = pos.Y.CalculateFloat(maxang, 45) + stang; //em size for angle is 45
+                auto a = pos.Y.CalculateFloat(float(maxang), 45) + stang; //em size for angle is 45
                 
                 //convert to radians
                 a *= -PI / 180.0f;
