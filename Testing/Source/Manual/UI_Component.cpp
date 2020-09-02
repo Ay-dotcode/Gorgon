@@ -2364,7 +2364,7 @@ TestData test_settagpos(Layer &layer) {
     stack.SetTagLocation(Gorgon::UI::ComponentTemplate::LeftTag, {10, 10});
     auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
 
-    return {"Set tag position", String::Concat((b.operator ==({10,10,20,20}) ? "Passed" : "Failed"), ". Returned bounds = ", b, " should be [(10, 10) - (20, 20)]. Green rectangle should be 10, 10 from top left."), stack};
+    return {"Set tag position", String::Concat((b.operator ==({10,10,20,20}) && stack.GetTagLocation(Gorgon::UI::ComponentTemplate::LeftTag) == b.TopLeft() ? "Passed" : "Failed"), ". Returned bounds = ", b, " should be [(10, 10) - (20, 20)]. Green rectangle should be 10, 10 from top left."), stack};
 }
 
 TestData test_settagposabs(Layer &layer) {
@@ -2437,6 +2437,84 @@ TestData test_settagposrem(Layer &layer) {
     auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
 
     return {"Set tag position and remove", String::Concat((b.operator ==({0,0,10,10}) ? "Passed" : "Failed"), ". Returned bounds = ", b, " should be [(0, 0) - (10, 10)]. Green rectangle should be at top left."), stack};
+}
+
+TestData test_settagsize(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Fixed);
+
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    stack.SetTagSize(Gorgon::UI::ComponentTemplate::LeftTag, {30, 30});
+    auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    return {"Set tag size", String::Concat((b.operator ==({0,0,30,30}) && stack.GetTagSize(Gorgon::UI::ComponentTemplate::LeftTag) == b.GetSize() ? "Passed" : "Failed"), ". Returned bounds = ", b, " should be [(0, 0) - (30, 30)]."), stack};
+}
+
+TestData test_tagtextwrap(Layer &layer) {
+    auto &app = getapp();
+
+    auto &temp = *new Template;
+    temp.SetSize(70, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddTextholder(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetDataEffect(Gorgon::UI::ComponentTemplate::Text);
+    cont2.SetColor(Color::Brown);
+    cont2.SetRenderer(app.fntlarge);
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+    cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont2.SetText("Hello there");
+    
+    auto &stack = *new ComponentStack(temp);
+    
+    stack.DisableTagWrap(Gorgon::UI::ComponentTemplate::LeftTag);
+    
+    layer.Add(stack);
+    
+    return {"Tag text wrap", "Brown text 'Hello there' without wrapping.", stack};
+}
+
+TestData test_tagtextwrap2(Layer &layer) {
+    auto &app = getapp();
+
+    auto &temp = *new Template;
+    temp.SetSize(70, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddTextholder(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetDataEffect(Gorgon::UI::ComponentTemplate::Text);
+    cont2.SetColor(Color::Brown);
+    cont2.SetRenderer(app.fntlarge);
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+    cont2.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont2.SetText("Hello there");
+    
+    auto &stack = *new ComponentStack(temp);
+    
+    stack.DisableTagWrap(Gorgon::UI::ComponentTemplate::LeftTag);
+    stack.EnableTagWrap(Gorgon::UI::ComponentTemplate::LeftTag);
+    
+    layer.Add(stack);
+    
+    return {"Tag text wrap 2", "Brown text 'Hello there' with wrapping.", stack};
 }
 
 
@@ -2542,6 +2620,9 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_settagposabs,
     &test_settagposval,
     &test_settagposrem,
+    &test_settagsize,
+    &test_tagtextwrap,
+    &test_tagtextwrap2,
 };
 
 //END tests

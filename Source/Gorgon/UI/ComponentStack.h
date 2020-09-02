@@ -341,6 +341,15 @@ namespace Gorgon { namespace UI {
             taglocations[tag] = location;
             Update();
         }
+        
+        Geometry::Point GetTagLocation(ComponentTemplate::Tag tag) const {
+            auto f = taglocations.find(tag);
+            
+            if(f == taglocations.end())
+                return {0, 0};
+            else
+                return f->second;
+        }
 
         /// Removes the fixed location for a set tagged component
         void RemoveTagLocation(ComponentTemplate::Tag tag) {
@@ -353,9 +362,23 @@ namespace Gorgon { namespace UI {
             Update();
         }
 
+        Geometry::Size GetTagSize(ComponentTemplate::Tag tag) const {
+            auto f = tagsizes.find(tag);
+            
+            if(f == tagsizes.end())
+                return {0, 0};
+            else
+                return f->second;
+        }
+
         /// Removes the fixed size for a set tagged component
         void RemoveTagSize(ComponentTemplate::Tag tag) {
             tagsizes.erase(tag);
+        }
+        
+        /// Enables text wrapping on a specific tag, default is enabled.
+        void EnableTagWrap(ComponentTemplate::Tag tag) {
+            tagnowrap.erase(tag);
         }
         
         /// Disables text wrapping on a specific tag, default is enabled.
@@ -363,10 +386,6 @@ namespace Gorgon { namespace UI {
             tagnowrap.insert(tag);
         }
 
-        /// Enables text wrapping on a specific tag, default is enabled.
-        void EnableTagWrap(ComponentTemplate::Tag tag) {
-            tagnowrap.erase(tag);
-        }
 
         /// Sets a function to be called before update check
         void SetFrameEvent(std::function<void()> handler) {
