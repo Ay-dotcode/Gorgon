@@ -481,6 +481,7 @@ namespace Gorgon { namespace Graphics {
 
                     autobreak=true;
                     lastbreak = 0;
+                    ind = 0;
                 }
                 //if we wrapped, ignore spaces at start
                 else if(!autobreak || ind != 0 || !isspace(g)) { 
@@ -640,6 +641,7 @@ namespace Gorgon { namespace Graphics {
                     
                     autobreak=true;
                     lastbreak = 0;
+                    ind = 0;
                 }
                 //if we wrapped, ignore spaces at start
                 else if(!autobreak || ind != 0 || !isspace(g)) { 
@@ -1595,7 +1597,6 @@ namespace Gorgon { namespace Graphics {
         );
     }
 
-
     void BasicFont::printnowrap(TextureTarget& target, const std::string& text, Geometry::Rectangle location, TextAlignment align, RGBAf color) const {
         switch(align) {
         case TextAlignment::Left:
@@ -1614,7 +1615,6 @@ namespace Gorgon { namespace Graphics {
             break;
         }
     }
-
 
     void StyledRenderer::printnowrap(TextureTarget& target, const std::string& text, Geometry::Rectangle location, TextAlignment align) const {
         switch(align) {
