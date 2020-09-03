@@ -42,6 +42,9 @@ int main() {
     Gorgon::Widgets::Button btn("press",Gorgon::Widgets::Registry::Button_Regular);
     Gorgon::Widgets::Button icnbtn("+", Gorgon::Widgets::Registry::Button_Icon);
     Gorgon::Widgets::Button icnbtn2("-", Gorgon::Widgets::Registry::Button_Icon);
+    auto icon = Triangle(5, 10);
+    icon.Prepare();
+    icnbtn.SetIcon(icon);
 
     Gorgon::Widgets::Label l("Coffee:");
 
@@ -141,6 +144,7 @@ int main() {
     Gorgon::Widgets::Button icnbtngen1(icobtntemp,"+");
     Gorgon::Widgets::Button icnbtn2gen1(icobtntemp, "-");
     Gorgon::Widgets::Label labelgen1(lbltemp, "Coffee:");
+    icnbtngen1.SetIcon(icon);
     
     Gorgon::Widgets::RadioButtons<int> radiogen1(radtemp);
     radiogen1.Add(0, "Americano");
@@ -244,7 +248,7 @@ int main() {
     Gorgon::Widgets::Button icnbtngen2(icobtntemp2, "+");
     Gorgon::Widgets::Button icnbtn2gen2(icobtntemp2, "-");
     Gorgon::Widgets::Label labelgen2(lbltemp2, "Coffee:");
-
+    icnbtngen2.SetIcon(icon);
     Gorgon::Widgets::RadioButtons<int> radiogen2(radtemp2);
     radiogen2.Add(0, "Americano");
     radiogen2.Add(1, "Latte");
