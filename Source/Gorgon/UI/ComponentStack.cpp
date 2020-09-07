@@ -2002,7 +2002,7 @@ namespace Gorgon { namespace UI {
                 s.second->layer->Hide();
         }
         
-        //update is no more required, set beforehand so that
+        //update is no longer required, set beforehand so that
         //if necessary can be set again during update to
         //run update next frame
         updaterequired = false;
@@ -2071,7 +2071,7 @@ namespace Gorgon { namespace UI {
     }
     
     //location depends on the container location
-    void ComponentStack::update(Component &parent, const std::array<float, 4> &value, int ind) {
+    void ComponentStack::update(Component &parent, const std::array<float, 4> &value, int ind, int textwidth) {
         //get the template
         const ComponentTemplate &ctemp = parent.GetTemplate();
 
@@ -2187,6 +2187,7 @@ namespace Gorgon { namespace UI {
         //space left after the absolutely sized components are placed, will be used for percentage based
         //components
         int spaceleft = 0;
+        int textspaceleft = 0;
         
         //for easy access
         auto ishor = cont.GetOrientation() == Graphics::Orientation::Horizontal;
@@ -2226,6 +2227,7 @@ realign:
                 Convert(temp.GetIndent(), parent.innersize, emsize);
             
             auto maxsize = parent.innersize - parentmargin;
+            int  curtw   = (textwidth == -1 ? maxsize.Width : textwidth) - parentmargin.TotalX();
             
             //Determine sides that are free to move
             if(temp.GetPositioning() != temp.Relative) {
@@ -2281,7 +2283,7 @@ realign:
             
             //ensure unused size will not cause a repass except for text component which requires width
             //to calculate exact text size.
-            if(temp.GetType() != ComponentType::Textholder) {
+            if(temp.GetType() != ComponentType::Textholder && temp.GetType() != ComponentType::Container) {
                 if(temp.GetHorizontalSizing() == ComponentTemplate::Automatic) {
                     size.Width = 0; //will not be used, set to 0px
                 }
@@ -2299,17 +2301,25 @@ realign:
                     //relative size.
                     if(temp.GetHorizontalSizing() != ComponentTemplate::Fixed && size.Width.IsRelative()) {
                         maxsize.Width = spaceleft;
+                        curtw         = textspaceleft;
                     }
                     else {
                         maxsize.Width = 0;
+                        curtw         = 0;
                     }
                 }
                 else {
                     maxsize.Width = spaceleft;
+                    curtw         = textspaceleft;
                 }
                 
                 if(size.Width.IsRelative())
                     finalpass = true;
+                
+                if(comp.anchtoparent && IsCenter(temp.GetContainerAnchor()) && IsCenter(temp.GetMyAnchor())) {
+                    maxsize.Width *= 2;
+                    curtw         *= 2;
+                }
             }
             
             if(!yfree) {
@@ -2330,6 +2340,10 @@ realign:
 
                 if(size.Height.IsRelative())
                     finalpass = true;
+                
+                if(comp.anchtoparent && IsMiddle(temp.GetContainerAnchor()) && IsMiddle(temp.GetMyAnchor())) {
+                    maxsize.Width *= 2;
+                }
             }
             
             
@@ -2369,6 +2383,7 @@ realign:
             //this will convert width to pixels
             if(widthch == -1) { //value channel is not in effect
                 comp.size.Width = size.Width(maxsize.Width - tagsize.Width, emsize) + tagsize.Width;
+                curtw = size.Width(curtw - tagsize.Width, emsize) + tagsize.Width;
             }
             else {//calculate and use value channel
                 //original width will be used as minimum size
@@ -2379,6 +2394,13 @@ realign:
                     Dimension{
                         int(calculatevalue(val, widthch, comp)*10000), Dimension::BasisPoint
                     } (maxsize.Width - min, emsize)
+                    + min;
+                    
+                min = size.Width(curtw, emsize) + tagsize.Width;
+                curtw = 
+                    Dimension{
+                        int(calculatevalue(val, widthch, comp)*10000), Dimension::BasisPoint
+                    } (curtw - min, emsize)
                     + min;
             }
             
@@ -2409,15 +2431,22 @@ realign:
 
                 //if the component is a container, it should be updated with size of 0.
                 if(temp.GetType() == ComponentType::Container) {
+                    if(temp.GetSize().Width.IsRelative() || temp.GetSize().Height.IsRelative())
+                        finalpass = true;
+
+                    int textwidth = -1;
+                    
                     //set the dimensions that are not fixed to 0.
-                    if(temp.GetHorizontalSizing() != ComponentTemplate::Fixed)
+                    if(temp.GetHorizontalSizing() != ComponentTemplate::Fixed) {
+                        textwidth = comp.size.Width;
                         comp.size.Width = 0;
+                    }
                     
                     if(temp.GetVerticalSizing() != ComponentTemplate::Fixed)
                         comp.size.Height = 0;
                     
                     //do an update
-                    update(comp, val, index);
+                    update(comp, val, index, textwidth);
                 }
                 else if(temp.GetType() == ComponentType::Graphics) {
                     if(imagedata.Exists(temp.GetDataEffect())) {
@@ -2438,36 +2467,38 @@ realign:
                     }
                 }
                 else if(temp.GetType() == ComponentType::Textholder) {
-                    const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
-                    
-                    //get width for word wrapping
-                    auto width = comp.size.Width;
-                    comp.size = {0, 0};
+                    if(!size.Width.IsRelative() || stage==final) {
+                        const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
+                        
+                        //get width for word wrapping
+                        auto width = textwidth == -1 ? comp.size.Width : curtw;
+                        comp.size = {0, 0};
 
-                    //if there is a renderer ready
-                    if(th.IsReady()) {
-                        std::string text;
-                        auto d = temp.GetDataEffect();
-                        
-                        //try to get the data
-                        if(stringdata.count(d)) {
-                            text = stringdata[d];
-                        }
-                        //try to convert value to data
-                        else if(valuetotext && d >= ComponentTemplate::AutoStart && d <= ComponentTemplate::AutoEnd) {
-                            text = valuetotext(temp.GetIndex(), d, value);
-                        }
-                        else {
-                            text = th.GetText();
-                        }
-                        
-                        //if there is some text data
-                        if(text != "") {
-                            //if not to be wrapped
-                            if(tagnowrap.count(temp.GetTag()) || width == 0)
-                                comp.size = th.GetRenderer().GetSize(text);
-                            else
-                                comp.size = th.GetRenderer().GetSize(text, width);
+                        //if there is a renderer ready
+                        if(th.IsReady()) {
+                            std::string text;
+                            auto d = temp.GetDataEffect();
+                            
+                            //try to get the data
+                            if(stringdata.count(d)) {
+                                text = stringdata[d];
+                            }
+                            //try to convert value to data
+                            else if(valuetotext && d >= ComponentTemplate::AutoStart && d <= ComponentTemplate::AutoEnd) {
+                                text = valuetotext(temp.GetIndex(), d, value);
+                            }
+                            else {
+                                text = th.GetText();
+                            }
+                            
+                            //if there is some text data
+                            if(text != "") {
+                                //if not to be wrapped
+                                if(tagnowrap.count(temp.GetTag()) || width == 0)
+                                    comp.size = th.GetRenderer().GetSize(text);
+                                else
+                                    comp.size = th.GetRenderer().GetSize(text, width);
+                            }
                         }
                     }
                 }
@@ -2498,20 +2529,20 @@ realign:
                 //automatic sizing restrictions
                 //TODO: if relative size turns to content size, this should adjust maximum usable width
                 if(temp.GetHorizontalSizing() == ComponentTemplate::GrowOnly) {
-                    if(comp.size.Width < orgsize.Width)
+                    if(comp.size.Width < orgsize.Width && orgsize.Width > 0)
                         comp.size.Width = orgsize.Width;
                 }
                 else if(temp.GetHorizontalSizing() == ComponentTemplate::ShrinkOnly) {
-                    if(comp.size.Width > orgsize.Width)
+                    if(comp.size.Width > orgsize.Width && orgsize.Width > 0)
                         comp.size.Width = orgsize.Width;
                 }
 
                 if(temp.GetVerticalSizing() == ComponentTemplate::GrowOnly) {
-                    if(comp.size.Height < orgsize.Height)
+                    if(comp.size.Height < orgsize.Height && orgsize.Height > 0)
                         comp.size.Height = orgsize.Height;
                 }
                 else if(temp.GetVerticalSizing() == ComponentTemplate::ShrinkOnly) {
-                    if(comp.size.Height > orgsize.Height)
+                    if(comp.size.Height > orgsize.Height && orgsize.Height > 0)
                         comp.size.Height = orgsize.Height;
                 }
 
@@ -2833,9 +2864,11 @@ realign:
 
                 if(anch) {
                     anchortoother(comp, temp, offset, margin, *anch, cont.GetOrientation());
+                    comp.anchtoparent = false;
                 }
                 else {
                     anchortoparent(parent, comp, temp, offset, margin, parent.innersize);
+                    comp.anchtoparent = true;
                 }
             }
 
@@ -2970,9 +3003,14 @@ realign:
             }
             
             //calculate remaining space for percent based components
-            spaceleft = parent.innersize.Width - startused - endused - lastspacing;
+            spaceleft     = parent.innersize.Width - startused - endused - lastspacing;
+            textspaceleft = textwidth - startused - endused - lastspacing;
 
-            stage = stage == middle ? final : middle;
+            if(middlepass && stage != middle)
+                stage = middle;
+            else
+                stage = final;
+
             goto realign;
         }
 
@@ -2982,13 +3020,13 @@ realign:
             
             //calculate max right as width
             forallcomponents([&](Component &comp, const ComponentTemplate &, const std::array<float, 4> &, int, int) {
-                int r = comp.size.Width + comp.location.X;
+                int r = comp.size.Width + std::max(0, comp.location.X);
                 
                 if(w < r)
                     w = r;
             });
             
-            parent.size.Width = w + cont.GetBorderSize().TotalX();
+            parent.size.Width = w + cont.GetBorderSize().TotalX() + 1;
         }
 
         //Height should be autosized
@@ -2997,13 +3035,14 @@ realign:
             
             //calculate max right as width
             forallcomponents([&](Component &comp, const ComponentTemplate &, const std::array<float, 4> &, int, int) {
-                int b = comp.size.Height + comp.location.X;
+                int b = comp.size.Height + std::max(0, comp.location.Y);
                 
                 if(h < b)
                     h = b;
             });
             
-            parent.size.Height = h + cont.GetBorderSize().TotalY();
+            //TODO: complete this.
+            parent.size.Height = h + cont.GetBorderSize().TotalY() + /*CombinePadding(cont.GetPadding() +*/ 1;
         }
         
         
@@ -3062,16 +3101,16 @@ realign:
             
             //set the size and location of this layer
             target->Resize(comp.size);
-            target->Move(comp.location);
+            target->Move(comp.location+offset);
             
             //show the layer
             st.layer->Show();
             
             //clear it
             st.layer->Clear();
-
+            
             //offset should now be relative to the layer
-            offset -= comp.location;
+            offset = -comp.location;
         }
         else {
             //use parent layer
@@ -3280,6 +3319,7 @@ realign:
                 auto old = target->GetColor();
                 target->SetColor(color * c);
                 
+                //target->Draw(comp.location+offset, comp.size, 0x80000000); //for debugging
                 if(tagnowrap.count(temp.GetTag()))
                     th.GetRenderer().PrintNoWrap(*target, text, comp.location+offset, comp.size.Width);
                 else

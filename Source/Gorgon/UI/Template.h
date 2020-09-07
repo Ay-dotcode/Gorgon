@@ -537,6 +537,8 @@ namespace Gorgon {
         /// This event is fired whenever template or its components are changed.
         Event<Template> ChangedEvent = Event<Template>{*this};
         
+        std::string Name;
+        
     private:
         Containers::Collection<ComponentTemplate> components;
         std::vector<Event<ComponentTemplate>::Token> tokens;
@@ -1670,9 +1672,11 @@ namespace Gorgon {
         /// Adds an index to the container. The components will be drawn in order. Thus the components that are added
         /// later will be drawn on top. Multiple indexes will not cause any crashes, however, same component might be drawn 
         /// multiple times on top of itself.
-        void AddIndex(int componentindex) {
+        ContainerTemplate &AddIndex(int componentindex) {
             indices.push_back(componentindex);
             ChangedEvent();
+            
+            return *this;
         }
 
         /// Insert an index to the specified location in the container. The components will be drawn in order. Thus the 

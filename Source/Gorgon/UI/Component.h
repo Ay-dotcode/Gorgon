@@ -31,6 +31,8 @@ namespace Gorgon { namespace UI {
         //for horizontal this means right, for vertical this means bottom.
         bool anchorotherside = false;
         
+        bool anchtoparent = false;
+        
         bool reversed = false;
 
         int parent = -1;

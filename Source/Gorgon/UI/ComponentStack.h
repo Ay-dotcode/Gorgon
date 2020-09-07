@@ -561,7 +561,7 @@ namespace Gorgon { namespace UI {
         void update();
 
         ///updates a specific container component
-        void update(Component &parent, const std::array<float, 4> &value, int ind);
+        void update(Component &parent, const std::array<float, 4> &value, int ind, int textwidth = -1);
 
         ///renders the given component, rendering will use parent layer if the component does not have its own layer. Index is for
         ///repeated components, it is the index of the repeat to be rendered. Unlike Layer::Render function, this function does not

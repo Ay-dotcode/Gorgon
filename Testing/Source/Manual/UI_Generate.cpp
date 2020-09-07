@@ -36,15 +36,23 @@ int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
 
     ///Blank Panel & elements with Registry & Regulars 
+    /*Widgets::SimpleGenerator generator;
+    generator.Init(14);
+    generator.Border.Radius = 0;
+    generator.UpdateDimensions();
+    generator.Activate();*/
 
     Widgets::Panel blank(Gorgon::Widgets::Registry::Panel_Blank);
-    blank.Resize({ 100,600 });
-    Gorgon::Widgets::Button btn("press",Gorgon::Widgets::Registry::Button_Regular);
+    blank.Resize({ 180,600 });
+    Gorgon::Widgets::Button btn("Start running",Gorgon::Widgets::Registry::Button_Regular);
     Gorgon::Widgets::Button icnbtn("+", Gorgon::Widgets::Registry::Button_Icon);
     Gorgon::Widgets::Button icnbtn2("-", Gorgon::Widgets::Registry::Button_Icon);
     auto icon = Triangle(5, 10);
     icon.Prepare();
     icnbtn.SetIcon(icon);
+    //btn.SetIcon(icon);
+    
+    std::cout<<icon.GetSize()<<std::endl;
 
     Gorgon::Widgets::Label l("Coffee:");
 
@@ -94,22 +102,28 @@ int main() {
     icnbtn2.PressEvent.Register([&] {
         bar.Set(bar.Get() - 10);
     });
-    blank.CreateOrganizer<Gorgon::UI::Organizers::List>().SetSpacing(Gorgon::Widgets::Registry::Active().GetSpacing());
+    //blank.CreateOrganizer<Gorgon::UI::Organizers::List>().SetSpacing(Gorgon::Widgets::Registry::Active().GetSpacing());
+    
+    auto addme = [&](UI::WidgetBase &w) {
+    Geometry::Point offset = {0, Widgets::Registry::Active().GetSpacing()};
+        w.Move((blank.end() - 1)->GetBounds().BottomLeft() + offset);
+        blank.Add(w);
+    };
     blank.Add(btn);
-    blank.Add(icnbtn);
-    blank.Add(icnbtn2);
-    blank.Add(l);
-    blank.Add(radio);
-    blank.Add(input);
-    blank.Add(chk);
-    blank.Add(chk2);
-    blank.Add(chkbutton);
-    blank.Add(bar);
-    blank.Add(toppanel);
-    blank.Add(bottompanel);
-    blank.Add(leftpanel);
-    blank.Add(rightpanel);
-
+    addme(icnbtn);
+    addme(icnbtn2);
+    addme(l);
+    addme(radio);
+    addme(input);
+    addme(chk);
+    addme(chk2);
+    addme(chkbutton);
+    addme(bar);
+    addme(toppanel);
+    addme(bottompanel);
+    addme(leftpanel);
+    addme(rightpanel);
+/*
 
     
 
@@ -197,7 +211,7 @@ int main() {
 
 
 
-    panelgen1.Resize(100, 600);
+    panelgen1.Resize(180, 600);
     panelgen1.CreateOrganizer<Gorgon::UI::Organizers::List>().SetSpacing(Gorgon::Widgets::Registry::Active().GetSpacing());
     panelgen1.Add(btngen1);
     panelgen1.Add(icnbtngen1);
@@ -300,7 +314,7 @@ int main() {
 
 
 
-    panelgen2.Resize(100, 600);
+    panelgen2.Resize(180, 600);
     panelgen2.CreateOrganizer<Gorgon::UI::Organizers::List>().SetSpacing(Gorgon::Widgets::Registry::Active().GetSpacing());
     panelgen2.Add(btngen2);
     panelgen2.Add(icnbtngen2);
@@ -319,182 +333,16 @@ int main() {
 
 
 
-
+*/
 
 
     app.wind.Add(blank);
-    app.wind.Add(panelgen1);
+    /*app.wind.Add(panelgen1);
     app.wind.Add(panelgen2);
     panelgen1.Move(blank.GetBounds().Right + 5,blank.GetLocation().Y);
     panelgen2.Move(panelgen1.GetBounds().Right + 5, blank.GetLocation().Y);
 
-    /*
-    Widgets::SimpleGenerator gen;
-    Widgets::SimpleGenerator gen2(12, "", false);
-    gen.Init(15);
-    gen.UpdateBorders();
-    gen.UpdateDimensions();
-    gen2.Focus.Color = Graphics::Color::Red;
-    gen2.UpdateBorders(false);
-    gen2.UpdateDimensions();
-    
-    std::cout << "font height: " << gen.RegularFont.GetGlyphRenderer().GetLetterHeight(true).second << std::endl;
-
-    auto btntemp = gen.Button();
-    auto radtemp = gen.RadioButton();
-    auto chktemp = gen.Checkbox();
-    auto chktemp2 = gen.CheckboxButton();
-    auto icobtntemp = gen.IconButton();
-    auto lbltemp = gen.Label();
-    auto pnltemp = gen.BlankPanel();
-    auto inptemp = gen2.Inputbox();
-
-    Widgets::Progressbar progress;
-    progress.Maximum = 30;
-    progress.Minimum = 10;
-
-    Widgets::Button btn("Helloo_...", [ &]() { std::cout<<"Hello..."<<std::endl; progress += 1; });
-    btn.Move(5,5);
-    btn.Text = "assdfa";
-    btn.Size *= 1.2;
-    
-    app.wind.Add(btn);
-    btn.Focus();
-    
-    Widgets::Button btn2("Exit", [&app]() { app.wind.Quit(); });
-
-    btn2.Move({5, btn.GetSize().Height + 10});
-    app.wind.Add(btn2);
-    
-    std::cout<<"Height: "<<gen.RegularFont.GetGlyphRenderer().GetSize('A').Height<<std::endl;
-    
-    Widgets::RadioButtons<int> rad;
-    
-    rad.Add(0, u8"Ájmericano");
-    rad.Add(1, "Latte");
-    rad.Add(2);
-    rad.ChangeValue(0, 2);
-
-    //rad.Disable(2);
-
-    app.wind.Add(rad);
-    rad.Location = {150, 4};
-    
-    
-
-    Widgets::Checkbox chk("Sugar", [](bool state) {
-        std::cout<<(state ? "with sugar" : "without sugar")<<std::endl;
-    });
-
-    rad.ChangedEvent.Register([&](int val) {
-        std::cout<<"Changed to "<<val<<std::endl;
-        chk.ToggleEnabled();
-    });
-    
-    //chk.Hide();
-
-    chk.BoundsChangedEvent.Register([] { 
-        std::cout << "Bounds changed" << std::endl; 
-    });
-    rad.ChangedEvent.Register([&chk]{ chk.Show(); });
-    chk.FocusEvent.Register([]{ std::cout << "Focus changed." << std::endl; });
-
-    chk.Move(rad.GetLocation() + Gorgon::Geometry::Point(0, rad.GetSize().Height + 4));
-
-    Widgets::Button ib(Widgets::Registry::Button_Icon);
-    auto ico = Graphics::BlankImage({16, 16}, Graphics::Color::Black);
-    //ico.Prepare();
-    ib.SetIcon(ico);
-    ib.Move(chk.GetLocation() + Gorgon::Geometry::Point(0, chk.GetSize().Height + 4));
-    app.wind.Add(ib);
-
-    
-    
-    Widgets::Panel pnl(pnltemp);
-    pnl.Resize(350, 300);
-    Widgets::Panel mainpanel(pnltemp);
-    mainpanel.Resize(350, 700);
-    app.wind.Add(mainpanel);
-    Widgets::Panel sub(Widgets::Registry::Panel_Top);
-    sub.Resize(300, 50);
-    Widgets::Button increase(btntemp);
-    Widgets::Button decrease(btntemp);
-
-
-    mainpanel.Add(sub);
-    sub.Move(0, 0);
-
-    Widgets::Label valuelabel(lbltemp), l2(lbltemp, "Hello"), l3(lbltemp, "Another");
-    valuelabel.SetText("Bug test : ");
-    increase.SetText("+");
-    decrease.SetText("-");
-    
-    sub.Add(increase);
-    sub.Add(decrease);
-    sub.Add(valuelabel);
-    sub.Add(l2);
-    sub.Add(l3);
-    sub.CreateOrganizer<Gorgon::UI::Organizers::List>();
-    
-    sub.SetWidth(100);
-    sub.SetScrollDistance(15);
-    sub.SetOverscroll(50);
-    
-    increase.ClickEvent.Register([&]() {
-        sub.ScrollBy(100);
-    });
-    
-    decrease.ClickEvent.Register([&]() {
-        sub.ScrollBy(-100);
-        std::cout<<"-"<<std::endl;
-    });
-    decrease.ActivateClickRepeat();
-    
-    Widgets::Checkbox chk1("?", Widgets::Registry::Checkbox_Button);
-    
-    app.wind.Add(chk1);
-    chk1.Move(500, 80);
-    
-    app.wind.Add(pnl);
-    pnl.Move(150, 0);
-    app.wind.Add(mainpanel);
-    mainpanel.Move(0, 90);
-
-    auto errortemp = gen.ErrorLabel();
-    
-    Widgets::Label lbl("This is a label");
-    Widgets::Label error("This is an Error label", Gorgon::Widgets::Registry::Label_Error);
-    
-    Widgets::Sizebox inp;
-    inp += {3, 2};
-    pnl.Add(inp);
-    inp.Location = {5, 80};
-    inp.SelectAll();
-    inp.ChangedEvent.Register([](Geometry::Size val) {
-        std::cout << val << std::endl;
-    });
-    //inp.Readonly = true;
-    
-    app.wind.Add(progress);
-    
-    pnl.Add(progress);
-    pnl.Add(chk);
-    pnl.Add(lbl);
-    pnl.Add(error);
-    pnl.Add(rad);
-    pnl.Add(ib);
-    pnl.SetHeight(500);
-    mainpanel.Resize(140, 550);
-    //pnl.Disable();
-    
-    pnl.CreateOrganizer<Gorgon::UI::Organizers::List>();
-
-
-    //lbl.Move(chk.GetLocation() + Gorgon::Geometry::Point(0, chk.GetSize().Height + 4));
-    //error.Move(lbl.GetLocation().X,lbl.GetLocation().Y + 25);
-    lbl.OwnIcon(prep(*new Graphics::Bitmap(Triangle(8, 8))));
-    
-    */
+   */
     app.wind.Run();
 
     return 0;

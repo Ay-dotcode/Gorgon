@@ -197,10 +197,13 @@ namespace Gorgon { namespace Widgets {
         void UpdateBorders(bool smooth = true);
 
         Graphics::StyledRenderer RegularFont;
+        Graphics::StyledRenderer CenteredFont;
 
         struct FocusInfo {
-            Graphics::RGBA  Color = {Graphics::Color::Charcoal, 0.7};
-            int             Width = 1;
+            Graphics::RGBA  Color   = {Graphics::Color::Charcoal, 0.7};
+            int             Width   = 1;
+            //focus to content spacing
+            int             Spacing = 1;
         } Focus;
         
         struct BorderInfo {
@@ -246,6 +249,8 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider *makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingedge = 0, int borderwidth = -1, int borderradius = -1);
         Graphics::RectangleProvider *makefocusborder();
         UI::Template makepanel(int missingedge);
+        
+        void setupfocus(UI::ContainerTemplate &focus);
         
         Graphics::GlyphRenderer *regularrenderer = nullptr;
         Containers::Collection<Graphics::Drawable> drawables;
