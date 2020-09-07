@@ -15,6 +15,7 @@
 #include <Gorgon/UI/RadioControl.h>
 #include <Gorgon/UI/Organizers/List.h>
 #include <Gorgon/Graphics/BlankImage.h>
+#include <Gorgon/Graphics/TintedObject.h>
 
 
 std::string helptext = 
@@ -50,7 +51,9 @@ int main() {
     auto icon = Triangle(5, 10);
     icon.Prepare();
     icnbtn.SetIcon(icon);
-    //btn.SetIcon(icon);
+    Graphics::TintedBitmapProvider icon2(icon.Rotate270(), Graphics::Color::Black);
+    icon2.Prepare();
+    btn.OwnIcon(icon2.CreateAnimation());
     
     std::cout<<icon.GetSize()<<std::endl;
 

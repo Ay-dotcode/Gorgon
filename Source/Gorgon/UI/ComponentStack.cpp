@@ -3022,27 +3022,46 @@ realign:
             forallcomponents([&](Component &comp, const ComponentTemplate &, const std::array<float, 4> &, int, int) {
                 int r = comp.size.Width + std::max(0, comp.location.X);
                 
+                auto m = Convert(
+                        comp.GetTemplate().GetMargin(), parent.innersize, emsize
+                    ).CombinePadding(
+                        Convert(cont.GetPadding(), parent.innersize, emsize)
+                    ) + 
+                    Convert(comp.GetTemplate().GetIndent(), parent.innersize, emsize)
+                ;
+                
+                r += m.Right;
+                
                 if(w < r)
                     w = r;
             });
             
-            parent.size.Width = w + cont.GetBorderSize().TotalX() + 1;
+            parent.size.Width = w + cont.GetBorderSize().TotalX();
         }
 
         //Height should be autosized
         if(parent.size.Height == 0) {
             int h = 0;
-            
             //calculate max right as width
             forallcomponents([&](Component &comp, const ComponentTemplate &, const std::array<float, 4> &, int, int) {
                 int b = comp.size.Height + std::max(0, comp.location.Y);
                 
-                if(h < b)
+                auto m = Convert(
+                        comp.GetTemplate().GetMargin(), parent.innersize, emsize
+                    ).CombinePadding(
+                        Convert(cont.GetPadding(), parent.innersize, emsize)
+                    ) + 
+                    Convert(comp.GetTemplate().GetIndent(), parent.innersize, emsize)
+                ;
+                
+                b += m.Bottom;
+                
+                if(h < b) {
                     h = b;
+                }
             });
             
-            //TODO: complete this.
-            parent.size.Height = h + cont.GetBorderSize().TotalY() + /*CombinePadding(cont.GetPadding() +*/ 1;
+            parent.size.Height = h + cont.GetBorderSize().TotalY();
         }
         
         

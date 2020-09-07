@@ -13,6 +13,8 @@ std::string helptext =
     "d\tToggle disabled\n"
     "left\tPrevious\n"
     "right\tNext test\n"
+    "home\tFirst\n"
+    "end\tLast\n"
     "c\tCopy title of the active test\n"
     "1234\tIncrease the value of the stack\n"
     "qwer\tDecrease the value of the stack\n"
@@ -2517,8 +2519,236 @@ TestData test_tagtextwrap2(Layer &layer) {
     return {"Tag text wrap 2", "Brown text 'Hello there' with wrapping.", stack};
 }
 
+TestData test_autosize_graphic(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+    
+    auto &stack = *new ComponentStack(temp);
+    
+    layer.Add(stack);
+    auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    
+    return {"Autosized graphic component", String::Concat(
+        (b.operator ==({0,0, 10,10}) ? "Passed" : "Failed"), ". ", 
+        "10x10 green object on a 50x50 white background, should be aligned to top left.")
+    , stack};
+}
+
+TestData test_autosize_text(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+
+    static Graphics::BitmapFont fnt;
+    fnt.SetGlyphSpacing(10);
+    fnt.AddGlyph('1', greenimg1x2());
+    fnt.AddGlyph('2', greenimg2x2());
+    fnt.SetLineGap(25);
+    fnt.SetBaseline(20);
+    fnt.SetHeight(20);
+        
+    auto &cont2 = temp.AddTextholder(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Automatic);
+    cont2.SetRenderer(fnt);
+    cont2.SetText("12");
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+    
+    auto &stack = *new ComponentStack(temp);
+    
+    layer.Add(stack);
+    auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
+    
+    return {"Autosized text component", String::Concat(
+        (b.operator ==({0,0, 50,25}) ? "Passed" : "Failed"), ". ", b, ". ",
+        "10x20 and 20x20 green objects with 10px spacing on a 50x50 white background, should be aligned to top left.")
+    , stack};
+}
+
+TestData test_autosize_cont_graphic(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(50, 50);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always)
+        .AddIndex(2)
+    ;
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Automatic);
+    
+    auto &cont3 = temp.AddGraphics(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Content.SetAnimation(greenimg());
+    
+    auto &stack = *new ComponentStack(temp);
+    
+    layer.Add(stack);
+    auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    
+    return {"Autosized container with graphics", String::Concat(
+        (b.operator ==({0,0, 10,10}) ? "Passed" : "Failed"), ". ", b, ". "
+        "10x10 green object on a 50x50 white background, should be aligned to top left.")
+    , stack};
+}
+
+TestData test_autosize_cont_border(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(70, 70);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always)
+        .AddIndex(2)
+    ;
+    cont2.SetBorderSize(10);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Automatic);
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+    
+    auto &cont3 = temp.AddGraphics(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Content.SetAnimation(greenimg());
+    
+    auto &stack = *new ComponentStack(temp);
+    
+    layer.Add(stack);
+    auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    
+    return {"Autosized container with border", String::Concat(
+        (b.operator ==({0,0, 30,30}) ? "Passed" : "Failed"), ". ", b, ". ",
+        "10x10 green object with a red border.")
+    , stack};
+}
+
+TestData test_autosize_cont_padding(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(90, 90);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always)
+        .AddIndex(2)
+    ;
+    cont2.SetBorderSize(10);
+    cont2.SetPadding(10, 20, 30, 40);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Automatic);
+    
+    auto &cont3 = temp.AddGraphics(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Content.SetAnimation(greenimg());
+    
+    auto &stack = *new ComponentStack(temp);
+    
+    layer.Add(stack);
+    auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    
+    return {"Autosized container with padding", String::Concat(
+        (b.operator ==({0,0, 70,90}) ? "Passed" : "Failed"), ". ", b, ". ",
+        "10x10 green object with a red border padding is 10, 20, 30, 40.")
+    , stack};
+}
+
+TestData test_autosize_cont_padding2(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(90, 90);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always)
+        .AddIndex(2)
+        .AddIndex(3)
+    ;
+    cont2.SetBorderSize(10);
+    cont2.SetPadding(10, 20, 30, 40);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Automatic);
+    
+    auto &cont3 = temp.AddGraphics(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Content.SetAnimation(greenimg());
+    
+    auto &cont4 = temp.AddGraphics(3, Gorgon::UI::ComponentCondition::Always);
+    cont4.Content.SetAnimation(blueimg());
+    cont4.SetMargin(10, 10, -10, 0);
+    
+    auto &stack = *new ComponentStack(temp);
+    
+    layer.Add(stack);
+    auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
+
+    
+    return {"Autosized container with padding 2", String::Concat(
+        (b.operator ==({0,0, 80,90}) ? "Passed" : "Failed"), ". ", b, ". ",
+        "10x10 green object next to blue 10x10 object with a red border padding is 10, 20, 20, 40.")
+    , stack};
+}
+
+TestData test_autosize_cont_text(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(80, 60);
+    
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always)
+        .AddIndex(2)
+    ;
+    cont2.SetPadding(10, 10, 20, 20);
+    cont2.Background.SetAnimation(redrect());
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Automatic);
+
+    static Graphics::BitmapFont fnt;
+    fnt.SetGlyphSpacing(10);
+    fnt.AddGlyph('1', greenimg1x2());
+    fnt.AddGlyph('2', greenimg2x2());
+    fnt.SetLineGap(25);
+    fnt.SetBaseline(20);
+    fnt.SetHeight(20);
+    
+    auto &cont3 = temp.AddTextholder(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.SetSizing(Gorgon::UI::ComponentTemplate::Automatic);
+    cont3.SetRenderer(fnt);
+    cont3.SetText("12");
+    
+    auto &stack = *new ComponentStack(temp);
+    
+    layer.Add(stack);
+    auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
+    
+    return {"Autosized text component", String::Concat(
+        (b.operator ==({0,0, 80,55}) ? "Passed" : "Failed"), ". ", b, ". ",
+        "10x20 and 20x20 green objects with 10px spacing on a 80x60 white background, padding should be 0, 0, 15, 20.")
+    , stack};
+}
+
 
 std::vector<std::function<TestData(Layer &)>> tests = {
+    //BEGIN layout
     &test_graphic,
     &test_text,
     
@@ -2563,7 +2793,9 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_abssliding,
     &test_abspolar,
     &test_abspolar2,
+    //END
     
+    //BEGIN Modify
     &test_modify_position_sliding,
     &test_modify_position_slidingvert,
     &test_modify_rev,
@@ -2588,7 +2820,9 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_modify_blend4,
     
     &test_modify_animation,
+    //END
     
+    //BEGIN Data   
     &test_data_settext,
     &test_data_textwrap,
     &test_data_textclip,
@@ -2598,14 +2832,18 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_data_setimage,
     &test_data_setimagegt,
     &test_data_setimage2,
+    //END
     
+    //BEGIN Repeat
     &test_repeat_pos,
     &test_data_setstate,
     &test_repeat_size,
     &test_repeat_alpha,
     &test_repeat_sizealpha,
     &test_repeat_possizealpha,
+    //END
     
+    //BEGIN Tag
     &test_gettagbounds1,
     &test_gettagbounds2,
     &test_gettagbounds3,
@@ -2623,6 +2861,17 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_settagsize,
     &test_tagtextwrap,
     &test_tagtextwrap2,
+    //END
+    
+    //BEGIN Autosize
+    &test_autosize_graphic,
+    &test_autosize_text,
+    &test_autosize_cont_graphic,
+    &test_autosize_cont_border,
+    &test_autosize_cont_padding,
+    &test_autosize_cont_padding2,
+    &test_autosize_cont_text,
+    //END
 };
 
 //END tests
@@ -2820,6 +3069,31 @@ int main() {
                     displaytext();
                 }
                 break;
+                
+            case Keycodes::Home:
+                ind = 0;
+                activelayer->Hide();
+                activelayer = &layers[ind];
+                activelayer->Show();
+                
+                activestack = &stacks[ind];
+                
+                displaytext();
+                
+                break;
+                
+            case Keycodes::End:
+                ind = layers.GetSize() - 1;
+                activelayer->Hide();
+                activelayer = &layers[ind];
+                activelayer->Show();
+                
+                activestack = &stacks[ind];
+                
+                displaytext();
+                
+                break;
+                
                 
             case Keycodes::C:
                 WindowManager::SetClipboardText(info[ind].first);

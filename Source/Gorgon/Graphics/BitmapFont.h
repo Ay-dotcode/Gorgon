@@ -245,7 +245,7 @@ namespace Gorgon { namespace Graphics {
 		void DetermineDimensions();
         
         /// Changes the spacing between glyphs
-        void SetGlyphSpacing(int spacing) { this->spacing = spacing; }
+        void SetGlyphSpacing(int value) { spacing = value; }
 		
 		/// Returns the spacing between glyphs
 		int GetGlyphSpacing() const { return spacing; }

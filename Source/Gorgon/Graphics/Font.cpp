@@ -692,7 +692,7 @@ namespace Gorgon { namespace Graphics {
             [&](Glyph) { cur.Y += (int)renderer->GetLineGap(); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
         );
 
-        return{maxx, cur.Y + 1};
+        return{maxx, cur.Y};
     }
     
     Geometry::Size BasicFont::GetSize(const std::string& text, int w) const {
@@ -714,7 +714,7 @@ namespace Gorgon { namespace Graphics {
             std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetMaxWidth() * 8)
         );
 
-        return {w, y + 1};
+        return {w, y};
     }
     
     int BasicFont::GetCharacterIndex(const std::string &text, Geometry::Point location) const{ 
@@ -1050,7 +1050,7 @@ namespace Gorgon { namespace Graphics {
             [&](Glyph) { cur.Y += (int)std::round(renderer->GetLineGap() * vspace + pspace); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
         );
 
-        return{maxx > 0 ? maxx + 1 : 0, cur.Y > 0 ? (cur.Y + 1 - pspace + (int)std::round(renderer->GetLineGap() * (1 - vspace))) : 0};
+        return{maxx > 0 ? maxx : 0, cur.Y > 0 ? (cur.Y - pspace + (int)std::round(renderer->GetLineGap() * (1 - vspace))) : 0};
     }
     
     Geometry::Size StyledRenderer::GetSize(const std::string &text, int width) const {
@@ -1081,7 +1081,7 @@ namespace Gorgon { namespace Graphics {
             std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, tabwidth ? tabwidth : 16)
         );
 
-        return {maxx > 0 ? maxx + 1 : 0, y > 0 ?  y - pspace + (int)std::round(renderer->GetLineGap() * (1 - vspace)) + 1 : 0};
+        return {maxx > 0 ? maxx : 0, y > 0 ?  y - pspace + (int)std::round(renderer->GetLineGap() * (1 - vspace)) : 0};
     }
     
     int StyledRenderer::GetCharacterIndex(const std::string &text, Geometry::Point location) const{ 
@@ -1459,7 +1459,7 @@ namespace Gorgon { namespace Graphics {
             pos = {std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
 
         return {pos, size};
-   }
+    }
 
     void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align_override) const {
         /*if(renderer->NeedsPrepare())
