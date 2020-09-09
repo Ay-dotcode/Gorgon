@@ -316,7 +316,7 @@ namespace Gorgon { namespace Widgets {
             r = Border.Radius;
         
         int bsize = (w + r + 2) * 2 + 16;
-        float off = float((w + 1) / 2); //prefer integers
+        float off = float(w / 2.0f); //prefer integers
         
         auto &bi = *new Graphics::Bitmap({bsize, bsize}, Graphics::ColorMode::RGBA);
         bi.Clear();
@@ -338,7 +338,8 @@ namespace Gorgon { namespace Widgets {
                 list.Pop();
             }
             
-            CGI::DrawLines(bi.GetData(), list, (float)w, CGI::SolidFill<>(border));
+            if(border.A != 0)
+                CGI::DrawLines(bi.GetData(), list, (float)w, CGI::SolidFill<>(border));
         }
         else {
             Geometry::PointList<Geometry::Pointf> list;
@@ -387,7 +388,8 @@ namespace Gorgon { namespace Widgets {
                 list.Push(list.Front());
             }
             
-            CGI::DrawLines(bi.GetData(), list, (float)w, CGI::SolidFill<>(border));
+            if(border.A != 0)
+                CGI::DrawLines(bi.GetData(), list, (float)w, CGI::SolidFill<>(border));
         }
         
         if(missingedge == 2) {
@@ -401,6 +403,7 @@ namespace Gorgon { namespace Widgets {
         }
         
         drawables.Add(bi);
+        
 
         auto ret = new Graphics::BitmapRectangleProvider(Graphics::Slice(bi, {
             int(r+w+2), 
@@ -863,7 +866,7 @@ namespace Gorgon { namespace Widgets {
         
         int outer_r = ObjectHeight / 2;
         int borderstart_r = outer_r - ObjectBorder;
-        int inner_r = borderstart_r - Spacing / 2;
+        float inner_r = borderstart_r - Spacing / 2.f;
         
         Geometry::Size bmpsize = {ObjectHeight + 2, ObjectHeight + 2};
         Geometry::Pointf center = {float(outer_r + 1), float(outer_r + 1)};
@@ -873,8 +876,8 @@ namespace Gorgon { namespace Widgets {
             
             icon->Clear();
             
-            CGI::Circle<16>(*icon, center, outer_r - 0.5f, CGI::SolidFill<>(Background.Regular));
             CGI::Circle<16>(*icon, center, (float)borderstart_r, (float)ObjectBorder, CGI::SolidFill<>(border));
+
             icon->Prepare();
             drawables.Add(icon);
             
@@ -1139,15 +1142,17 @@ namespace Gorgon { namespace Widgets {
         vp.SetPosition(0, 0);
         vp.SetClip(true);
         vp.AddIndex(2);
+        vp.Background.SetAnimation(HoverBorder());
         
         auto &cont = temp.AddContainer(2, UI::ComponentCondition::Always);
         cont.SetTag(UI::ComponentTemplate::ContentsTag);
         //cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
-        cont.SetSize(100, 100, UI::Dimension::Percent);
+        cont.SetSize(0, 0, UI::Dimension::Percent);
         cont.SetSizing(UI::ComponentTemplate::Fixed);
         cont.SetPositioning(cont.Absolute);
         cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
         cont.SetPosition(0, 0);
+        cont.Background.SetAnimation(DownBorder());
         
         return temp;
     }

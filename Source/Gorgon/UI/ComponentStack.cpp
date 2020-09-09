@@ -3251,19 +3251,19 @@ realign:
                     //blend to tint that is set
                     switch(NumberOfSetBits(temp.GetValueSource())) {
                         case 1: //single alpha blending
-                            c.Blend(c2, calculatevalue(val, 0, comp));
+                            c.Slide(c2, calculatevalue(val, 0, comp));
                             break;
 
                         case 2: //alpha and grayscale has different blending factors
-                            c.Blend(c2, calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
+                            c.Slide(c2, calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
                             break;
 
                         case 3: //separate blending factors for RGB
-                            c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 0});
+                            c.Slide(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 0.0});
                             break;
 
                         case 4: //separate blending factors for all channels
-                            c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp)});
+                            c.Slide(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp)});
                             break;
 
                         //to silence warnings
@@ -3313,19 +3313,19 @@ realign:
                     //blend to tint that is set
                     switch(NumberOfSetBits(temp.GetValueSource())) {
                         case 1: //single alpha blending
-                            c.Blend(c2, calculatevalue(val, 0, comp));
+                            c.Slide(c2, calculatevalue(val, 0, comp));
                             break;
 
                         case 2: //alpha and grayscale has different blending factors
-                            c.Blend(c2, calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
+                            c.Slide(c2, calculatevalue(val, 0, comp), calculatevalue(val, 1, comp));
                             break;
 
                         case 3: //separate blending factors for RGB
-                            c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 0});
+                            c.Slide(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), 0.0});
                             break;
 
                         case 4: //separate blending factors for all channels
-                            c.Blend(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp)});
+                            c.Slide(c2, {calculatevalue(val, 0, comp), calculatevalue(val, 1, comp), calculatevalue(val, 2, comp), calculatevalue(val, 3, comp)});
                             break;
 
                         //to silence warnings
