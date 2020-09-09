@@ -47,16 +47,17 @@ int main() {
     blank.Resize({ 180,600 });
     Gorgon::Widgets::Button btn("Start running",Gorgon::Widgets::Registry::Button_Regular);
     Gorgon::Widgets::Button icnbtn("+", Gorgon::Widgets::Registry::Button_Icon);
-    Gorgon::Widgets::Button icnbtn2("-", Gorgon::Widgets::Registry::Button_Icon);
+    Gorgon::Widgets::Button icnbtn2("Âj", Gorgon::Widgets::Registry::Button_Icon);
     auto icon = Triangle(5, 10);
     icon.Prepare();
-    icnbtn.SetIcon(icon);
-    Graphics::TintedBitmapProvider icon2(icon.Rotate270(), Graphics::Color::Black);
+    Graphics::TintedBitmapProvider icon2(icon.Rotate270(), Graphics::Color::Charcoal);
     icon2.Prepare();
     btn.OwnIcon(icon2.CreateAnimation());
     
-    std::cout<<icon.GetSize()<<std::endl;
+    icnbtn.OwnIcon(icon2.CreateAnimation());
+    icnbtn.Disable();
 
+    btn.Disable();
     Gorgon::Widgets::Label l("Coffee:");
 
     Gorgon::Widgets::RadioButtons<int> radio(Gorgon::Widgets::Registry::Radio_Regular);
@@ -99,11 +100,12 @@ int main() {
     });
 
     icnbtn.PressEvent.Register([&] {
-        bar.Set(bar.Get() + 10);
+        bar += 10;
     });
 
     icnbtn2.PressEvent.Register([&] {
-        bar.Set(bar.Get() - 10);
+        bar -= 10;
+        icnbtn.Enable();
     });
     //blank.CreateOrganizer<Gorgon::UI::Organizers::List>().SetSpacing(Gorgon::Widgets::Registry::Active().GetSpacing());
     
@@ -112,10 +114,10 @@ int main() {
         w.Move((blank.end() - 1)->GetBounds().BottomLeft() + offset);
         blank.Add(w);
     };
-    blank.Add(btn);
-    addme(icnbtn);
-    addme(icnbtn2);
-    addme(l);
+    //blank.Add(btn);
+    //addme(icnbtn);
+    //addme(icnbtn2);
+    blank.Add(l);
     addme(radio);
     addme(input);
     addme(chk);
@@ -127,9 +129,6 @@ int main() {
     addme(leftpanel);
     addme(rightpanel);
 /*
-
-    
-
     
     ///Generator 1  background.panel color = red focus color = grey, forecolor.regular = green border = blue,  fontsize = 12 defualt;
     Widgets::SimpleGenerator gen;

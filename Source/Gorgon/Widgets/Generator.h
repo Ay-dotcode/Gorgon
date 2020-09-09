@@ -211,7 +211,7 @@ namespace Gorgon { namespace Widgets {
             int Radius              = 0;
             int Divisions           = 1;
             Graphics::RGBA Color    = Graphics::Color::Charcoal;
-            Graphics::RGBA Disabled = {Graphics::Color::Grey, 0.5};
+            Graphics::RGBA Disabled = {Graphics::Color::Charcoal, 0.5};
         } Border;
         
         struct BackgroundInfo {

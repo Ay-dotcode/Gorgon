@@ -1253,7 +1253,7 @@ namespace Gorgon {
         SizingMode sizingw = Fixed, sizingh = Fixed;
 
         /// Size of the object.
-        Size size = {0, 0};
+        Size size = {{100, Dimension::Percent}, {100, Dimension::Percent}};
 
         /// Margin around the object, will be collapsed with other object margins
         /// and padding
