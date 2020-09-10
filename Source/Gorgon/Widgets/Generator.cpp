@@ -527,9 +527,9 @@ namespace Gorgon { namespace Widgets {
         };
         
         setuptext(Forecolor.Regular, UI::ComponentCondition::Always);
-        setuptext(Forecolor.Hover, UI::ComponentCondition::Hover);
-        setuptext(Forecolor.Down, UI::ComponentCondition::Down);
-        setuptext(Forecolor.Disabled, UI::ComponentCondition::Disabled);
+        setuptext(Forecolor.Regular.BlendWith(Forecolor.Hover), UI::ComponentCondition::Hover);
+        setuptext(Forecolor.Regular.BlendWith(Forecolor.Down), UI::ComponentCondition::Down);
+        setuptext(Forecolor.Regular.BlendWith(Forecolor.Disabled), UI::ComponentCondition::Disabled);
 
         setupfocus(temp.AddContainer(4, UI::ComponentCondition::Focused));
         
@@ -636,9 +636,9 @@ namespace Gorgon { namespace Widgets {
         };
         
         setuptext(Forecolor.Regular, UI::ComponentCondition::Always);
-        setuptext(Forecolor.Hover, UI::ComponentCondition::Hover);
-        setuptext(Forecolor.Down, UI::ComponentCondition::Down);
-        setuptext(Forecolor.Disabled, UI::ComponentCondition::Disabled);
+        setuptext(Forecolor.Regular.BlendWith(Forecolor.Hover), UI::ComponentCondition::Hover);
+        setuptext(Forecolor.Regular.BlendWith(Forecolor.Down), UI::ComponentCondition::Down);
+        setuptext(Forecolor.Regular.BlendWith(Forecolor.Disabled), UI::ComponentCondition::Disabled);
 
         return temp;
     }
@@ -649,21 +649,27 @@ namespace Gorgon { namespace Widgets {
         UI::Template temp;
         temp.SetSize(defsize);
         
-        {
-            auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always);
-            cont.SetPadding(Focus.Width);
-            cont.AddIndex(1);
-            cont.AddIndex(3);
-            cont.AddIndex(4);
-        }
+        temp.AddContainer(0, UI::ComponentCondition::Always)
+            .AddIndex(1) //Content
+            .AddIndex(2) //Focus
+        ;
         
-        {
-            auto &cont = temp.AddContainer(0, UI::ComponentCondition::State2);
-            cont.SetPadding(Focus.Width);
-            cont.AddIndex(2);
-            cont.AddIndex(3);
-            cont.AddIndex(4);
-        }
+        auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always)
+            .AddIndex(3) //Box symbol
+            .AddIndex(4) //Tick
+            .AddIndex(5) //Text
+        ;
+        cont.SetClip(true);
+        cont.SetPadding(Focus.Spacing + Focus.Width);
+        
+        //tick container, will be used for animation
+        auto &state2 = temp.AddContainer(4, UI::ComponentCondition::Always, UI::ComponentCondition::State2)
+            .AddIndex(6) //Tick
+        ;
+        state2.SetValueModification(UI::ComponentTemplate::ModifyAlpha, UI::ComponentTemplate::UseTransition);
+        state2.SetReversible(true);
+        state2.SetPositioning(UI::ComponentTemplate::Absolute);
+        state2.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         
         auto box = [&](auto color) {
             auto icon = new Graphics::Bitmap({ObjectHeight, ObjectHeight});
@@ -691,7 +697,11 @@ namespace Gorgon { namespace Widgets {
         };
         
         auto tick = [&](auto color) {
-            auto icon = box(color);
+            auto icon = new Graphics::Bitmap({ObjectHeight, ObjectHeight});
+            
+            icon->ForAllPixels([&](auto x, auto y) {
+                icon->SetRGBAAt(x, y, 0x0);
+            });
             
             Geometry::PointList<Geometry::Pointf> tick ={
                 {ObjectBorder*2.f, ObjectHeight/2.f},
@@ -706,23 +716,21 @@ namespace Gorgon { namespace Widgets {
         };
         
         auto makestate = [&](auto color, UI::ComponentCondition condition) {
-            auto &it = temp.AddGraphics(1, condition);
-            it.Content.SetDrawable(*box(color));
-            it.SetSizing(it.Automatic);
-            it.SetIndent(Spacing, 0, 0, 0);
+            //box
+            temp.AddGraphics(3, condition)
+                .Content.SetDrawable(*box(color))
+            ;
             
-            auto &it2 = temp.AddGraphics(2, condition);
-            it2.Content.SetDrawable(*tick(color));
-            it2.SetSizing(it2.Automatic);
-            it2.SetIndent(Spacing, 0, 0, 0);
+            temp.AddGraphics(6, condition)
+                .Content.SetDrawable(*tick(color))
+            ;
             
-            auto &tt = temp.AddTextholder(3, condition);
+            auto &tt = temp.AddTextholder(5, condition);
             tt.SetRenderer(RegularFont);
             tt.SetColor(color);
             tt.SetMargin(Spacing, 0, 0, 0);
             tt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             tt.SetDataEffect(UI::ComponentTemplate::Text);
-            tt.SetClip(true);
             tt.SetSize(100, 100, UI::Dimension::Percent);
             tt.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
         };
@@ -732,14 +740,8 @@ namespace Gorgon { namespace Widgets {
         makestate(Forecolor.Regular.BlendWith(Forecolor.Down), UI::ComponentCondition::Down);
         makestate(Forecolor.Regular.BlendWith(Forecolor.Disabled), UI::ComponentCondition::Disabled);
         
-        {
-            auto &foc = temp.AddContainer(4, UI::ComponentCondition::Focused);
-            foc.Background.SetAnimation(FocusBorder());
-            foc.SetSize(100, 100, UI::Dimension::Percent);
-            foc.SetIndent(-Focus.Width);
-            foc.SetPositioning(foc.Absolute);
-            foc.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
-        }
+        setupfocus(temp.AddContainer(2, UI::ComponentCondition::Focused));
+        
         return temp;
     }
     
@@ -1142,7 +1144,7 @@ namespace Gorgon { namespace Widgets {
         vp.SetPosition(0, 0);
         vp.SetClip(true);
         vp.AddIndex(2);
-        vp.Background.SetAnimation(HoverBorder());
+        //vp.Background.SetAnimation(HoverBorder());
         
         auto &cont = temp.AddContainer(2, UI::ComponentCondition::Always);
         cont.SetTag(UI::ComponentTemplate::ContentsTag);
@@ -1152,7 +1154,7 @@ namespace Gorgon { namespace Widgets {
         cont.SetPositioning(cont.Absolute);
         cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
         cont.SetPosition(0, 0);
-        cont.Background.SetAnimation(DownBorder());
+        //cont.Background.SetAnimation(DownBorder());
         
         return temp;
     }

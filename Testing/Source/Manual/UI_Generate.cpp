@@ -110,14 +110,16 @@ int main() {
     //blank.CreateOrganizer<Gorgon::UI::Organizers::List>().SetSpacing(Gorgon::Widgets::Registry::Active().GetSpacing());
     
     auto addme = [&](UI::WidgetBase &w) {
-    Geometry::Point offset = {0, Widgets::Registry::Active().GetSpacing()};
-        w.Move((blank.end() - 1)->GetBounds().BottomLeft() + offset);
+        Geometry::Point offset = {0, Widgets::Registry::Active().GetSpacing()};
+        if(blank.begin() != blank.end())
+            w.Move((blank.end() - 1)->GetBounds().BottomLeft() + offset);
+        
         blank.Add(w);
     };
-    //blank.Add(btn);
-    //addme(icnbtn);
-    //addme(icnbtn2);
-    blank.Add(l);
+    addme(btn);
+    addme(icnbtn);
+    addme(icnbtn2);
+    addme(l);
     addme(radio);
     addme(input);
     addme(chk);

@@ -1552,8 +1552,12 @@ namespace Gorgon { namespace UI {
             const auto valueordering = temp.GetValueOrdering();
             
             //transition is used as value 0
-            if(valueordering[channel] == 0)
-                v = float(cur) / dur; //normalize to the duration
+            if(valueordering[channel] == 0) {
+                if(dur == 0)
+                    v = 1;
+                else
+                    v = float(cur) / dur; //normalize to the duration
+            }
             
             //reverse if needed
             if(comp.reversed)
