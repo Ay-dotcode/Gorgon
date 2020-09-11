@@ -358,9 +358,10 @@ namespace Gorgon { namespace UI {
                     if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
                         continue;
                     
-                    if(temp[i].GetCondition() == hint && temp[i].GetTargetCondition() == to) {
+                    if(temp[i].GetCondition() == hint && temp[i].GetTargetCondition() == to && !indicesdone.count(temp[i].GetIndex())) {
                         updatereq = true;
                         AddToStack(temp[i], false);
+                        indicesdone.insert(temp[i].GetIndex());
                     }
                 }
             }
@@ -372,7 +373,7 @@ namespace Gorgon { namespace UI {
                     if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
                         continue;
                     
-                    if(temp[i].GetCondition() == to && temp[i].GetTargetCondition() == hint) {
+                    if(temp[i].GetCondition() == to && temp[i].GetTargetCondition() == hint && !indicesdone.count(temp[i].GetIndex())) {
                         updatereq = true;
                         AddToStack(temp[i], true);
                     }
@@ -381,6 +382,7 @@ namespace Gorgon { namespace UI {
         }
         //we are searching for transition
         else {
+            std::set<int> indicesdone;
             //perfect fit
             for(int i=0; i<temp.GetCount(); i++) {
                 //do not use repeated components
@@ -390,7 +392,7 @@ namespace Gorgon { namespace UI {
                 if(temp[i].GetCondition() == from && temp[i].GetTargetCondition() == to) {
                     updatereq = true;
                     AddToStack(temp[i], false);
-                    break;
+                    indicesdone.insert(temp[i].GetIndex());
                 }
             }
             
@@ -402,10 +404,9 @@ namespace Gorgon { namespace UI {
                     if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
                         continue;
                     
-                    if(temp[i].IsReversible() && temp[i].GetCondition() == to && temp[i].GetTargetCondition() == from) {
+                    if(temp[i].IsReversible() && temp[i].GetCondition() == to && temp[i].GetTargetCondition() == from && !indicesdone.count(temp[i].GetIndex())) {
                         updatereq = true;
                         AddToStack(temp[i], true);
-                        break;
                     }
                 }
             }
