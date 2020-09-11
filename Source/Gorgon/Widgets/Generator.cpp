@@ -654,6 +654,7 @@ namespace Gorgon { namespace Widgets {
             .AddIndex(2) //Focus
         ;
         
+        
         auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always)
             .AddIndex(3) //Box symbol
             .AddIndex(4) //Tick
@@ -661,6 +662,8 @@ namespace Gorgon { namespace Widgets {
         ;
         cont.SetClip(true);
         cont.SetPadding(Focus.Spacing + Focus.Width);
+        cont.SetSizing(UI::ComponentTemplate::Fixed);
+        cont.SetSize(100, 100, UI::Dimension::Percent);
         
         //tick container, will be used for animation
         auto &state2 = temp.AddContainer(4, UI::ComponentCondition::Always, UI::ComponentCondition::State2)
@@ -717,13 +720,13 @@ namespace Gorgon { namespace Widgets {
         
         auto makestate = [&](auto color, UI::ComponentCondition condition) {
             //box
-            temp.AddGraphics(3, condition)
-                .Content.SetDrawable(*box(color))
-            ;
+            auto &bx = temp.AddGraphics(3, condition);
+            bx.Content.SetDrawable(*box(color));
+            bx.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             
-            temp.AddGraphics(6, condition)
-                .Content.SetDrawable(*tick(color))
-            ;
+            auto &tic = temp.AddGraphics(6, condition);
+            tic.Content.SetDrawable(*tick(color));
+            tic.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             
             auto &tt = temp.AddTextholder(5, condition);
             tt.SetRenderer(RegularFont);
