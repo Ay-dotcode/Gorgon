@@ -352,31 +352,27 @@ namespace Gorgon { namespace UI {
             //if an index does not contain condition in from field and an empty to field
             //it might still have it as a transition from the previous condition to our condition. 
             //In this case we should take this non-perfect fit.
-            if(!updatereq && hint != ComponentCondition::None) {
-                for(int i=0; i<temp.GetCount(); i++) {
-                    //do not use repeated components
-                    if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
-                        continue;
-                    
-                    if(temp[i].GetCondition() == hint && temp[i].GetTargetCondition() == to && !indicesdone.count(temp[i].GetIndex())) {
-                        updatereq = true;
-                        AddToStack(temp[i], false);
-                        indicesdone.insert(temp[i].GetIndex());
-                    }
+            for(int i=0; i<temp.GetCount(); i++) {
+                //do not use repeated components
+                if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
+                    continue;
+                
+                if(temp[i].GetTargetCondition() == to && !indicesdone.count(temp[i].GetIndex()) && (hint == ComponentCondition::None || temp[i].GetCondition() == hint)) {
+                    updatereq = true;
+                    AddToStack(temp[i], false);
+                    indicesdone.insert(temp[i].GetIndex());
                 }
             }
             
             //once more, but this time reversed
-            if(!updatereq && hint != ComponentCondition::None) {
-                for(int i=0; i<temp.GetCount(); i++) {
-                    //do not use repeated components
-                    if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
-                        continue;
-                    
-                    if(temp[i].GetCondition() == to && temp[i].GetTargetCondition() == hint && !indicesdone.count(temp[i].GetIndex())) {
-                        updatereq = true;
-                        AddToStack(temp[i], true);
-                    }
+            for(int i=0; i<temp.GetCount(); i++) {
+                //do not use repeated components
+                if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
+                    continue;
+                
+                if(temp[i].IsReversible() && temp[i].GetCondition() == to && !indicesdone.count(temp[i].GetIndex()) && (hint == ComponentCondition::None || temp[i].GetTargetCondition() == hint)) {
+                    updatereq = true;
+                    AddToStack(temp[i], true);
                 }
             }
         }
@@ -396,18 +392,15 @@ namespace Gorgon { namespace UI {
                 }
             }
             
-            //not found
-            if(!updatereq) {
-                //search for reversed
-                for(int i=0; i<temp.GetCount(); i++) {
-                    //do not use repeated components
-                    if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
-                        continue;
-                    
-                    if(temp[i].IsReversible() && temp[i].GetCondition() == to && temp[i].GetTargetCondition() == from && !indicesdone.count(temp[i].GetIndex())) {
-                        updatereq = true;
-                        AddToStack(temp[i], true);
-                    }
+            //search for reversed
+            for(int i=0; i<temp.GetCount(); i++) {
+                //do not use repeated components
+                if(temp[i].GetRepeatMode() != ComponentTemplate::NoRepeat)
+                    continue;
+                
+                if(temp[i].IsReversible() && temp[i].GetCondition() == to && temp[i].GetTargetCondition() == from && !indicesdone.count(temp[i].GetIndex())) {
+                    updatereq = true;
+                    AddToStack(temp[i], true);
                 }
             }
         }
@@ -460,6 +453,20 @@ namespace Gorgon { namespace UI {
                             remove = temp.GetCondition() == to && temp.GetTargetCondition() == from;
                         else
                             remove = temp.GetCondition() == from && temp.GetTargetCondition() == to;
+                    }
+                    
+                    //do not remove if this item can fill in for always and is the last item
+                    if(remove && stacksizes[temp.GetIndex()] <= 1) {
+                        if(temp.GetTargetCondition() == ComponentCondition::Always) {
+                            remove = false;
+                            comp.reversed = false;
+                            updatereq = true;
+                        }
+                        else if((temp.IsReversible() && temp.GetCondition() == ComponentCondition::Always)) {
+                            remove = false;
+                            comp.reversed = true;
+                            updatereq = true;
+                        }
                     }
                     
                     //if so

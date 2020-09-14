@@ -44,10 +44,11 @@ int main() {
     generator.Activate();*/
 
     Widgets::Panel blank(Gorgon::Widgets::Registry::Panel_Blank);
-    blank.Resize({ 180,600 });
-    Gorgon::Widgets::Button btn("Start running",Gorgon::Widgets::Registry::Button_Regular);
+    blank.Resize({ 120,600 });
+    Gorgon::Widgets::Button btn("Save as",Gorgon::Widgets::Registry::Button_Regular);
     Gorgon::Widgets::Button icnbtn("+", Gorgon::Widgets::Registry::Button_Icon);
     Gorgon::Widgets::Button icnbtn2("Âj", Gorgon::Widgets::Registry::Button_Icon);
+    Gorgon::Widgets::Button icnbtn3("X", Gorgon::Widgets::Registry::Button_Icon);
     auto icon = Triangle(5, 10);
     icon.Prepare();
     Graphics::TintedBitmapProvider icon2(icon.Rotate270(), Graphics::Color::Charcoal);
@@ -69,7 +70,7 @@ int main() {
 
     Gorgon::Widgets::Checkbox chk("Black",Gorgon::Widgets::Registry::Checkbox_Regular);
     Gorgon::Widgets::Checkbox chk2("Latte");
-    Gorgon::Widgets::Checkbox chkbutton("Cbutton", Gorgon::Widgets::Registry::Checkbox_Button);
+    Gorgon::Widgets::Checkbox chkbutton("C", Gorgon::Widgets::Registry::Checkbox_Button);
     Gorgon::Widgets::Progressbar bar(Gorgon::Widgets::Registry::Progress_Regular);
     Gorgon::Widgets::Panel toppanel(Gorgon::Widgets::Registry::Panel_Top);
     toppanel.Resize({ 30,30 });
@@ -109,27 +110,35 @@ int main() {
     });
     //blank.CreateOrganizer<Gorgon::UI::Organizers::List>().SetSpacing(Gorgon::Widgets::Registry::Active().GetSpacing());
     
-    auto addme = [&](UI::WidgetBase &w) {
-        Geometry::Point offset = {0, Widgets::Registry::Active().GetSpacing()};
-        if(blank.begin() != blank.end())
-            w.Move((blank.end() - 1)->GetBounds().BottomLeft() + offset);
+    auto addme = [&](auto &pnl, UI::WidgetBase &w) {
+        Geometry::Point offsetx = {Widgets::Registry::Active().GetSpacing(), 0};
+        if(pnl.UI::WidgetContainer::begin() != pnl.UI::WidgetContainer::end()) {
+            auto &last = *(pnl.UI::WidgetContainer::end() - 1);
+            auto lastb = last.GetBounds();
+            if(lastb.Right + w.GetWidth() <= pnl.GetInteriorSize().Width)
+                w.Move(last.GetBounds().TopRight() + offsetx);
+            else
+                w.Move(0, last.GetBounds().Bottom + Widgets::Registry::Active().GetSpacing());
+        }
         
-        blank.Add(w);
+        pnl.Add(w);
     };
-    addme(btn);
-    addme(icnbtn);
-    addme(icnbtn2);
-    addme(l);
-    addme(radio);
-    addme(input);
-    addme(chk);
-    addme(chk2);
-    addme(chkbutton);
-    addme(bar);
-    addme(toppanel);
-    addme(bottompanel);
-    addme(leftpanel);
-    addme(rightpanel);
+    app.wind.Add(blank);
+    addme(blank, btn);
+    addme(blank, icnbtn);
+    addme(blank, icnbtn2);
+    addme(blank, icnbtn3);
+    addme(blank, l);
+    addme(blank, radio);
+    addme(blank, input);
+    addme(blank, chk);
+    addme(blank, chk2);
+    addme(blank, chkbutton);
+    addme(blank, bar);
+    addme(blank, toppanel);
+    addme(blank, bottompanel);
+    addme(blank, leftpanel);
+    addme(blank, rightpanel);
 /*
     
     ///Generator 1  background.panel color = red focus color = grey, forecolor.regular = green border = blue,  fontsize = 12 defualt;
@@ -340,7 +349,6 @@ int main() {
 */
 
 
-    app.wind.Add(blank);
     /*app.wind.Add(panelgen1);
     app.wind.Add(panelgen2);
     panelgen1.Move(blank.GetBounds().Right + 5,blank.GetLocation().Y);
