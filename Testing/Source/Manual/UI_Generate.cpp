@@ -40,6 +40,7 @@ int main() {
     Widgets::SimpleGenerator generator;
     generator.Init(13);
     //generator.Border.Radius = 0;
+    generator.UpdateBorders();
     generator.UpdateDimensions();
     generator.Activate();
 

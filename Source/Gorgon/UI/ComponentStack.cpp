@@ -2432,6 +2432,12 @@ realign:
                     + min;
             }
             
+            if(comp.size.Width < 0)
+                comp.size.Width = 0;
+            
+            if(comp.size.Height < 0)
+                comp.size.Height = 0;
+            
             
             //**** Automatic sizing
             if((temp.GetHorizontalSizing() != temp.Fixed || temp.GetVerticalSizing() != temp.Fixed)
@@ -2446,19 +2452,21 @@ realign:
                     if(temp.GetSize().Width.IsRelative() || temp.GetSize().Height.IsRelative())
                         finalpass = true;
 
-                    int textwidth = -1;
-                    
-                    //set the dimensions that are not fixed to 0.
-                    if(temp.GetHorizontalSizing() != ComponentTemplate::Fixed) {
-                        textwidth = comp.size.Width;
-                        comp.size.Width = 0;
+                    if(!size.Width.IsRelative() || stage==final) {
+                        int textwidth = -1;
+                        
+                        //set the dimensions that are not fixed to 0.
+                        if(temp.GetHorizontalSizing() != ComponentTemplate::Fixed) {
+                            textwidth = comp.size.Width;
+                            comp.size.Width = 0;
+                        }
+                        
+                        if(temp.GetVerticalSizing() != ComponentTemplate::Fixed)
+                            comp.size.Height = 0;
+                        
+                        //do an update
+                        update(comp, val, index, textwidth);
                     }
-                    
-                    if(temp.GetVerticalSizing() != ComponentTemplate::Fixed)
-                        comp.size.Height = 0;
-                    
-                    //do an update
-                    update(comp, val, index, textwidth);
                 }
                 else if(temp.GetType() == ComponentType::Graphics) {
                     if(imagedata.Exists(temp.GetDataEffect())) {
@@ -2479,6 +2487,9 @@ realign:
                     }
                 }
                 else if(temp.GetType() == ComponentType::Textholder) {
+                    if(temp.GetSize().Width.IsRelative() || temp.GetSize().Height.IsRelative())
+                        finalpass = true;
+
                     if(!size.Width.IsRelative() || stage==final) {
                         const auto &th = dynamic_cast<const TextholderTemplate&>(temp);
                         

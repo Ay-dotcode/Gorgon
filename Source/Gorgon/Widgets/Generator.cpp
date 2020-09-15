@@ -121,14 +121,15 @@ namespace Gorgon { namespace Widgets {
     void SimpleGenerator::UpdateDimensions() {
         lettervsize = regularrenderer->GetLetterHeight();
         asciivsize = regularrenderer->GetLetterHeight(true);
-        int totalh = lettervsize.first + lettervsize.second - 1;
-
+        
+        int totalh = regularrenderer->GetLineGap();
+        
         Spacing = (int)std::round((float)totalh / 5);
         Focus.Spacing = std::max(1, Spacing / 2);
 
         BorderedWidgetHeight = 
             totalh + Border.Width * 2 + 
-            std::max(Border.Radius, Focus.Spacing * 2) + 
+            std::max(Border.Radius/2, Focus.Spacing) * 2 + 
             Focus.Width * 2 + Focus.Spacing * 2
         ;
         

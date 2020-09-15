@@ -2721,7 +2721,6 @@ TestData test_autosize_cont_text(Layer &layer) {
     cont2.Background.SetAnimation(redrect());
     cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
     cont2.SetSizing(Gorgon::UI::ComponentTemplate::Automatic);
-    cont2.SetSize(100, 0, Gorgon::UI::Dimension::Percent);
 
     static Graphics::BitmapFont fnt;
     fnt.SetGlyphSpacing(10);
@@ -2745,6 +2744,38 @@ TestData test_autosize_cont_text(Layer &layer) {
         (b.operator ==({0,0, 80,55}) ? "Passed" : "Failed"), ". ", b, ". ",
         "10x20 and 20x20 green objects with 10px spacing on a 80x60 white background, padding should be 0, 0, 15, 20.")
     , stack};
+}
+
+TestData test_anchacc(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.AddIndex(3);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(10, 20, Gorgon::UI::Dimension::Pixel);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetSize(10, 19, Gorgon::UI::Dimension::Pixel);
+    cont3.SetAnchor(Gorgon::UI::Anchor::MiddleRight, Gorgon::UI::Anchor::MiddleLeft, Gorgon::UI::Anchor::MiddleLeft);
+    
+    auto &cont4 = temp.AddContainer(3, Gorgon::UI::ComponentCondition::Always);
+    cont4.Background.SetAnimation(blueimg());
+    cont4.SetSize(10, 20, Gorgon::UI::Dimension::Pixel);
+    cont4.SetAnchor(Gorgon::UI::Anchor::MiddleRight, Gorgon::UI::Anchor::MiddleLeft, Gorgon::UI::Anchor::MiddleLeft);
+
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    return {"Anchoring accuracy", "Size 10x20, 10x19 and 10x20 objects on a 60x60 white background, second could be 0 or 1px from the top, first and third should be touching to the top.", stack};
 }
 
 
@@ -2873,6 +2904,8 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_autosize_cont_padding2,
     &test_autosize_cont_text,
     //END
+    
+    &test_anchacc,
 };
 
 //END tests
