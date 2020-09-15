@@ -185,9 +185,10 @@ namespace Gorgon { namespace Widgets {
         
         Graphics::RectangleProvider &FocusBorder();
         
-        int Spacing      = 4;
-        int ObjectHeight = 15;
-        int ObjectBorder = 2;
+        int Spacing       = 4;
+        int ObjectHeight  = 15;
+        int ObjectBorder  = 2;
+        float ShapeBorder = 2;
         
         /// This function will update default widget dimensions. Call this function after
         /// setting up or changing borders, font size

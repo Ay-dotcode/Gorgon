@@ -66,10 +66,9 @@ int main() {
     radio.Add(1,"Latte");
 
     Gorgon::Widgets::Inputbox<std::string> input;
-   
-
+    
     Gorgon::Widgets::Checkbox chk("Black",Gorgon::Widgets::Registry::Checkbox_Regular);
-    Gorgon::Widgets::Checkbox chk2("Latte");
+    Gorgon::Widgets::Checkbox chk2("Lattej");
     Gorgon::Widgets::Checkbox chkbutton("C", Gorgon::Widgets::Registry::Checkbox_Button);
     Gorgon::Widgets::Progressbar bar(Gorgon::Widgets::Registry::Progress_Regular);
     Gorgon::Widgets::Panel toppanel(Gorgon::Widgets::Registry::Panel_Top);
@@ -93,8 +92,6 @@ int main() {
     Gorgon::Widgets::Panel bottompanel(Gorgon::Widgets::Registry::Panel_Bottom);
     Gorgon::Widgets::Label bottomlabel("Panel bottom");
     bottompanel.Add(bottomlabel);
-
-    
   
     input.ChangedEvent.Register([&] {
         std::cout << input.GetText() << std::endl;
@@ -123,6 +120,7 @@ int main() {
         
         pnl.Add(w);
     };
+    
     app.wind.Add(blank);
     addme(blank, btn);
     addme(blank, icnbtn);

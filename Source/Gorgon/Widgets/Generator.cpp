@@ -121,7 +121,7 @@ namespace Gorgon { namespace Widgets {
     void SimpleGenerator::UpdateDimensions() {
         lettervsize = regularrenderer->GetLetterHeight();
         asciivsize = regularrenderer->GetLetterHeight(true);
-        int totalh = lettervsize.first + lettervsize.second;
+        int totalh = lettervsize.first + lettervsize.second - 1;
 
         Spacing = (int)std::round((float)totalh / 5);
         Focus.Spacing = std::max(1, Spacing / 2);
@@ -136,15 +136,17 @@ namespace Gorgon { namespace Widgets {
         
         WidgetWidth = 3 * BorderedWidgetHeight + 2 * Spacing;
         
-        ObjectHeight = asciivsize.second;
+        ObjectHeight = totalh;
     }
     
     void SimpleGenerator::UpdateBorders(bool smooth) {
         Border.Width  = (int)std::max(std::round(regularrenderer->GetLineThickness()*2.6f), 1.f);
+        ShapeBorder   = std::max(regularrenderer->GetLineThickness()*2.6f, 1.f);
 
         //limit the thickness after 2.
         if(Border.Width > 2) {
             Border.Width = (int)std::max(std::round(regularrenderer->GetLineThickness()*2.4f), 1.f);
+            ShapeBorder  = std::max(regularrenderer->GetLineThickness()*2.4f, 1.f);
         }
 
         ObjectBorder  = Border.Width;
@@ -701,13 +703,25 @@ namespace Gorgon { namespace Widgets {
                 icon->SetRGBAAt(x, y, 0x0);
             });
             
+            //these coordinates are designed to look good across many different
+            //sizes covering a wide range
             Geometry::PointList<Geometry::Pointf> tick ={
-                {ObjectBorder*2.f, ObjectHeight/2.f},
-                {ObjectHeight/2.f, ObjectHeight-ObjectBorder*2.f},
-                {ObjectHeight-ObjectBorder*2.f, ObjectBorder*2.f}
+                {ShapeBorder*2.4f, ObjectHeight/2.f},
+                {ObjectHeight*0.45f, ObjectHeight-ShapeBorder*2.4f},
+                {ObjectHeight-ShapeBorder*2.5f, ShapeBorder*2.4f}
             };
             
-            CGI::DrawLines(*icon, tick, (float)ObjectBorder, CGI::SolidFill<>(color));
+            if(ObjectHeight - ShapeBorder*4.8f < 3) {
+                CGI::Polyfill(*icon, Geometry::PointList<Geometry::Pointf>{
+                    {ObjectBorder*2.f, ObjectBorder*2.f},
+                    {ObjectHeight - ObjectBorder*2.f, ObjectBorder*2.f},
+                    {ObjectHeight - ObjectBorder*2.f, ObjectHeight - ObjectBorder*2.f},
+                    {ObjectBorder*2.f, ObjectHeight - ObjectBorder*2.f},
+                }, CGI::SolidFill<>(color));
+            }
+            else {
+                CGI::DrawLines(*icon, tick, 1.2*ShapeBorder, CGI::SolidFill<>(color));
+            }
             icon->Prepare();
             
             return icon;
