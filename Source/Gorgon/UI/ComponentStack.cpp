@@ -3350,7 +3350,7 @@ realign:
                 auto old = target->GetColor();
                 target->SetColor(color * c);
                 
-                //target->Draw(comp.location+offset, comp.size, 0x80000000); //for debugging
+                target->Draw(comp.location+offset, comp.size, 0x80000000); //for debugging
                 if(tagnowrap.count(temp.GetTag()))
                     th.GetRenderer().PrintNoWrap(*target, text, comp.location+offset, comp.size.Width);
                 else

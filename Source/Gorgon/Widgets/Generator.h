@@ -251,7 +251,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::RectangleProvider *makefocusborder();
         UI::Template makepanel(int missingedge);
         
-        void setupfocus(UI::ContainerTemplate &focus);
+        void setupfocus(UI::GraphicsTemplate &focus);
         
         Graphics::GlyphRenderer *regularrenderer = nullptr;
         Containers::Collection<Graphics::Drawable> drawables;

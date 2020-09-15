@@ -2721,6 +2721,7 @@ TestData test_autosize_cont_text(Layer &layer) {
     cont2.Background.SetAnimation(redrect());
     cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
     cont2.SetSizing(Gorgon::UI::ComponentTemplate::Automatic);
+    cont2.SetSize(100, 0, Gorgon::UI::Dimension::Percent);
 
     static Graphics::BitmapFont fnt;
     fnt.SetGlyphSpacing(10);

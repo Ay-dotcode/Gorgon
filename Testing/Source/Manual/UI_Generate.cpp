@@ -37,14 +37,14 @@ int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
 
     ///Blank Panel & elements with Registry & Regulars 
-    /*Widgets::SimpleGenerator generator;
-    generator.Init(14);
-    generator.Border.Radius = 0;
+    Widgets::SimpleGenerator generator;
+    generator.Init(13);
+    //generator.Border.Radius = 0;
     generator.UpdateDimensions();
-    generator.Activate();*/
+    generator.Activate();
 
-    Widgets::Panel blank(Gorgon::Widgets::Registry::Panel_Blank);
-    blank.Resize({ 120,600 });
+    Widgets::Panel blank/*(Gorgon::Widgets::Registry::Panel_Blank)*/;
+    blank.SetHeight(600);
     Gorgon::Widgets::Button btn("Save as",Gorgon::Widgets::Registry::Button_Regular);
     Gorgon::Widgets::Button icnbtn("+", Gorgon::Widgets::Registry::Button_Icon);
     Gorgon::Widgets::Button icnbtn2("Âj", Gorgon::Widgets::Registry::Button_Icon);
@@ -56,10 +56,9 @@ int main() {
     btn.OwnIcon(icon2.CreateAnimation());
     
     icnbtn.OwnIcon(icon2.CreateAnimation());
-    icnbtn.Disable();
 
-    btn.Disable();
     Gorgon::Widgets::Label l("Coffee:");
+    Gorgon::Widgets::Label l2("Error", Gorgon::Widgets::Registry::Label_Error);
 
     Gorgon::Widgets::RadioButtons<int> radio(Gorgon::Widgets::Registry::Radio_Regular);
     radio.Add(0,"Americano");
@@ -103,7 +102,6 @@ int main() {
 
     icnbtn2.PressEvent.Register([&] {
         bar -= 10;
-        icnbtn.Enable();
     });
     //blank.CreateOrganizer<Gorgon::UI::Organizers::List>().SetSpacing(Gorgon::Widgets::Registry::Active().GetSpacing());
     
@@ -121,6 +119,18 @@ int main() {
         pnl.Add(w);
     };
     
+    app.wind.KeyEvent.Register([&](Gorgon::Input::Key key, float amount) {
+        namespace Keycodes = Gorgon::Input::Keyboard::Keycodes;
+        
+        switch(key) {
+        case Keycodes::D:
+            blank.ToggleEnabled();
+            return true;
+        }
+            
+        return false;
+    });
+    
     app.wind.Add(blank);
     addme(blank, btn);
     addme(blank, icnbtn);
@@ -128,6 +138,7 @@ int main() {
     addme(blank, icnbtn3);
     addme(blank, l);
     addme(blank, radio);
+    addme(blank, l2);
     addme(blank, input);
     addme(blank, chk);
     addme(blank, chk2);

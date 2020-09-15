@@ -436,8 +436,8 @@ namespace Gorgon { namespace Widgets {
         return new Graphics::RectangleProvider(cri, hi, cri, vi, ci, vi, cri, hi, cri);
     }
     
-    void SimpleGenerator::setupfocus(UI::ContainerTemplate &foc) {
-        foc.Background.SetAnimation(FocusBorder());
+    void SimpleGenerator::setupfocus(UI::GraphicsTemplate &foc) {
+        foc.Content.SetAnimation(FocusBorder());
         foc.SetSize(100, 100, UI::Dimension::Percent);
         foc.SetPositioning(UI::ComponentTemplate::Absolute);
         foc.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
@@ -528,7 +528,7 @@ namespace Gorgon { namespace Widgets {
         setuptext(Forecolor.Regular.BlendWith(Forecolor.Down), UI::ComponentCondition::Down);
         setuptext(Forecolor.Regular.BlendWith(Forecolor.Disabled), UI::ComponentCondition::Disabled);
 
-        setupfocus(temp.AddContainer(4, UI::ComponentCondition::Focused));
+        setupfocus(temp.AddGraphics(4, UI::ComponentCondition::Focused));
         
         temp.Name = String::Concat("Button ", rand()%100);
 
@@ -586,7 +586,7 @@ namespace Gorgon { namespace Widgets {
         boxed.SetPadding(std::max(Border.Radius / 2, Focus.Spacing));
         boxed.SetPositioning(UI::ComponentTemplate::Absolute);
         
-        setupfocus(temp.AddContainer(4, UI::ComponentCondition::Focused));
+        setupfocus(temp.AddGraphics(4, UI::ComponentCondition::Focused));
         
         //contents
         auto &contents = temp.AddContainer(3, UI::ComponentCondition::Always)
@@ -752,7 +752,7 @@ namespace Gorgon { namespace Widgets {
         makestate(Forecolor.Regular.BlendWith(Forecolor.Down), UI::ComponentCondition::Down);
         makestate(Forecolor.Regular.BlendWith(Forecolor.Disabled), UI::ComponentCondition::Disabled);
         
-        setupfocus(temp.AddContainer(2, UI::ComponentCondition::Focused));
+        setupfocus(temp.AddGraphics(2, UI::ComponentCondition::Focused));
         
         return temp;
     }
@@ -798,7 +798,7 @@ namespace Gorgon { namespace Widgets {
         boxed.SetPadding(std::max(Border.Radius / 2, Focus.Spacing));
         boxed.SetPositioning(UI::ComponentTemplate::Absolute);
         
-        setupfocus(temp.AddContainer(4, UI::ComponentCondition::Focused));
+        setupfocus(temp.AddGraphics(4, UI::ComponentCondition::Focused));
         
         //contents
         auto &contents = temp.AddContainer(3, UI::ComponentCondition::Always)
@@ -943,7 +943,7 @@ namespace Gorgon { namespace Widgets {
         makestate(Forecolor.Regular.BlendWith(Forecolor.Down), UI::ComponentCondition::Down);
         makestate(Forecolor.Regular.BlendWith(Forecolor.Disabled), UI::ComponentCondition::Disabled);
         
-        setupfocus(temp.AddContainer(2, UI::ComponentCondition::Focused));
+        setupfocus(temp.AddGraphics(2, UI::ComponentCondition::Focused));
         
         return temp;
     }
@@ -954,61 +954,30 @@ namespace Gorgon { namespace Widgets {
         UI::Template temp;
         temp.SetSize(defsize);
         
-        auto &bi = *new Graphics::BlankImage({Border.Width, Border.Width}, Border.Color);
-        drawables.Add(bi);
+        auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always, UI::ComponentCondition::Disabled)
+            .AddIndex(1) //icon
+            .AddIndex(2) //text
+        ;
+        cont.SetValueModification(UI::ComponentTemplate::ModifyAlpha, UI::ComponentTemplate::UseTransition);
+        cont.SetValueRange(0, 1, 0.5);
+        cont.SetReversible(true);
+        cont.SetClip(true);
         
-        {
-            auto &bg_n = temp.AddContainer(0, UI::ComponentCondition::Always);
-            bg_n.SetSizing(UI::ComponentTemplate::Automatic);
-            //assuming border radius = 0
-            bg_n.SetPadding(0);
-            bg_n.AddIndex(1);
-            bg_n.AddIndex(2);
-            bg_n.AddIndex(3);
-        }
+        auto &icon = temp.AddPlaceholder(1, UI::ComponentCondition::Icon1IsSet);
+        icon.SetDataEffect(UI::ComponentTemplate::Icon);
+        icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        icon.SetSize(100, 100, UI::Dimension::Percent);
+        icon.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        icon.SetMargin(0, 0, Spacing, 0);
         
-        {
-            auto &icon = temp.AddPlaceholder(1, UI::ComponentCondition::Icon1IsSet);
-            icon.SetDataEffect(UI::ComponentTemplate::Icon);
-            icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-            icon.SetSize(100, 100, UI::Dimension::Percent);
-            icon.SetSizing(UI::ComponentTemplate::ShrinkOnly);
-            icon.SetMargin(0, 0, Spacing, 0);
-        }
+        auto &txt = temp.AddTextholder(2, UI::ComponentCondition::Always);
+        txt.SetRenderer(RegularFont);
+        txt.SetColor(Forecolor.Regular);
+        txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        txt.SetDataEffect(UI::ComponentTemplate::Text);
+        txt.SetSize(100, 100, UI::Dimension::Percent);
+        txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
         
-        {
-            auto &foc = temp.AddContainer(2, UI::ComponentCondition::Focused);
-            foc.Background.SetAnimation(FocusBorder());
-            foc.SetMargin(Spacing / 2);
-            foc.SetSize(100, 100, UI::Dimension::Percent);
-            foc.SetPositioning(foc.Absolute);
-            foc.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
-        }
-
-        {
-            auto &txt_n = temp.AddTextholder(3, UI::ComponentCondition::Always);
-            txt_n.SetRenderer(RegularFont);
-            txt_n.SetColor(Forecolor.Regular);
-            txt_n.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-            txt_n.SetDataEffect(UI::ComponentTemplate::Text);
-            txt_n.SetClip(true);
-            txt_n.SetSize(100, 100, UI::Dimension::Percent);
-            txt_n.SetSizing(UI::ComponentTemplate::ShrinkOnly);
-        }
-
-        {
-            auto &txt_n = temp.AddTextholder(3, UI::ComponentCondition::Disabled);
-            txt_n.SetRenderer(RegularFont);
-            auto c = Forecolor.Regular;
-            c.Blend(Forecolor.Disabled);
-            txt_n.SetColor(c);
-            txt_n.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-            txt_n.SetDataEffect(UI::ComponentTemplate::Text);
-            txt_n.SetClip(true);
-            txt_n.SetSize(100, 100, UI::Dimension::Percent);
-            txt_n.SetSizing(UI::ComponentTemplate::ShrinkOnly);
-        }
-
         return temp;
     }
 
@@ -1017,102 +986,58 @@ namespace Gorgon { namespace Widgets {
         
         UI::Template temp;
         temp.SetSize(defsize);
-
-        auto &bi = *new Graphics::BlankImage({ Border.Width, Border.Width }, Border.Color);
-        drawables.Add(bi);
-
-        {
-            auto &bg_n = temp.AddContainer(0, UI::ComponentCondition::Always);
-            bg_n.SetSizing(UI::ComponentTemplate::Automatic);
-            //assuming border radius = 0
-            bg_n.SetPadding(0);
-            bg_n.AddIndex(1);
-            bg_n.AddIndex(2);
-            bg_n.AddIndex(3);
-        }
-
-        {
-            auto &icon = temp.AddPlaceholder(1, UI::ComponentCondition::Icon1IsSet);
-            icon.SetDataEffect(UI::ComponentTemplate::Icon);
-            icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-            icon.SetSize(100, 100, UI::Dimension::Percent);
-            icon.SetSizing(UI::ComponentTemplate::ShrinkOnly);
-            icon.SetMargin(0, 0, Spacing, 0);
-        }
-
-        {
-            auto &foc = temp.AddContainer(2, UI::ComponentCondition::Focused);
-
-            auto &ci = Graphics::EmptyImage::Instance();
-
-
-            auto &hi = *new Graphics::Bitmap({ 2, Focus.Width });
-            hi.Clear();
-            for (auto i = 0; i < Focus.Width; i++)
-                hi.SetRGBAAt(0, i, Focus.Color);
-            hi.Prepare();
-            drawables.Add(hi);
-
-            auto &vi = *new Graphics::Bitmap({ Focus.Width, 2 });
-            vi.Clear();
-            for (auto i = 0; i < Focus.Width; i++)
-                vi.SetRGBAAt(i, 0, Focus.Color);
-            vi.Prepare();
-            drawables.Add(vi);
-
-            auto &cri = *new Graphics::BlankImage(Focus.Width, Focus.Width, Focus.Color);
-
-            auto &rect = *new Graphics::RectangleProvider(cri, hi, cri, vi, ci, vi, cri, hi, cri);
-
-            foc.Background.SetAnimation(rect);
-            providers.Add(rect);
-            foc.SetMargin(Spacing / 2);
-            foc.SetSize(100, 100, UI::Dimension::Percent);
-            foc.SetPositioning(foc.Absolute);
-            foc.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
-        }
-
-        {
-            auto &txt_n = temp.AddTextholder(3, UI::ComponentCondition::Always);
-            txt_n.SetRenderer(RegularFont);
-            txt_n.SetColor(Forecolor.Error);
-            txt_n.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-            txt_n.SetDataEffect(UI::ComponentTemplate::Text);
-            txt_n.SetClip(true);
-            txt_n.SetSize(100, 100, UI::Dimension::Percent);
-            txt_n.SetSizing(UI::ComponentTemplate::ShrinkOnly);
-        }
-
+        
+        auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always, UI::ComponentCondition::Disabled)
+            .AddIndex(1) //icon
+            .AddIndex(2) //text
+        ;
+        cont.SetValueModification(UI::ComponentTemplate::ModifyAlpha, UI::ComponentTemplate::UseTransition);
+        cont.SetValueRange(0, 1, 0.5);
+        cont.SetReversible(true);
+        cont.SetClip(true);
+        
+        auto &icon = temp.AddPlaceholder(1, UI::ComponentCondition::Icon1IsSet);
+        icon.SetDataEffect(UI::ComponentTemplate::Icon);
+        icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        icon.SetSize(100, 100, UI::Dimension::Percent);
+        icon.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        icon.SetMargin(0, 0, Spacing, 0);
+        
+        auto &txt = temp.AddTextholder(2, UI::ComponentCondition::Always);
+        txt.SetRenderer(RegularFont);
+        txt.SetColor(Forecolor.Regular.BlendWith(Forecolor.Error));
+        txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        txt.SetDataEffect(UI::ComponentTemplate::Text);
+        txt.SetSize(100, 100, UI::Dimension::Percent);
+        txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        
         return temp;
     }
     
     UI::Template SimpleGenerator::BlankPanel() {
-        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 5, WidgetHeight * 10 + Spacing * 11};
+        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, BorderedWidgetHeight * 10 + Spacing * 9};
         
         UI::Template temp;
         temp.SetSize(defsize);
         
-        
-        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
-        bg.SetClip(true);
-        
-        bg.AddIndex(1);
+        temp.AddContainer(0, UI::ComponentCondition::Always)
+            .AddIndex(1)
+            .SetClip(true)
+        ;
         
         auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always);
         cont.SetTag(UI::ComponentTemplate::ContentsTag);
-        cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
-        cont.SetSize(100, 100, UI::Dimension::Percent);
+        cont.SetSize(0, 0, UI::Dimension::Percent);
         cont.SetPositioning(cont.Absolute);
         cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
         cont.SetPosition(0, 0);
-        //bg.Background.SetAnimation(NormalBorder());
         
         return temp;
     }
     
     UI::Template SimpleGenerator::makepanel(int missingedge) {
         Geometry::Size defsize = {
-            WidgetWidth * 4 + Spacing * 3 + Border.Width * 2 + Spacing * 2, 
+            WidgetWidth * 2 + Spacing + Border.Width * 2 + Spacing * 2, 
             BorderedWidgetHeight * 10 + Spacing * 9 + Border.Width * 2 + Spacing * 2
         };
         
@@ -1156,19 +1081,16 @@ namespace Gorgon { namespace Widgets {
         vp.SetSize(100, 100, UI::Dimension::Percent);
         vp.SetPositioning(vp.Absolute);
         vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
-        vp.SetPosition(0, 0);
         vp.SetClip(true);
         vp.AddIndex(2);
         //vp.Background.SetAnimation(HoverBorder());
         
         auto &cont = temp.AddContainer(2, UI::ComponentCondition::Always);
         cont.SetTag(UI::ComponentTemplate::ContentsTag);
-        //cont.SetValueModification(cont.ModifyPosition, cont.UseXY);
         cont.SetSize(0, 0, UI::Dimension::Percent);
         cont.SetSizing(UI::ComponentTemplate::Fixed);
         cont.SetPositioning(cont.Absolute);
         cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
-        cont.SetPosition(0, 0);
         //cont.Background.SetAnimation(DownBorder());
         
         return temp;
