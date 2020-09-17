@@ -27,9 +27,26 @@ namespace Gorgon { namespace UI {
         Window() : Gorgon::Window() {
         }
         
-        Window(Window &&) = default;
+        Window(Window &&other) : Gorgon::Window(std::move(other)), WidgetContainer(std::move(other)) {
+            KeyEvent.Unregister(inputtoken);
+            CharacterEvent.Unregister(chartoken);
+            
+            inputtoken = keyinit();
+            chartoken  = charinit();
+        }
         
-        Window &operator=(Window &&) = default;
+        Window &operator=(Window &&other) {
+            Gorgon::Window::operator =(std::move(other));
+            WidgetContainer::operator =(std::move(other));
+            
+            KeyEvent.Unregister(inputtoken);
+            CharacterEvent.Unregister(chartoken);
+            
+            inputtoken = keyinit();
+            chartoken  = charinit();
+            
+            return *this;
+        }
         
         virtual Geometry::Size GetInteriorSize() const override {
             return Gorgon::Window::GetSize();
@@ -81,16 +98,28 @@ namespace Gorgon { namespace UI {
 
 		decltype(KeyEvent)::Token keyinit() {
 			inputtoken = KeyEvent.Register([this](Input::Key key, float amount) {
-				return WidgetContainer::KeyEvent(key, amount);
+                return WidgetContainer::KeyEvent(key, amount);
 			});
+            
+            KeyEvent.NewHandler = [this]{
+                RegisterOnce([this] {
+                    this->KeyEvent.MoveToTop(this->inputtoken);
+                });
+            };
 
 			return inputtoken;
 		}
 
-		decltype(KeyEvent)::Token charinit() {
+		decltype(CharacterEvent)::Token charinit() {
 			chartoken = CharacterEvent.Register([this](Char c) {
 				return WidgetContainer::CharacterEvent(c);
 			});
+            
+            CharacterEvent.NewHandler = [this]{
+                RegisterOnce([this] {
+                    this->CharacterEvent.MoveToTop(this->chartoken);
+                });
+            };
 
 			return chartoken;
 		}

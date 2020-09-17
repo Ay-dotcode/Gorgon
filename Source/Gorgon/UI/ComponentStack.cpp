@@ -2766,7 +2766,7 @@ realign:
                 else {
                     xrad = pcenter.X - comp.size.Width;
                 }
-
+                
                 //determine yrad and yoff according to the anchor point
                 if(IsTop(panch)) {
                     yrad = maxsize.Height - pcenter.Y - comp.size.Height;
@@ -2885,7 +2885,11 @@ realign:
                     )
                     finalpass = true;
 
-                if(anch) {
+                if(taglocations.count(temp.GetTag())) {
+                    comp.location = offset;
+                    comp.anchtoparent = true;
+                }
+                else if(anch) {
                     anchortoother(comp, temp, offset, margin, *anch, cont.GetOrientation());
                     comp.anchtoparent = false;
                 }
@@ -3361,7 +3365,7 @@ realign:
                 auto old = target->GetColor();
                 target->SetColor(color * c);
                 
-                target->Draw(comp.location+offset, comp.size, 0x80000000); //for debugging
+                //target->Draw(comp.location+offset, comp.size, 0x80000000); //for debugging
                 if(tagnowrap.count(temp.GetTag()))
                     th.GetRenderer().PrintNoWrap(*target, text, comp.location+offset, comp.size.Width);
                 else

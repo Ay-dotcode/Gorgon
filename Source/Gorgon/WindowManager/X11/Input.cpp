@@ -349,8 +349,9 @@ namespace Gorgon { namespace WindowManager {
                 break;
         }
         auto ggekey = WindowManager::mapx11key(key, event.xkey.keycode);
+        Input::AllowCharEvent = false;
         auto token = wind.KeyEvent(ggekey, true);
-        if(token != wind.KeyEvent.EmptyToken) {
+        if(token != wind.KeyEvent.EmptyToken && !Input::AllowCharEvent) {
             data->handlers[ggekey]=token;
             
             return;

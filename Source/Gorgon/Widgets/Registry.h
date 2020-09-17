@@ -3,12 +3,12 @@
 #include "../UI/Template.h"
 
 namespace Gorgon { namespace Widgets {
-   
+
     
     /**
-     * This class stores templates for elements. Once a registry is active
-     * all created widgets will use the specified registry for templates.
-     */
+    * This class stores templates for elements. Once a registry is active
+    * all created widgets will use the specified registry for templates.
+    */
     class Registry {
     public:
         
@@ -74,11 +74,10 @@ namespace Gorgon { namespace Widgets {
             
             return *templates[type];
         }
-        
-	
-		virtual int GetSpacing()const = 0;
+    
+        virtual int GetSpacing()const = 0;
 
-		virtual int GetEmSize()const = 0;
+        virtual int GetEmSize()const = 0;
 
     protected:
 
@@ -101,9 +100,9 @@ namespace Gorgon { namespace Widgets {
     
     
     /**
-     * This registry contains preset templates. You are required to set all the templates
-     * otherwise, missing templates will be generated completely empty. 
-     */
+    * This registry contains preset templates. You are required to set all the templates
+    * otherwise, missing templates will be generated completely empty. 
+    */
     class PresetRegistry : public Registry {
     public:
         
@@ -115,33 +114,33 @@ namespace Gorgon { namespace Widgets {
             templates[type] = &temp;
         }
         
-		void SetSpacing(const int tspacing) {
-			spacing = tspacing;
-		}
+        void SetSpacing(const int tspacing) {
+            spacing = tspacing;
+        }
 
-		void SetEmSize(const int size) {
-			emsize = size;
+        void SetEmSize(const int size) {
+            emsize = size;
 
-		}
+        }
 
-		virtual int GetSpacing()const override {
-			return spacing;
-		}
+        virtual int GetSpacing()const override {
+            return spacing;
+        }
 
-		virtual int GetEmSize()const override {
-			return emsize;
-		}
+        virtual int GetEmSize()const override {
+            return emsize;
+        }
 
     protected:
         virtual UI::Template &generate(Gorgon::Widgets::Registry::TemplateType) override {
             return *new UI::Template();
         }
-		
-		int spacing = 5;
+        
+        int spacing = 5;
 
-		int emsize = 14;
+        int emsize = 14;
 
     };
     
-	
+    
 } }

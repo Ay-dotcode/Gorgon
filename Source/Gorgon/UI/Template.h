@@ -532,6 +532,19 @@ namespace Gorgon {
             else
                 return 0;
         }
+        
+        /// Sets the spacing required for this template. Organizer widgets
+        /// uses this spacing in order to layout the widgets.
+        void SetSpacing(int value) {
+            spacing = value;
+            ChangedEvent();
+        }
+        
+        /// Returns the spacing required for this template. Organizer widgets
+        /// uses this spacing in order to layout the widgets.
+        int GetSpacing() const {
+            return spacing;
+        }
 
 
         /// This event is fired whenever template or its components are changed.
@@ -547,6 +560,7 @@ namespace Gorgon {
         SizeMode xsizing = Free, ysizing = Free;
         Geometry::Size size;
         Geometry::Size additional = {0, 0};
+        int spacing = 4;
     };
 
     /// Defines an object according to the Box Model.

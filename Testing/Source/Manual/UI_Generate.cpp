@@ -37,16 +37,16 @@ int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
 
     ///Blank Panel & elements with Registry & Regulars 
-    Widgets::SimpleGenerator generator;
+    /*Widgets::SimpleGenerator generator;
     generator.Init(13);
     //generator.Border.Radius = 0;
     generator.UpdateBorders();
     generator.UpdateDimensions();
-    generator.Activate();
+    generator.Activate();*/
 
     Widgets::Panel blank/*(Gorgon::Widgets::Registry::Panel_Blank)*/;
     blank.SetHeight(600);
-    Gorgon::Widgets::Button btn("Save as",Gorgon::Widgets::Registry::Button_Regular);
+    Gorgon::Widgets::Button btn("Save Âj",Gorgon::Widgets::Registry::Button_Regular);
     Gorgon::Widgets::Button icnbtn("+", Gorgon::Widgets::Registry::Button_Icon);
     Gorgon::Widgets::Button icnbtn2("Âj", Gorgon::Widgets::Registry::Button_Icon);
     Gorgon::Widgets::Button icnbtn3("X", Gorgon::Widgets::Registry::Button_Icon);

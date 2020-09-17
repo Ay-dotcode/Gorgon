@@ -106,8 +106,8 @@ namespace Gorgon { namespace Widgets {
     class SimpleGenerator : public Generator {
     public:
         
-        /// Initializes the generator
-        explicit SimpleGenerator(int fontsize, std::string fontname = "", bool activate = true);
+        /// Initializes the generator. Density controls the spacing between elements
+        explicit SimpleGenerator(int fontsize, std::string fontname = "", bool activate = true, float density = 7.5);
         
         /// Creates a non-working simple generator. Calls to any function other than Init
         /// is undefined behaviour.
@@ -245,6 +245,10 @@ namespace Gorgon { namespace Widgets {
         
         /// This is the height of a non-bordered widget
         int WidgetHeight = 24;
+        
+        /// This controls the automatic spacing. After chaning this member
+        /// you need to call UpdateDimensions to get the desired effect.
+        float Density = 7.5;
 
     private:
         Graphics::BitmapRectangleProvider *makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingedge = 0, int borderwidth = -1, int borderradius = -1);

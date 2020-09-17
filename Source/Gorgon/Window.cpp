@@ -46,6 +46,27 @@ namespace Gorgon {
 		}
         else
             windows.Remove(other);
+        
+        //events
+		FocusedEvent.Swap(other.FocusedEvent);
+
+		LostFocusEvent.Swap(other.LostFocusEvent);
+
+		DestroyedEvent.Swap(other.DestroyedEvent);
+
+		ClosingEvent.Swap(other.ClosingEvent);
+
+		MovedEvent.Swap(other.MovedEvent);
+
+		ResizedEvent.Swap(other.ResizedEvent);
+
+		MinimizedEvent.Swap(other.MinimizedEvent);
+
+		RestoredEvent.Swap(other.RestoredEvent);
+		
+		KeyEvent.Swap(other.KeyEvent);
+
+		CharacterEvent.Swap(other.CharacterEvent);
 
 		updatedataowner();
 		other.updatedataowner();

@@ -5,5 +5,8 @@ namespace Gorgon { namespace Input {
 	
 	namespace Keyboard {
 		Modifier CurrentModifier=Modifier::None;
+        
 	}
+	
+    bool AllowCharEvent = false;
 } }
