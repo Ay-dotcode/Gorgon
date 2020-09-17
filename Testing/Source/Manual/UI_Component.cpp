@@ -2451,6 +2451,7 @@ TestData test_settagsize(Layer &layer) {
 
     auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
     cont2.Content.SetAnimation(greenimg());
+    cont2.SetSize(0, 0);
     cont2.SetTag(Gorgon::UI::ComponentTemplate::LeftTag);
     cont2.SetSizing(Gorgon::UI::ComponentTemplate::Fixed);
 

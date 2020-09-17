@@ -77,7 +77,7 @@ namespace Gorgon {
 		minSize = WideCharToMultiByte(CP_UTF8, NULL, unicodeStr, -1, NULL, 0, NULL, FALSE);
 
 		std::string ret;
-		ret.resize(minSize);
+		ret.resize(minSize - 1);
 
 		// Convert string from Unicode to multi-byte.
 		WideCharToMultiByte(CP_UTF8, NULL, unicodeStr, -1, &ret[0], minSize, NULL, FALSE);

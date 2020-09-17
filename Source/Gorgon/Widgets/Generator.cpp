@@ -708,7 +708,7 @@ namespace Gorgon { namespace Widgets {
             Geometry::PointList<Geometry::Pointf> tick ={
                 {ShapeBorder*2.4f, ObjectHeight/2.f},
                 {ObjectHeight*0.45f, ObjectHeight-ShapeBorder*2.4f},
-                {ObjectHeight-ShapeBorder*2.5f, ShapeBorder*2.4f}
+                {ObjectHeight-ShapeBorder*2.4f, ShapeBorder*2.4f}
             };
             
             if(ObjectHeight - ShapeBorder*4.8f < 3) {
