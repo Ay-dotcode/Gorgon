@@ -185,7 +185,7 @@ namespace Gorgon { namespace Widgets {
         Geometry::Point scrolldist = {80, 45};
         Geometry::Point scrolloffset = {0, 0};
         int scrollspeed = 250;
-        Geometry::Point target;
+        Geometry::Point target = {0, 0};
         bool isscrolling = false;
         float scrollleftover = 0;
     };

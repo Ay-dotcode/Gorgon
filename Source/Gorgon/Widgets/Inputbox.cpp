@@ -268,11 +268,11 @@ namespace Gorgon { namespace Widgets { namespace internal {
             }
         }
         
-        if(state && !Input::Keyboard::CurrentModifier.IsModified()) {
+        if(state && !Input::Keyboard::CurrentModifier.IsModified() && key >= 0x20) {
             Input::AllowCharEvent = true;
         }
 
-        return !Input::Keyboard::CurrentModifier.IsModified();
+        return !Input::Keyboard::CurrentModifier.IsModified() && key >= 0x20;
     }
 
     bool Inputbox_base::CharacterEvent(Char c) {

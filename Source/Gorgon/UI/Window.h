@@ -27,6 +27,11 @@ namespace Gorgon { namespace UI {
         Window() : Gorgon::Window() {
         }
         
+        ~Window() {
+            KeyEvent.Unregister(inputtoken);
+            CharacterEvent.Unregister(chartoken);
+        }
+        
         Window(Window &&other) : Gorgon::Window(std::move(other)), WidgetContainer(std::move(other)) {
             KeyEvent.Unregister(inputtoken);
             CharacterEvent.Unregister(chartoken);
@@ -36,11 +41,15 @@ namespace Gorgon { namespace UI {
         }
         
         Window &operator=(Window &&other) {
-            Gorgon::Window::operator =(std::move(other));
-            WidgetContainer::operator =(std::move(other));
+            other.KeyEvent.Unregister(other.inputtoken);
+            other.CharacterEvent.Unregister(other.chartoken);
             
             KeyEvent.Unregister(inputtoken);
             CharacterEvent.Unregister(chartoken);
+            
+            Gorgon::Window::operator =(std::move(other));
+            WidgetContainer::operator =(std::move(other));
+            
             
             inputtoken = keyinit();
             chartoken  = charinit();

@@ -117,7 +117,9 @@ public:
         );
 
         wind.KeyEvent.Register([](Input::Key key, bool state) {
-            if(!state && (key == 27 || key == 65307))
+            namespace Keycodes = Gorgon::Input::Keyboard::Keycodes;
+            
+            if(!state && (key == Keycodes::Escape))
                 exit(0);
 
             return false;

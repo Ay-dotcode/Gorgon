@@ -385,9 +385,10 @@ namespace Gorgon { namespace UI {
                 return true;
             }
 
-            if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::None)
+            if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::None) {
                 FocusNext();
                 return true;
+            }
         }
 
         return false;

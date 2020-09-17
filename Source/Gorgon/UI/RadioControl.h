@@ -237,7 +237,7 @@ namespace Gorgon { namespace UI {
         
         bool own = false;
         
-        T_ current;
+        T_ current = T_{};
     };
     
 } }
