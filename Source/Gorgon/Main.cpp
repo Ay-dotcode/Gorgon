@@ -21,10 +21,23 @@
 #endif
 
 /**
- * @page GDB Pretty Printing
- * For GDB pretty printing to work with Gorgon objects
- * simply copy Resource/Gorgon-gdb.py file to the startup
- * directory of your program.
+ * @page programminghelpers Programming Utilities
+ * 
+ * Debugging Help
+ * ==============
+ * 
+ * GDB Pretty Printing
+ * -------------------
+ * 
+ * For GDB pretty printing to work with Gorgon objects simply copy `Resource/Gorgon-gdb.py`
+ * file to the startup directory of your program. You may need to allow script execution
+ * in GDB, when GDB is run, it will show you options on how to allow autoload scripts.
+ * 
+ * Adding the following to `~/.gdbinit` will allow script autoload in everywhere:
+ * 
+ * @code
+ * set auto-load safe-path /
+ * @endcode
  */
 
 #ifdef __GNUC__

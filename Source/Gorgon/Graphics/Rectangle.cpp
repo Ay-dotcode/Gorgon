@@ -76,7 +76,7 @@ namespace Gorgon { namespace Graphics {
         tm.DrawIn(target, prov.GetSideTiling() ? Tiling::Horizontal : Tiling::None, 
                   Geometry::Rectanglef(r.X + maxl, r.Y + maxt - tm.GetHeight(), r.Width-maxl-maxr, (Float)tm.GetHeight()),
                   color);
-        tr.Draw(target, r.Right() - maxr, r.Y + maxt - tr.GetHeight());
+        tr.Draw(target, r.Right() - maxr, r.Y + maxt - tr.GetHeight(), color);
 
         ml.DrawIn(target, prov.GetSideTiling() ? Tiling::Vertical : Tiling::None, 
                   Geometry::Rectanglef(r.X + maxl - ml.GetWidth(), r.Y + maxt, (Float)ml.GetWidth(), r.Height-maxt-maxb),
@@ -93,7 +93,7 @@ namespace Gorgon { namespace Graphics {
         bm.DrawIn(target, prov.GetSideTiling() ? Tiling::Horizontal : Tiling::None, 
                   Geometry::Rectanglef(r.X + maxl, r.Bottom() - maxb, r.Width-maxl-maxr, (Float)bm.GetHeight()),
                   color);
-        br.Draw(target, r.Right() - maxr, r.Bottom() - maxb);
+        br.Draw(target, r.Right() - maxr, r.Bottom() - maxb, color);
 	}
 
 	void Rectangle::drawin(TextureTarget &target, const SizeController &controller, const Geometry::Rectanglef &r, RGBAf color) const {

@@ -1,6 +1,7 @@
 #include "DWM.h"
 
 #include "../../Window.h"
+#include "../../Main.h"
 
 namespace Gorgon { 
 
@@ -325,8 +326,10 @@ namespace WindowManager {
 		//if the key is repeating, do not repeat keyevent.
 		if(!(lParam&1<<30)) {
 			data->pressedkeys.insert(key);
+            
+            Input::AllowCharEvent = false;
 			auto token = data->parent->KeyEvent(key, true);
-			if(token!=ConsumableEvent<Window, Input::Key, bool>::EmptyToken) {
+			if(token!=ConsumableEvent<Window, Input::Key, bool>::EmptyToken && !Input::AllowCharEvent) {
 				data->handlers[key] = token;
 
 				return;

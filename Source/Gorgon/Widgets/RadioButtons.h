@@ -20,9 +20,15 @@ namespace Gorgon { namespace Widgets {
     class RadioButtons : public UI::WidgetBase, protected UI::RadioControl<T_, W_>, public UI::WidgetContainer {
         friend class UI::WidgetContainer;
     public:
-        explicit RadioButtons(const UI::Template &temp) : temp(temp) { this->own = true; }
+        explicit RadioButtons(const UI::Template &temp) : temp(temp) { 
+            spacing = temp.GetSpacing();
+            this->own = true;
+        }
         
-        explicit RadioButtons(Registry::TemplateType type = Registry::Radio_Regular) : temp(Registry::Active()[type]) {  this->own = true; }
+        explicit RadioButtons(Registry::TemplateType type = Registry::Radio_Regular) : temp(Registry::Active()[type]) {  
+            spacing = temp.GetSpacing();
+            this->own = true; 
+        }
 
         
         /// Radio buttons height is automatically adjusted. Only width will be used.
@@ -77,10 +83,10 @@ namespace Gorgon { namespace Widgets {
             if(GetWidth() < c.GetWidth())
                 SetWidth(c.GetWidth());
             
-            contents.SetHeight(GetHeight() + c.GetHeight() + spacing);
-            
             if(IsVisible())
                 this->PlaceIn((UI::WidgetContainer&)*this, {0, 0}, spacing);
+                
+            contents.SetHeight(this->widgets.Last()->GetBounds().Bottom);
             
             boundschanged();
             childboundschanged(&c);
@@ -103,7 +109,7 @@ namespace Gorgon { namespace Widgets {
                 if(IsVisible())
                     this->PlaceIn((UI::WidgetContainer&)*this, {0, 0}, spacing);
                 
-                contents.SetHeight(this->widgets.Last()->GetBounds().Bottom + 1);
+                contents.SetHeight(this->widgets.Last()->GetBounds().Bottom);
                 
                 boundschanged();
                 childboundschanged(&elm);

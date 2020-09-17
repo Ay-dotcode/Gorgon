@@ -246,28 +246,7 @@ namespace Gorgon { namespace Graphics {
 		/// Blends the given color into this one. This operation performs regular alpha blending with the current
 		/// color being blended over.
 		void Blend(const RGBA &color) {
-			if (color.A == 255) {
-				A = 255;
-				R = color.R;
-				G = color.G;
-				B = color.B;
-			}
-			else {
-				float alpha = (float)color.A / 255;
-				float alpham1 = (float)(255 - color.A) / 255;
-
-				if (A < 255) {
-					int aa = (int)A + color.A;
-					if (aa > 255)
-						A = 255;
-					else
-						A = aa;
-				}
-
-				R = (Byte)(R*alpham1 + color.R*alpha);
-				G = (Byte)(G*alpham1 + color.G*alpha);
-				B = (Byte)(B*alpham1 + color.B*alpha);
-			}
+			Blend(color, 1.0f);
 		}
 
 		/// Blends the given color into this one. This operation performs regular alpha blending with the current
@@ -281,19 +260,18 @@ namespace Gorgon { namespace Graphics {
 			}
 			else {
 				float a = color.A*alpha / 255;
-				float alpham1 = (float)(255 - color.A*alpha) / 255;
+				float alpham1 = (1 - a);
 
-				if (A < 255) {
-					int aa = A + int(color.A*alpha);
-					if (aa > 255)
-						A = 255;
-					else
-						A = aa;
-				}
+                alpham1 *= A / 255.f;
+                    
+                float aa = a + A/255.f * (1 - a);
 
-				R = (Byte)(R*alpham1 + color.R*a);
-				G = (Byte)(G*alpham1 + color.G*a);
-				B = (Byte)(B*alpham1 + color.B*a);
+				if(aa > 0) {
+                    R = Byte((R*alpham1 + color.R*a)/aa);
+                    G = Byte((G*alpham1 + color.G*a)/aa);
+                    B = Byte((B*alpham1 + color.B*a)/aa);
+                }
+                A = Byte(aa*255);
 			}
 		}
 		
@@ -538,29 +516,54 @@ namespace Gorgon { namespace Graphics {
 			else {
 				float alpham1=1.f-color.A;
 
-				A += color.A;
-				if(A > 1.f)
-					A=1.f;
-
-				R=R*alpham1 + color.R*color.A;
-				G=G*alpham1 + color.G*color.A;
-				B=B*alpham1 + color.B*color.A;
+                R=R*alpham1*A + color.R*color.A;
+				G=G*alpham1*A + color.G*color.A;
+				B=B*alpham1*A + color.B*color.A;
+                A = color.A + A * alpham1;
+                
+                R /= A;
+                G /= A;
+                B /= A;
 			}
 		}
 
-		/// Blends the given color into this one with the given factor that is applied to all channels
+		/// Blends the given color into this one with the given factor that is applied to all channels.
 		void Blend(const RGBAf &color, float factor) {
-			auto m = 1 - factor;
+			if(color.A==1.f) {
+				A=1.f;
+				R=color.R;
+				G=color.G;
+				B=color.B;
+			}
+			else {
+                float a = color.A*factor;
+				float alpham1=1.f-a;
 
-			R = m * R + factor * color.R;
-			G = m * G + factor * color.G;
-			B = m * B + factor * color.B;
-			A = m * A + factor * color.A;
+                R=R*alpham1 * A + color.R * a;
+				G=G*alpham1 * A + color.G * a;
+				B=B*alpham1 * A + color.B * a;
+                A = color.A + A * alpham1;
+                
+                R /= A;
+                G /= A;
+                B /= A;
+			}
 		}
 
 		/// Blends the given color into this one with the given factor that is applied to color and alpha
-		/// channels separately
-		void Blend(const RGBAf &color, float factor_color, float factor_alpha) {
+		/// channels separately. This is not regular alpha blending as source alpha is not used.
+		void Slide(const RGBAf &color, float factor) {
+			auto ma = 1 - factor;
+
+			R = ma * R + factor * color.R;
+			G = ma * G + factor * color.G;
+			B = ma * B + factor * color.B;
+			A = ma * A + factor * color.A;
+		}
+		
+		/// Blends the given color into this one with the given factor that is applied to color and alpha
+		/// channels separately. This is not regular alpha blending as source alpha is not used.
+		void Slide(const RGBAf &color, float factor_color, float factor_alpha) {
 			auto mc = 1 - factor_color;
 			auto ma = 1 - factor_alpha;
 
@@ -570,8 +573,9 @@ namespace Gorgon { namespace Graphics {
 			A = ma * A + factor_alpha * color.A;
 		}
 
-		/// Blends the given color into this one with the given color as blending factor
-		void Blend(const RGBAf &color, const RGBAf &factor) {
+		/// Blends the given color into this one with the given factor that is applied to color and alpha
+		/// channels separately. This is not regular alpha blending as source alpha is not used.
+		void Slide(const RGBAf &color, const RGBAf &factor) {
 			R = (1 - factor.R) * R + factor.R * color.R;
 			G = (1 - factor.G) * G + factor.G * color.G;
 			B = (1 - factor.B) * B + factor.B * color.B;

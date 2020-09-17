@@ -43,6 +43,11 @@ namespace Gorgon { namespace Graphics {
 		}
 
 		/// Draws a textureless solid colored rectangle on the screen.
+		virtual void Draw(int x, int y, int w, int h, RGBAf color = RGBAf(1.f)) {
+			Draw({float(x), float(y), float(w), float(h)}, color);
+		}
+
+		/// Draws a textureless solid colored rectangle on the screen.
 		virtual void Draw(const Geometry::Pointf &location, const Geometry::Sizef &size, RGBAf color = RGBAf(1.f)) {
 			Draw({location, size}, color);
 		}

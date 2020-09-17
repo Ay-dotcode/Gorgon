@@ -276,6 +276,16 @@ namespace Keyboard {
 			return {Type(Key & r.Key)};
 		}
 		
+		/// Check modifier
+		explicit operator bool() const {
+            return Key != None;
+        }
+		
+		/// Check modifier
+		bool operator !() const {
+            return Key == None;
+        }
+		
 		/// The modifier key
 		Type Key;
 	};

@@ -48,15 +48,26 @@ namespace Gorgon { namespace Geometry {
 			return str.str();
 		}
 		
-		/// Combines two margins that are inside each other, basically taking the maximum margin from each side
+		/// Combines two margins that are inside each other, basically taking the maximum margin from each side. Negative margins do
+		/// not collapse
 		basic_Margin CombinePadding(const basic_Margin &other) const {
-            return {std::max(Left, other.Left), std::max(Top, other.Top), std::max(Right, other.Right), std::max(Bottom, other.Bottom)};
+            return {
+				(Left < 0 || other.Left < 0) ? Left + other.Left : std::max(Left, other.Left),
+				(Top < 0 || other.Top < 0) ? Top + other.Top : std::max(Top, other.Top),
+				(Right < 0 || other.Right < 0) ? Right + other.Right : std::max(Right, other.Right),
+				(Bottom < 0 || other.Bottom < 0) ? Bottom + other.Bottom : std::max(Bottom, other.Bottom),
+			};
         }
 
 		/// Combines two margins that are next to each other, basically taking the maximum margin from each side with its opposite.
-		/// Only one of the values should be used.
+		/// Only one of the values should be used. Negative margins do not collapse
         basic_Margin CombineMargins(const basic_Margin &other) const {
-            return {std::max(Left, other.Right), std::max(Top, other.Bottom), std::max(Right, other.Left), std::max(Bottom, other.Top)};
+            return {
+				(Left < 0 || other.Right< 0) ? Left + other.Right : std::max(Left, other.Right),
+				(Top < 0 || other.Bottom < 0) ? Top + other.Bottom : std::max(Top, other.Bottom),
+				(Right < 0 || other.Left < 0) ? Right + other.Left : std::max(Right, other.Left),
+				(Bottom < 0 || other.Top < 0) ? Bottom + other.Top : std::max(Bottom, other.Top),
+			};
         }
 		
 		/// Calculates and returns the total Margin in X axis

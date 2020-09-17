@@ -5,6 +5,8 @@
 #include "EmptyImage.h"
 #include "Bitmap.h"
 
+#include <set>
+
 namespace Gorgon { namespace Graphics {
 	/// Interface for RectangleProviders
 	class IRectangleProvider : public RectangularAnimationProvider {
@@ -213,6 +215,50 @@ namespace Gorgon { namespace Graphics {
 			own(true)
         { }
 
+		/// Filling constructor. The given object will be used for the borders. Center
+		/// will be empty
+		explicit basic_RectangleProvider(
+			A_  &border
+		) : 
+			tl(&border), tm(&border), tr(&border),
+			ml(&border), mm(nullptr), mr(&border),
+			bl(&border), bm(&border), br(&border) 
+        { }
+        
+		/// Filling constructor using move semantics, rectangle will create and own
+		/// new object. The given object will be moved to this new object. The given
+		/// object will be used for the borders
+		explicit basic_RectangleProvider(
+			A_  &&border
+		) : 
+			tl(new A_(std::move(border))), tm(tl), tr(tl),
+			ml(tl), mm(nullptr), mr(tl),
+			bl(tl), bm(tl), br(tl),
+			own(true)
+        { }
+
+		/// Filling constructor. The first given object will be used for the borders. The
+		/// second will be used for the center
+		basic_RectangleProvider(
+			A_  &border, A_ &center
+		) : 
+			tl(&border), tm(&border), tr(&border),
+			ml(&border), mm(&center), mr(&border),
+			bl(&border), bm(&border), br(&border) 
+        { }
+
+		/// Filling constructor using move semantics, rectangle will create and own
+		/// new objects. The given objects will be moved to these new objects. The first
+		/// object will be used for the borders, the second will be used for center
+		explicit basic_RectangleProvider(
+			A_  &&border, A_ &&center
+		) : 
+			tl(new A_(std::move(border))), tm(tl), tr(tl),
+			ml(tl), mm(new A_(std::move(center))), mr(tl),
+			bl(tl), bm(tl), br(tl),
+			own(true)
+        { }
+
 		/// Filling constructor, nullptr is acceptable
 		basic_RectangleProvider(
 			A_  *tl, A_ *tm, A_ *tr,
@@ -251,17 +297,12 @@ namespace Gorgon { namespace Graphics {
 
 		~basic_RectangleProvider() {
 			if(own) {
-				delete tl;
-				delete tm;
-				delete tr;
-
-                delete ml;
-				delete mm;
-				delete mr;
-    
-                delete bl;
-				delete bm;
-				delete br;
+                //delete unique ones
+                std::set<A_*> ptrs = {tl, tm, tr, ml, mm, mr, bl, bm, br};
+                
+                for(auto ptr : ptrs) {
+                    delete ptr;
+                }
             }
 		}
 		

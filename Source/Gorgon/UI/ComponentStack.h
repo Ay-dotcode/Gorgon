@@ -62,6 +62,16 @@ namespace Gorgon { namespace UI {
         /// the stack for condition changes. This variant supports image based data.
         /// Ownership of the image stays with the caller.
         void SetData(ComponentTemplate::DataEffect effect, const Graphics::Drawable &image);
+        
+        /// Returns the text data. If data is not set, this will return empty string.
+        std::string GetTextData(ComponentTemplate::DataEffect effect) {
+            return stringdata.count(effect) ? stringdata[effect] : "";
+        }
+        
+        /// Returns the image data. If data is not set, this will return nullptr.
+        const Graphics::Drawable *GetImageData(ComponentTemplate::DataEffect effect) {
+            return imagedata.Exists(effect) ? &imagedata[effect] : nullptr;
+        }
 
         /// Removes the data associated with data effect. This will remove all data
         /// variants together.
@@ -98,6 +108,9 @@ namespace Gorgon { namespace UI {
 
         /// Sets the value for the stack using a color
         void SetValue(Graphics::RGBA color) { SetValue((Graphics::RGBAf)color); }
+        
+        /// Returns the value of the stack
+        std::array<float, 4> GetValue() const { return returntarget ? targetvalue : value; }
 
         /// Changes the value transition speed. A speed of 0 will disable smooth transition.
         /// The unit is values per second
@@ -105,13 +118,13 @@ namespace Gorgon { namespace UI {
             valuespeed = val;
         }
 
-        /// GetValue returns the current transitional value, this will also enable value event
+        /// Whether GetValue returns the current transitional value, this will also enable value event
         /// to be called every time transitional value is updated
         void ReturnTransitionalValue() {
             returntarget = false;
         }
 
-        /// GetValue returns the target value. This is the default mode.
+        /// Whether GetValue returns the target value. This is the default mode.
         void ReturnTargetValue() {
             returntarget = true;
         }
@@ -121,8 +134,6 @@ namespace Gorgon { namespace UI {
             value_fn = handler;
         }
 
-        /// Returns the value of the stack
-        std::array<float, 4> GetValue() const { return returntarget ? targetvalue : value; }
 
         /// Sets the function that will be used to convert a value to a string. The handler will receive the value channel, data effect
         /// that is causing the translation and the value that needs to be transformed.
@@ -325,10 +336,39 @@ namespace Gorgon { namespace UI {
             return get(ind).GetTemplate();
         }
 
+        /// Set a fixed location for a tagged component
+        void SetTagLocation(ComponentTemplate::Tag tag, Geometry::Point location) {
+            taglocations[tag] = location;
+            Update();
+        }
+        
+        Geometry::Point GetTagLocation(ComponentTemplate::Tag tag) const {
+            auto f = taglocations.find(tag);
+            
+            if(f == taglocations.end())
+                return {0, 0};
+            else
+                return f->second;
+        }
+
+        /// Removes the fixed location for a set tagged component
+        void RemoveTagLocation(ComponentTemplate::Tag tag) {
+            taglocations.erase(tag);
+        }
+
         /// Set a fixed size for a tagged component
         void SetTagSize(ComponentTemplate::Tag tag, Geometry::Size size) {
             tagsizes[tag] = size;
             Update();
+        }
+
+        Geometry::Size GetTagSize(ComponentTemplate::Tag tag) const {
+            auto f = tagsizes.find(tag);
+            
+            if(f == tagsizes.end())
+                return {0, 0};
+            else
+                return f->second;
         }
 
         /// Removes the fixed size for a set tagged component
@@ -336,27 +376,16 @@ namespace Gorgon { namespace UI {
             tagsizes.erase(tag);
         }
         
+        /// Enables text wrapping on a specific tag, default is enabled.
+        void EnableTagWrap(ComponentTemplate::Tag tag) {
+            tagnowrap.erase(tag);
+        }
+        
         /// Disables text wrapping on a specific tag, default is enabled.
         void DisableTagWrap(ComponentTemplate::Tag tag) {
             tagnowrap.insert(tag);
         }
 
-        /// Enables text wrapping on a specific tag, default is enabled.
-        void EnableTagWrap(ComponentTemplate::Tag tag) {
-            tagnowrap.erase(tag);
-        }
-
-
-        /// Set a fixed location for a tagged component
-        void SetTagLocation(ComponentTemplate::Tag tag, Geometry::Point location) {
-            taglocations[tag] = location;
-            Update();
-        }
-
-        /// Removes the fixed location for a set tagged component
-        void RemoveTagLocation(ComponentTemplate::Tag tag) {
-            taglocations.erase(tag);
-        }
 
         /// Sets a function to be called before update check
         void SetFrameEvent(std::function<void()> handler) {
@@ -432,7 +461,7 @@ namespace Gorgon { namespace UI {
                     up_fn(stack.first->GetTag() == ComponentTemplate::NoTag ? ComponentTemplate::UnknownTag : stack.first->GetTag(), point, btn);
                 });
             }
-    }
+        }
         
         /// Sets the mouse down event. If HandleMouse function is called, this function will first
         /// perform mouse event transition, then it will call this handler.
@@ -517,23 +546,39 @@ namespace Gorgon { namespace UI {
 
         ///Return the component at the given index with the requested condition. Returns top of stack if condition does not exist.
         Component &get(int ind, ComponentCondition condition) const;
-
-        ///starts update chain
+        
+        ///Calculates the position results from the anchoring the given component to the area determined by the
+        ///given size and margin. Offset is used to move away from the anchor and may result reversing of direction.
+        void anchortoparent(Component &parent, Component &comp, const ComponentTemplate &temp, 
+                                Geometry::Point offset, Geometry::Margin margin, Geometry::Size maxsize);
+        
+        
+        ///Calculates the position results from the anchoring the given component to another component
+        void anchortoother(Component &comp, const ComponentTemplate &temp, 
+                        Geometry::Point offset, Geometry::Margin margin, Component &other, Graphics::Orientation orientation);
+        
+        ///starts the update chain
         void update();
 
         ///updates a specific container component
-        void update(Component &parent);
+        void update(Component &parent, const std::array<float, 4> &value, int ind, int textwidth = -1);
 
         ///renders the given component, rendering will use parent layer if the component does not have its own layer. Index is for
         ///repeated components, it is the index of the repeat to be rendered. Unlike Layer::Render function, this function does not
         ///run every frame.
-        void render(Component &component, Graphics::Layer &parentlayer, Geometry::Point offset, Graphics::RGBAf color = 1.f, int ind = -1);
+        void render(Component &component, Graphics::Layer &parentlayer, Geometry::Point offset, const std::array<float, 4> &value, Graphics::RGBAf color = 1.f, int ind = -1);
 
         ///grows the size of the stack
         void grow();
         
         ///returns the size of the emdash
         int getemsize(const Component &comp);
+        
+        ///returns the baseline point of the component
+        int getbaseline(const Component &comp);
+        
+        ///returns the height of the component
+        int gettextheight(const Component &comp);
 
         ///Calculates the value of the given channel for the given component. Uses stored value
         float calculatevalue(int channel, const Component &comp) const { return calculatevalue(value, channel, comp); }
@@ -556,7 +601,13 @@ namespace Gorgon { namespace UI {
         Component *gettag(ComponentTemplate::Tag tag) const;
 
         ///ComponentStack wide emsize
-        int emsize = 10;
+        int emsize = 0;
+        
+        ///ComponentStack wide baseline
+        int baseline = 0;
+        
+        ///ComponentStack wide baseline
+        int textheight = 0;
         
         ///This vector contains data for components. This piece of memory will be managed by the stack
         Component *data = nullptr;

@@ -183,6 +183,7 @@ namespace Gorgon { namespace Widgets {
         int overscroll = 0;
         bool scrollclipped = true;
         Geometry::Point scrolldist = {80, 45};
+        Geometry::Point scrolloffset = {0, 0};
         int scrollspeed = 250;
         Geometry::Point target;
         bool isscrolling = false;

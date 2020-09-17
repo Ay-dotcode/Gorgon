@@ -21,16 +21,6 @@ namespace Gorgon { namespace UI {
             return *temp;
         }
         
-        static void Swap(Component &left, Component &right) {
-            using std::swap;
-            
-            swap(left.temp     , right.temp     );
-            swap(left.location , right.location );
-            swap(left.size     , right.size     );
-            swap(left.innersize, right.innersize);
-        }
-        
-
         Geometry::Point location = {0, 0};
         
         Geometry::Size size = {-1, -1};
@@ -40,6 +30,8 @@ namespace Gorgon { namespace UI {
         
         //for horizontal this means right, for vertical this means bottom.
         bool anchorotherside = false;
+        
+        bool anchtoparent = false;
         
         bool reversed = false;
 

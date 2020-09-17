@@ -2,6 +2,7 @@
 
 #include "../Graphics/Font.h"
 #include "../WindowManager.h"
+#include "../UI.h"
 
 namespace Gorgon { namespace Widgets { namespace internal {
     
@@ -188,6 +189,10 @@ namespace Gorgon { namespace Widgets { namespace internal {
             return true;
 
         if(state) {
+            //tab and escape are always passed through
+            if(key == Keycodes::Tab || key == Keycodes::Escape)
+                return false;
+            
             if(Input::Keyboard::CurrentModifier == Modifier::None) {
                 switch(key) {
                 case Keycodes::Home:
@@ -262,8 +267,12 @@ namespace Gorgon { namespace Widgets { namespace internal {
                 }
             }
         }
+        
+        if(state && !Input::Keyboard::CurrentModifier.IsModified()) {
+            Input::AllowCharEvent = true;
+        }
 
-        return false;
+        return !Input::Keyboard::CurrentModifier.IsModified();
     }
 
     bool Inputbox_base::CharacterEvent(Char c) {
@@ -338,8 +347,6 @@ namespace Gorgon { namespace Widgets { namespace internal {
         else
             pos += sellen.glyph;
 
-        //std::cout<<selstart.glyph<<"\t"<<selstart.byte<<"\t|\t"<<sellen.glyph<<"\t"<<sellen.byte<<"\t|\t"<<glyphcount<<std::endl;
-
         Geometry::Point location;
         auto textsize = renderer.GetSize(display);
         
@@ -352,10 +359,13 @@ namespace Gorgon { namespace Widgets { namespace internal {
             targetsize = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize();
         }
         
+        
+        bool inarea = false;
         if(targetsize.Width > textsize.Width) {
             scrolloffset = 0;
 
             stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, {scrolloffset, 0});
+            inarea = true;
         }
         
         if(display == "") {
@@ -377,28 +387,31 @@ namespace Gorgon { namespace Widgets { namespace internal {
             stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, {scrolloffset, 0});
         }
 
-        stack.SetTagLocation(UI::ComponentTemplate::CaretTag, {location.X + scrolloffset, location.Y});
+        if(display == "") {
+            stack.RemoveTagLocation(UI::ComponentTemplate::CaretTag);
+        }
+        else {
+            stack.SetTagLocation(UI::ComponentTemplate::CaretTag, {location.X + scrolloffset, location.Y});
+        }
         
         if(stack.IndexOfTag(UI::ComponentTemplate::SelectionTag) != -1) {
-            auto selbounds = stack.TagBounds(UI::ComponentTemplate::SelectionTag);
             if(sellen.byte == 0) {
-                stack.SetTagSize(UI::ComponentTemplate::SelectionTag, {0, selbounds.Height()});
+                stack.RemoveTagSize(UI::ComponentTemplate::SelectionTag);
             }
             else {
                 auto srclocation = renderer.GetPosition(display, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), selstart.glyph, false).BottomLeft();
                 
                 if(srclocation.X < location.X) {
                     stack.SetTagLocation(UI::ComponentTemplate::SelectionTag, {srclocation.X + scrolloffset, 0});
-                    stack.SetTagSize(UI::ComponentTemplate::SelectionTag, {location.X - srclocation.X, selbounds.Height()});
+                    stack.SetTagSize(UI::ComponentTemplate::SelectionTag, {location.X - srclocation.X, 0});
                 }
                 else {
                     stack.SetTagLocation(UI::ComponentTemplate::SelectionTag, {location.X + scrolloffset, 0});
-                    stack.SetTagSize(UI::ComponentTemplate::SelectionTag, {srclocation.X - location.X, selbounds.Height()});
+                    stack.SetTagSize(UI::ComponentTemplate::SelectionTag, {srclocation.X - location.X, 0});
                 }
             }
         }
     }
-
 
     void Inputbox_base::focused() {
         UI::ComponentStackWidget::focused();

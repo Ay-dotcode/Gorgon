@@ -64,7 +64,6 @@ namespace Gorgon { namespace Widgets {
         SetSmoothScrollSpeed(scrollspeed);
     }
 
-    
     bool Panel::Activate() {
         if(!Focus())
             return false;
@@ -73,7 +72,6 @@ namespace Gorgon { namespace Widgets {
 
         return true;
     }
-
     
     bool Panel::KeyEvent(Input::Key key, float state) {
         if(UI::WidgetContainer::KeyEvent(key, state))
@@ -103,17 +101,14 @@ namespace Gorgon { namespace Widgets {
         
         return false;
     }
-
     
     bool Panel::CharacterEvent(Char c) {
         return UI::WidgetContainer::CharacterEvent(c);
     }
-
     
     bool Panel::IsVisible() const {
         return stack.IsVisible();
     }
-
     
     Geometry::Size Panel::GetInteriorSize() const {
         auto size = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize();
@@ -124,7 +119,6 @@ namespace Gorgon { namespace Widgets {
         
         return size;
     }
-    
 
     bool Panel::ResizeInterior(Geometry::Size size) {
         Geometry::Size border = {0, 0};
@@ -158,24 +152,20 @@ namespace Gorgon { namespace Widgets {
         return false;
     }
     
-
     void Panel::focused() {
         if(!HasFocusedWidget())
             FocusFirst();
         WidgetBase::focused();
     }
     
-
     void Panel::focuslost() {
         RemoveFocus();
         WidgetBase::focuslost();
     }
-
     
     Gorgon::Layer &Panel::getlayer() {
         return stack.GetLayerOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag));
     }
-
 
     void Panel::focuschanged() { 
         if(HasFocusedWidget() && !IsFocused())
@@ -183,7 +173,6 @@ namespace Gorgon { namespace Widgets {
         else if(!HasFocusedWidget() && IsFocused())
             RemoveFocus();
     }
-    
 
     void Panel::ScrollTo(int x, int y, bool clip){
         auto b = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
@@ -211,6 +200,7 @@ namespace Gorgon { namespace Widgets {
         
         if(scrollspeed == 0) {
             stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, {-x, -y});
+            scrolloffset = {x, y};
         }
         else {
             if(!isscrolling) {
@@ -261,6 +251,8 @@ namespace Gorgon { namespace Widgets {
         doaxis(cur.X, target.X);
         doaxis(cur.Y, target.Y);
         
+        scrolloffset = cur;
+        
         stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, -cur);
         
         if(done == 2) {
@@ -270,13 +262,9 @@ namespace Gorgon { namespace Widgets {
         }
     }
     
-    
     Geometry::Point Panel::ScrollOffset() const {
-        auto b = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
-
-        return -b.TopLeft();
+        return scrolloffset;
     }
-    
     
     void Panel::childboundschanged(WidgetBase *source) {
         WidgetContainer::childboundschanged(source);
@@ -319,7 +307,6 @@ namespace Gorgon { namespace Widgets {
         updaterequired = false;
     }
     
-    
     void Panel::SetOverscroll(int value) {
         overscroll = value;
         
@@ -348,7 +335,6 @@ namespace Gorgon { namespace Widgets {
         return {xscroll, yscroll};
     }
 
-
     void Panel::SetSmoothScrollSpeed(int value){
         auto b = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
         auto s = b.GetSize();
@@ -369,8 +355,7 @@ namespace Gorgon { namespace Widgets {
             stack.SetValueTransitionSpeed({(float)value / s.Width, (float)value / s.Height, 0, 0});
     }
     
-    
-     bool Panel::EnsureVisible(const UI::WidgetBase &widget) {
+    bool Panel::EnsureVisible(const UI::WidgetBase &widget) {
         if(widgets.Find(widget) == widgets.end())
             return false;
         
@@ -381,11 +366,24 @@ namespace Gorgon { namespace Widgets {
         
         Geometry::Bounds cb = {target, GetInteriorSize()};
         
-        if(!Contains(cb, wb)) {
-            ScrollTo(wb.TopLeft());
+        bool doscroll = false;
+        auto scrollto = ScrollOffset();
+        
+        if(cb.Left > wb.Left || cb.Right < wb.Right) {
+            scrollto.X = wb.Left;
+            doscroll = true;
         }
+        
+        if(cb.Top > wb.Top || cb.Bottom < wb.Bottom) {
+            scrollto.Y = wb.Top;
+            doscroll = true;
+        }
+        
+        if(doscroll)
+            ScrollTo(scrollto);
         
         return true;
     }
     
 } }
+

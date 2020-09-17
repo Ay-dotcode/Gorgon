@@ -17,7 +17,7 @@ namespace {
         if(delta || matrix)
             FT_Set_Transform(face, matrix, delta);
 
-        auto error = FT_Load_Glyph(face, index, FT_LOAD_RENDER|(aa ? 0 : FT_LOAD_MONOCHROME));
+        auto error = FT_Load_Glyph(face, index, FT_LOAD_RENDER|(aa ? FT_LOAD_TARGET_LIGHT : FT_LOAD_MONOCHROME));
 
         if(error != FT_Err_Ok)
             return nullptr;

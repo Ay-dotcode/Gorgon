@@ -11,137 +11,21 @@
 #include "../Graphics/Animations.h"
 #include "Dimension.h"
 
+//TODO: Add baseline for all components
+
 namespace Gorgon { 
     namespace Graphics {
         class TextRenderer;
     }
-    
-    /**
-    * @page ui User interface
-    *
-    * @subpage components
-    * 
-    * @subpage boxmodel
-    * 
-    * @subpage validators
-    */
     
     /// This namespace contains User interface related functionality. This namespace
     /// does not contain the actual widgets that can be used. For that purpose, use
     /// Gorgon::Widgets namespace.
     namespace UI {
 
-
-    /**
-    * @page components Components
-    * 
-    * Components are the building blocks of widgets. They are the visual elements
-    * that makes up most of the visual aspect of a widget. Components have templates,
-    * which they use as basis for their placement and drawing. ComponentTemplate is 
-    * the base class for all component templates. Components have component index
-    * and component condition (see ComponentCondition) to control which components
-    * will be visible at a given instance. Components have the same component indices
-    * but only one will be shown at a time. The components that have more specific
-    * condition will have precedence. For instance, if two components have index of 2
-    * and one has condition of ComponentCondition::Always and the other has condition
-    * of ComponentCondition::Focused, first component will be displayed unless the
-    * widget has received focus, in that case the second one will be shown.
-    * 
-    * 
-    * Every widget requires a container component at index 0 as the root. If this
-    * component has a non-0 size, the widget size will be fixed [this might change
-    * in the future].
-    * 
-    * 
-    * Components can be modified by the widget data. This is controlled through data
-    * effect. Various data effects exist to suit different type of widgets. See the
-    * widget documentation for specific data exported by them.
-    * 
-    * See @ref boxmodel to learn how the components are spaced out.
-    * 
-    * 
-    * ### How to create a simple button using components
-    * Create the following templates:
-    * 
-    * @code
-    * ContainerTemplate, index = 0, background = bg image, set size, children = 1, 2
-    * TextholderTemplate, index = 2, set font, data effect = Text
-    * @endcode
-    * 
-    * These two templates will create a very simple button that has the background and
-    * it will display the text that is set by the programmer. If you wish to change the
-    * color of the text when the user moves mouse into the button, add the following
-    * template as well:
-    * 
-    * @code
-    * TextholderTemplate index = 2, set font, data effect = Text, condition = Hover
-    * @endcode
-    * 
-    * This component will override the previous if the mouse is over the button. In order
-    * to change the background when the user clicks the button, add the following:
-    * 
-    * @code
-    * ContainerTemplate, index = 0, background = pressed, set size, condition = Down, 
-    * children = 1, 2
-    * @endcode
-    * 
-    * This will change the background when the user presses the mouse button. Both hover and
-    * down conditions can occur at the same time. If user uses mouse to press the button
-    * they will both be active at the same time, however, if the user uses space bar to
-    * press the button when it is focused, only Down condition will be satisfied. In addition
-    * to these, it is helpful to provide a visual clue when the widget is focused. This
-    * is generally done by adding a focus rectangle like the following:
-    * 
-    * @code
-    * VisualTemplate, index = 1, Drawable = focus rectangle, Positioning = Absolute, 
-    * Size = 100, 100, Unit::Percent, set margin, condition = Focused
-    * @endcode
-    * 
-    * This last piece will only be shown when the button is focused. There will be no errors
-    * when it is invisible even when the container lists this template as its child.
-    * 
-    * 
-    * ###See also:
-    * 
-    * @ref boxmodel
-    */
-
-
-    /**
-    * @page boxmodel Box Model
-    * 
-    * Component template defines any component that can be placed on a widget. This includes
-    * non-visual elements, fixed and user defined visual elements, and containers.
-    * Container components defines an area that can contain more objects and optionally 
-    * has a background and an overlay. This object also has margin to control how it
-    * will be placed in relation to other objects at the same level. Shadow extension
-    * control the drawing of background, while overlay extension controls the drawing
-    * of the overlay image. Positive extension will enlarge the image in that
-    * direction. Negative extensions also work. Extensions should not cover the border
-    * size, border margin should be within the object, extensions can be used to align
-    * overlay to background and to ignore shadows, which should stay outside the
-    * object. Border size controls the size of the border. (0, 0) of the object
-    * starts from this point. Padding controls the distance of the sub-objects from
-    * the border. Padding and the margin collapse on edge, the maximum value of
-    * margin or the padding is used. However, negative values are always subtracted.
-    * Finally, indent offsets the object from edges of its container. This offset is
-    * calculated after margin and padding is applied and only to the edges touching to
-    * its container.
-    *
-    * Objects are aligned and placed using anchor points. 
-    *
-    * This system is quite close to HTML box model, however, there are differences:
-    * background and overlay can be extended beyond the area, margin collapses with
-    * padding of container and there is indent to control distance from edges. 
-    * All objects have margin and indent while only containers have extensions, 
-    * border size, and padding.
-    * 
-    * [Might need rewording.]
-    */
-
     // TextPlaceholder
     // TextPlaceholder should have its own layer (same for others?)
-    // Obtained size, position, think about animation frame
+    // Obtained size, position
     // 
 
     /// Anchor position
@@ -149,18 +33,19 @@ namespace Gorgon {
         /// This anchor position should is only used to denote object will
         /// not be anchored to a previous object, only to its parent. If
         /// used as parent anchor it will be ignored and default anchor
-        /// will be used instead.
+        /// will be used instead. This should be paired with absolute 
+        /// positioning.
         None = 0,
         
         /// Top left
-        TopLeft,
+        TopLeft = 1,
         /// Top center
         TopCenter,
         /// Top right
         TopRight,
 
         /// Middle left
-        MiddleLeft,
+        MiddleLeft = 4,
         /// Middle center, using this position ensures that the
         /// components will be inside each other.
         MiddleCenter,
@@ -168,30 +53,26 @@ namespace Gorgon {
         MiddleRight,
         
         /// Bottom left
-        BottomLeft,
+        BottomLeft = 7,
         /// Bottom center
         BottomCenter,
         /// Bottom right
         BottomRight,
         
         /// Baseline left, for text, this aligns to the baseline of
-        /// the last line; if there is no text related data, this will
-        /// align to the middle left.
+        /// the first line
         FirstBaselineLeft,
         /// Baseline right, for text, this aligns to the baseline of
-        /// the last line; if there is no text related data, this will
-        /// align to the middle right.
+        /// the first line
         FirstBaselineRight,
         
         /// Baseline left, for text, this aligns to the baseline of
-        /// the last line; if there is no text related data, this will
-        /// align to the bottom left. This mode only works properly if
+        /// the last line. This mode only works properly if
         /// Sizing is set to automatic.
         LastBaselineLeft,
         
         /// Baseline right, for text, this aligns to the baseline of
-        /// the last line; if there is no text related data, this will
-        /// align to the bottom right. This mode only works properly if
+        /// the last line. This mode only works properly if
         /// Sizing is set to automatic.
         LastBaselineRight,
     };
@@ -242,6 +123,8 @@ namespace Gorgon {
             case Anchor::TopRight:
             case Anchor::TopLeft:
             case Anchor::TopCenter:
+            case Anchor::FirstBaselineLeft:
+            case Anchor::FirstBaselineRight:
                 return true;
             default:
                 return false;
@@ -268,8 +151,6 @@ namespace Gorgon {
             case Anchor::MiddleLeft:
             case Anchor::MiddleRight:
             case Anchor::MiddleCenter:
-            case Anchor::FirstBaselineLeft:
-            case Anchor::FirstBaselineRight:
                 return true;
             default:
                 return false;
@@ -304,10 +185,10 @@ namespace Gorgon {
         /// Component is visible when the widget is readonly.
         Readonly,
 
-        
+        /// Widget has the focus
         Focused,
 
-        
+        /// Mouse is over the widget, or over a particular repeat
         Hover,
         
         /// This is activated when the mouse is pressed on the component stack. However,
@@ -315,10 +196,13 @@ namespace Gorgon {
         Down,
         
 
+        /// Second state of the widget, first state is Always
         State2,
 
+        /// Third state of the widget, first state is Always
         State3,
 
+        /// Fourth state of the widget, first state is Always
         State4,
 
         /// This condition is triggered when the widget is opened like a combobox
@@ -334,12 +218,16 @@ namespace Gorgon {
         /// for the base state.
         Closed,
         
+        /// This is for widgets that can be activated, like a count down timer
         Active,
         
+        /// There is space horizontally to be scrolled
         HScroll,
         
+        /// There is space vertically to be scrolled.
         VScroll,
         
+        /// There is space both horizontally and vertically to be scrolled.
         HVScroll,
 
         /// Channel 1 value is 0, the value will be
@@ -644,10 +532,25 @@ namespace Gorgon {
             else
                 return 0;
         }
+        
+        /// Sets the spacing required for this template. Organizer widgets
+        /// uses this spacing in order to layout the widgets.
+        void SetSpacing(int value) {
+            spacing = value;
+            ChangedEvent();
+        }
+        
+        /// Returns the spacing required for this template. Organizer widgets
+        /// uses this spacing in order to layout the widgets.
+        int GetSpacing() const {
+            return spacing;
+        }
 
 
         /// This event is fired whenever template or its components are changed.
         Event<Template> ChangedEvent = Event<Template>{*this};
+        
+        std::string Name;
         
     private:
         Containers::Collection<ComponentTemplate> components;
@@ -657,6 +560,7 @@ namespace Gorgon {
         SizeMode xsizing = Free, ysizing = Free;
         Geometry::Size size;
         Geometry::Size additional = {0, 0};
+        int spacing = 4;
     };
 
     /// Defines an object according to the Box Model.
@@ -717,18 +621,25 @@ namespace Gorgon {
             
             Label,
 
+            //Value texts can automatically be calculated depending on the widget
             ValueText1,
 
+            //Value texts can automatically be calculated depending on the widget
             ValueText2,
 
+            //Value texts can automatically be calculated depending on the widget
             ValueText3,
 
+            //Value texts can automatically be calculated depending on the widget
             ValueText4,
             
             State1Text,
             State2Text,
             State3Text,
             State4Text,
+            
+            AutoStart = ValueText1,
+            AutoEnd   = State4Text,
 
             /// Data will effect the displayed graphics
             Icon,
@@ -1112,7 +1023,7 @@ namespace Gorgon {
         /// Returns how the data will affect this component
         DataEffect GetDataEffect() const { return dataeffect; }
         
-        /// Changes the ordering of the values. This allows swaps like X-Y. 
+        /// Changes the ordering of the values. This allows swaps like X-Y. You should specify which channel will receive which value. 
         void SetValueOrdering(int first, int second, int third, int fourth) {
             valueordering = {{first, second, third, fourth}};
             
@@ -1249,6 +1160,14 @@ namespace Gorgon {
 
 
 
+        /// Changes the baseline of the current component. If set to 0, it will be determined automatically.
+        void SetBaseline(int value) { baseline = value; ChangedEvent(); } 
+
+        /// Returns the baseline. If set to 0, it will be detected automatically
+        int GetBaseline() const { return baseline; }
+
+
+
         /// Changes the index of the current component. Only one component can be rendered at an index which is
         /// determined by the component condition. See component indexing for more information.
         void SetIndex(int value) { index = value; ChangedEvent(); } 
@@ -1348,7 +1267,7 @@ namespace Gorgon {
         SizingMode sizingw = Fixed, sizingh = Fixed;
 
         /// Size of the object.
-        Size size = {0, 0};
+        Size size = {{100, Dimension::Percent}, {100, Dimension::Percent}};
 
         /// Margin around the object, will be collapsed with other object margins
         /// and padding
@@ -1358,20 +1277,23 @@ namespace Gorgon {
         Margin indent = {0};
         
         /// Center point for rotation
-        Point center = {0, 0};
+        Point center = {{50, Dimension::Percent}, {50, Dimension::Percent}};
 
         /// Anchor point of the previous component that this component will be attached
         /// to. If the component positioning is absolute or this is the first component, 
         /// it will be anchored to the container and parent anchor point will be used.
-        Anchor previous = Anchor::FirstBaselineRight;
+        Anchor previous = Anchor::TopRight;
         
         /// Anchor point of the container that this component will be attached to, if it
         /// is attaching to its parent.
-        Anchor container = Anchor::MiddleLeft;
+        Anchor container = Anchor::TopLeft;
 
         /// Anchor point of the current component. This point will be matched to the
         /// previous component's anchor point
-        Anchor my = Anchor::FirstBaselineLeft;
+        Anchor my = Anchor::TopLeft;
+        
+        /// Manually set baseline for this component. When 0, it will not be effective.
+        int baseline = 0;
 
         /// Component index. Only one component can exist for a specific index position.
         /// The ordering and visibility of the components will be determined from the condition.
@@ -1421,9 +1343,18 @@ namespace Gorgon {
         const Template *temp = nullptr;
     };
 
+    /**
+     * Textholder is designed to hold text data. This data is set by the widget through
+     * DataEffect. Alignment for this component uses baseline and it is automatically sized.
+     */
     class TextholderTemplate : public ComponentTemplate {
     public:
-        
+        TextholderTemplate() {
+            my = Anchor::FirstBaselineLeft;
+            previous = Anchor::FirstBaselineRight;
+            container = Anchor::FirstBaselineLeft;
+            SetSizing(Automatic);
+        }
 
         /// Returns the type of the component.
         virtual ComponentType GetType() const noexcept override {
@@ -1469,11 +1400,25 @@ namespace Gorgon {
         Graphics::RGBAf GetTargetColor() const {
             return targetcolor;
         }
+        
+        /// Sets the default text for the textholder. This text can be overriden
+        /// by DataEffect
+        void SetText(const std::string &value) {
+            text = value;
+            
+            ChangedEvent();
+        }
+        
+        /// Returns the default text for the textholder.
+        std::string GetText() const {
+            return text;
+        }
     
     private:
         const Graphics::TextRenderer *renderer = nullptr;
         Graphics::RGBAf color = 1.0f;
         Graphics::RGBAf targetcolor = 0.f;
+        std::string text;
     };
 
     class VisualProvider {
@@ -1584,24 +1529,7 @@ namespace Gorgon {
             return ComponentType::Graphics;
         }
         
-        /// Changes the padding of the component. Padding is the minimum spacing inside the component.
-        void SetPadding(int value) { padding = {value}; ChangedEvent(); }
-
-        /// Changes the padding of the component. Padding is the minimum spacing inside the component.
-        void SetPadding(int hor, int ver) { padding = {hor, ver}; ChangedEvent(); }
-
-        /// Changes the padding of the component. Padding is the minimum spacing inside the component.
-        void SetPadding(int left, int top, int right, int bottom) {
-            padding ={left, top, right, bottom};
-            ChangedEvent();
-        }
-
-        /// Changes the padding of the component. Padding is the minimum spacing inside the component.
-        void SetPadding(Geometry::Margin value) { padding = value; ChangedEvent(); }
-
-        /// Returns the padding.
-        Geometry::Margin GetPadding() const { return padding; }
-
+        /// TODO: add size controller
         
         /// Set to true if you want to fill the region with the given graphics. This will
         /// only work if the given animation/drawable is rectangular
@@ -1732,7 +1660,7 @@ namespace Gorgon {
 
         /// Changes the overlay extent of the component. Overlay extent stays within the object area, but excluded
         /// from the interior area.
-        void SetOverlayExtent(int value) { padding ={value}; ChangedEvent(); }
+        void SetOverlayExtent(int value) { overlayextent ={value}; ChangedEvent(); }
 
         /// Changes the overlay extent of the component. Overlay extent stays within the object area, but excluded
         /// from the interior area.
@@ -1758,9 +1686,11 @@ namespace Gorgon {
         /// Adds an index to the container. The components will be drawn in order. Thus the components that are added
         /// later will be drawn on top. Multiple indexes will not cause any crashes, however, same component might be drawn 
         /// multiple times on top of itself.
-        void AddIndex(int componentindex) {
+        ContainerTemplate &AddIndex(int componentindex) {
             indices.push_back(componentindex);
             ChangedEvent();
+            
+            return *this;
         }
 
         /// Insert an index to the specified location in the container. The components will be drawn in order. Thus the 

@@ -79,6 +79,11 @@ namespace Gorgon { namespace UI {
                     return (float)value;
             }
         }
+        
+        /// Returns if the dimension is relative to the parentwidth
+        bool IsRelative() const {
+            return unit == Percent || unit == BasisPoint;
+        }
 
         /// Returns the value of the dimension, should not be considered as
         /// pixels

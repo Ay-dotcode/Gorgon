@@ -114,8 +114,8 @@ namespace Gorgon { namespace Widgets {
     class SimpleGenerator : public Generator {
     public:
         
-        /// Initializes the generator
-        explicit SimpleGenerator(int fontsize, std::string fontname = "", bool activate = true);
+        /// Initializes the generator. Density controls the spacing between elements
+        explicit SimpleGenerator(int fontsize, std::string fontname = "", bool activate = true, float density = 7.5);
         
         /// Creates a non-working simple generator. Calls to any function other than Init
         /// is undefined behaviour.
@@ -198,9 +198,10 @@ namespace Gorgon { namespace Widgets {
         
         Graphics::RectangleProvider &FocusBorder();
         
-        int Spacing      = 4;
-        int ObjectHeight = 15;
-        int ObjectBorder = 2;
+        int Spacing       = 4;
+        int ObjectHeight  = 15;
+        int ObjectBorder  = 2;
+        float ShapeBorder = 2;
         
         /// This function will update default widget dimensions. Call this function after
         /// setting up or changing borders, font size
@@ -210,10 +211,13 @@ namespace Gorgon { namespace Widgets {
         void UpdateBorders(bool smooth = true);
 
         Graphics::StyledRenderer RegularFont;
+        Graphics::StyledRenderer CenteredFont;
 
         struct FocusInfo {
-            Graphics::RGBA  Color = {Graphics::Color::Charcoal, 0.7};
-            int             Width = 1;
+            Graphics::RGBA  Color   = {Graphics::Color::Charcoal, 0.7};
+            int             Width   = 1;
+            //focus to content spacing
+            int             Spacing = 1;
         } Focus;
         
         struct BorderInfo {
@@ -221,12 +225,12 @@ namespace Gorgon { namespace Widgets {
             int Radius              = 0;
             int Divisions           = 1;
             Graphics::RGBA Color    = Graphics::Color::Charcoal;
-            Graphics::RGBA Disabled = {Graphics::Color::Grey, 0.5};
+            Graphics::RGBA Disabled = {Graphics::Color::Charcoal, 0.5};
         } Border;
         
         struct BackgroundInfo {
             Graphics::RGBA Regular = {Graphics::Color::Ivory, 0.8};
-            Graphics::RGBA Hover   = {Graphics::Color::LightTan, 0.5};
+            Graphics::RGBA Hover   = {Graphics::Color::Tan, 0.5};
             Graphics::RGBA Down    = {Graphics::Color::Crimson, 0.2};
             Graphics::RGBA Disabled=  Graphics::Color::LightGrey;
 
@@ -254,11 +258,17 @@ namespace Gorgon { namespace Widgets {
         
         /// This is the height of a non-bordered widget
         int WidgetHeight = 24;
+        
+        /// This controls the automatic spacing. After chaning this member
+        /// you need to call UpdateDimensions to get the desired effect.
+        float Density = 7.5;
 
     private:
         Graphics::BitmapRectangleProvider *makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingedge = 0, int borderwidth = -1, int borderradius = -1);
         Graphics::RectangleProvider *makefocusborder();
         UI::Template makepanel(int missingedge);
+        
+        void setupfocus(UI::GraphicsTemplate &focus);
         
         Graphics::GlyphRenderer *regularrenderer = nullptr;
         Containers::Collection<Graphics::Drawable> drawables;

@@ -228,6 +228,9 @@ namespace Gorgon {
 
 			std::lock_guard<std::mutex> g(access);
 			handlers.Add(handler);
+            
+            if(NewHandler)
+                NewHandler();
 
 			return reinterpret_cast<Token>(&handler);
 		}
@@ -409,6 +412,8 @@ namespace Gorgon {
 		
 		/// value for an empty token
 		static const Token EmptyToken;
+        
+        std::function<void()> NewHandler;
 		
 	private:
 
