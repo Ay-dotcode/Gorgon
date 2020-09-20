@@ -2070,7 +2070,7 @@ TestData test_repeat_possizealpha(Layer &layer) {
     
     layer.Add(stack);
     
-    return {"Repeat size and alpha", "On a white background there should be 5 10px wide red rectangles with 10px spacing. First rectangle should be completely transparent while opacity increases with every step while the height should start from 10px and increases 5px every step.", stack};
+    return {"Repeat position, size and alpha", "On a white background there should be 5 10px wide red rectangles with 10px spacing. First rectangle should be completely transparent while opacity increases with every step while the height should start from 10px and increases 5px every step.", stack};
 }
 
 TestData test_gettagbounds1(Layer &layer) {
@@ -2780,6 +2780,43 @@ TestData test_anchacc(Layer &layer) {
 }
 
 
+TestData test_ignored(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.AddIndex(3);
+    cont1.AddIndex(4);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(10, 20, Gorgon::UI::Dimension::Pixel);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetSize(10, 19, Gorgon::UI::Dimension::Pixel);
+    cont3.SetAnchor(Gorgon::UI::Anchor::MiddleRight, Gorgon::UI::Anchor::MiddleLeft, Gorgon::UI::Anchor::MiddleLeft);
+
+    temp.AddIgnored(3, Gorgon::UI::ComponentCondition::Always);
+    
+    auto &cont5 = temp.AddContainer(4, Gorgon::UI::ComponentCondition::Always);
+    cont5.Background.SetAnimation(blueimg());
+    cont5.SetSize(10, 20, Gorgon::UI::Dimension::Pixel);
+    cont5.SetAnchor(Gorgon::UI::Anchor::MiddleRight, Gorgon::UI::Anchor::MiddleLeft, Gorgon::UI::Anchor::MiddleLeft);
+
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    return {"Ignored template", "Size 10x20, 10x19 and 10x20 objects on a 60x60 white background, second could be 0 or 1px from the top, first and third should be touching to the top.", stack};
+}
+
+
+
 std::vector<std::function<TestData(Layer &)>> tests = {
     //BEGIN layout
     &test_graphic,
@@ -2907,6 +2944,7 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     //END
     
     &test_anchacc,
+    &test_ignored
 };
 
 //END tests

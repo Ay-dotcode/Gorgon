@@ -163,6 +163,7 @@ namespace Gorgon {
         Textholder,
         Graphics,
         Container,
+        Ignored,
     };
 
     /// Controls the condition when the components are visible.
@@ -360,6 +361,7 @@ namespace Gorgon {
     class TextholderTemplate;
     class GraphicsTemplate;
     class ContainerTemplate;
+    class IgnoredTemplate;
 
     /**
     * This class stores visual information about a widget template.
@@ -403,6 +405,10 @@ namespace Gorgon {
         /// This will create a new textholder and return it. The ownership will stay
         /// with the template. Index is the component index not the order in the template.
         TextholderTemplate &AddTextholder(int index, ComponentCondition cond) { return AddTextholder(index, cond, ComponentCondition::None); }
+        
+        /// This will create a new ignored template. Ignored templates are used to erase
+        /// templates that are set to Always
+        IgnoredTemplate &AddIgnored(int index, ComponentCondition cond) { return AddIgnored(index, cond, ComponentCondition::None); }
 
         /// This will create a new textholder and return it. The ownership will stay
         /// with the template. Index is the component index not the order in the template.
@@ -423,6 +429,10 @@ namespace Gorgon {
         /// This will create a new drawable and return it. The ownership will stay
         /// with the template. Index is the component index not the order in the template.
         ContainerTemplate &AddContainer(int index, ComponentCondition from, ComponentCondition to);
+        
+        /// This will create a new ignored template. Ignored templates are used to erase
+        /// templates that are set to Always
+        IgnoredTemplate &AddIgnored(int index, ComponentCondition from, ComponentCondition to);
         
         /// Removes the component at the given index.
         void Remove(int index) {
@@ -1341,6 +1351,18 @@ namespace Gorgon {
         
     private:
         const Template *temp = nullptr;
+    };
+    
+    /// This component type will be ignored by ComponentStack, effectively erasing
+    /// Always when necessary.
+    class IgnoredTemplate : public ComponentTemplate {
+    public:
+        
+        /// Returns the type of the component.
+        virtual ComponentType GetType() const noexcept override {
+            return ComponentType::Ignored;
+        }
+        
     };
 
     /**

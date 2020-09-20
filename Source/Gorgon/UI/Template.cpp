@@ -380,6 +380,22 @@ namespace Gorgon { namespace UI {
         
         return *obj;
     }
+    
+    IgnoredTemplate& Template::AddIgnored(int index, ComponentCondition from, ComponentCondition to){ 
+        auto obj = new IgnoredTemplate();
+        components.Add(obj);
+        
+        obj->SetIndex(index);
+        obj->SetCondition(from, to);
+        
+        tokens.push_back(
+            obj->ChangedEvent.Register(ChangedEvent, &Event<Template>::operator ())
+        );
+        
+        ChangedEvent();
+        
+        return *obj;
+    }
 
     TextholderTemplate& Template::AddTextholder(int index, ComponentCondition from, ComponentCondition to){ 
         auto obj = new TextholderTemplate();

@@ -1305,6 +1305,7 @@ namespace Gorgon { namespace Widgets {
         auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
         bg.Background.SetAnimation(PanelBorder(0));
         bg.AddIndex(1);
+        bg.SetClip(true);
         
         bg.SetPadding(Border.Width + Spacing);
         
@@ -1319,4 +1320,77 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
+    UI::Template SimpleGenerator::VScrollbar() {
+        int w = std::max(Border.Radius * 2 + 1, Spacing * 3);
+        
+        Geometry::Size defsize = {w, BorderedWidgetHeight * 3 - Border.Width * 2};
+        
+        UI::Template temp;
+        temp.SetSize(defsize);
+        
+        temp.AddContainer(0, UI::ComponentCondition::Always)
+            .AddIndex(1) //movement control
+        ;
+        
+        auto &move = temp.AddContainer(1, UI::ComponentCondition::Always)
+            .AddIndex(2) //size control
+        ;
+        move.SetSizing(UI::ComponentTemplate::Fixed, UI::ComponentTemplate::Automatic);
+        move.SetValueModification(UI::ComponentTemplate::ModifyY);
+        move.SetPositioning(UI::ComponentTemplate::AbsoluteSliding);
+        
+        //remove handle when there is nothing to scroll
+        temp.AddIgnored(1, UI::ComponentCondition::Ch2V1);
+        
+        auto setupbar = [&](auto &border, auto cond) {
+            auto &size = temp.AddGraphics(2, cond);
+            size.SetValueModification(UI::ComponentTemplate::ModifyHeight, UI::ComponentTemplate::UseSecond);
+            size.SetPositioning(UI::ComponentTemplate::AbsoluteSliding);
+            size.SetSize(w, w);
+            size.SetTag(UI::ComponentTemplate::DragBarTag);
+            size.Content.SetAnimation(border);
+        };
+        
+        setupbar(NormalEditBorder(), UI::ComponentCondition::Always);
+        setupbar(HoverEditBorder(), UI::ComponentCondition::Hover);
+        
+        return temp;
+    }
+    
+    UI::Template SimpleGenerator::HScrollbar() {
+        int h = std::max(Border.Radius * 2 + 1, Spacing * 3);
+        
+        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, h};
+        
+        UI::Template temp;
+        temp.SetSize(defsize);
+        
+        temp.AddContainer(0, UI::ComponentCondition::Always)
+            .AddIndex(1) //movement control
+        ;
+        
+        auto &move = temp.AddContainer(1, UI::ComponentCondition::Always)
+            .AddIndex(2) //size control
+        ;
+        move.SetSizing(UI::ComponentTemplate::Fixed, UI::ComponentTemplate::Automatic);
+        move.SetValueModification(UI::ComponentTemplate::ModifyX);
+        move.SetPositioning(UI::ComponentTemplate::AbsoluteSliding);
+        
+        //remove handle when there is nothing to scroll
+        temp.AddIgnored(1, UI::ComponentCondition::Ch2V1);
+        
+        auto setupbar = [&](auto &border, auto cond) {
+            auto &size = temp.AddGraphics(2, cond);
+            size.SetValueModification(UI::ComponentTemplate::ModifyWidth, UI::ComponentTemplate::UseSecond);
+            size.SetPositioning(UI::ComponentTemplate::AbsoluteSliding);
+            size.SetSize(h, h);
+            size.SetTag(UI::ComponentTemplate::DragBarTag);
+            size.Content.SetAnimation(border);
+        };
+        
+        setupbar(NormalEditBorder(), UI::ComponentCondition::Always);
+        setupbar(HoverEditBorder(), UI::ComponentCondition::Hover);
+        
+        return temp;
+    }
 }}

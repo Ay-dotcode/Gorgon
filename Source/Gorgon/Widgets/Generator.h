@@ -56,6 +56,11 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template Progressbar() = 0;
         
+        virtual UI::Template HScrollbar() = 0;
+        
+        virtual UI::Template VScrollbar() = 0;
+        
+        
         virtual UI::Template Layerbox() = 0;
         
         virtual UI::Template BlankLayerbox() = 0;
@@ -161,6 +166,11 @@ namespace Gorgon { namespace Widgets {
         
         
         virtual UI::Template Progressbar() override;
+        
+        virtual UI::Template HScrollbar() override;
+        
+        virtual UI::Template VScrollbar() override;
+        
         
         
         virtual UI::Template BlankLayerbox() override;

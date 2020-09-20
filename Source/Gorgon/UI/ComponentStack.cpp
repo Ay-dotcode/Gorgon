@@ -2125,6 +2125,10 @@ namespace Gorgon { namespace UI {
                 //original template
                 const auto &temporg = comporg.GetTemplate();
                 
+                //ignore the ignored templates
+                if(temporg.GetType() == ComponentType::Ignored)
+                    continue;
+                
                 int j = 0;
                 int jtarget = 1;
                 if(temporg.GetRepeatMode() != temporg.NoRepeat) {
@@ -3215,6 +3219,10 @@ realign:
                     auto &compparent = get(cont[i]);
                     //get the template
                     auto &temp       = compparent.GetTemplate();
+                    
+                    //ignore the ignored template
+                    if(temp.GetType() == ComponentType::Ignored)
+                        continue;
                     
                     //if not repeating
                     if(temp.GetRepeatMode() == ComponentTemplate::NoRepeat) {
