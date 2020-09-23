@@ -101,6 +101,7 @@ namespace Gorgon { namespace Widgets {
         delete hoverborder;
         delete downborder;
         delete disabledborder;
+        delete grooveborder;
         delete normaleditborder;
         delete hovereditborder;
         delete readonlyborder;
@@ -110,8 +111,13 @@ namespace Gorgon { namespace Widgets {
         delete hoverbg;
         delete downbg;
         delete disabledbg;
+        delete normalrbg;
+        delete hoverrbg;
+        delete downrbg;
+        delete disabledrbg;
         delete objectshape;
         delete innerobjectshape;
+        delete groovebg;
         
         for(auto p : panelborders) {
             delete p;
@@ -202,6 +208,13 @@ namespace Gorgon { namespace Widgets {
         return *panelborders[missingedge];
     }
     
+    Graphics::BitmapRectangleProvider &SimpleGenerator::GrooveBorder() {
+        if(!grooveborder)
+            grooveborder = makeborder(Border.Color, Background.Groove);
+        
+        return *grooveborder;
+    }
+
     Graphics::BitmapRectangleProvider &SimpleGenerator::NormalEditBorder() {
         if(!normaleditborder)
             normaleditborder = makeborder(Border.Color, Background.Edit);
@@ -268,6 +281,52 @@ namespace Gorgon { namespace Widgets {
         return *disabledbg;
     }
     
+    Graphics::BitmapRectangleProvider &SimpleGenerator::NormalRBG() {
+        if(!normalrbg)
+            normalrbg = makeborder(0x0, Background.Regular, 0, 0, Border.Radius/2);
+        
+        return *normalrbg;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::HoverRBG() {
+        if(!hoverrbg) {
+            auto c = Background.Regular;
+            c.Blend(Background.Hover);
+            hoverrbg = makeborder(0x0, c, 0, 0, Border.Radius/2);
+        }
+        
+        return *hoverrbg;
+    }
+
+    Graphics::BitmapRectangleProvider &SimpleGenerator::DownRBG() {
+        if(!downrbg) {
+            auto c = Background.Regular;
+            c.Blend(Background.Down);
+            downrbg = makeborder(0x0, c, 0, 0, Border.Radius/2);
+        }
+
+        return *downrbg;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::DisabledRBG() {
+        if(!disabledrbg) {
+            auto c = Background.Regular;
+            c.Blend(Background.Disabled);
+            disabledrbg = makeborder(0x0, c, 0, 0, Border.Radius/2);
+        }
+
+        return *disabledrbg;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::GrooveBG() {
+        if(!groovebg) {
+            auto c = Background.Groove;
+            groovebg = makeborder(0x0, c);
+        }
+
+        return *groovebg;
+    }
+    
     Graphics::BitmapRectangleProvider &SimpleGenerator::ObjectShape() {
         if(!objectshape) {
             auto c = Forecolor.Regular;
@@ -311,8 +370,9 @@ namespace Gorgon { namespace Widgets {
         if(r == -1)
             r = Border.Radius;
         
-        int bsize = (w + r + 2) * 2 + 16;
-        float off = float(w / 2.0f); //prefer integers
+        int coff = r + (border.A > 0 ? w+1 : 0);
+        int bsize = coff * 2 + 16;
+        float off = (border.A ? float(w / 2.0f) : 0);
         
         auto &bi = *new Graphics::Bitmap({bsize, bsize}, Graphics::ColorMode::RGBA);
         bi.Clear();
@@ -402,10 +462,10 @@ namespace Gorgon { namespace Widgets {
         
 
         auto ret = new Graphics::BitmapRectangleProvider(Graphics::Slice(bi, {
-            int(r+w+2), 
-            int(r+w+2), 
-            int(bsize-r-w-2),
-            int(bsize-r-w-2)
+            coff, 
+            coff, 
+            bsize-coff,
+            bsize-coff
         }));
         
         ret->Prepare();
@@ -1241,7 +1301,8 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::Progressbar() {
-        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight};
+        int h = std::max(Border.Radius * 2 + Border.Width * 2 + 4, Spacing * 3);
+        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, h};
         
         UI::Template temp;
         temp.SetSpacing(Spacing);
@@ -1321,7 +1382,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::VScrollbar() {
-        int w = std::max(Border.Radius * 2 + 1, Spacing * 3);
+        int w = std::max(Border.Radius * 2 + 2, Spacing * 3);
         
         Geometry::Size defsize = {w, BorderedWidgetHeight * 3 - Border.Width * 2};
         
@@ -1358,39 +1419,39 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::HScrollbar() {
-        int h = std::max(Border.Radius * 2 + 1, Spacing * 3);
+        auto dist = int(std::round(Spacing / 3.f));
+        int h = std::max(Border.Radius * 2 + std::max(0, dist - Border.Radius / 2) * 2, Spacing * 2);
         
         Geometry::Size defsize = {WidgetWidth * 2 + Spacing, h};
         
         UI::Template temp;
         temp.SetSize(defsize);
         
-        temp.AddContainer(0, UI::ComponentCondition::Always)
-            .AddIndex(1) //movement control
+        auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always)
+            .AddIndex(1) //handle control
         ;
+        cont.Background.SetAnimation(GrooveBG());
+        cont.SetPadding(dist + Border.Radius/2, dist);
         
-        auto &move = temp.AddContainer(1, UI::ComponentCondition::Always)
-            .AddIndex(2) //size control
-        ;
-        move.SetSizing(UI::ComponentTemplate::Fixed, UI::ComponentTemplate::Automatic);
-        move.SetValueModification(UI::ComponentTemplate::ModifyX);
-        move.SetPositioning(UI::ComponentTemplate::AbsoluteSliding);
-        
-        //remove handle when there is nothing to scroll
-        temp.AddIgnored(1, UI::ComponentCondition::Ch2V1);
         
         auto setupbar = [&](auto &border, auto cond) {
-            auto &size = temp.AddGraphics(2, cond);
-            size.SetValueModification(UI::ComponentTemplate::ModifyWidth, UI::ComponentTemplate::UseSecond);
+            auto &size = temp.AddGraphics(1, cond);
+            size.SetValueModification(UI::ComponentTemplate::ModifyPositionAndSize, UI::ComponentTemplate::UseXZ);
             size.SetPositioning(UI::ComponentTemplate::AbsoluteSliding);
-            size.SetSize(h, h);
+            size.SetSize({h, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
             size.SetTag(UI::ComponentTemplate::DragBarTag);
             size.Content.SetAnimation(border);
         };
         
-        setupbar(NormalEditBorder(), UI::ComponentCondition::Always);
-        setupbar(HoverEditBorder(), UI::ComponentCondition::Hover);
+        setupbar(NormalRBG(), UI::ComponentCondition::Always);
+        setupbar(HoverRBG(), UI::ComponentCondition::Hover);
+        setupbar(DownRBG(), UI::ComponentCondition::Down);
+        setupbar(DisabledRBG(), UI::ComponentCondition::Disabled);
+        
+        //remove handle when there is nothing to scroll
+        temp.AddIgnored(1, UI::ComponentCondition::Ch2V1);
         
         return temp;
     }
+    
 }}

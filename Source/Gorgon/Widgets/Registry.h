@@ -41,6 +41,9 @@ namespace Gorgon { namespace Widgets {
             Layerbox_Regular,
             Layerbox_Blank,
             
+            Scrollbar_Horizontal,
+            Scrollbar_Vertical,
+            
             ///Do not use this value
             Max 
         };

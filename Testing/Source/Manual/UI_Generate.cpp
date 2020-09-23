@@ -12,6 +12,7 @@
 #include <Gorgon/Widgets/Numberbox.h>
 #include <Gorgon/Widgets/GeometryBoxes.h>
 #include <Gorgon/Widgets/Progressbar.h>
+#include <Gorgon/Widgets/Scrollbar.h>
 #include <Gorgon/UI/RadioControl.h>
 #include <Gorgon/UI/Organizers/List.h>
 #include <Gorgon/Graphics/BlankImage.h>
@@ -39,8 +40,8 @@ int main() {
     ///Blank Panel & elements with Registry & Regulars 
     /*Widgets::SimpleGenerator generator;
     generator.Init(13);
-    //generator.Border.Radius = 0;
     generator.UpdateBorders();
+    generator.Border.Radius = 0;
     generator.UpdateDimensions();
     generator.Activate();*/
 
@@ -132,6 +133,11 @@ int main() {
         return false;
     });
     
+    Widgets::Scrollbar<int> scroll(50);
+    scroll = 40;
+    scroll.Range = 20;
+    
+    
     app.wind.Add(blank);
     addme(blank, btn);
     addme(blank, icnbtn);
@@ -145,6 +151,7 @@ int main() {
     addme(blank, chk2);
     addme(blank, chkbutton);
     addme(blank, bar);
+    addme(blank, scroll);
     addme(blank, toppanel);
     addme(blank, bottompanel);
     addme(blank, leftpanel);

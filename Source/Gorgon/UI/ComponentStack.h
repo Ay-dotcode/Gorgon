@@ -112,6 +112,9 @@ namespace Gorgon { namespace UI {
         /// Returns the value of the stack
         std::array<float, 4> GetValue() const { return returntarget ? targetvalue : value; }
 
+        /// Returns the value of the stack
+        std::array<float, 4> GetTargetValue() const { return targetvalue; }
+
         /// Changes the value transition speed. A speed of 0 will disable smooth transition.
         /// The unit is values per second
         void SetValueTransitionSpeed(std::array<float, 4> val) {

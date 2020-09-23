@@ -2376,11 +2376,36 @@ realign:
                     heightch = 1;
                 }
             }
+            else if(temp.GetValueModification() == temp.ModifyPositionAndSize) {
+                switch(NumberOfSetBits(temp.GetValueSource())) {
+                    case 2:
+                        (ishor ? widthch : heightch) = 1;
+                        break;
+                        
+                    case 3:
+                        (ishor ? widthch : heightch) = 2;
+                        break;
+                        
+                    case 4:
+                        widthch  = 2;
+                        heightch = 3;
+                        break;
+                        
+                    default:
+                        break;
+                }
+            }
             else if(temp.GetValueModification() == temp.ModifyWidth) {
                 widthch = 0;
             }
             else if(temp.GetValueModification() == temp.ModifyHeight) {
                 heightch = 0;
+            }
+            else if(temp.GetValueModification() == temp.ModifyXAndWidth || temp.GetValueModification() == temp.ModifyYAndWidth) {
+                widthch = 1;
+            }
+            else if(temp.GetValueModification() == temp.ModifyXAndHeight || temp.GetValueModification() == temp.ModifyYAndHeight) {
+                heightch = 1;
             }
             
             
@@ -2731,10 +2756,33 @@ realign:
                     ych = 1;
                 }
             }
+            else if(temp.GetValueModification() == temp.ModifyPositionAndSize) {
+                switch(NumberOfSetBits(temp.GetValueSource())) {
+                    case 1:
+                    case 2:
+                        (ishor ? xch : ych) = 0;
+                        break;
+                        
+                    case 3:
+                    case 4:
+                        xch  = 2;
+                        ych = 3;
+                        break;
+                        
+                    default:
+                        break;
+                }
+            }
             else if(temp.GetValueModification() == temp.ModifyX) {
                 xch = 0;
             }
             else if(temp.GetValueModification() == temp.ModifyY) {
+                ych = 0;
+            }
+            else if(temp.GetValueModification() == temp.ModifyXAndWidth || temp.GetValueModification() == temp.ModifyXAndHeight) {
+                xch = 0;
+            }
+            else if(temp.GetValueModification() == temp.ModifyYAndWidth || temp.GetValueModification() == temp.ModifyYAndHeight) {
                 ych = 0;
             }
 

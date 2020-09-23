@@ -103,6 +103,10 @@ namespace Gorgon { namespace Widgets {
                 return *new UI::Template(Layerbox());
             case Layerbox_Blank:
                 return *new UI::Template(BlankLayerbox());
+            case Scrollbar_Vertical:
+                return *new UI::Template(VScrollbar());
+            case Scrollbar_Horizontal:
+                return *new UI::Template(HScrollbar());
             default:
                 return *new UI::Template();
             }
@@ -193,6 +197,8 @@ namespace Gorgon { namespace Widgets {
         
         Graphics::BitmapRectangleProvider &PanelBorder(int missingedge = 0);
         
+        Graphics::BitmapRectangleProvider &GrooveBorder();
+        
         Graphics::BitmapRectangleProvider &NormalEditBorder();
         Graphics::BitmapRectangleProvider &HoverEditBorder();
         Graphics::BitmapRectangleProvider &ReadonlyBorder();
@@ -203,8 +209,14 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider &HoverBG();
         Graphics::BitmapRectangleProvider &DownBG();
         Graphics::BitmapRectangleProvider &DisabledBG();
+        Graphics::BitmapRectangleProvider &NormalRBG();
+        Graphics::BitmapRectangleProvider &HoverRBG();
+        Graphics::BitmapRectangleProvider &DownRBG();
+        Graphics::BitmapRectangleProvider &DisabledRBG();
         Graphics::BitmapRectangleProvider &ObjectShape();
         Graphics::MaskedObjectProvider &InnerObjectShape();
+        
+        Graphics::BitmapRectangleProvider &GrooveBG();
         
         Graphics::RectangleProvider &FocusBorder();
         
@@ -247,6 +259,8 @@ namespace Gorgon { namespace Widgets {
             
             Graphics::RGBA Edit    = {Graphics::Color::White};
             Graphics::RGBA Panel   = {Graphics::Color::Grey, Graphics::Color::Ivory, 0.5};
+            
+            Graphics::RGBA Groove  = {Graphics::Color::Charcoal, 0.5};
             
             Graphics::RGBA Selected= {Graphics::Color::Charcoal, 0.4};
         } Background;
@@ -291,16 +305,24 @@ namespace Gorgon { namespace Widgets {
         
         Graphics::BitmapRectangleProvider *panelborders[5] = {};
         
+        Graphics::BitmapRectangleProvider *grooveborder = nullptr;
+        
         Graphics::BitmapRectangleProvider *normaleditborder = nullptr;
         Graphics::BitmapRectangleProvider *hovereditborder = nullptr;
         Graphics::BitmapRectangleProvider *readonlyborder = nullptr;
         
         Graphics::BitmapRectangleProvider *normalemptyborder = nullptr;
         
+        Graphics::BitmapRectangleProvider *normalrbg = nullptr;
+        Graphics::BitmapRectangleProvider *hoverrbg = nullptr;
+        Graphics::BitmapRectangleProvider *downrbg = nullptr;
+        Graphics::BitmapRectangleProvider *disabledrbg = nullptr;
+        
         Graphics::BitmapRectangleProvider *normalbg = nullptr;
         Graphics::BitmapRectangleProvider *hoverbg = nullptr;
         Graphics::BitmapRectangleProvider *downbg = nullptr;
         Graphics::BitmapRectangleProvider *disabledbg = nullptr;
+        Graphics::BitmapRectangleProvider *groovebg = nullptr;
         Graphics::BitmapRectangleProvider *objectshape = nullptr;
         Graphics::MaskedObjectProvider *innerobjectshape = nullptr;
         

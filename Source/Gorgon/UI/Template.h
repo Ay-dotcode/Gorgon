@@ -719,6 +719,26 @@ namespace Gorgon {
             /// and will modify Size property. Useful for sliders and progress bars. The direction
             /// of the container is used to determine which axis will get affected.
             ModifyHeight,
+            
+            
+            /// This is a combined modification of position and size. Single channel will control
+            /// the position along the orientation. Two channels will control position and size along
+            /// the orientation. Three channels will control xy position and size along the 
+            /// orientation. Finally four channels will control every aspect of the component. 
+            ModifyPositionAndSize,
+            
+            /// Modifies X position and width
+            ModifyXAndWidth,
+            
+            /// Modifies X position and height
+            ModifyXAndHeight,
+            
+            /// Modifies Y position and width
+            ModifyYAndWidth,
+            
+            /// Modifies Y position and height
+            ModifyYAndHeight,
+            
         };
         
         /// Which data channels should be used as the value, common combinations are listed, however, all

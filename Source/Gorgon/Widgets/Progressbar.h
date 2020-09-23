@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Common.h"
 #include "../UI/ComponentStackWidget.h"
 #include "../UI/Helpers.h"
 #include "../Property.h"
@@ -7,13 +8,20 @@
 
 namespace Gorgon { namespace Widgets {
     
-    template<class T_>
-    float FloatDivider(T_ left, T_ min, T_ max) {
-        if(min == max) return 0.f;
-        
-        return float(left - min) / float(max - min);
-    }
 
+    /**
+     * This widget displays a progress bar to track progress of an on going 
+     * process. For regular integer based progressor use Progressbar. This
+     * is the base widget that can be used with any type, including types
+     * that are not inherintly numeric. The completion is calculated using
+     * DIV_ function which takes current, minimum and maximum values and
+     * should return the progress between 0 and 1. Property type should be
+     * adjusted if numeric operators does not exist for the given type.
+     * 
+     * If the type is numeric, using NumericProperty will allow you to use
+     * the widget as a regular numeric variable with operators like =, +=,
+     * ++, --. 
+     */
     template<
         class T_ = int, 
         float(*DIV_)(T_, T_, T_) = FloatDivider<T_>, 
@@ -260,6 +268,7 @@ namespace Gorgon { namespace Widgets {
                 stack.AddCondition(UI::ComponentCondition::Ch1V05);
             }
             else {
+                stack.RemoveCondition(UI::ComponentCondition::Ch1V05);
             }
             if(v == 1000) {
                 stack.AddCondition(UI::ComponentCondition::Ch1V1);
@@ -269,9 +278,9 @@ namespace Gorgon { namespace Widgets {
             }
         }
         
-        T_ value;
+        T_ value = T_{};
         T_ min = T_{};
-        T_ max;
+        T_ max = T_{};
         
         float progressspeed = 1;
         
@@ -281,6 +290,12 @@ namespace Gorgon { namespace Widgets {
 
     };
     
+    /**
+     * This widget displays the progress. It can be used as an integer variable through
+     * NumericProperty<int> with operators like =, +=, ++, --. Also this widget can be
+     * implicitly casted to integer. If you need a type other than int, you may use
+     * Progressor<T_> for any type, even non-numeric.
+     */
     using Progressbar = Progressor<int>;
     
 } }
