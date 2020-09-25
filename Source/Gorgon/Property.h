@@ -44,6 +44,10 @@ namespace Gorgon {
 
 		Property &operator =(const Property &) = delete;
 
+		Property(Property &&) = default;
+
+		Property &operator =(Property &&) = default;
+
 		operator T_() { 
 			return (Object.*Getter_)(); 
 		}
@@ -111,6 +115,11 @@ namespace Gorgon {
 		NumericProperty(C_ &Object) : Property<C_, T_, Getter_, Setter_>(Object) 
 		{ }
 
+
+		NumericProperty(NumericProperty &&) = default;
+
+		NumericProperty &operator =(NumericProperty &&) = default;
+        
 		NumericProperty &operator =(const T_ &value) { 
 			(this->Object.*Setter_)(value);
 
@@ -222,6 +231,10 @@ namespace Gorgon {
 		BooleanProperty(C_ &Object) : Property<C_, T_, Getter_, Setter_>(Object) 
 		{ }
 
+		BooleanProperty(BooleanProperty &&) = default;
+
+		BooleanProperty &operator =(BooleanProperty &&) = default;
+
 		template <class O_>
 		BooleanProperty &operator =(const O_ &value) { 
 			(this->Object.*Setter_)(value);
@@ -262,6 +275,10 @@ namespace Gorgon {
 		
 		BinaryProperty(C_ &Object) : NumericProperty<C_,T_, Getter_, Setter_>(Object) 
 		{ }
+
+		BinaryProperty(BinaryProperty &&) = default;
+
+		BinaryProperty &operator =(BinaryProperty &&) = default;
 
 		template <class O_>
 		BinaryProperty &operator =(const O_ &value) { 
@@ -306,6 +323,10 @@ namespace Gorgon {
 		
 		ObjectProperty(C_ &Object) : Property<C_, T_&, Getter_, Setter_>(Object) 
 		{ }
+
+		ObjectProperty(ObjectProperty &&) = default;
+
+		ObjectProperty &operator =(ObjectProperty &&) = default;
 
 		template <class O_>
 		ObjectProperty &operator =(const O_ &value) { 
@@ -357,6 +378,10 @@ namespace Gorgon {
 		MutableObjectProperty(C_ &Object) : Property<C_, T_, Setter_, Getter_>(Object) 
 		{ }
 
+		MutableObjectProperty(MutableObjectProperty &&) = default;
+
+		MutableObjectProperty &operator =(MutableObjectProperty &&) = default;
+
 		template <class O_>
 		MutableObjectProperty &operator =(const O_ &value) { 
 			(this->Object.*Setter_)(value);
@@ -406,6 +431,10 @@ namespace Gorgon {
 		ReferenceProperty(const ReferenceProperty &) = delete;
 
 		ReferenceProperty &operator =(const ReferenceProperty &) = delete;
+
+		ReferenceProperty(ReferenceProperty &&) = default;
+
+		ReferenceProperty &operator =(ReferenceProperty &&) = default;
 
 		operator T_ &() {
 			return (this->Object.*Getter_)();
@@ -531,6 +560,10 @@ namespace Gorgon {
 
 		TextualProperty(C_ &Object) : Property<C_,T_, Getter_, Setter_>(Object) 
 		{ }
+
+		TextualProperty(TextualProperty &&) = default;
+
+		TextualProperty &operator =(TextualProperty &&) = default;
 
 		template <class O_>
 		TextualProperty &operator =(const O_ &value) { 

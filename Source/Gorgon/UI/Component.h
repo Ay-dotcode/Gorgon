@@ -28,6 +28,9 @@ namespace Gorgon { namespace UI {
         //for containers
         Geometry::Size innersize;
         
+        //used to convert point to value
+        Geometry::Rectangle range = {0, 0, 0, 0};
+        
         //for horizontal this means right, for vertical this means bottom.
         bool anchorotherside = false;
         

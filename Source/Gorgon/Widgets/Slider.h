@@ -6,7 +6,23 @@
 #include "../Property.h"
 #include "Registry.h"
 
+#include <limits>
+
 namespace Gorgon { namespace Widgets {
+    
+    enum class SliderInteractivity {
+        None,
+        HandleOnly          = 1,
+        DualHandle          = 2,
+        Jump                = 4,
+        Page                = 8,
+        HandleAndJump       = HandleOnly | Jump,
+        HandleAndPage       = HandleOnly | Page,
+        DualHandleAndJump   = DualHandle | Jump,
+        DualHandleAndPage   = DualHandle | Page,
+    };
+    
+    bool operator &(SliderInteractivity l, SliderInteractivity r) { return (int(l)&int(r)) != 0; }
     
     /**
      * This is an internal basis for slider. It is not very useful by its
@@ -18,7 +34,7 @@ namespace Gorgon { namespace Widgets {
         float(*DIV_)(T_, T_, T_) = FloatDivider<T_>, 
         T_(*VAL_)(float, T_, T_) = FloatToValue<T_>, 
         template<class C_, class PT_, PT_(C_::*Getter_)() const, void(C_::*Setter_)(const PT_ &)> class P_ = Gorgon::NumericProperty,
-        bool interactive = false
+        SliderInteractivity interactive = SliderInteractivity::None
     >
     class SliderBase: 
         public UI::ComponentStackWidget,
@@ -55,7 +71,7 @@ namespace Gorgon { namespace Widgets {
                 PT_(C_::*Getter_)() const, 
                 void(C_::*Setter_)(const PT_&)
             > class P1_,
-            bool I2_
+            SliderInteractivity I2_
         >
         friend class SliderBase;
         
@@ -81,16 +97,127 @@ namespace Gorgon { namespace Widgets {
             Maximum(this),
             Minimum(this),
             Range(this),
+            SmallChange(this),
+            LargeChange(this),
             value(cur), max(max)
         {
             refreshvalue();
             stack.SetValueTransitionSpeed({changespeed, 0, 0, 0});
             
-            if(interactive)
+            if(interactive != SliderInteractivity::None) {
                 stack.HandleMouse();
+                
+                stack.SetClickEvent([this](auto tag, auto location, auto btn) {
+                    if(tag == UI::ComponentTemplate::NoTag) {
+                        auto ind = stack.ComponentAt(location);
+                        if(ind != -1) 
+                            tag = stack.GetTemplate(ind).GetTag();
+                    }
+                    
+                    if(btn == Input::Mouse::Button::Left) {
+                        if((interactive & SliderInteractivity::Jump) && tag == UI::ComponentTemplate::DragBarTag) {
+                            auto val = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, location)[0];
+                            
+                            if(val == std::numeric_limits<float>::infinity())
+                                return;
+                            
+                            val = Clamp(val, 0.f, 1.f);
+                            
+                            setval(VAL_(val, this->min, this->max));
+                        }
+                        if((interactive & SliderInteractivity::Page)) {
+                            if(tag == UI::ComponentTemplate::DragBarTag) {
+                                auto val = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, location)[0];
+                                
+                                auto curval = DIV_(value, this->min, this->max);
+                                
+                                if(val > curval) {
+                                    SetValue(GetValue() + largechange);
+                                }
+                                else if(val < curval) {
+                                    SetValue(GetValue() - largechange);
+                                }
+                            }
+                            else if(tag == UI::ComponentTemplate::IncrementTag) {
+                                SetValue(GetValue() + largechange);
+                            }
+                            else if(tag == UI::ComponentTemplate::DecrementTag) {
+                                SetValue(GetValue() - largechange);
+                            }
+                        }
+                    }
+                });
+
+                stack.SetMouseDownEvent([this](auto tag, auto location, auto btn) {
+                    if(tag == UI::ComponentTemplate::NoTag) {
+                        auto ind = stack.ComponentAt(location);
+                        if(ind != -1) 
+                            tag = stack.GetTemplate(ind).GetTag();
+                    }
+                    
+                    if((interactive & SliderInteractivity::HandleOnly)) {
+                        if(tag == UI::ComponentTemplate::DragTag) {
+                            if(btn == Input::Mouse::Button::Left) {
+                                downlocation = location;
+                                downvalue    = stack.GetValue()[0];
+                                grab = SliderInteractivity::HandleOnly;
+                            }
+                        }
+                    }
+                });
+
+                stack.SetMouseUpEvent([this](auto, auto, auto btn) {
+                    if(btn == Input::Mouse::Button::Left) {
+                        grab = SliderInteractivity::None;
+                    }
+                });
+
+                stack.SetMouseMoveEvent([this](UI::ComponentTemplate::Tag, Geometry::Point location) {
+                    if((interactive & SliderInteractivity::HandleOnly) && grab == SliderInteractivity::HandleOnly) {
+                        auto val = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, location - downlocation, true)[0];
+                        if(val == std::numeric_limits<float>::infinity())
+                            return;
+                        
+                        val += downvalue;
+                        
+                        val = Clamp(val, 0.f, 1.f);
+                        
+                        setval(VAL_(val, this->min, this->max));
+                    }
+                });
+                
+                stack.SetOtherMouseEvent([this](UI::ComponentTemplate::Tag, Input::Mouse::EventType type, Geometry::Point, float amount) {
+                    if(type == Input::Mouse::EventType::Scroll_Vert || type == Input::Mouse::EventType::Scroll_Hor) {
+                        amount *= -1;
+                        
+                        if(amount<0 && value <= min)
+                            return false;
+                        
+                        if(amount>0 && value >= this->max)
+                            return false;
+                        
+                        SetValue(GetValue() + amount * smallchange);
+                        
+                        return true;
+                    }
+                    
+                    return false;
+                });
+
+            }
         }
         
     protected: //these methods are here to be elevated to public if necessary.
+        
+        /// Sets the current value of the slider
+        void SetValue(const T_ &value) {
+            setval(value);
+        }
+        
+        /// Gets the current value of the slider
+        T_ GetValue() const {
+            return this->operator T_();
+        }
         
         /// Sets the maximum value that this slider reaches up to. If equal to minimum,
         /// progress will display 0. SliderBase will always keep the value between minimum
@@ -188,6 +315,34 @@ namespace Gorgon { namespace Widgets {
             return range;
         }
         
+        /// Sets the amount of change on a small change action. This action could be
+        /// click of arrow buttons, keyboard keys or mouse scroll. 
+        void SetSmallChange(const T_ &value) {
+            smallchange = value;
+            
+            this->refreshvalue();
+        }
+        
+        /// Returns the amount of change on a small change action. This action could be
+        /// click of bar or keyboard keys (page up/down)
+        T_ GetSmallChange() const {
+            return smallchange;
+        }
+        
+        /// Sets the amount of change on a large change action. This action could be
+        /// click of bar or keyboard keys (page up/down). 
+        void SetLargeChange(const T_ &value) {
+            largechange = value;
+            
+            this->refreshvalue();
+        }
+        
+        /// Returns the amount of change on a large change action. This action could be
+        /// click of arrow buttons, keyboard keys or mouse scroll. 
+        T_ GetLargeChange() const {
+            return largechange;
+        }
+        
         /// Returns the current value of the slider
         operator T_() const {
             return get();
@@ -240,6 +395,14 @@ namespace Gorgon { namespace Widgets {
         
         /// This is used to show how much more the scroller can be scrolled.
         NumericProperty<SliderBase, T_, &SliderBase::GetRange, &SliderBase::SetRange> Range;
+        
+        /// Controls the amount of change on a small change action. This action could be
+        /// click of arrow buttons, keyboard keys or mouse scroll. 
+        NumericProperty<SliderBase, T_, &SliderBase::GetSmallChange, &SliderBase::SetSmallChange> SmallChange;
+        
+        /// Controls the amount of change on a large change action. This action could be
+        /// click of bar or keyboard keys (page up/down). 
+        NumericProperty<SliderBase, T_, &SliderBase::GetLargeChange, &SliderBase::SetLargeChange> LargeChange;
         
         
     protected:
@@ -350,10 +513,17 @@ namespace Gorgon { namespace Widgets {
         T_ min = T_{};
         T_ max = T_{};
         
+        T_ smallchange = T_{1};
+        T_ largechange = T_{10};
+        
         //this is range that is covered by the scrollbar
         T_ range = T_{};
         
         float changespeed = 1;
+        
+        SliderInteractivity grab         = SliderInteractivity::None;
+        Geometry::Point     downlocation = {0, 0};
+        float               downvalue    = 0;
         
         virtual void valuechanged(T_) = 0;
         

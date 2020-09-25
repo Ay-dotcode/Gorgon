@@ -37,6 +37,10 @@ namespace Gorgon { namespace UI {
         WidgetBase() : Location(this), Size(this) {
         }
         
+        WidgetBase(WidgetBase &&) = default;
+        
+        WidgetBase& operator =(WidgetBase &&) = default;
+        
         virtual ~WidgetBase() { }
         
         /// Moves this widget to the given position.

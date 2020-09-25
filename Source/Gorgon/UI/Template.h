@@ -832,6 +832,7 @@ namespace Gorgon {
             HScrollTag,
             VScrollTag,
             DragTag,
+            SecondDragTag,
             DragBarTag,
             XDragTag,
             YDragTag,

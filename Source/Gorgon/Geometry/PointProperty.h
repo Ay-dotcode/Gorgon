@@ -19,6 +19,10 @@ namespace Gorgon { namespace Geometry {
 
         basic_PointProperty(C_ &object) : basic_PointProperty(&object)
         { }
+        
+        basic_PointProperty(basic_PointProperty &&) = default;
+        
+        basic_PointProperty& operator=(basic_PointProperty &&) = default;
 
         operator T_() { 
             return (this->Object.*Getter_)(); 

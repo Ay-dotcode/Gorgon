@@ -21,6 +21,10 @@ namespace Gorgon { namespace Geometry {
         basic_SizeProperty(C_ &object) : basic_SizeProperty(&object)
         { }
 
+        basic_SizeProperty(basic_SizeProperty &&) = default;
+        
+        basic_SizeProperty& operator=(basic_SizeProperty &&) = default;
+
         operator T_() { 
             return (this->Object.*Getter_)(); 
         }

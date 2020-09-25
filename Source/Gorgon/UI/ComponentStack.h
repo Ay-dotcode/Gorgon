@@ -282,8 +282,10 @@ namespace Gorgon { namespace UI {
         
         /// Translates the given coordinates back to values using value scaling and channel mapping.
         /// Only works if the value affects the component location or size. If component with the
-        /// specified tag does not exist, this function will simply return {0, 0, 0, 0}.
-        std::array<float, 4> CoordinateToValue(ComponentTemplate::Tag tag, Geometry::Point location);
+        /// specified tag does not exist, this function will simply return {0, 0, 0, 0}. If relative
+        /// is set, the calculation will not take starting location into account and will return
+        /// relative change in value when relative change in location happens.
+        std::array<float, 4> CoordinateToValue(ComponentTemplate::Tag tag, Geometry::Point location, bool relative = false);
         
         /// Translates the given coordinates to component space in pixels.
         Geometry::Point TranslateCoordinates(ComponentTemplate::Tag tag, Geometry::Point location);

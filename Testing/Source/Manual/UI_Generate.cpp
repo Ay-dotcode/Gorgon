@@ -133,9 +133,15 @@ int main() {
         return false;
     });
     
-    Widgets::Scrollbar<int> scroll(50);
-    scroll = 40;
-    scroll.Range = 20;
+    Widgets::VScrollbar scroll1(20);
+    scroll1 = 2;
+    scroll1 = 100;
+    scroll1.Range = 20;
+    
+    Widgets::HScrollbar scroll2(20);
+    scroll2 = 2;
+    scroll2 = 100;
+    scroll2.Range = 20;
     
     
     app.wind.Add(blank);
@@ -151,11 +157,12 @@ int main() {
     addme(blank, chk2);
     addme(blank, chkbutton);
     addme(blank, bar);
-    addme(blank, scroll);
-    addme(blank, toppanel);
+    addme(blank, scroll1);
+    addme(blank, scroll2);
+    /*addme(blank, toppanel);
     addme(blank, bottompanel);
     addme(blank, leftpanel);
-    addme(blank, rightpanel);
+    addme(blank, rightpanel);*/
 /*
     
     ///Generator 1  background.panel color = red focus color = grey, forecolor.regular = green border = blue,  fontsize = 12 defualt;

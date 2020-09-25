@@ -1382,38 +1382,39 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::VScrollbar() {
-        int w = std::max(Border.Radius * 2 + 2, Spacing * 3);
+        auto dist = int(std::round(Spacing / 3.f));
+        int w = std::max(Border.Radius * 2 + std::max(0, dist - Border.Radius / 2) * 2, Spacing * 2);
         
         Geometry::Size defsize = {w, BorderedWidgetHeight * 3 - Border.Width * 2};
         
         UI::Template temp;
         temp.SetSize(defsize);
         
-        temp.AddContainer(0, UI::ComponentCondition::Always)
-            .AddIndex(1) //movement control
+        auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always)
+            .AddIndex(1) //handle control
         ;
-        
-        auto &move = temp.AddContainer(1, UI::ComponentCondition::Always)
-            .AddIndex(2) //size control
-        ;
-        move.SetSizing(UI::ComponentTemplate::Fixed, UI::ComponentTemplate::Automatic);
-        move.SetValueModification(UI::ComponentTemplate::ModifyY);
-        move.SetPositioning(UI::ComponentTemplate::AbsoluteSliding);
-        
-        //remove handle when there is nothing to scroll
-        temp.AddIgnored(1, UI::ComponentCondition::Ch2V1);
+        cont.Background.SetAnimation(GrooveBG());
+        cont.SetPadding(dist, dist + Border.Radius/2);
+        cont.SetTag(UI::ComponentTemplate::DragBarTag);
+        cont.SetOrientation(Graphics::Orientation::Vertical);
         
         auto setupbar = [&](auto &border, auto cond) {
-            auto &size = temp.AddGraphics(2, cond);
-            size.SetValueModification(UI::ComponentTemplate::ModifyHeight, UI::ComponentTemplate::UseSecond);
+            auto &size = temp.AddGraphics(1, cond);
+            size.SetValueModification(UI::ComponentTemplate::ModifyPositionAndSize, UI::ComponentTemplate::UseXZ);
             size.SetPositioning(UI::ComponentTemplate::AbsoluteSliding);
-            size.SetSize(w, w);
-            size.SetTag(UI::ComponentTemplate::DragBarTag);
+            size.SetSize({100, UI::Dimension::Percent}, {w, UI::Dimension::Pixel});
+            size.SetTag(UI::ComponentTemplate::DragTag);
+            size.SetAnchor(UI::Anchor::None, UI::Anchor::TopCenter, UI::Anchor::MiddleCenter);
             size.Content.SetAnimation(border);
         };
         
-        setupbar(NormalEditBorder(), UI::ComponentCondition::Always);
-        setupbar(HoverEditBorder(), UI::ComponentCondition::Hover);
+        setupbar(NormalRBG(), UI::ComponentCondition::Always);
+        setupbar(HoverRBG(), UI::ComponentCondition::Hover);
+        setupbar(DownRBG(), UI::ComponentCondition::Down);
+        setupbar(DisabledRBG(), UI::ComponentCondition::Disabled);
+        
+        //remove handle when there is nothing to scroll
+        temp.AddIgnored(1, UI::ComponentCondition::Ch3V1);
         
         return temp;
     }
@@ -1432,14 +1433,15 @@ namespace Gorgon { namespace Widgets {
         ;
         cont.Background.SetAnimation(GrooveBG());
         cont.SetPadding(dist + Border.Radius/2, dist);
-        
+        cont.SetTag(UI::ComponentTemplate::DragBarTag);
         
         auto setupbar = [&](auto &border, auto cond) {
             auto &size = temp.AddGraphics(1, cond);
             size.SetValueModification(UI::ComponentTemplate::ModifyPositionAndSize, UI::ComponentTemplate::UseXZ);
             size.SetPositioning(UI::ComponentTemplate::AbsoluteSliding);
             size.SetSize({h, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
-            size.SetTag(UI::ComponentTemplate::DragBarTag);
+            size.SetTag(UI::ComponentTemplate::DragTag);
+            size.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleCenter);
             size.Content.SetAnimation(border);
         };
         
@@ -1449,7 +1451,7 @@ namespace Gorgon { namespace Widgets {
         setupbar(DisabledRBG(), UI::ComponentCondition::Disabled);
         
         //remove handle when there is nothing to scroll
-        temp.AddIgnored(1, UI::ComponentCondition::Ch2V1);
+        temp.AddIgnored(1, UI::ComponentCondition::Ch3V1);
         
         return temp;
     }

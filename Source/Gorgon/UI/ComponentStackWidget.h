@@ -81,7 +81,7 @@ namespace Gorgon { namespace UI {
         bool parentenabled = true;
 
         /// This function is called when the parent's enabled state changes.
-        virtual void parentenabledchanged(bool state) {
+        virtual void parentenabledchanged(bool state) override {
             if(enabled && !state) {
                 stack.AddCondition(ComponentCondition::Disabled);
             }

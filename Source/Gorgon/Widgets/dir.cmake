@@ -4,6 +4,7 @@ SET(Local
 	
 	Checkbox.h
 	Checkbox.cpp
+	Common.h
 	
 	Generator.h
 	Generator.cpp
@@ -27,4 +28,7 @@ SET(Local
 	RadioButtons.h
 	
 	Registry.h
+	
+	Slider.h
+	Scrollbar.h
 )

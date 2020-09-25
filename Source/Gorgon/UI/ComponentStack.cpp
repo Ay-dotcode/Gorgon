@@ -809,10 +809,6 @@ namespace Gorgon { namespace UI {
         //update if change has any effect
         if(updatereq)
             Update();
-        //if not, immediately set value to the target so that
-        //we will skip useless animation
-        else
-            value = targetvalue;
     }
 
     void ComponentStack::Update(bool immediate) {
@@ -961,62 +957,83 @@ namespace Gorgon { namespace UI {
             return substacks.Exists(&comp->GetTemplate());
     }
 
-    std::array<float, 4> ComponentStack::CoordinateToValue(ComponentTemplate::Tag tag, Geometry::Point location) {
+    std::array<float, 4> ComponentStack::CoordinateToValue(ComponentTemplate::Tag tag, Geometry::Point location, bool relative) {
+        if(updaterequired)
+            update();
+
         Component *comp  = gettag(tag);
         
         //component does not exist
-        if(!comp)
-            return {{0.f, 0.f, 0.f, 0.f}};
+        if(!comp || comp->parent == -1)
+            return {{0, 0, 0, 0}};//{{std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity()}};
         
         //get the template and index
         const auto &ct = comp->GetTemplate();
-        int ind  = ct.GetIndex();
-        
-        //parent index
-        int pind = -1;
-        
-        //search for the parent index
-        for(int i=0; i<indices; i++) {
-            //look for components that are containers
-            if(stacksizes[i] > 0 && get(i).GetTemplate().GetType() == ComponentType::Container) {
-                const auto &cont = dynamic_cast<const ContainerTemplate &>(get(i).GetTemplate());
-                
-                //search the subcomponents
-                for(int j=0; j<cont.GetCount(); j++)
-                    //if the component is found, this is the parent index
-                    if(cont[j] == ind) {
-                        pind = cont.GetIndex();
-                        break;
-                    }
-            }
-        }
-        
-        //if the parent does not exist, it is not possible to perform any reverse translation
-        if(pind == -1)
-            return {{0.f, 0.f, 0.f, 0.f}};
         
         //before ordering, after ordering
         std::array<float, 4> val = {{0, 0, 0, 0}}, ret = {{0, 0, 0, 0}};
         
-        //translate the given coordinate to local coordinates
-        auto pnt    = TranslateCoordinates(pind, location);
-        
         //get the parent bounds
-        //TODO margins??
-        auto bounds = BoundsOf(pind);
+        Geometry::Bounds bounds = comp->range;
+        
+        if(ct.GetPositioning() == ct.AbsoluteSliding) {
+            switch(ct.GetMyAnchor()) {
+                default://topleft, none
+                    bounds.Right  -= comp->size.Width;
+                    bounds.Bottom -= comp->size.Height;
+                    break; 
+                case Anchor::TopCenter:
+                    bounds.Right  -= comp->size.Width/2;
+                    bounds.Left   += comp->size.Width/2;
+                    bounds.Bottom -= comp->size.Height;
+                    break;
+                case Anchor::TopRight:
+                    bounds.Left   += comp->size.Width;
+                    bounds.Bottom -= comp->size.Height;
+                    break;
+                case Anchor::MiddleLeft:
+                    bounds.Right  -= comp->size.Width;
+                    bounds.Top    += comp->size.Height/2;
+                    bounds.Bottom -= comp->size.Height/2;
+                    break; 
+                case Anchor::MiddleCenter:
+                    bounds.Right  -= comp->size.Width/2;
+                    bounds.Left   += comp->size.Width/2;
+                    bounds.Top    += comp->size.Height/2;
+                    bounds.Bottom -= comp->size.Height/2;
+                    break;
+                case Anchor::MiddleRight:
+                    bounds.Left   += comp->size.Width;
+                    bounds.Top    += comp->size.Height/2;
+                    bounds.Bottom -= comp->size.Height/2;
+                    break;
+                case Anchor::BottomLeft:
+                    bounds.Right -= comp->size.Width;
+                    bounds.Top   += comp->size.Height;
+                    break; 
+                case Anchor::BottomCenter:
+                    bounds.Right -= comp->size.Width/2;
+                    bounds.Left  += comp->size.Width/2;
+                    bounds.Top   += comp->size.Height;
+                    break;
+                case Anchor::BottomRight:
+                    bounds.Left  += comp->size.Width;
+                    bounds.Top   += comp->size.Height;
+                    break;
+            }
+        }
+        
+        //translate the given coordinate to local coordinates
+        auto pnt = location;
+        if(!relative)
+            pnt -= bounds.TopLeft();
         
         //transformation will depend on the modification method
         switch(ct.GetValueModification()) {
             //default is position modification, if the mode is not valid
             //for mouse coordinates, this will be used.
             default: {
-                if(ct.GetPositioning() == ct.Absolute || ct.GetPositioning() == ct.AbsoluteSliding) {
-                    if(ct.GetPositioning() == ct.AbsoluteSliding) {
-                        bounds.Right -= comp->size.Width;
-                        bounds.Bottom -= comp->size.Height;
-                    }
-                    
-                    
+                if(ct.GetPositioning() == ct.Absolute || ct.GetPositioning() == ct.AbsoluteSliding) {                    
                     //get the rate
                     val[0] = float(pnt.X) / bounds.Width();
                     val[1] = float(pnt.Y) / bounds.Height();
@@ -1030,8 +1047,7 @@ namespace Gorgon { namespace UI {
                     }
                 }
                 else if(ct.GetPositioning() == ct.PolarAbsolute) {
-                    int emsize = getemsize(*comp);
-                    pnt -=  Convert(ct.GetCenter(), comp->size, emsize);
+                    //int emsize = getemsize(*comp);
                     
                     //TODO
                 }
@@ -1074,22 +1090,22 @@ namespace Gorgon { namespace UI {
                 val[0] = float(val[0]) / bounds.Width();
                 val[1] = float(val[1]) / bounds.Height();
 
-                //single channel modifications
-                if(ct.GetValueModification() == ContainerTemplate::ModifyWidth)
-                    val[1] = 0;
-                else if(ct.GetValueModification() == ContainerTemplate::ModifyHeight) {
-                    val[0] = val[1];
-                    val[1] = 0;
-                }
-
                 break;
         }
         
         //If only a single dimension will be modified, the dimension is dictated by the orientation.
         //If it is vertical this will effect y position/height. Thus Y position should be moved to
         //first value channel
-        if((ct.GetValueModification() == ComponentTemplate::ModifyPosition || ct.GetValueModification() == ComponentTemplate::ModifySize) && NumberOfSetBits(ct.GetValueSource()) == 1) {
-            if(stacksizes[pind] && dynamic_cast<const ContainerTemplate&>(get(pind).GetTemplate()).GetOrientation() == Graphics::Orientation::Vertical) {
+        if(
+            ((
+                ct.GetValueModification() == ComponentTemplate::ModifyPosition || 
+                ct.GetValueModification() == ComponentTemplate::ModifySize
+            ) && NumberOfSetBits(ct.GetValueSource()) == 1) ||
+            (
+                ct.GetValueModification() == ComponentTemplate::ModifyPositionAndSize &&
+            NumberOfSetBits(ct.GetValueSource()) == 2)
+        ) {
+            if(stacksizes[comp->parent] && dynamic_cast<const ContainerTemplate&>(get(comp->parent).GetTemplate()).GetOrientation() == Graphics::Orientation::Vertical) {
                 val[0] = val[1];
                 val[1] = 0;
             }
@@ -2436,13 +2452,14 @@ realign:
                         int(calculatevalue(val, widthch, comp)*10000), Dimension::BasisPoint
                     } (maxsize.Width - min, emsize)
                     + min;
-                    
+                
                 min = size.Width(curtw, emsize) + tagsize.Width;
                 curtw = 
                     Dimension{
                         int(calculatevalue(val, widthch, comp)*10000), Dimension::BasisPoint
                     } (curtw - min, emsize)
                     + min;
+                    
             }
             
             //this will convert height to pixels
@@ -2458,7 +2475,9 @@ realign:
                     Dimension{
                         int(calculatevalue(val, heightch, comp)*10000), Dimension::BasisPoint
                     } (maxsize.Height - min, emsize)
-                    + min;
+                    + min;                
+                    
+                    comp.range.Width = maxsize.Height - min;
             }
             
             if(comp.size.Width < 0)
@@ -2665,6 +2684,8 @@ realign:
                 Convert(temp.GetIndent(), parent.innersize, emsize);
             
             auto maxsize = parent.innersize - parentmargin;
+            
+            comp.range = {parentmargin.TopLeft(), maxsize};
             
             //Determine sides that are free to move
             if(temp.GetPositioning() != temp.Relative) {
@@ -2874,7 +2895,11 @@ realign:
                     stang = 90;
                     break;
                 }
+                
+                //TODO? use float?
+                comp.range = {int(pcenter.X - center.X), int(pcenter.Y - center.Y), int(std::min(xrad, yrad)), int(std::min(xrad, yrad))};
 
+                //TODO use value channels
                 //calculate radius
                 auto r = pos.X.CalculateFloat(std::min(xrad, yrad), (float)emsize);
                 
@@ -2893,15 +2918,15 @@ realign:
                 //this will convert x to pixels
                 if(xch == -1) { //value channel is not in effect
                     offset.X = pos.X(
-                        maxsize.Width - (sliding ? tagpos.X + comp.size.Width : 0), emsize
+                        maxsize.Width - (sliding ? tagpos.X + comp.size.Width : tagpos.X), emsize
                     ) + tagpos.X;
                 }
                 else {//calculate and use value channel
                     //original width will be used as minimum size
                     offset.X = pos.X(
-                        maxsize.Width - (sliding ? tagpos.X + comp.size.Width : 0), emsize
+                        maxsize.Width - (sliding ? tagpos.X + comp.size.Width : tagpos.X), emsize
                     ) + tagpos.X;
-
+                    
                     //calculate value and use it as basis point as relative size, then covert to pixels
                     offset.X +=
                         Dimension{
@@ -2912,13 +2937,13 @@ realign:
                 //this will convert y to pixels
                 if(ych == -1) { //value channel is not in effect
                     offset.Y = pos.Y(
-                        maxsize.Height - (sliding ? tagpos.Y + comp.size.Height : 0), emsize
+                        maxsize.Height - (sliding ? tagpos.Y + comp.size.Height : tagpos.Y), emsize
                     ) + tagpos.Y;
                 }
                 else {//calculate and use value channel
                     //original width will be used as minimum size
                     offset.Y = pos.Y(
-                        maxsize.Height - (sliding ? tagpos.Y + comp.size.Height : 0), emsize
+                        maxsize.Height - (sliding ? tagpos.Y + comp.size.Height : tagpos.Y), emsize
                     ) + tagpos.Y;
 
                     //calculate value and use it as basis point as relative size, then covert to piyels
@@ -2948,6 +2973,22 @@ realign:
                 else {
                     anchortoparent(parent, comp, temp, offset, margin, parent.innersize);
                     comp.anchtoparent = true;
+                }
+                
+                //Keep the object in the bounds if absolute sliding is used
+                if(temp.GetPositioning() == ComponentTemplate::AbsoluteSliding) {
+                    if(IsLeft(temp.GetContainerAnchor()) && IsCenter(temp.GetMyAnchor())) {
+                        comp.location.X += comp.size.Width / 2;
+                    }
+                    if(IsTop(temp.GetContainerAnchor()) && IsMiddle(temp.GetMyAnchor())) {
+                        comp.location.Y += comp.size.Height / 2;
+                    }
+                    if(IsLeft(temp.GetContainerAnchor()) && IsRight(temp.GetMyAnchor())) {
+                        comp.location.X += comp.size.Width;
+                    }
+                    if(IsTop(temp.GetContainerAnchor()) && IsBottom(temp.GetMyAnchor())) {
+                        comp.location.Y += comp.size.Height;
+                    }
                 }
             }
 
@@ -3151,7 +3192,6 @@ realign:
         });
     }
 
-    
     void ComponentStack::render(Component &comp, Graphics::Layer &parent, Geometry::Point offset, const std::array<float, 4> &value, Graphics::RGBAf color, int ind) {
         //parent template, used in determining repeat mode condition
         const ComponentTemplate &tempp = comp.GetTemplate();
