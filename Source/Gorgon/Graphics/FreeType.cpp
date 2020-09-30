@@ -356,7 +356,7 @@ namespace Gorgon { namespace Graphics {
             
             auto s = lib->face->available_sizes[minind];
 
-            auto error = FT_Set_Pixel_Sizes(lib->face, s.width, s.height);
+            auto error = FT_Select_Size(lib->face, minind);
             
             if(error != FT_Err_Ok)
                 return false;
@@ -394,6 +394,24 @@ namespace Gorgon { namespace Graphics {
             if(glyphmap.count(g)) continue;
 
             auto index = FT_Get_Char_Index(lib->face, g);
+            
+            if(index == 0) {
+                //search in other charmaps
+                auto cur = FT_Get_Charmap_Index(lib->face->charmap);
+                for(int i=0; i<lib->face->num_charmaps; i++) {
+                    if(i == cur)
+                        continue;
+                    
+                    if(lib->face->charmaps[i]->encoding != FT_ENCODING_UNICODE)
+                        continue;
+                    
+                    FT_Set_Charmap(lib->face, lib->face->charmaps[i]);
+                    index = FT_Get_Char_Index(lib->face, g);
+                    
+                    if(index != 0)
+                        break;
+                }
+            }
 
             //check if glyph is already loaded. if so use the same
             if(ft_to_map.count(index) && glyphmap.count(ft_to_map[index])) {
@@ -508,7 +526,8 @@ namespace Gorgon { namespace Graphics {
 	}
 	
 	bool FreeType::Exists(Glyph g) const {
-        return glyphmap.count(g);
+        int c = glyphmap.count(g);
+        return c != 0;
     }
     
     bool FreeType::Available(Glyph g) const {
@@ -530,6 +549,23 @@ namespace Gorgon { namespace Graphics {
 			auto glyph = glyphmap.at(0);
 			glyph.images.regular->Draw(target, location + glyph.offset + Geometry::Pointf(0.f, (float)baseline), color);
 		}
+    }
+    
+    Drawable *FreeType::GetCharacter(Glyph chr) {
+        if(glyphmap.count(chr)) {
+            auto glyph = glyphmap.at(chr);
+            return glyph.images.regular;
+        }
+		else {
+			LoadGlyphs(chr);
+            
+            if(glyphmap.count(chr)) {
+                auto glyph = glyphmap.at(chr);
+                return glyph.images.regular;
+            }
+		}
+		
+		return nullptr;
     }
     
     Geometry::Pointf FreeType::KerningDistance(Glyph chr1, Glyph chr2) const {
@@ -1072,7 +1108,7 @@ namespace Gorgon { namespace Graphics {
         c[2] = 'f';
 
         for(int i = 0; i<3; i++) {
-            if(!glyphmap.count(c[i]) && !glyphmap.at(c[i]).images.regular)
+            if(!glyphmap.count(c[i]) || !glyphmap.at(c[i]).images.regular)
                 return {0, GetHeight()};
         }
 

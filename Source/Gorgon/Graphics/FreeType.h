@@ -256,6 +256,11 @@ namespace Gorgon { namespace Graphics {
         /// 0 y position from the top. It is glyph renderer's task to ensure baseline of glyphs to 
         /// line up. 
 		virtual void Render(Glyph chr, TextureTarget &target, Geometry::Pointf location, RGBAf color) const override;
+        
+        /// This function will return the drawable that is used to render the given glyph. This
+        /// function will load the glyph if necessary. If glyph is not found, this function will
+        /// return nullptr or not found character.
+        Drawable *GetCharacter(Glyph chr);
 
         using BasicFont::GetSize;
         
