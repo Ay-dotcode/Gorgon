@@ -80,10 +80,11 @@ namespace Gorgon { namespace Widgets {
         /// Changes the icon on the button. The ownership of the animation
         /// is not transferred. If you wish the animation to be destroyed
         /// with the button, use OwnIcon instead.
-        void SetIcon(const Graphics::Animation &value);
+        void SetIcon(const Graphics::Drawable &value);
         
         /// Changes the icon on the button. This will create a new animation
         /// from the given provider and will own the resultant animation.
+
         void SetIconProvider(const Graphics::AnimationProvider &value);
         
         /// Changes the icon on the button. This will move in the provider,
@@ -98,7 +99,7 @@ namespace Gorgon { namespace Widgets {
         
         /// Returns the icon on the button. If the button does not have an
         /// icon, this function will throw
-        const Graphics::Animation &GetIcon() const {
+        const Graphics::Drawable &GetIcon() const {
             if(!HasIcon())
                 throw std::runtime_error("This widget has no icon.");
 
@@ -130,7 +131,7 @@ namespace Gorgon { namespace Widgets {
 
         TextualProperty<Button, std::string, &Button::GetText, &Button::SetText> Text;
 
-        ObjectProperty<Button, const Graphics::Animation, &Button::GetIcon, &Button::SetIcon> Icon;
+        ObjectProperty<Button, const Graphics::Drawable, &Button::GetIcon, &Button::SetIcon> Icon;
         
         Event<Button> ClickEvent    = Event<Button>(this);
         Event<Button> PressEvent    = Event<Button>(this);
@@ -138,7 +139,7 @@ namespace Gorgon { namespace Widgets {
         
     private:
         std::string text;
-        const Graphics::Animation          *icon     = nullptr;
+        const Graphics::Drawable         *icon     = nullptr;
         const Graphics::AnimationProvider  *iconprov = nullptr;
         bool ownicon    = false;
         bool spacedown  = false;

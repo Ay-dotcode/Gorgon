@@ -55,8 +55,12 @@ namespace Gorgon { namespace Widgets {
     }
 
     Button::~Button() {
-        if(ownicon)
-            delete icon;
+        if (ownicon) {
+            if(dynamic_cast<const Graphics::Animation*>(icon))
+                dynamic_cast<const Graphics::Animation*>(icon)->DeleteAnimation();
+            else
+                delete icon;
+        }
         
         delete iconprov;
     }
@@ -67,9 +71,12 @@ namespace Gorgon { namespace Widgets {
     }
 
 
-    void Button::SetIcon(const Graphics::Animation &value) {
+    void Button::SetIcon(const Graphics::Drawable &value) {
         if(ownicon) {
-            icon->DeleteAnimation();;
+            if(dynamic_cast<const Graphics::Animation*>(icon))
+                dynamic_cast<const Graphics::Animation*>(icon)->DeleteAnimation();
+            else
+                delete icon;
         }
         delete iconprov;
         
@@ -82,7 +89,7 @@ namespace Gorgon { namespace Widgets {
     
     
     void Button::SetIcon(const Graphics::Bitmap& value){
-        SetIcon(dynamic_cast<const Graphics::Animation&>(value));
+        SetIcon(dynamic_cast<const Graphics::Drawable&>(value));
     }
     
     
@@ -101,7 +108,8 @@ namespace Gorgon { namespace Widgets {
     
     void Button::RemoveIcon() {
         if(ownicon) {
-            icon->DeleteAnimation();
+            icon->~Drawable();
+            //icon->DeleteAnimation();
         }
         delete iconprov;
         
