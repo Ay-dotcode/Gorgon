@@ -3,6 +3,7 @@
 #include "../Graphics/Font.h"
 #include "../Time.h"
 #include "../Config.h"
+#include "WidgetBase.h"
 
 #include "math.h"
 
@@ -20,10 +21,11 @@ namespace Gorgon { namespace UI {
         return true;
     }
 
-    ComponentStack::ComponentStack(const Template& temp, Geometry::Size size) : 
+    ComponentStack::ComponentStack(const Template& temp, Geometry::Size size, std::map<ComponentTemplate::Tag, std::function<WidgetBase *(const Template &)>> generators) : 
         ConditionChanged(this),
         size(size),
-        temp(temp)  
+        temp(temp),
+        widgetgenerators(generators)
     {
         //find the number of elements required in the stack
         int maxindex = 0;
@@ -156,8 +158,11 @@ namespace Gorgon { namespace UI {
             delete p.second;
         }
         
-        //delete substack
+        //delete substacks
         substacks.Destroy();
+        
+        //delete widgets
+        widgets.Destroy();
     }
 
     void ComponentStack::AddToStack(const ComponentTemplate& temp, bool reversed) {
@@ -227,13 +232,24 @@ namespace Gorgon { namespace UI {
 
                 //if the placeholder has a subtemplate
                 if(ptemp.HasTemplate()) {
-                    //create a new stack to manage it
-                    auto s = new ComponentStack(ptemp.GetTemplate(), {0, 0});
-                    
-                    substacks.Add(&temp, s);
-                    
-                    if(handlingmouse)
-                        s->HandleMouse(mousebuttonaccepted);
+                    if(widgetgenerators.count(ptemp.GetTag())) {
+                        auto fn = widgetgenerators[ptemp.GetTag()];
+                        if(fn) {
+                            auto w = fn(ptemp.GetTemplate());
+                            if(w) {
+                                widgets.Add(&temp, w);
+                            }
+                        }
+                    }
+                    else {
+                        //create a new stack to manage it
+                        auto s = new ComponentStack(ptemp.GetTemplate(), {0, 0});
+                        
+                        substacks.Add(&temp, s);
+                        
+                        if(handlingmouse)
+                            s->HandleMouse(mousebuttonaccepted);
+                    }
                 }
             }
             else if(temp.GetType() == ComponentType::Graphics) {
@@ -260,10 +276,15 @@ namespace Gorgon { namespace UI {
 
             //... and has template
             if(ptemp.HasTemplate()) {
-                //add the substack to the base layer
-                //TODO if substack is located at a component that has a layer
-                //     it should be based in there.
-                base.Add(substacks[&temp]);
+                if(substacks.Exists(&temp)) {
+                    //add the substack to the base layer
+                    //TODO if substack is located at a component that has a layer
+                    //     it should be based in there.
+                    base.Add(substacks[&temp]);
+                }
+                else if(widgets.Exists(&temp)) {
+                    //TODO add to base
+                }
             }
         }
         
@@ -478,12 +499,13 @@ namespace Gorgon { namespace UI {
 
                             //if a placeholder ...
                             if(temp.GetType() == ComponentType::Placeholder) {
-                                const auto &ptemp = dynamic_cast<const PlaceholderTemplate&>(temp);
-
                                 //... and has a substack
-                                if(ptemp.HasTemplate() && substacks[&temp].HasParent()) {
+                                if(substacks.Exists(&temp) && substacks[&temp].HasParent()) {
                                     //remove it
                                     substacks[&temp].GetParent().Remove(substacks[&temp]);
+                                }
+                                else if(widgets.Exists(&temp)) {
+                                    //TODO remove
                                 }
                             }
 
@@ -2591,6 +2613,9 @@ realign:
                         //automatically size themselves, then this will be more useful
                         comp.size = substacks[&temp].GetSize();
                     }
+                    else if(widgets.Exists(&temp)) {
+                        //TODO
+                    }
                     else {
                         //nothing found, reset to zero
                         comp.size = {0, 0};
@@ -3474,11 +3499,14 @@ realign:
         else if(temp.GetType() == ComponentType::Placeholder && comp.size.Area() > 0) {
             const auto &ph = dynamic_cast<const PlaceholderTemplate&>(temp);
             
-            if(ph.HasTemplate()) {
+            if(substacks.Exists(&temp)) {
                 auto &stack = substacks[&temp];
                 target->Add(stack);
                 stack.Move(comp.location + offset);
                 stack.Resize(comp.size);
+            }
+            else if(widgets.Exists(&temp)) {
+                //TODO
             }
             
             if(imagedata.Exists(ph.GetDataEffect())) {

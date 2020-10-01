@@ -1341,6 +1341,7 @@ namespace Gorgon {
     /// a visual component. Default sizing mode for a placeholder is Automatic.
     class PlaceholderTemplate : public ComponentTemplate {
     public:
+        
         PlaceholderTemplate() {
             sizingw = Automatic;
             sizingh = Automatic;

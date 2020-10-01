@@ -1,15 +1,18 @@
 #pragma once
 
-#include <set>
-#include <vector>
-
 #include "Template.h"
 #include "Component.h"
+#include "LayerAdapter.h"
 #include "../Containers/Hashmap.h"
 #include "../Input/Layer.h"
 #include "../Geometry/Point3D.h"
 
+#include <set>
+#include <vector>
+
 namespace Gorgon { namespace UI {
+    
+    class WidgetBase;
 
     /**
      * Component stack is the backbone of a widget. It manages the components inside the 
@@ -22,8 +25,10 @@ namespace Gorgon { namespace UI {
     class ComponentStack : public Layer, public Updatable {
     public:
         
-        /// Initializes a component stack with the given size
-        ComponentStack(const Template &temp, Geometry::Size size);
+        /// Initializes a component stack with the given size. Generators are used to create widgets
+        /// for the placeholders. If a function is empty or returns nullptr, neither a substack nor a
+        /// widget will be placed there.
+        ComponentStack(const Template &temp, Geometry::Size size, std::map<ComponentTemplate::Tag, std::function<WidgetBase *(const Template &)>> generators = {});
         
         /// Initiates a component stack with default size
         explicit ComponentStack(const Template &temp) : ComponentStack(temp, temp.GetSize()) 
@@ -703,6 +708,9 @@ namespace Gorgon { namespace UI {
         std::function<void()> beforeupdate_fn;
         std::function<void()> update_fn;
         std::function<void()> render_fn;
+        
+        std::map<ComponentTemplate::Tag, std::function<WidgetBase *(const Template &)>> widgetgenerators;
+        Containers::Hashmap<const ComponentTemplate *, WidgetBase> widgets;
         
         std::function<std::string(int ind, ComponentTemplate::DataEffect, const std::array<float, 4> &value)> valuetotext;
     };

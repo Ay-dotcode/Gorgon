@@ -68,7 +68,7 @@ public:
 #else
         bool found = false;
         std::streambuf *buf;
-        OS::Start("fc-match", buf, {"-v", "sans"});
+        OS::Start("fc-match", buf, {"-v", "emoji"});
         
         if(buf) {
             std::istream in(buf);
@@ -95,11 +95,11 @@ public:
             fntlarge.LoadFile("/usr/share/fonts/gnu-free/FreeSans.ttf", sz*1.5);
         }
 #endif
-        if(!fnt.HasKerning()) {
+        /*if(!fnt.HasKerning()) {
             auto bmpfnt = new Graphics::BitmapFont(fnt.MoveOutBitmap());
             sty.SetGlyphRenderer(*bmpfnt);
             bmpfnt->AutoKern();
-        }
+        }*/
         
         sty.UseFlatShadow({0.f, 1.0f}, {1.f, 1.f});
         sty.SetColor({0.6f, 1.f, 1.f});

@@ -5,6 +5,7 @@ SET(Local
 	ComponentStackWidget.h
 	Dimension.h
 	Helpers.h
+	LayerAdapter.h
 	Organizers
 	RadioControl.h
 	Template.h

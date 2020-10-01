@@ -8,6 +8,7 @@
 #include "Organizers/Base.h"
 
 namespace Gorgon { namespace UI {
+    
     /**
     * This class is the base class for all widget containers.
     * All widgets require a layer to be placed on, to allow

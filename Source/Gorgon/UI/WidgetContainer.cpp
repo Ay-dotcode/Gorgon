@@ -144,7 +144,7 @@ namespace Gorgon { namespace UI {
 
 
     bool WidgetContainer::FocusNext(int after) {
-        if(focused && !focused->canloosefocus())
+        if(focused && !focused->canloosefocus() && CurrentFocusStrategy() == Deny)
             return false;
 
         for(int i=after+1; i<widgets.GetSize(); i++) {
@@ -212,7 +212,7 @@ namespace Gorgon { namespace UI {
     }
 
     bool WidgetContainer::FocusPrevious(int before) {
-        if(focused && !focused->canloosefocus())
+        if(focused && !focused->canloosefocus() && CurrentFocusStrategy() == Deny)
             return false;
 
         for(int i=before-1; i>=0; i--) {
@@ -295,6 +295,9 @@ namespace Gorgon { namespace UI {
     }
 
     bool WidgetContainer::SetFocusTo(WidgetBase &widget) {
+        if(CurrentFocusStrategy() == Deny)
+            return false;
+        
         auto pos = widgets.Find(widget);
 
         //not our widget
@@ -395,9 +398,15 @@ namespace Gorgon { namespace UI {
     }
 
     bool WidgetContainer::distributekeyevent(Input::Key key, float state, bool handlestandard) {
+        if(CurrentFocusStrategy() == Deny)
+            return false;
+        
         if(focused && focused->KeyEvent(key, state))
             return true;
 
+        if(CurrentFocusStrategy() == Strict)
+            return false;
+        
         if(handlestandard && state)
             return handlestandardkey(key);
 
@@ -405,6 +414,9 @@ namespace Gorgon { namespace UI {
     }
 
     bool WidgetContainer::distributecharevent(Char c) {
+        if(CurrentFocusStrategy() == Deny)
+            return false;
+        
         if(focused)
             return focused->CharacterEvent(c);
 

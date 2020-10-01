@@ -170,6 +170,13 @@ namespace Gorgon { namespace Widgets {
         bool updaterequired = false;
         
         Input::KeyRepeater repeater;
+        
+        FocusStrategy getparentfocusstrategy() const override {
+            if(HasParent())
+                return GetParent().CurrentFocusStrategy();
+            else
+                return AllowAll;
+        }
 
         virtual void parentenabledchanged(bool state) override {
             ComponentStackWidget::parentenabledchanged(state);

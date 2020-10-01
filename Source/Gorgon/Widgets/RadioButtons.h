@@ -267,7 +267,7 @@ namespace Gorgon { namespace Widgets {
 
 
         virtual bool allowfocus() const override {
-            return true;
+            return !HasParent() || GetParent().CurrentFocusStrategy() == UI::WidgetContainer::AllowAll;
         }
         
         virtual void focused() override {        
@@ -312,6 +312,15 @@ namespace Gorgon { namespace Widgets {
         virtual void hide() override {
             contents.Hide();
         }
+        
+        
+        FocusStrategy getparentfocusstrategy() const override {
+            if(HasParent())
+                return GetParent().CurrentFocusStrategy();
+            else
+                return AllowAll;
+        }
+
 
         virtual void focuschanged() override {
             if(HasFocusedWidget() && !IsFocused())
