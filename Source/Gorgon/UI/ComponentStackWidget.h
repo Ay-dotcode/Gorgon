@@ -13,7 +13,7 @@ namespace Gorgon { namespace UI {
      */
     class ComponentStackWidget : public WidgetBase {
     public:
-        ComponentStackWidget(const Template &temp) : stack(*new ComponentStack(temp, temp.GetSize())) { }
+        ComponentStackWidget(const Template &temp, std::map<ComponentTemplate::Tag, std::function<WidgetBase *(const Template &)>> generators = {}) : stack(*new ComponentStack(temp, temp.GetSize(), generators)) { }
         
         ComponentStackWidget(ComponentStackWidget &&) = default;
         

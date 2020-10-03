@@ -290,7 +290,7 @@ namespace Gorgon { namespace Widgets {
     private:
         Graphics::BitmapRectangleProvider *makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingedge = 0, int borderwidth = -1, int borderradius = -1);
         Graphics::RectangleProvider *makefocusborder();
-        UI::Template makepanel(int missingedge);
+        UI::Template makepanel(int missingedge, bool scrollers);
         
         void setupfocus(UI::GraphicsTemplate &focus);
         

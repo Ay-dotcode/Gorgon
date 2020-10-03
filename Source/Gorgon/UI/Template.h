@@ -798,6 +798,7 @@ namespace Gorgon {
             UseXZ = UseFirst | UseThird,
             UseRB = UseFirst | UseThird,
             
+            UseXW = UseFirst | UseFourth,
             UseRA = UseFirst  | UseFourth,
             UseBA = UseSecond | UseFourth,
             UseGA = UseThird  | UseFourth,

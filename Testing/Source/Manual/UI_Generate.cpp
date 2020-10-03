@@ -134,14 +134,12 @@ int main() {
     });
     
     Widgets::VScrollbar scroll1(20);
-    scroll1 = 2;
     scroll1 = 100;
     scroll1.Range = 20;
     
-    Widgets::HScrollbar scroll2(20);
-    scroll2 = 2;
-    scroll2 = 100;
+    Widgets::HScrollbar scroll2(200);
     scroll2.Range = 20;
+    //scroll2.SetValue(200, false);
     
     
     app.wind.Add(blank);

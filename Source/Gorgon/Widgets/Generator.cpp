@@ -1099,7 +1099,7 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
-    UI::Template SimpleGenerator::makepanel(int missingedge) {
+    UI::Template SimpleGenerator::makepanel(int missingedge, bool scrollers) {
         Geometry::Size defsize = {
             WidgetWidth * 2 + Spacing + Border.Width * 2 + Spacing * 2, 
             BorderedWidgetHeight * 10 + Spacing * 9 + Border.Width * 2 + Spacing * 2
@@ -1118,9 +1118,10 @@ namespace Gorgon { namespace Widgets {
         temp.SetSize(defsize);
         
         
-        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
+        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always)
+            .AddIndex(1)
+        ;
         bg.Background.SetAnimation(PanelBorder(missingedge));
-        bg.AddIndex(1);
         
         
         Geometry::Margin padding(Border.Width + Spacing);
@@ -1141,14 +1142,13 @@ namespace Gorgon { namespace Widgets {
         
         bg.SetPadding(padding);
         
-        auto &vp = temp.AddContainer(1, UI::ComponentCondition::Always);
+        auto &vp = temp.AddContainer(1, UI::ComponentCondition::Always)
+            .AddIndex(2)
+        ;
         vp.SetTag(UI::ComponentTemplate::ViewPortTag);
         vp.SetSize(100, 100, UI::Dimension::Percent);
-        vp.SetPositioning(vp.Absolute);
         vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
         vp.SetClip(true);
-        vp.AddIndex(2);
-        //vp.Background.SetAnimation(HoverBorder());
         
         auto &cont = temp.AddContainer(2, UI::ComponentCondition::Always);
         cont.SetTag(UI::ComponentTemplate::ContentsTag);
@@ -1156,29 +1156,68 @@ namespace Gorgon { namespace Widgets {
         cont.SetSizing(UI::ComponentTemplate::Fixed);
         cont.SetPositioning(cont.Absolute);
         cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
-        //cont.Background.SetAnimation(DownBorder());
+        
+        if(scrollers) {
+            auto &vst = operator[](Scrollbar_Vertical);
+            auto &hst = operator[](Scrollbar_Horizontal);
+            
+            temp.SetSize(temp.GetWidth()+vst.GetWidth()+Spacing, temp.GetHeight());
+            
+            bg
+                .AddIndex(3) //VScroll
+                .AddIndex(4) //HScroll
+            ;
+            
+            auto &vs = temp.AddPlaceholder(3, UI::ComponentCondition::VScroll);
+            vs.SetTemplate(vst);
+            vs.SetTag(UI::ComponentTemplate::VScrollTag);
+            vs.SetSize(vst.GetWidth(), {100, UI::Dimension::Percent});
+            vs.SetSizing(UI::ComponentTemplate::Fixed);
+            vs.SetAnchor(UI::Anchor::TopRight, UI::Anchor::TopRight, UI::Anchor::TopLeft);
+            vs.SetMargin(Spacing, 0, 0, 0);
+            
+            auto &hs = temp.AddPlaceholder(4, UI::ComponentCondition::HScroll);
+            hs.SetPositioning(UI::ComponentTemplate::Absolute);
+            hs.SetTemplate(hst);
+            hs.SetTag(UI::ComponentTemplate::HScrollTag);
+            hs.SetSize({100, UI::Dimension::Percent}, hst.GetHeight());
+            hs.SetSizing(UI::ComponentTemplate::Fixed);
+            hs.SetAnchor(UI::Anchor::None, UI::Anchor::BottomCenter, UI::Anchor::BottomCenter);
+            hs.SetMargin(0, Spacing, vst.GetWidth()+Spacing, 0);
+            
+            auto &vp = temp.AddContainer(1, UI::ComponentCondition::HScroll)
+                .AddIndex(2)
+            ;
+            vp.SetTag(UI::ComponentTemplate::ViewPortTag);
+            vp.SetSize(100, 100, UI::Dimension::Percent);
+            vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+            vp.SetClip(true);
+            vp.SetIndent(0, 0, 0, hst.GetHeight()+Spacing);
+        }
         
         return temp;
     }
     
     UI::Template SimpleGenerator::Panel() {
-        return makepanel(0);
+        auto tmp = makepanel(0, true);
+        
+        return tmp;
     }
     
     UI::Template SimpleGenerator::TopPanel() {
-        return makepanel(1);
+        return makepanel(1, false);
     }
     
     UI::Template SimpleGenerator::LeftPanel() {
-        return makepanel(2);
+        return makepanel(2, true);
     }
     
     UI::Template SimpleGenerator::RightPanel() {
-        return makepanel(4);
+        return makepanel(4, true);
     }
     
     UI::Template SimpleGenerator::BottomPanel() {
-        return makepanel(3);
+        return makepanel(3, false);
     }
     
     UI::Template SimpleGenerator::Inputbox() {
@@ -1400,7 +1439,7 @@ namespace Gorgon { namespace Widgets {
         
         auto setupbar = [&](auto &border, auto cond) {
             auto &size = temp.AddGraphics(1, cond);
-            size.SetValueModification(UI::ComponentTemplate::ModifyPositionAndSize, UI::ComponentTemplate::UseXZ);
+            size.SetValueModification(UI::ComponentTemplate::ModifyPositionAndSize, UI::ComponentTemplate::UseXW);
             size.SetPositioning(UI::ComponentTemplate::AbsoluteSliding);
             size.SetSize({100, UI::Dimension::Percent}, {w, UI::Dimension::Pixel});
             size.SetTag(UI::ComponentTemplate::DragTag);
@@ -1414,7 +1453,7 @@ namespace Gorgon { namespace Widgets {
         setupbar(DisabledRBG(), UI::ComponentCondition::Disabled);
         
         //remove handle when there is nothing to scroll
-        temp.AddIgnored(1, UI::ComponentCondition::Ch3V1);
+        temp.AddIgnored(1, UI::ComponentCondition::Ch4V1);
         
         return temp;
     }
@@ -1437,7 +1476,7 @@ namespace Gorgon { namespace Widgets {
         
         auto setupbar = [&](auto &border, auto cond) {
             auto &size = temp.AddGraphics(1, cond);
-            size.SetValueModification(UI::ComponentTemplate::ModifyPositionAndSize, UI::ComponentTemplate::UseXZ);
+            size.SetValueModification(UI::ComponentTemplate::ModifyPositionAndSize, UI::ComponentTemplate::UseXW);
             size.SetPositioning(UI::ComponentTemplate::AbsoluteSliding);
             size.SetSize({h, UI::Dimension::Pixel}, {100, UI::Dimension::Percent});
             size.SetTag(UI::ComponentTemplate::DragTag);
@@ -1451,7 +1490,7 @@ namespace Gorgon { namespace Widgets {
         setupbar(DisabledRBG(), UI::ComponentCondition::Disabled);
         
         //remove handle when there is nothing to scroll
-        temp.AddIgnored(1, UI::ComponentCondition::Ch3V1);
+        temp.AddIgnored(1, UI::ComponentCondition::Ch4V1);
         
         return temp;
     }

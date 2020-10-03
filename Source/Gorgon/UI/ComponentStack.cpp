@@ -11,6 +11,19 @@
 
 namespace Gorgon { namespace UI {
     
+    static constexpr std::tuple<ComponentCondition, ComponentCondition, ComponentCondition> channelfixedvalues[4] = {
+        {ComponentCondition::Ch1V0, ComponentCondition::Ch1V05, ComponentCondition::Ch1V1},
+        {ComponentCondition::Ch2V0, ComponentCondition::Ch2V05, ComponentCondition::Ch2V1},
+        {ComponentCondition::Ch3V0, ComponentCondition::Ch3V05, ComponentCondition::Ch3V1},
+        {ComponentCondition::Ch4V0, ComponentCondition::Ch4V05, ComponentCondition::Ch4V1},
+    };
+    static float r1000(float v) {
+        if(v > 0)
+            return int(v*1000 + 0.5)/1000.f;
+        else
+            return int(v*1000 - 0.5)/1000.f;
+    };
+
     bool IsIn(Anchor left, Anchor right) {
         if(IsLeft(left) == IsRight(right) && !IsCenter(left) && !IsCenter(right))
             return false;
@@ -25,7 +38,8 @@ namespace Gorgon { namespace UI {
         ConditionChanged(this),
         size(size),
         temp(temp),
-        widgetgenerators(generators)
+        widgetgenerators(generators),
+        adapter(*this)
     {
         //find the number of elements required in the stack
         int maxindex = 0;
@@ -283,7 +297,7 @@ namespace Gorgon { namespace UI {
                     base.Add(substacks[&temp]);
                 }
                 else if(widgets.Exists(&temp)) {
-                    //TODO add to base
+                    adapter.Add(widgets[&temp]);
                 }
             }
         }
@@ -505,7 +519,7 @@ namespace Gorgon { namespace UI {
                                     substacks[&temp].GetParent().Remove(substacks[&temp]);
                                 }
                                 else if(widgets.Exists(&temp)) {
-                                    //TODO remove
+                                    adapter.Remove(widgets[&temp]);
                                 }
                             }
 
@@ -775,31 +789,54 @@ namespace Gorgon { namespace UI {
             Update();
     }
 
-    void ComponentStack::SetValue(float first, float second, float third, float fourth) {
+    void ComponentStack::SetValue(float first, float second, float third, float fourth, bool instant) {
         //nothing is changed, nothing is to be done
         if(targetvalue[0] == first && targetvalue[1] == second && targetvalue[2]== third && targetvalue[3] == fourth)
             return;
 
         //update the target value
         targetvalue = {{first, second, third, fourth}};
-
+        
+        
         //for each value channel
         bool changed = false;
         auto tm = Time::DeltaTime();
         for(int i=0; i<4; i++) {
             //if there is a change to be done, if there is a change, we will step the animation
             //instantly. 
-            if(targetvalue[i] != value[i]) {
+            if(targetvalue[i] != value[i] && (tm != 0 || instant || valuespeed[i] == 0)) {
                 auto change = valuespeed[i] * tm / 1000;
                 
+                //update value conditions
+                if(r1000(value[i]) == 0.0f) {
+                    RemoveCondition(std::get<0>(channelfixedvalues[i]));
+                }
+                if(r1000(value[i]) == 0.5f) {
+                    RemoveCondition(std::get<1>(channelfixedvalues[i]));
+                }
+                if(r1000(value[i]) == 1.0f) {
+                    RemoveCondition(std::get<2>(channelfixedvalues[i]));
+                }
+                
                 //if the change is too small, or animation is disabled
-                if(valuespeed[i] == 0 || fabs(value[i] - targetvalue[i]) < change) {
+                if(instant || valuespeed[i] == 0 || fabs(value[i] - targetvalue[i]) < change) {
                     //set value to the target
                     value[i] = targetvalue[i];
                 }
                 else {
                     //step the animation
                     value[i] += Sign(targetvalue[i] - value[i]) * change;
+                }
+                
+                //update value conditions
+                if(r1000(value[i]) == 0.0f) {
+                    AddCondition(std::get<0>(channelfixedvalues[i]));
+                }
+                if(r1000(value[i]) == 0.5f) {
+                    AddCondition(std::get<1>(channelfixedvalues[i]));
+                }
+                if(r1000(value[i]) == 1.0f) {
+                    AddCondition(std::get<2>(channelfixedvalues[i]));
                 }
                 
                 //there is a change
@@ -909,10 +946,23 @@ namespace Gorgon { namespace UI {
         //**** Value smoothing
         bool changed = false;
         auto tm = Time::DeltaTime();
+        
         for(int i=0; i<4; i++) {
             //if it is not finalized already
-            if(targetvalue[i] != value[i]) {
+            if(targetvalue[i] != value[i] && (tm != 0 || valuespeed[i] == 0)) {
                 auto change = valuespeed[i] * tm / 1000;
+                
+                //update value conditions
+                if(r1000(value[i]) == 0.0f) {
+                    RemoveCondition(std::get<0>(channelfixedvalues[i]));
+                }
+                if(r1000(value[i]) == 0.5f) {
+                    RemoveCondition(std::get<1>(channelfixedvalues[i]));
+                }
+                if(r1000(value[i]) == 1.0f) {
+                    RemoveCondition(std::get<2>(channelfixedvalues[i]));
+                }
+                
                 //if no animation will be performed or animation is about to be finished
                 if(valuespeed[i] == 0 || fabs(value[i] - targetvalue[i]) < change) {
                     value[i] = targetvalue[i];
@@ -922,6 +972,16 @@ namespace Gorgon { namespace UI {
                     value[i] += Sign(targetvalue[i] - value[i]) * change;
                 }
                 
+                //update value conditions
+                if(r1000(value[i]) == 0.0f) {
+                    AddCondition(std::get<0>(channelfixedvalues[i]));
+                }
+                if(r1000(value[i]) == 0.5f) {
+                    AddCondition(std::get<1>(channelfixedvalues[i]));
+                }
+                if(r1000(value[i]) == 1.0f) {
+                    AddCondition(std::get<2>(channelfixedvalues[i]));
+                }
                 //there is a change
                 changed = true;
             }
@@ -2614,7 +2674,9 @@ realign:
                         comp.size = substacks[&temp].GetSize();
                     }
                     else if(widgets.Exists(&temp)) {
-                        //TODO
+                        //use default size of the template. Once widget autosizing
+                        //is complete this should be updated
+                        comp.size = ph.GetTemplate().GetSize();
                     }
                     else {
                         //nothing found, reset to zero
@@ -3506,7 +3568,9 @@ realign:
                 stack.Resize(comp.size);
             }
             else if(widgets.Exists(&temp)) {
-                //TODO
+                auto &w = widgets[&temp];
+                w.Move(comp.location + offset + target->GetLocation());
+                w.Resize(comp.size);
             }
             
             if(imagedata.Exists(ph.GetDataEffect())) {
@@ -3521,5 +3585,13 @@ realign:
         }
     }
     
+    WidgetBase *ComponentStack::GetWidget(ComponentTemplate::Tag tag) {
+        auto comp = gettag(tag);
+        
+        if(comp == nullptr)
+            return nullptr;
+        
+        return &widgets[&comp->GetTemplate()];
+    }
 
 } }

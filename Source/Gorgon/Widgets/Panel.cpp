@@ -3,10 +3,25 @@
 
 namespace Gorgon { namespace Widgets {
     Panel::Panel(const UI::Template &temp) : 
-    UI::ComponentStackWidget(temp) 
+    UI::ComponentStackWidget(temp, {
+        { UI::ComponentTemplate::VScrollTag, 
+            std::bind(&Panel::createvscroll, this, std::placeholders::_1)
+        },
+        { UI::ComponentTemplate::HScrollTag, 
+            std::bind(&Panel::createhscroll, this, std::placeholders::_1)
+        },
+    }) 
     {
         stack.SetOtherMouseEvent([this](UI::ComponentTemplate::Tag tag, Input::Mouse::EventType type, Geometry::Point, float amount) {
-            if(type == Input::Mouse::EventType::Scroll_Vert) {
+            //if only horizontal scroll is enabled, use regular scroll to scroll that direction
+            if(!vscroll && hscroll && type == Input::Mouse::EventType::Scroll_Vert) {
+                type = Input::Mouse::EventType::Scroll_Hor;
+            }
+            else if(hscroll && type == Input::Mouse::EventType::Scroll_Vert && (Input::Keyboard::CurrentModifier & Input::Keyboard::Modifier::Shift)) {
+                type = Input::Mouse::EventType::Scroll_Hor;
+            }
+            
+            if(type == Input::Mouse::EventType::Scroll_Vert && vscroll) {
                 if(amount<0 && ScrollOffset().Y >= MaxScrollOffset().Y)
                     return false;
                 
@@ -17,14 +32,14 @@ namespace Gorgon { namespace Widgets {
                 return true;
             }
             
-            if(type == Input::Mouse::EventType::Scroll_Hor) {
+            if(type == Input::Mouse::EventType::Scroll_Hor && hscroll) {
                 if(amount<0 && ScrollOffset().X >= MaxScrollOffset().X)
                     return false;
                 
                 if(amount>0 && ScrollOffset().X <= 0)
                     return false;
                 
-                ScrollBy(0, -(int)amount*scrolldist.X);
+                ScrollBy(-(int)amount*scrolldist.X, 0);
                 return true;
             }
             
@@ -60,6 +75,8 @@ namespace Gorgon { namespace Widgets {
                 break;
             }
         });
+        
+        stack.AddCondition(UI::ComponentCondition::VScroll);
 
         SetSmoothScrollSpeed(scrollspeed);
     }
@@ -201,6 +218,7 @@ namespace Gorgon { namespace Widgets {
         if(scrollspeed == 0) {
             stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, {-x, -y});
             scrolloffset = {x, y};
+            updatebars();
         }
         else {
             if(!isscrolling) {
@@ -252,13 +270,34 @@ namespace Gorgon { namespace Widgets {
         doaxis(cur.Y, target.Y);
         
         scrolloffset = cur;
-        
         stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, -cur);
+        
+        updatebars();
         
         if(done == 2) {
             isscrolling = false;
             stack.RemoveFrameEvent();
             scrollleftover = 0;
+        }
+    }
+    
+    void Panel::updatebars() {
+        auto b = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
+        
+        auto vscroller = dynamic_cast<VScrollbar*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
+        
+        if(vscroller != nullptr) {
+            vscroller->Maximum = b.Height();
+            vscroller->Range   = GetInteriorSize().Height;
+            *vscroller         = target.Y;
+        }
+        
+        auto hscroller = dynamic_cast<HScrollbar*>(stack.GetWidget(UI::ComponentTemplate::HScrollTag));
+        
+        if(hscroller != nullptr) {
+            hscroller->Maximum = b.Width();
+            hscroller->Range   = GetInteriorSize().Width;
+            *hscroller         = target.X;
         }
     }
     
@@ -277,6 +316,7 @@ namespace Gorgon { namespace Widgets {
         //Gorgon::RegisterOnce([this] { 
             updatecontent(); 
         //});
+        updatebars();
     }
     
     void Panel::updatecontent() {
@@ -349,6 +389,18 @@ namespace Gorgon { namespace Widgets {
             stack.RemoveFrameEvent();
         }
         
+        auto vscroller = dynamic_cast<VScrollbar*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
+        
+        if(vscroller != nullptr) {
+            vscroller->SetSmoothChangeSpeed(scrollspeed);
+        }
+        
+        auto hscroller = dynamic_cast<HScrollbar*>(stack.GetWidget(UI::ComponentTemplate::HScrollTag));
+        
+        if(hscroller != nullptr) {
+            hscroller->SetSmoothChangeSpeed(scrollspeed);
+        }
+        
         if(s.Area() == 0) 
             stack.SetValueTransitionSpeed({0, 0, 0, 0});
         else
@@ -369,12 +421,13 @@ namespace Gorgon { namespace Widgets {
         bool doscroll = false;
         auto scrollto = ScrollOffset();
         
-        if(cb.Left > wb.Left || cb.Right < wb.Right) {
+        //TODO minimal scrolling
+        if(hscroll && (cb.Left > wb.Left || cb.Right < wb.Right)) {
             scrollto.X = wb.Left;
             doscroll = true;
         }
         
-        if(cb.Top > wb.Top || cb.Bottom < wb.Bottom) {
+        if(vscroll && (cb.Top > wb.Top || cb.Bottom < wb.Bottom)) {
             scrollto.Y = wb.Top;
             doscroll = true;
         }
@@ -383,6 +436,52 @@ namespace Gorgon { namespace Widgets {
             ScrollTo(scrollto);
         
         return true;
+    }
+    
+    void Panel::EnableScroll(bool vertical, bool horizontal) {
+        if(vertical && !vscroll) {
+            stack.AddCondition(UI::ComponentCondition::VScroll);
+        }
+        if(!vertical && vscroll) {
+            stack.RemoveCondition(UI::ComponentCondition::VScroll);
+        }
+        if(horizontal && !hscroll) {
+            stack.AddCondition(UI::ComponentCondition::HScroll);
+        }
+        if(!horizontal && hscroll) {
+            stack.RemoveCondition(UI::ComponentCondition::HScroll);
+        }
+        if((!horizontal || !vertical) && hscroll && vscroll) {
+            stack.RemoveCondition(UI::ComponentCondition::HVScroll);
+        }
+        if(horizontal && vertical && (!vscroll || !hscroll)) {
+            stack.AddCondition(UI::ComponentCondition::HVScroll);
+        }
+        
+        vscroll = vertical;
+        hscroll = horizontal;
+    }
+    
+    UI::WidgetBase* Panel::createvscroll(const UI::Template& temp) {
+        auto vscroller = new VScrollbar(temp);
+        vscroller->Maximum = stack.TagBounds(UI::ComponentTemplate::ContentsTag).Height();
+        vscroller->Range   = GetInteriorSize().Height;
+        *vscroller         = target.Y;
+        vscroller->SetSmoothChangeSpeed(scrollspeed);
+        vscroller->ValueChanged.Register(*this, &Panel::scrolltoy);
+        
+        return vscroller;
+    }
+    
+    UI::WidgetBase* Panel::createhscroll(const UI::Template& temp) {
+        auto hscroller = new HScrollbar(temp);
+        hscroller->Maximum = stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width();
+        hscroller->Range   = GetInteriorSize().Width;
+        *hscroller         = target.X;
+        hscroller->SetSmoothChangeSpeed(scrollspeed);
+        hscroller->ValueChanged.Register(*this, &Panel::scrolltox);
+        
+        return hscroller;
     }
     
 } }

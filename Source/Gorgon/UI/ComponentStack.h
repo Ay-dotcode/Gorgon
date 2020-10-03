@@ -100,7 +100,7 @@ namespace Gorgon { namespace UI {
         /// Sets the value for this stack. Value of the stack can affect various
         /// properties of components. This will set the individual channels separately.
         /// Values should be between 0 and 1.
-        void SetValue(float first, float second, float third, float fourth);
+        void SetValue(float first, float second, float third, float fourth, bool instant = false);
 
         /// Sets the value for the stack using a point in coordinate system
         void SetValue(Geometry::Pointf pos) { SetValue(pos.X, pos.Y); }
@@ -251,6 +251,10 @@ namespace Gorgon { namespace UI {
         const Template &GetTemplate() const {
             return temp;
         }
+        
+        /// Returns the widget associated with the tag. If such widget does not exists
+        /// nullptr will be returned instead.
+        WidgetBase *GetWidget(ComponentTemplate::Tag tag);
 
         /// Updates the layout of the component stack
         virtual void Update() override { Update(false); }
@@ -713,6 +717,8 @@ namespace Gorgon { namespace UI {
         Containers::Hashmap<const ComponentTemplate *, WidgetBase> widgets;
         
         std::function<std::string(int ind, ComponentTemplate::DataEffect, const std::array<float, 4> &value)> valuetotext;
+        
+        LayerAdapter adapter;
     };
 
 }}

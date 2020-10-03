@@ -5,6 +5,7 @@
 #include "../Property.h"
 #include "../Input/KeyRepeater.h"
 #include "Registry.h"
+#include "Scrollbar.h"
 
 namespace Gorgon { namespace Widgets {
     
@@ -43,6 +44,24 @@ namespace Gorgon { namespace Widgets {
 
         virtual bool ResizeInterior(Geometry::Size size) override;
         
+        /// Controls whether scrolling will be enabled vertically or horizontally.
+        /// It is possible to use ScrollTo function without enabling scrolling but
+        /// the user will not be able to scroll in this case. Enabling scrolling
+        /// will also display a scrollbar. Depending on the theme it might not be
+        /// visible until there is something to scroll. Disabling scrolling will
+        /// not take the scroll position to top. 
+        void EnableScroll(bool vertical, bool horizontal);
+        
+        /// Whether vertical scrolling is enabled
+        bool IsVerticalScrollEnabled() const {
+            return vscroll;
+        }
+        
+        /// Whether horizontal scrolling is enabled
+        bool IsHorizontalScrollEnabled() const {
+            return hscroll;
+        }
+        
         
         /// Scrolls the contents of the panel so that the given location will
         /// be at the top left. If clip is set, the scroll amount cannot go
@@ -54,7 +73,7 @@ namespace Gorgon { namespace Widgets {
         /// Scrolls the contents of the panel so that the given location will
         /// be at the top left. If clip is set, the scroll amount cannot go
         /// out of the scrolling region.
-        void ScrollTo(int x, int y, bool clip);
+        void ScrollTo(int x, int y, bool clip = true);
 
         /// Scrolls the contents of the panel so that the given location will
         /// be at the top.
@@ -167,7 +186,17 @@ namespace Gorgon { namespace Widgets {
         
         void updatescroll();
         
+        void updatebars();
+        
         bool updaterequired = false;
+        
+        void scrolltox(int x) {
+            ScrollTo(x, ScrollOffset().Y);
+        }
+        
+        void scrolltoy(int y) {
+            ScrollTo(y);
+        }
         
         Input::KeyRepeater repeater;
         
@@ -187,6 +216,10 @@ namespace Gorgon { namespace Widgets {
                 distributeparentenabled(state);
         }
         
+        virtual UI::WidgetBase *createvscroll(const UI::Template &temp);
+        
+        virtual UI::WidgetBase *createhscroll(const UI::Template &temp);
+        
         int overscroll = 0;
         bool scrollclipped = true;
         Geometry::Point scrolldist = {80, 45};
@@ -195,6 +228,7 @@ namespace Gorgon { namespace Widgets {
         Geometry::Point target = {0, 0};
         bool isscrolling = false;
         float scrollleftover = 0;
+        bool vscroll = true, hscroll = false;
     };
     
 } }

@@ -10,19 +10,29 @@
 
 namespace Gorgon { namespace Widgets {
     
-    enum class SliderInteractivity {
-        None,
-        HandleOnly          = 1,
-        DualHandle          = 2,
-        Jump                = 4,
-        Page                = 8,
-        HandleAndJump       = HandleOnly | Jump,
-        HandleAndPage       = HandleOnly | Page,
-        DualHandleAndJump   = DualHandle | Jump,
-        DualHandleAndPage   = DualHandle | Page,
-    };
+    /// @cond internal
+    namespace internal {
+        enum class SliderInteractivity {
+            None,
+            HandleOnly          = 1,
+            DualHandle          = 2,
+            Jump                = 4,
+            Page                = 8,
+            HandleAndJump       = HandleOnly | Jump,
+            HandleAndPage       = HandleOnly | Page,
+            DualHandleAndJump   = DualHandle | Jump,
+            DualHandleAndPage   = DualHandle | Page,
+        };
+        
+        enum class SliderValueMapping {
+            OneValue      = 1,
+            TwoValues     = 2,
+            ValueAndRange = 3
+        };
     
-    bool operator &(SliderInteractivity l, SliderInteractivity r) { return (int(l)&int(r)) != 0; }
+        inline bool operator &(SliderInteractivity l, SliderInteractivity r) { return (int(l)&int(r)) != 0; }
+    }
+    ///@endcond
     
     /**
      * This is an internal basis for slider. It is not very useful by its
@@ -34,31 +44,33 @@ namespace Gorgon { namespace Widgets {
         float(*DIV_)(T_, T_, T_) = FloatDivider<T_>, 
         T_(*VAL_)(float, T_, T_) = FloatToValue<T_>, 
         template<class C_, class PT_, PT_(C_::*Getter_)() const, void(C_::*Setter_)(const PT_ &)> class P_ = Gorgon::NumericProperty,
-        SliderInteractivity interactive = SliderInteractivity::None
+        internal::SliderInteractivity interactive = internal::SliderInteractivity::None,
+        internal::SliderValueMapping valuemapping = internal::SliderValueMapping::OneValue
+        
     >
     class SliderBase: 
         public UI::ComponentStackWidget,
         public P_<
-            UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive>, T_>, 
+            UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>, 
             T_, 
-            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive>, T_>::get_, 
-            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive>, T_>::set_
+            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>::get_, 
+            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>::set_
         >
     {
     public:
         using Type     = T_;
         using PropType = P_<
-            UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive>, T_>, 
+            UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>, 
             T_, 
-            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive>, T_>::get_, 
-            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive>, T_>::set_
+            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>::get_, 
+            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>::set_
         >;
         
         friend class P_<
-            UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive>, T_>, 
+            UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>, 
             T_, 
-            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive>, T_>::get_, 
-            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive>, T_>::set_
+            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>::get_, 
+            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>::set_
         >;
         
         template<
@@ -71,11 +83,12 @@ namespace Gorgon { namespace Widgets {
                 PT_(C_::*Getter_)() const, 
                 void(C_::*Setter_)(const PT_&)
             > class P1_,
-            SliderInteractivity I2_
+            internal::SliderInteractivity I2_,
+            internal::SliderValueMapping V2_
         >
         friend class SliderBase;
         
-        friend struct UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive>, T_>;
+        friend struct UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>;
 
         SliderBase(const SliderBase &) = delete;
         
@@ -104,7 +117,7 @@ namespace Gorgon { namespace Widgets {
             refreshvalue();
             stack.SetValueTransitionSpeed({changespeed, 0, 0, 0});
             
-            if(interactive != SliderInteractivity::None) {
+            if(interactive != internal::SliderInteractivity::None) {
                 stack.HandleMouse();
                 
                 stack.SetClickEvent([this](auto tag, auto location, auto btn) {
@@ -115,7 +128,7 @@ namespace Gorgon { namespace Widgets {
                     }
                     
                     if(btn == Input::Mouse::Button::Left) {
-                        if((interactive & SliderInteractivity::Jump) && tag == UI::ComponentTemplate::DragBarTag) {
+                        if((interactive & internal::SliderInteractivity::Jump) && tag == UI::ComponentTemplate::DragBarTag) {
                             auto val = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, location)[0];
                             
                             if(val == std::numeric_limits<float>::infinity())
@@ -125,7 +138,7 @@ namespace Gorgon { namespace Widgets {
                             
                             setval(VAL_(val, this->min, this->max));
                         }
-                        if((interactive & SliderInteractivity::Page)) {
+                        if((interactive & internal::SliderInteractivity::Page)) {
                             if(tag == UI::ComponentTemplate::DragBarTag) {
                                 auto val = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, location)[0];
                                 
@@ -155,12 +168,12 @@ namespace Gorgon { namespace Widgets {
                             tag = stack.GetTemplate(ind).GetTag();
                     }
                     
-                    if((interactive & SliderInteractivity::HandleOnly)) {
+                    if((interactive & internal::SliderInteractivity::HandleOnly)) {
                         if(tag == UI::ComponentTemplate::DragTag) {
                             if(btn == Input::Mouse::Button::Left) {
                                 downlocation = location;
                                 downvalue    = stack.GetValue()[0];
-                                grab = SliderInteractivity::HandleOnly;
+                                grab = internal::SliderInteractivity::HandleOnly;
                             }
                         }
                     }
@@ -168,12 +181,12 @@ namespace Gorgon { namespace Widgets {
 
                 stack.SetMouseUpEvent([this](auto, auto, auto btn) {
                     if(btn == Input::Mouse::Button::Left) {
-                        grab = SliderInteractivity::None;
+                        grab = internal::SliderInteractivity::None;
                     }
                 });
 
                 stack.SetMouseMoveEvent([this](UI::ComponentTemplate::Tag, Geometry::Point location) {
-                    if((interactive & SliderInteractivity::HandleOnly) && grab == SliderInteractivity::HandleOnly) {
+                    if((interactive & internal::SliderInteractivity::HandleOnly) && grab == internal::SliderInteractivity::HandleOnly) {
                         auto val = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, location - downlocation, true)[0];
                         if(val == std::numeric_limits<float>::infinity())
                             return;
@@ -188,15 +201,7 @@ namespace Gorgon { namespace Widgets {
                 
                 stack.SetOtherMouseEvent([this](UI::ComponentTemplate::Tag, Input::Mouse::EventType type, Geometry::Point, float amount) {
                     if(type == Input::Mouse::EventType::Scroll_Vert || type == Input::Mouse::EventType::Scroll_Hor) {
-                        amount *= -1;
-                        
-                        if(amount<0 && value <= min)
-                            return false;
-                        
-                        if(amount>0 && value >= this->max)
-                            return false;
-                        
-                        SetValue(GetValue() + amount * smallchange);
+                        SetValue(GetValue() - amount * smallchange);
                         
                         return true;
                     }
@@ -209,9 +214,10 @@ namespace Gorgon { namespace Widgets {
         
     protected: //these methods are here to be elevated to public if necessary.
         
-        /// Sets the current value of the slider
-        void SetValue(const T_ &value) {
-            setval(value);
+        /// Sets the current value of the slider. If instant is set to true, the value
+        /// will be set instantly without any animations.
+        void SetValue(const T_ &value, bool instant = false) {
+            setval(value, instant);
         }
         
         /// Gets the current value of the slider
@@ -232,6 +238,10 @@ namespace Gorgon { namespace Widgets {
                 max = value;
             }
             
+            if(valuemapping == internal::SliderValueMapping::ValueAndRange) {
+                SetSmoothChangeSpeedRatio(changespeed);
+            }
+
             if(!setval(this->value)) //if returns true, refresh is already called
                 refreshvalue();
         }
@@ -252,6 +262,10 @@ namespace Gorgon { namespace Widgets {
             }
             else {
                 min = value;
+            }
+
+            if(valuemapping == internal::SliderValueMapping::ValueAndRange) {
+                SetSmoothChangeSpeedRatio(changespeed);
             }
             
             if(!setval(this->value)) //if returns true, refresh is already called
@@ -279,6 +293,10 @@ namespace Gorgon { namespace Widgets {
             this->min = min;
             this->max = max;
             
+            if(valuemapping == internal::SliderValueMapping::ValueAndRange) {
+                SetSmoothChangeSpeedRatio(changespeed);
+            }
+            
             if(setval(this->value)) //if returns true, refresh is already called
                 refreshvalue();
         }
@@ -305,6 +323,10 @@ namespace Gorgon { namespace Widgets {
             
             if(range > this->max)
                 range = this->max;
+
+            if(valuemapping == internal::SliderValueMapping::ValueAndRange) {
+                SetSmoothChangeSpeedRatio(changespeed);
+            }
             
             this->refreshvalue();
         }
@@ -367,13 +389,25 @@ namespace Gorgon { namespace Widgets {
         /// default value is 1 and will be sync to the maximum value.
         void SetSmoothChangeSpeedRatio(float value) {
             changespeed = value;
-            stack.SetValueTransitionSpeed({value, 0, 0, 0});
+            if(valuemapping == internal::SliderValueMapping::OneValue) {
+                stack.SetValueTransitionSpeed({value, 0, 0, 0});
+            }
+            else if(valuemapping == internal::SliderValueMapping::ValueAndRange) {
+                auto r = DIV_(range, min, max);
+                auto m = DIV_(max, min, max);
+                if(m == 0 || r == 1) {
+                    stack.SetValueTransitionSpeed({value, 0, 0, 0});
+                }
+                else {
+                    stack.SetValueTransitionSpeed({value / (1 - r), 0, 0, 0});
+                }
+            }
         }
         
         /// Returns the smooth change speed. If smooth change is disabled, this 
         /// value will be 0.
         T_ GetSmoothChangeSpeed() const {
-            return changespeed * (max - min);
+            return FloatToValue(changespeed, min, max);
         }
         
         /// Returns the smooth change in ratio to the maximum. 1 means full progress
@@ -418,9 +452,9 @@ namespace Gorgon { namespace Widgets {
             setval(val);
         }
         
-        bool setval(T_ val) {
-            if(val > max)
-                val = max;
+        bool setval(T_ val, bool instant = false) {
+            if(val > max - (valuemapping == internal::SliderValueMapping::ValueAndRange ? range : 0))
+                val = max - (valuemapping == internal::SliderValueMapping::ValueAndRange ? range : 0);
             
             if(val < min)
                 val = min;
@@ -430,7 +464,7 @@ namespace Gorgon { namespace Widgets {
                 
                 valuechanged(value);
             
-                refreshvalue();
+                refreshvalue(instant);
                 
                 return true;
             }
@@ -438,74 +472,23 @@ namespace Gorgon { namespace Widgets {
             return false;
         }
         
-        virtual void refreshvalue() {
-            float val = DIV_(this->value, min, max);
-            float val2 = DIV_(this->value+this->range, this->min, this->max);
-            float r = DIV_(this->range, this->min, this->max);
-            
-            stack.SetValue(val, val2, r);
-            
-            val = std::round(val*1000);
-            
-            if(val == 0) {
-                stack.AddCondition(UI::ComponentCondition::Ch1V0);
+        virtual void refreshvalue(bool instant = false) {
+            if(valuemapping == internal::SliderValueMapping::OneValue) {
+                float val = DIV_(this->value, min, max);
+                
+                stack.SetValue(val, 0, 0, instant);
             }
-            else {
-                stack.RemoveCondition(UI::ComponentCondition::Ch1V0);
-            }
-            if(val == 500) {
-                stack.AddCondition(UI::ComponentCondition::Ch1V05);
-            }
-            else {
-                stack.RemoveCondition(UI::ComponentCondition::Ch1V05);
-            }
-            if(val == 1000) {
-                stack.AddCondition(UI::ComponentCondition::Ch1V1);
-            }
-            else {
-                stack.RemoveCondition(UI::ComponentCondition::Ch1V1);
-            }
-            
-            val2 = std::round(val2*1000);
-            
-            if(val2 == 0) {
-                this->stack.AddCondition(UI::ComponentCondition::Ch2V0);
-            }
-            else {
-                this->stack.RemoveCondition(UI::ComponentCondition::Ch2V0);
-            }
-            if(val2 == 500) {
-                this->stack.AddCondition(UI::ComponentCondition::Ch2V05);
-            }
-            else {
-                this->stack.RemoveCondition(UI::ComponentCondition::Ch2V05);
-            }
-            if(val2 == 1000) {
-                this->stack.AddCondition(UI::ComponentCondition::Ch2V1);
-            }
-            else {
-                this->stack.RemoveCondition(UI::ComponentCondition::Ch2V1);
-            }
-            
-            r = std::round(r*1000);
-            
-            if(r == 0) {
-                this->stack.AddCondition(UI::ComponentCondition::Ch3V0);
-            }
-            else {
-                this->stack.RemoveCondition(UI::ComponentCondition::Ch3V0);
-            }
-            if(r == 500) {
-                this->stack.AddCondition(UI::ComponentCondition::Ch3V05);
-            }
-            else {
-                this->stack.RemoveCondition(UI::ComponentCondition::Ch3V05);
-            }
-            if(r == 1000) {
-                this->stack.AddCondition(UI::ComponentCondition::Ch3V1);
-            }
-            else {
-                this->stack.RemoveCondition(UI::ComponentCondition::Ch3V1);
+            else if(valuemapping == internal::SliderValueMapping::ValueAndRange) {
+                float val = DIV_(this->value, this->min, this->max-this->range);
+                float v1  = DIV_(this->value, this->min, this->max);
+                float v2  = DIV_(this->value+this->range, this->min, this->max);
+                float r   = DIV_(this->range, this->min, this->max);
+                
+                if(DIV_(max, min, max) == 0) {
+                    r = 1;
+                }
+                
+                stack.SetValue(val, v1, v2, r, instant);
             }
         }
         
@@ -521,14 +504,14 @@ namespace Gorgon { namespace Widgets {
         
         float changespeed = 1;
         
-        SliderInteractivity grab         = SliderInteractivity::None;
-        Geometry::Point     downlocation = {0, 0};
-        float               downvalue    = 0;
+        internal::SliderInteractivity grab = internal::SliderInteractivity::None;
+        Geometry::Point     downlocation   = {0, 0};
+        float               downvalue      = 0;
         
         virtual void valuechanged(T_) = 0;
         
     private:
-        struct UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive>, T_> helper = UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive>, T_>(this);
+        struct UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_> helper = UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>(this);
 
     };
     

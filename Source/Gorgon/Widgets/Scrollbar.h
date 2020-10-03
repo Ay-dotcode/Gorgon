@@ -22,8 +22,8 @@ namespace Gorgon { namespace Widgets {
         template<class C_, class PT_, PT_(C_::*Getter_)() const, void(C_::*Setter_)(const PT_ &)> class P_ = Gorgon::NumericProperty,
         Registry::TemplateType defaultregistry = Registry::Scrollbar_Horizontal
     >
-    class Scrollbar : public SliderBase<T_, DIV_, VAL_, P_, SliderInteractivity::HandleAndPage> {
-        using Base = SliderBase<T_, DIV_, VAL_, P_, SliderInteractivity::HandleAndPage>;
+    class Scrollbar : public SliderBase<T_, DIV_, VAL_, P_, internal::SliderInteractivity::HandleAndPage, internal::SliderValueMapping::ValueAndRange> {
+        using Base = SliderBase<T_, DIV_, VAL_, P_, internal::SliderInteractivity::HandleAndPage, internal::SliderValueMapping::ValueAndRange>;
     public:
         
         Scrollbar(const Scrollbar &) = delete;
