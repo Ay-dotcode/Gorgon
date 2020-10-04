@@ -19,25 +19,37 @@
 #include <Gorgon/Graphics/TintedObject.h>
 
 
-std::string helptext = 
+std::string helptext =
     "Key list:\n"
     "d\tToggle disabled\n"
     "1-2\tChange Values\n"
     "esc\tClose\n"
-;
+    ;
 
 using namespace Gorgon;
 
 Graphics::Bitmap &prep(Graphics::Bitmap &bmp) {
     bmp.Prepare();
-    
+
     return bmp;
 }
+
+
+float StringDiv(std::string left, std::string min, std::string max) {
+    if(min.length() == max.length()) return 0.f;
+
+    return float(left.length() - min.length()) / float(max.length() - min.length());
+}
+
+std::string StringVal(float value, std::string min, std::string max) {
+    return max.substr(0, (max.length() - min.length()) * value + min.length());
+}
+
 
 int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
 
-    ///Blank Panel & elements with Registry & Regulars 
+    ///Blank Panel & elements with Registry & Regulars
     /*Widgets::SimpleGenerator generator;
     generator.Init(13);
     generator.UpdateBorders();
@@ -56,7 +68,7 @@ int main() {
     Graphics::TintedBitmapProvider icon2(icon.Rotate270(), Graphics::Color::Charcoal);
     icon2.Prepare();
     btn.OwnIcon(icon2.CreateAnimation());
-    
+
     icnbtn.OwnIcon(icon2.CreateAnimation());
 
     Gorgon::Widgets::Label l("Coffee:");
@@ -67,7 +79,7 @@ int main() {
     radio.Add(1,"Latte");
 
     Gorgon::Widgets::Inputbox<std::string> input;
-    
+
     Gorgon::Widgets::Checkbox chk("Black",Gorgon::Widgets::Registry::Checkbox_Regular);
     Gorgon::Widgets::Checkbox chk2("Lattej");
     Gorgon::Widgets::Checkbox chkbutton("C", Gorgon::Widgets::Registry::Checkbox_Button);
@@ -93,7 +105,7 @@ int main() {
     Gorgon::Widgets::Panel bottompanel(Gorgon::Widgets::Registry::Panel_Bottom);
     Gorgon::Widgets::Label bottomlabel("Panel bottom");
     bottompanel.Add(bottomlabel);
-  
+
     input.ChangedEvent.Register([&] {
         std::cout << input.GetText() << std::endl;
     });
@@ -106,7 +118,7 @@ int main() {
         bar -= 10;
     });
     //blank.CreateOrganizer<Gorgon::UI::Organizers::List>().SetSpacing(Gorgon::Widgets::Registry::Active().GetSpacing());
-    
+
     auto addme = [&](auto &pnl, UI::WidgetBase &w) {
         Geometry::Point offsetx = {Widgets::Registry::Active().GetSpacing(), 0};
         if(pnl.UI::WidgetContainer::begin() != pnl.UI::WidgetContainer::end()) {
@@ -117,31 +129,31 @@ int main() {
             else
                 w.Move(0, last.GetBounds().Bottom + Widgets::Registry::Active().GetSpacing());
         }
-        
+
         pnl.Add(w);
     };
-    
+
     app.wind.KeyEvent.Register([&](Gorgon::Input::Key key, float amount) {
         namespace Keycodes = Gorgon::Input::Keyboard::Keycodes;
-        
+
         switch(key) {
         case Keycodes::D:
             blank.ToggleEnabled();
             return true;
         }
-            
+
         return false;
     });
-    
+
     Widgets::VScrollbar scroll1(20);
     scroll1 = 100;
     scroll1.Range = 20;
-    
+
     Widgets::HScrollbar scroll2(200);
     scroll2.Range = 20;
     //scroll2.SetValue(200, false);
-    
-    
+
+
     app.wind.Add(blank);
     addme(blank, btn);
     addme(blank, icnbtn);
@@ -157,177 +169,81 @@ int main() {
     addme(blank, bar);
     addme(blank, scroll1);
     addme(blank, scroll2);
-    /*addme(blank, toppanel);
-    addme(blank, bottompanel);
-    addme(blank, leftpanel);
-    addme(blank, rightpanel);*/
-/*
-    
-    ///Generator 1  background.panel color = red focus color = grey, forecolor.regular = green border = blue,  fontsize = 12 defualt;
-    Widgets::SimpleGenerator gen;
-    gen.Init(12);
-    gen.Background.Panel = Gorgon::Graphics::Color::Red;
-    gen.Border.Color = Gorgon::Graphics::Color::Blue;
-    gen.Forecolor.Regular = Gorgon::Graphics::Color::Green;
-    gen.Focus.Color = Gorgon::Graphics::Color::Grey;
-    gen.UpdateBorders();
-    gen.UpdateDimensions();
-    
-    auto gentemp = gen.BlankPanel();
-    auto btntemp = gen.Button();
-    auto radtemp = gen.RadioButton();
-    auto chktemp = gen.Checkbox();
-    auto chktemp2 = gen.CheckboxButton();
-    auto icobtntemp = gen.IconButton();
-    auto lbltemp = gen.Label();
-    auto pnltemp = gen.BlankPanel();
-    auto inptemp = gen.Inputbox();
-    auto progresstmp = gen.Progressbar();
-    auto toppaneltmp = gen.TopPanel();
-    auto bottompaneltmp = gen.BottomPanel();
-    auto leftpaneltmp = gen.LeftPanel();
-    auto rightpaneltmp = gen.RightPanel();
-    
-    Gorgon::Widgets::Panel panelgen1(gentemp);
-    Gorgon::Widgets::Button btngen1(btntemp,"press");
-    Gorgon::Widgets::Button icnbtngen1(icobtntemp,"+");
-    Gorgon::Widgets::Button icnbtn2gen1(icobtntemp, "-");
-    Gorgon::Widgets::Label labelgen1(lbltemp, "Coffee:");
-    icnbtngen1.SetIcon(icon);
-    
-    Gorgon::Widgets::RadioButtons<int> radiogen1(radtemp);
-    radiogen1.Add(0, "Americano");
-    radiogen1.Add(1, "Latte");
 
-    Gorgon::Widgets::Inputbox<std::string> inputgen1(inptemp);
-    Gorgon::Widgets::Checkbox chkgen1(chktemp, "Black");
-    Gorgon::Widgets::Checkbox chk2gen1(chktemp, "Latte");
-    Gorgon::Widgets::Checkbox chkbtngen1(chktemp2, "Cbutton");
-    Gorgon::Widgets::Progressbar bargen1(progresstmp);
+    /*Widgets::Progressor<std::string, StringDiv, StringVal, Gorgon::TextualProperty> bar2;
+    bar2.Maximum = "Hello world";
+    bar2 = "hello";
+    bar2 += " ??";
+    addme(blank, bar2);*/
 
-    Gorgon::Widgets::Panel toppanelgen1(toppaneltmp);
-    toppanelgen1.Resize({ 50,80 });
-    Gorgon::Widgets::Label toplabelgen1(lbltemp,"Panel Top");
-    Gorgon::Widgets::Button topbtngen1(btntemp,"button");
-    toppanelgen1.Add(toplabelgen1);
-    toppanelgen1.Add(topbtngen1);
-    topbtngen1.Move(toplabelgen1.GetLocation().X, toplabelgen1.GetLocation().Y + toplabelgen1.GetSize().Height);
-    Gorgon::Widgets::Label bottomlabelgen1(lbltemp, "Panel bottom");
+            /*addme(blank, toppanel);
+            addme(blank, bottompanel);
+            addme(blank, leftpanel);
+            addme(blank, rightpanel);*/
+            /*
 
-    Gorgon::Widgets::Panel bottompanelgen1(bottompaneltmp);
-    bottompanelgen1.Resize({ 30,30 });
-    bottompanelgen1.Add(bottomlabelgen1);
-    Gorgon::Widgets::Panel leftpanelgen1(leftpaneltmp);
-    Gorgon::Widgets::Label leftlabelgen1(lbltemp, "Panel left");
-    leftpanelgen1.Add(leftlabelgen1);
-    leftpanelgen1.Resize({ 30,30 });
-    Gorgon::Widgets::Panel rightpanelgen1(rightpaneltmp);
-    Gorgon::Widgets::Label rightlabelgen1(lbltemp, "Panel right");
-    rightpanelgen1.Add(rightlabelgen1);
-    rightpanelgen1.Resize({ 30,30 });
-    
+                ///Generator 1  background.panel color = red focus color = grey, forecolor.regular = green border = blue,  fontsize = 12 defualt;
+                Widgets::SimpleGenerator gen;
+                gen.Init(12);
+                gen.Background.Panel = Gorgon::Graphics::Color::Red;
+                gen.Border.Color = Gorgon::Graphics::Color::Blue;
+                gen.Forecolor.Regular = Gorgon::Graphics::Color::Green;
+                gen.Focus.Color = Gorgon::Graphics::Color::Grey;
+                gen.UpdateBorders();
+                gen.UpdateDimensions();
 
+                auto gentemp = gen.BlankPanel();
+                auto btntemp = gen.Button();
+                auto radtemp = gen.RadioButton();
+                auto chktemp = gen.Checkbox();
+                auto chktemp2 = gen.CheckboxButton();
+                auto icobtntemp = gen.IconButton();
+                auto lbltemp = gen.Label();
+                auto pnltemp = gen.BlankPanel();
+                auto inptemp = gen.Inputbox();
+                auto progresstmp = gen.Progressbar();
+                auto toppaneltmp = gen.TopPanel();
+                auto bottompaneltmp = gen.BottomPanel();
+                auto leftpaneltmp = gen.LeftPanel();
+                auto rightpaneltmp = gen.RightPanel();
 
+                Gorgon::Widgets::Panel panelgen1(gentemp);
+                Gorgon::Widgets::Button btngen1(btntemp,"press");
+                Gorgon::Widgets::Button icnbtngen1(icobtntemp,"+");
+                Gorgon::Widgets::Button icnbtn2gen1(icobtntemp, "-");
+                Gorgon::Widgets::Label labelgen1(lbltemp, "Coffee:");
+                icnbtngen1.SetIcon(icon);
 
+                Gorgon::Widgets::RadioButtons<int> radiogen1(radtemp);
+                radiogen1.Add(0, "Americano");
+                radiogen1.Add(1, "Latte");
 
+                Gorgon::Widgets::Inputbox<std::string> inputgen1(inptemp);
+                Gorgon::Widgets::Checkbox chkgen1(chktemp, "Black");
+                Gorgon::Widgets::Checkbox chk2gen1(chktemp, "Latte");
+                Gorgon::Widgets::Checkbox chkbtngen1(chktemp2, "Cbutton");
+                Gorgon::Widgets::Progressbar bargen1(progresstmp);
 
+                Gorgon::Widgets::Panel toppanelgen1(toppaneltmp);
+                toppanelgen1.Resize({ 50,80 });
+                Gorgon::Widgets::Label toplabelgen1(lbltemp,"Panel Top");
+                Gorgon::Widgets::Button topbtngen1(btntemp,"button");
+                toppanelgen1.Add(toplabelgen1);
+                toppanelgen1.Add(topbtngen1);
+                topbtngen1.Move(toplabelgen1.GetLocation().X, toplabelgen1.GetLocation().Y + toplabelgen1.GetSize().Height);
+                Gorgon::Widgets::Label bottomlabelgen1(lbltemp, "Panel bottom");
 
-    inputgen1.ChangedEvent.Register([&] {
-        std::cout << inputgen1.GetText() << std::endl;
-    });
-
-    icnbtngen1.PressEvent.Register([&] {
-        bargen1.Set(bargen1.Get() + 10);
-    });
-
-    icnbtn2gen1.PressEvent.Register([&] {
-        bargen1.Set(bargen1.Get() - 10);
-    });
-
-
-
-    panelgen1.Resize(180, 600);
-    panelgen1.CreateOrganizer<Gorgon::UI::Organizers::List>().SetSpacing(Gorgon::Widgets::Registry::Active().GetSpacing());
-    panelgen1.Add(btngen1);
-    panelgen1.Add(icnbtngen1);
-    panelgen1.Add(icnbtn2gen1);
-    panelgen1.Add(labelgen1);
-    panelgen1.Add(radiogen1);
-    panelgen1.Add(inputgen1);
-    panelgen1.Add(chkgen1);
-    panelgen1.Add(chk2gen1);
-    panelgen1.Add(chkbtngen1);
-    panelgen1.Add(bargen1);
-    panelgen1.Add(toppanelgen1);
-    panelgen1.Add(bottompanelgen1);
-    panelgen1.Add(leftpanelgen1);
-    panelgen1.Add(rightpanelgen1);
-
-
-
-
-
-    ///Generator 2  background.panel color = grey focus color = blue, forecolor.regular = purple border = white,  fontsize = 20 defualt;
-    Widgets::SimpleGenerator gen2;
-    gen2.Init(16);
-    gen2.Background.Panel = Gorgon::Graphics::Color::Grey;
-    gen2.Border.Color = Gorgon::Graphics::Color::White;
-    gen2.Forecolor.Regular = Gorgon::Graphics::Color::Purple;
-    gen2.Focus.Color = Gorgon::Graphics::Color::Blue;
-    gen2.UpdateBorders();
-    gen2.UpdateDimensions();
-
-    auto gentemp2 = gen2.BlankPanel();
-    auto btntemp2 = gen2.Button();
-    auto radtemp2 = gen2.RadioButton();
-    auto chktempgen2 = gen2.Checkbox();
-    auto chktempbtn2 = gen2.CheckboxButton();
-    auto icobtntemp2 = gen2.IconButton();
-    auto lbltemp2 = gen2.Label();
-    auto pnltemp2 = gen2.BlankPanel();
-    auto inptemp2 = gen2.Inputbox();
-    auto progresstmp2 = gen2.Progressbar();
-    auto toppaneltmp2 = gen2.TopPanel();
-    auto bottompaneltmp2 = gen2.BottomPanel();
-    auto leftpaneltmp2 = gen2.LeftPanel();
-    auto rightpaneltmp2 = gen2.RightPanel();
-
-    Gorgon::Widgets::Panel panelgen2(gentemp2);
-    Gorgon::Widgets::Button btngen2(btntemp2, "press");
-    Gorgon::Widgets::Button icnbtngen2(icobtntemp2, "+");
-    Gorgon::Widgets::Button icnbtn2gen2(icobtntemp2, "-");
-    Gorgon::Widgets::Label labelgen2(lbltemp2, "Coffee:");
-    icnbtngen2.SetIcon(icon);
-    Gorgon::Widgets::RadioButtons<int> radiogen2(radtemp2);
-    radiogen2.Add(0, "Americano");
-    radiogen2.Add(1, "Latte");
-
-    Gorgon::Widgets::Inputbox<std::string> inputgen2(inptemp2);
-    Gorgon::Widgets::Checkbox chkgen2(chktemp2, "Black");
-    Gorgon::Widgets::Checkbox chk2gen2(chktemp2, "Latte");
-    Gorgon::Widgets::Checkbox chkbtngen2(chktempgen2, "Cbutton");
-    Gorgon::Widgets::Progressbar bargen2(progresstmp2);
-
-    Gorgon::Widgets::Panel toppanelgen2(toppaneltmp2);
-    toppanelgen2.Resize({ 50,80 });
-    Gorgon::Widgets::Label toplabelgen2(lbltemp2, "Panel Top");
-    Gorgon::Widgets::Button topbtngen2(btntemp2, "button");
-    toppanelgen2.Add(toplabelgen2);
-    toppanelgen2.Add(topbtngen2);
-    topbtngen2.Move(toplabelgen2.GetLocation().X, toplabelgen2.GetLocation().Y + toplabelgen2.GetSize().Height);
-    Gorgon::Widgets::Label bottomlabelgen2(lbltemp2, "Panel bottom");
-
-    Gorgon::Widgets::Panel bottompanelgen2(bottompaneltmp2);
-    bottompanelgen2.Resize({ 30,30 });
-    bottompanelgen2.Add(bottomlabelgen2);
-    Gorgon::Widgets::Panel leftpanelgen2(leftpaneltmp2);
-    Gorgon::Widgets::Label leftlabelgen2(lbltemp2, "Panel left");
-    leftpanelgen2.Add(leftlabelgen2);
-    leftpanelgen2.Resize({ 30,30 });
-    Gorgon::Widgets::Panel rightpanelgen2(rightpaneltmp2);
-    Gorgon::Widgets::Label rightlabelgen2(lbltemp2, "Panel right");
-    rightpanelgen2.Add(rightlabelgen2);
-    rightpanelgen2.Resize({ 30,30 });
+                Gorgon::Widgets::Panel bottompanelgen1(bottompaneltmp);
+                bottompanelgen1.Resize({ 30,30 });
+                bottompanelgen1.Add(bottomlabelgen1);
+                Gorgon::Widgets::Panel leftpanelgen1(leftpaneltmp);
+                Gorgon::Widgets::Label leftlabelgen1(lbltemp, "Panel left");
+                leftpanelgen1.Add(leftlabelgen1);
+                leftpanelgen1.Resize({ 30,30 });
+                Gorgon::Widgets::Panel rightpanelgen1(rightpaneltmp);
+                Gorgon::Widgets::Label rightlabelgen1(lbltemp, "Panel right");
+                rightpanelgen1.Add(rightlabelgen1);
+                rightpanelgen1.Resize({ 30,30 });
 
 
 
@@ -335,49 +251,152 @@ int main() {
 
 
 
-    inputgen2.ChangedEvent.Register([&] {
-        std::cout << inputgen2.GetText() << std::endl;
-    });
+                inputgen1.ChangedEvent.Register([&] {
+                    std::cout << inputgen1.GetText() << std::endl;
+                });
 
-    icnbtngen2.PressEvent.Register([&] {
-        bargen2.Set(bargen2.Get() + 10);
-    });
+                icnbtngen1.PressEvent.Register([&] {
+                    bargen1.Set(bargen1.Get() + 10);
+                });
 
-    icnbtn2gen2.PressEvent.Register([&] {
-        bargen2.Set(bargen2.Get() - 10);
-    });
-
-
-
-    panelgen2.Resize(180, 600);
-    panelgen2.CreateOrganizer<Gorgon::UI::Organizers::List>().SetSpacing(Gorgon::Widgets::Registry::Active().GetSpacing());
-    panelgen2.Add(btngen2);
-    panelgen2.Add(icnbtngen2);
-    panelgen2.Add(icnbtn2gen2);
-    panelgen2.Add(labelgen2);
-    panelgen2.Add(radiogen2);
-    panelgen2.Add(inputgen2);
-    panelgen2.Add(chkgen2);
-    panelgen2.Add(chk2gen2);
-    panelgen2.Add(chkbtngen2);
-    panelgen2.Add(bargen2);
-    panelgen2.Add(toppanelgen2);
-    panelgen2.Add(bottompanelgen2);
-    panelgen2.Add(leftpanelgen2);
-    panelgen2.Add(rightpanelgen2);
+                icnbtn2gen1.PressEvent.Register([&] {
+                    bargen1.Set(bargen1.Get() - 10);
+                });
 
 
 
-*/
+                panelgen1.Resize(180, 600);
+                panelgen1.CreateOrganizer<Gorgon::UI::Organizers::List>().SetSpacing(Gorgon::Widgets::Registry::Active().GetSpacing());
+                panelgen1.Add(btngen1);
+                panelgen1.Add(icnbtngen1);
+                panelgen1.Add(icnbtn2gen1);
+                panelgen1.Add(labelgen1);
+                panelgen1.Add(radiogen1);
+                panelgen1.Add(inputgen1);
+                panelgen1.Add(chkgen1);
+                panelgen1.Add(chk2gen1);
+                panelgen1.Add(chkbtngen1);
+                panelgen1.Add(bargen1);
+                panelgen1.Add(toppanelgen1);
+                panelgen1.Add(bottompanelgen1);
+                panelgen1.Add(leftpanelgen1);
+                panelgen1.Add(rightpanelgen1);
 
 
-    /*app.wind.Add(panelgen1);
-    app.wind.Add(panelgen2);
-    panelgen1.Move(blank.GetBounds().Right + 5,blank.GetLocation().Y);
-    panelgen2.Move(panelgen1.GetBounds().Right + 5, blank.GetLocation().Y);
 
-   */
-    app.wind.Run();
+
+
+                ///Generator 2  background.panel color = grey focus color = blue, forecolor.regular = purple border = white,  fontsize = 20 defualt;
+                Widgets::SimpleGenerator gen2;
+                gen2.Init(16);
+                gen2.Background.Panel = Gorgon::Graphics::Color::Grey;
+                gen2.Border.Color = Gorgon::Graphics::Color::White;
+                gen2.Forecolor.Regular = Gorgon::Graphics::Color::Purple;
+                gen2.Focus.Color = Gorgon::Graphics::Color::Blue;
+                gen2.UpdateBorders();
+                gen2.UpdateDimensions();
+
+                auto gentemp2 = gen2.BlankPanel();
+                auto btntemp2 = gen2.Button();
+                auto radtemp2 = gen2.RadioButton();
+                auto chktempgen2 = gen2.Checkbox();
+                auto chktempbtn2 = gen2.CheckboxButton();
+                auto icobtntemp2 = gen2.IconButton();
+                auto lbltemp2 = gen2.Label();
+                auto pnltemp2 = gen2.BlankPanel();
+                auto inptemp2 = gen2.Inputbox();
+                auto progresstmp2 = gen2.Progressbar();
+                auto toppaneltmp2 = gen2.TopPanel();
+                auto bottompaneltmp2 = gen2.BottomPanel();
+                auto leftpaneltmp2 = gen2.LeftPanel();
+                auto rightpaneltmp2 = gen2.RightPanel();
+
+                Gorgon::Widgets::Panel panelgen2(gentemp2);
+                Gorgon::Widgets::Button btngen2(btntemp2, "press");
+                Gorgon::Widgets::Button icnbtngen2(icobtntemp2, "+");
+                Gorgon::Widgets::Button icnbtn2gen2(icobtntemp2, "-");
+                Gorgon::Widgets::Label labelgen2(lbltemp2, "Coffee:");
+                icnbtngen2.SetIcon(icon);
+                Gorgon::Widgets::RadioButtons<int> radiogen2(radtemp2);
+                radiogen2.Add(0, "Americano");
+                radiogen2.Add(1, "Latte");
+
+                Gorgon::Widgets::Inputbox<std::string> inputgen2(inptemp2);
+                Gorgon::Widgets::Checkbox chkgen2(chktemp2, "Black");
+                Gorgon::Widgets::Checkbox chk2gen2(chktemp2, "Latte");
+                Gorgon::Widgets::Checkbox chkbtngen2(chktempgen2, "Cbutton");
+                Gorgon::Widgets::Progressbar bargen2(progresstmp2);
+
+                Gorgon::Widgets::Panel toppanelgen2(toppaneltmp2);
+                toppanelgen2.Resize({ 50,80 });
+                Gorgon::Widgets::Label toplabelgen2(lbltemp2, "Panel Top");
+                Gorgon::Widgets::Button topbtngen2(btntemp2, "button");
+                toppanelgen2.Add(toplabelgen2);
+                toppanelgen2.Add(topbtngen2);
+                topbtngen2.Move(toplabelgen2.GetLocation().X, toplabelgen2.GetLocation().Y + toplabelgen2.GetSize().Height);
+                Gorgon::Widgets::Label bottomlabelgen2(lbltemp2, "Panel bottom");
+
+                Gorgon::Widgets::Panel bottompanelgen2(bottompaneltmp2);
+                bottompanelgen2.Resize({ 30,30 });
+                bottompanelgen2.Add(bottomlabelgen2);
+                Gorgon::Widgets::Panel leftpanelgen2(leftpaneltmp2);
+                Gorgon::Widgets::Label leftlabelgen2(lbltemp2, "Panel left");
+                leftpanelgen2.Add(leftlabelgen2);
+                leftpanelgen2.Resize({ 30,30 });
+                Gorgon::Widgets::Panel rightpanelgen2(rightpaneltmp2);
+                Gorgon::Widgets::Label rightlabelgen2(lbltemp2, "Panel right");
+                rightpanelgen2.Add(rightlabelgen2);
+                rightpanelgen2.Resize({ 30,30 });
+
+
+
+
+
+
+
+                inputgen2.ChangedEvent.Register([&] {
+                    std::cout << inputgen2.GetText() << std::endl;
+                });
+
+                icnbtngen2.PressEvent.Register([&] {
+                    bargen2.Set(bargen2.Get() + 10);
+                });
+
+                icnbtn2gen2.PressEvent.Register([&] {
+                    bargen2.Set(bargen2.Get() - 10);
+                });
+
+
+
+                panelgen2.Resize(180, 600);
+                panelgen2.CreateOrganizer<Gorgon::UI::Organizers::List>().SetSpacing(Gorgon::Widgets::Registry::Active().GetSpacing());
+                panelgen2.Add(btngen2);
+                panelgen2.Add(icnbtngen2);
+                panelgen2.Add(icnbtn2gen2);
+                panelgen2.Add(labelgen2);
+                panelgen2.Add(radiogen2);
+                panelgen2.Add(inputgen2);
+                panelgen2.Add(chkgen2);
+                panelgen2.Add(chk2gen2);
+                panelgen2.Add(chkbtngen2);
+                panelgen2.Add(bargen2);
+                panelgen2.Add(toppanelgen2);
+                panelgen2.Add(bottompanelgen2);
+                panelgen2.Add(leftpanelgen2);
+                panelgen2.Add(rightpanelgen2);
+
+
+
+            */
+
+
+            /*app.wind.Add(panelgen1);
+            app.wind.Add(panelgen2);
+            panelgen1.Move(blank.GetBounds().Right + 5,blank.GetLocation().Y);
+            panelgen2.Move(panelgen1.GetBounds().Right + 5, blank.GetLocation().Y);
+
+            */
+            app.wind.Run();
 
     return 0;
 }

@@ -117,99 +117,7 @@ namespace Gorgon { namespace Widgets {
             refreshvalue();
             stack.SetValueTransitionSpeed({changespeed, 0, 0, 0});
             
-            if(interactive != internal::SliderInteractivity::None) {
-                stack.HandleMouse();
-                
-                stack.SetClickEvent([this](auto tag, auto location, auto btn) {
-                    if(tag == UI::ComponentTemplate::NoTag) {
-                        auto ind = stack.ComponentAt(location);
-                        if(ind != -1) 
-                            tag = stack.GetTemplate(ind).GetTag();
-                    }
-                    
-                    if(btn == Input::Mouse::Button::Left) {
-                        if((interactive & internal::SliderInteractivity::Jump) && tag == UI::ComponentTemplate::DragBarTag) {
-                            auto val = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, location)[0];
-                            
-                            if(val == std::numeric_limits<float>::infinity())
-                                return;
-                            
-                            val = Clamp(val, 0.f, 1.f);
-                            
-                            setval(VAL_(val, this->min, this->max));
-                        }
-                        if((interactive & internal::SliderInteractivity::Page)) {
-                            if(tag == UI::ComponentTemplate::DragBarTag) {
-                                auto val = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, location)[0];
-                                
-                                auto curval = DIV_(value, this->min, this->max);
-                                
-                                if(val > curval) {
-                                    SetValue(GetValue() + largechange);
-                                }
-                                else if(val < curval) {
-                                    SetValue(GetValue() - largechange);
-                                }
-                            }
-                            else if(tag == UI::ComponentTemplate::IncrementTag) {
-                                SetValue(GetValue() + largechange);
-                            }
-                            else if(tag == UI::ComponentTemplate::DecrementTag) {
-                                SetValue(GetValue() - largechange);
-                            }
-                        }
-                    }
-                });
-
-                stack.SetMouseDownEvent([this](auto tag, auto location, auto btn) {
-                    if(tag == UI::ComponentTemplate::NoTag) {
-                        auto ind = stack.ComponentAt(location);
-                        if(ind != -1) 
-                            tag = stack.GetTemplate(ind).GetTag();
-                    }
-                    
-                    if((interactive & internal::SliderInteractivity::HandleOnly)) {
-                        if(tag == UI::ComponentTemplate::DragTag) {
-                            if(btn == Input::Mouse::Button::Left) {
-                                downlocation = location;
-                                downvalue    = stack.GetValue()[0];
-                                grab = internal::SliderInteractivity::HandleOnly;
-                            }
-                        }
-                    }
-                });
-
-                stack.SetMouseUpEvent([this](auto, auto, auto btn) {
-                    if(btn == Input::Mouse::Button::Left) {
-                        grab = internal::SliderInteractivity::None;
-                    }
-                });
-
-                stack.SetMouseMoveEvent([this](UI::ComponentTemplate::Tag, Geometry::Point location) {
-                    if((interactive & internal::SliderInteractivity::HandleOnly) && grab == internal::SliderInteractivity::HandleOnly) {
-                        auto val = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, location - downlocation, true)[0];
-                        if(val == std::numeric_limits<float>::infinity())
-                            return;
-                        
-                        val += downvalue;
-                        
-                        val = Clamp(val, 0.f, 1.f);
-                        
-                        setval(VAL_(val, this->min, this->max));
-                    }
-                });
-                
-                stack.SetOtherMouseEvent([this](UI::ComponentTemplate::Tag, Input::Mouse::EventType type, Geometry::Point, float amount) {
-                    if(type == Input::Mouse::EventType::Scroll_Vert || type == Input::Mouse::EventType::Scroll_Hor) {
-                        SetValue(GetValue() - amount * smallchange);
-                        
-                        return true;
-                    }
-                    
-                    return false;
-                });
-
-            }
+            setupinteractivity();
         }
         
     protected: //these methods are here to be elevated to public if necessary.
@@ -226,17 +134,9 @@ namespace Gorgon { namespace Widgets {
         }
         
         /// Sets the maximum value that this slider reaches up to. If equal to minimum,
-        /// progress will display 0. SliderBase will always keep the value between minimum
-        /// and maximum. If maximum is less than minimum, this function will automatically
-        /// exchange these values.
+        /// progress will display 0. 
         void SetMaximum(const T_ &value) {
-            if(value < min) {
-                max = min;
-                min = value;
-            }
-            else {
-                max = value;
-            }
+            max = value;
             
             if(valuemapping == internal::SliderValueMapping::ValueAndRange) {
                 SetSmoothChangeSpeedRatio(changespeed);
@@ -252,17 +152,9 @@ namespace Gorgon { namespace Widgets {
         }
         
         /// Sets the minimum value that this slider reaches up to. If equal to maximum,
-        /// progress will display 0. SliderBase will always keep the value between minimum
-        /// and maximum. If maximum is less than minimum, this function will automatically
-        /// exchange these values.
+        /// progress will display 0.
         void SetMinimum(const T_ &value) {
-            if(value > max) {
-                min = max;
-                max = value;
-            }
-            else {
-                min = value;
-            }
+            min = value;
 
             if(valuemapping == internal::SliderValueMapping::ValueAndRange) {
                 SetSmoothChangeSpeedRatio(changespeed);
@@ -276,18 +168,13 @@ namespace Gorgon { namespace Widgets {
         /// progress will display 0. SliderBase will always keep the value between minimum
         /// and maximum. If maximum is less than minimum, this function will automatically
         /// exchange these values if exchange is set. If exchange is not set, they will both
-        /// be set to T_{}, effectively locking progress at 0.
+        /// be set to T_{}, effectively locking progress at 0. Do not use this function if
+        /// your type is not a regular numeric type
         void SetLimits(T_ min, T_ max, bool exchange = true) {
-            if(min > max) {
-                if(exchange) {
-                    using std::swap;
-                    
-                    swap(min, max);
-                }
-                else {
-                    min = T_{};
-                    max = T_{};
-                }
+            if(exchange && min > max) {
+                using std::swap;
+                
+                swap(min, max);
             }
             
             this->min = min;
@@ -316,13 +203,14 @@ namespace Gorgon { namespace Widgets {
         /// Sets the range the container can display. This is used to show how 
         /// much more the scroller can be scrolled.
         void SetRange(const T_ &value) {
-            range = value;
+            auto r = DIV_(value, min, max);
             
-            if(range < this->min)
+            if(r < 0)
                 range = this->min;
-            
-            if(range > this->max)
+            else if(r > 1)
                 range = this->max;
+            else
+                range = value;
 
             if(valuemapping == internal::SliderValueMapping::ValueAndRange) {
                 SetSmoothChangeSpeedRatio(changespeed);
@@ -452,12 +340,24 @@ namespace Gorgon { namespace Widgets {
             setval(val);
         }
         
+        template<internal::SliderValueMapping vm = valuemapping>
+        typename std::enable_if<vm == internal::SliderValueMapping::ValueAndRange, T_>::type
+        actualmax() {
+            return max - range;
+        }
+        
+        template<internal::SliderValueMapping vm = valuemapping>
+        typename std::enable_if<vm != internal::SliderValueMapping::ValueAndRange, T_>::type
+        actualmax() {
+            return max;
+        }
+        
         bool setval(T_ val, bool instant = false) {
-            if(val > max - (valuemapping == internal::SliderValueMapping::ValueAndRange ? range : 0))
-                val = max - (valuemapping == internal::SliderValueMapping::ValueAndRange ? range : 0);
-            
-            if(val < min)
+            auto v = DIV_(val, min, actualmax());
+            if(v < 0)
                 val = min;
+            if(v > 1)
+                val = actualmax();
             
             if(value != val) {
                 value = val;
@@ -473,29 +373,14 @@ namespace Gorgon { namespace Widgets {
         }
         
         virtual void refreshvalue(bool instant = false) {
-            if(valuemapping == internal::SliderValueMapping::OneValue) {
-                float val = DIV_(this->value, min, max);
-                
-                stack.SetValue(val, 0, 0, instant);
-            }
-            else if(valuemapping == internal::SliderValueMapping::ValueAndRange) {
-                float val = DIV_(this->value, this->min, this->max-this->range);
-                float v1  = DIV_(this->value, this->min, this->max);
-                float v2  = DIV_(this->value+this->range, this->min, this->max);
-                float r   = DIV_(this->range, this->min, this->max);
-                
-                if(DIV_(max, min, max) == 0) {
-                    r = 1;
-                }
-                
-                stack.SetValue(val, v1, v2, r, instant);
-            }
+            refreshme(instant);
         }
         
         T_ value = T_{};
         T_ min = T_{};
         T_ max = T_{};
         
+        //TODO move these out
         T_ smallchange = T_{1};
         T_ largechange = T_{10};
         
@@ -511,6 +396,131 @@ namespace Gorgon { namespace Widgets {
         virtual void valuechanged(T_) = 0;
         
     private:
+        
+        template<internal::SliderValueMapping vm = valuemapping> 
+        typename std::enable_if<vm == internal::SliderValueMapping::OneValue, void>::type
+        refreshme(bool instant = false) {
+            float val = DIV_(this->value, min, max);
+            
+            stack.SetValue(val, 0, 0, instant);
+        }
+        
+        template<internal::SliderValueMapping vm = valuemapping> 
+        typename std::enable_if<vm == internal::SliderValueMapping::ValueAndRange, void>::type
+        refreshme(bool instant = false) {
+            float val = DIV_(this->value, this->min, this->max-this->range);
+            float v1  = DIV_(this->value, this->min, this->max);
+            float v2  = DIV_(this->value+this->range, this->min, this->max);
+            float r   = DIV_(this->range, this->min, this->max);
+            
+            if(DIV_(max, min, max) == 0) {
+                r = 1;
+            }
+            
+            stack.SetValue(val, v1, v2, r, instant);
+        }
+        
+        template<internal::SliderInteractivity si = interactive>
+        typename std::enable_if<si == internal::SliderInteractivity::None, void>::type
+        setupinteractivity() {
+        }
+        
+        //TODO distribute according to actual interactivity
+        template<internal::SliderInteractivity si = interactive>
+        typename std::enable_if<si != internal::SliderInteractivity::None, void>::type
+        setupinteractivity() {
+            stack.HandleMouse();
+            
+            stack.SetClickEvent([this](auto tag, auto location, auto btn) {
+                if(tag == UI::ComponentTemplate::NoTag) {
+                    auto ind = stack.ComponentAt(location);
+                    if(ind != -1) 
+                        tag = stack.GetTemplate(ind).GetTag();
+                }
+                
+                if(btn == Input::Mouse::Button::Left) {
+                    if((interactive & internal::SliderInteractivity::Jump) && tag == UI::ComponentTemplate::DragBarTag) {
+                        auto val = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, location)[0];
+                        
+                        if(val == std::numeric_limits<float>::infinity())
+                            return;
+                        
+                        val = Clamp(val, 0.f, 1.f);
+                        
+                        setval(VAL_(val, this->min, this->max));
+                    }
+                    if((interactive & internal::SliderInteractivity::Page)) {
+                        if(tag == UI::ComponentTemplate::DragBarTag) {
+                            auto val = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, location)[0];
+                            
+                            auto curval = DIV_(value, this->min, this->max);
+                            
+                            if(val > curval) {
+                                SetValue(GetValue() + largechange);
+                            }
+                            else if(val < curval) {
+                                SetValue(GetValue() - largechange);
+                            }
+                        }
+                        else if(tag == UI::ComponentTemplate::IncrementTag) {
+                            SetValue(GetValue() + largechange);
+                        }
+                        else if(tag == UI::ComponentTemplate::DecrementTag) {
+                            SetValue(GetValue() - largechange);
+                        }
+                    }
+                }
+            });
+
+            stack.SetMouseDownEvent([this](auto tag, auto location, auto btn) {
+                if(tag == UI::ComponentTemplate::NoTag) {
+                    auto ind = stack.ComponentAt(location);
+                    if(ind != -1) 
+                        tag = stack.GetTemplate(ind).GetTag();
+                }
+                
+                if((interactive & internal::SliderInteractivity::HandleOnly)) {
+                    if(tag == UI::ComponentTemplate::DragTag) {
+                        if(btn == Input::Mouse::Button::Left) {
+                            downlocation = location;
+                            downvalue    = stack.GetValue()[0];
+                            grab = internal::SliderInteractivity::HandleOnly;
+                        }
+                    }
+                }
+            });
+
+            stack.SetMouseUpEvent([this](auto, auto, auto btn) {
+                if(btn == Input::Mouse::Button::Left) {
+                    grab = internal::SliderInteractivity::None;
+                }
+            });
+
+            stack.SetMouseMoveEvent([this](UI::ComponentTemplate::Tag, Geometry::Point location) {
+                if((interactive & internal::SliderInteractivity::HandleOnly) && grab == internal::SliderInteractivity::HandleOnly) {
+                    auto val = stack.CoordinateToValue(UI::ComponentTemplate::DragTag, location - downlocation, true)[0];
+                    if(val == std::numeric_limits<float>::infinity())
+                        return;
+                    
+                    val += downvalue;
+                    
+                    val = Clamp(val, 0.f, 1.f);
+                    
+                    setval(VAL_(val, this->min, this->max));
+                }
+            });
+            
+            stack.SetOtherMouseEvent([this](UI::ComponentTemplate::Tag, Input::Mouse::EventType type, Geometry::Point, float amount) {
+                if(type == Input::Mouse::EventType::Scroll_Vert || type == Input::Mouse::EventType::Scroll_Hor) {
+                    SetValue(GetValue() - amount * smallchange);
+                    
+                    return true;
+                }
+                
+                return false;
+            });
+        }
+        
         struct UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_> helper = UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>(this);
 
     };
