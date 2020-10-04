@@ -176,6 +176,7 @@ namespace Gorgon { namespace UI {
         void PlaceIn(C_ &container, Geometry::Point start, int spacing) {
             auto loc = start;
             
+            int col = 0;
             for(auto p : elements) {
                 auto w = dynamic_cast<WidgetBase *>(&p.second);
                 
@@ -186,24 +187,46 @@ namespace Gorgon { namespace UI {
                 
                 w->Move(loc);
                 
-                loc.Y += w->GetSize().Height + spacing;
+                col++;
+                if(col%columns == 0) {
+                    loc.X = start.X;
+                    loc.Y += w->GetSize().Height + spacing;
+                    col = 0;
+                }
+                else {
+                    loc.X += w->GetSize().Width + spacing;
+                }
             }
         }
         
+        /// For iteration
         auto begin() {
             return elements.begin();
         }
         
+        /// For iteration
         auto end() {
             return elements.begin();
         }
         
+        /// For iteration
         auto begin() const {
             return elements.begin();
         }
         
+        /// For iteration
         auto end() const {
             return elements.begin();
+        }
+        
+        /// Changes the number of columns when placing the widgets
+        void SetColumns(int value) {
+            columns = value;
+        }
+        
+        /// Returns the number of columns when placing the widgets
+        int GetColumns() const {
+            return columns;
         }
         
         Event<RadioControl, T_> ChangedEvent;
@@ -238,6 +261,8 @@ namespace Gorgon { namespace UI {
         bool own = false;
         
         T_ current = T_{};
+        
+        int columns = 1;
     };
     
 } }

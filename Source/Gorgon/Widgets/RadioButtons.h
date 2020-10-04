@@ -22,24 +22,21 @@ namespace Gorgon { namespace Widgets {
     public:
         explicit RadioButtons(const UI::Template &temp) : temp(temp) { 
             spacing = temp.GetSpacing();
+            SetWidth(temp.GetWidth());
             this->own = true;
         }
         
-        explicit RadioButtons(Registry::TemplateType type = Registry::Radio_Regular) : temp(Registry::Active()[type]) {  
-            spacing = temp.GetSpacing();
-            this->own = true; 
+        explicit RadioButtons(Registry::TemplateType type = Registry::Radio_Regular) : RadioButtons(Registry::Active()[type]) {  
         }
-
         
         /// Radio buttons height is automatically adjusted. Only width will be used.
         virtual void Resize(const Geometry::Size &size) override {
             for(auto p : this->elements) {
-                p.second.SetWidth(size.Width);
+                p.second.SetWidth((GetWidth() - spacing * (GetColumns() - 1)) / GetColumns());
             }
             
             contents.SetWidth(size.Width);
         }
-
 
         virtual bool Activate() override {
             return false;
@@ -51,17 +48,7 @@ namespace Gorgon { namespace Widgets {
 
             spacing = value;
             
-            int total = spacing * (this->elements.GetSize() - 1);
-            
-            for(auto p : this->elements) {
-                total += p.second.GetHeight();
-            }
-            
-            if(total < 0) total = 0;
-            
-            SetHeight(total);
-            
-            this->PlaceIn((UI::WidgetContainer&)*this, {0, 0}, spacing);
+            rearrange();
         }
 
         void Add(const T_ value) {
@@ -77,11 +64,10 @@ namespace Gorgon { namespace Widgets {
             auto &c = *new W_(temp, text);
             UI::RadioControl<T_, W_>::Add(value, c);
             
+            c.SetWidth((GetWidth() - spacing * (GetColumns() - 1)) / GetColumns());
+            
             if(value == this->Get())
                 c.Check();
-            
-            if(GetWidth() < c.GetWidth())
-                SetWidth(c.GetWidth());
             
             if(IsVisible())
                 this->PlaceIn((UI::WidgetContainer&)*this, {0, 0}, spacing);
@@ -249,6 +235,15 @@ namespace Gorgon { namespace Widgets {
         bool KeyEvent(Input::Key key, float state) override {
             return UI::WidgetContainer::KeyEvent(key, state);
         }
+        
+        /// Changes the number of columns
+        void SetColumns(int value) {
+            UI::RadioControl<T_, W_>::SetColumns(value);
+            
+            rearrange();
+        }
+        
+        using UI::RadioControl<T_, W_>::GetColumns;
 
     protected:
         virtual void addto(Layer &layer) override { 
@@ -298,6 +293,23 @@ namespace Gorgon { namespace Widgets {
         }
         
         virtual bool removingwidget(WidgetBase &) override { return false; }
+        
+        void rearrange() {
+            int total = 0, col = 0;
+            for(auto p : this->elements) {
+                if(col % GetColumns() == 0)
+                    total += p.second.GetHeight() + spacing;
+                
+                p.second.SetWidth((GetWidth() - spacing * (GetColumns() - 1)) / GetColumns());
+                col++;
+            }
+            
+            if(total > 0) total -= spacing;
+            
+            contents.SetHeight(total);
+            
+            this->PlaceIn((UI::WidgetContainer&)*this, {0, 0}, spacing);
+        }
 
         Geometry::Point location = {0, 0};
         int spacing = 4;

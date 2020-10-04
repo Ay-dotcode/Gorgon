@@ -75,8 +75,10 @@ int main() {
     Gorgon::Widgets::Label l2("Error", Gorgon::Widgets::Registry::Label_Error);
 
     Gorgon::Widgets::RadioButtons<int> radio(Gorgon::Widgets::Registry::Radio_Regular);
-    radio.Add(0,"Americano");
-    radio.Add(1,"Latte");
+    radio.Add(0,"One");
+    radio.Add(1,"Two");
+    
+    radio.SetColumns(2);
 
     Gorgon::Widgets::Inputbox<std::string> input;
 
