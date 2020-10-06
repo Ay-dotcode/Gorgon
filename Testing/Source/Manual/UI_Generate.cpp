@@ -161,7 +161,6 @@ int main() {
 
         return false;
     });
-
     Widgets::VScrollbar scroll1(20);
     scroll1 = 100;
     scroll1.Range = 20;
@@ -170,7 +169,11 @@ int main() {
     scroll2.Range = 20;
     //scroll2.SetValue(200, false);
 
+    Gorgon::Widgets::Sizefbox sizef;
+    sizef.ChangedEvent.Register([&] {
+        std::cout << "size f changed " << sizef.GetText();
 
+    });
     app.wind.Add(blank);
     addme(blank, btn);
     addme(blank, icnbtn);
@@ -186,6 +189,8 @@ int main() {
     addme(blank, bar);
     addme(blank, scroll1);
     addme(blank, scroll2);
+    addme(blank, sizef);
+
     
     LabelInput li;
     li.l.Text = "Some input: ";

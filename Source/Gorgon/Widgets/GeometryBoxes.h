@@ -110,6 +110,38 @@ namespace Gorgon { namespace Widgets {
         explicit Sizebox(Geometry::Size value, std::function<void()> changedevent, Registry::TemplateType type = Registry::Inputbox_Regular) : Inputbox(value, changedevent, type) {
         }
     };
+
+    class Sizefbox : public Inputbox<Geometry::Sizef, UI::ConversionValidator<Geometry::Sizef>, Geometry::basic_SizeProperty> {
+    public:
+        using Inputbox::operator=;
+
+        using WidgetBase::Move;
+
+
+        /// Initializes the inputbox
+        explicit Sizefbox(const UI::Template &temp, Geometry::Sizef value = { 0, 0}) : Inputbox(temp, value) {
+        }
+
+        /// Initializes the inputbox
+        explicit Sizefbox(const UI::Template &temp, std::function<void()> changedevent) : Inputbox(temp, { 0, 0}, changedevent) {
+        }
+
+        /// Initializes the inputbox
+        explicit Sizefbox(const UI::Template &temp, Geometry::Sizef value, std::function<void()> changedevent) : Inputbox(temp, value, changedevent) {
+        }
+
+        /// Initializes the inputbox
+        explicit Sizefbox(Geometry::Sizef value = {0, 0}, Registry::TemplateType type = Registry::Inputbox_Regular) : Inputbox(value, type) {
+        }
+
+        /// Initializes the inputbox
+        explicit Sizefbox(std::function<void()> changedevent, Registry::TemplateType type = Registry::Inputbox_Regular) : Inputbox({0, 0}, changedevent, type) {
+        }
+
+        /// Initializes the inputbox
+        explicit Sizefbox(Geometry::Sizef value, std::function<void()> changedevent, Registry::TemplateType type = Registry::Inputbox_Regular) : Inputbox(value, changedevent, type) {
+        }
+    };
     
     /// An inputbox variant designed to edit bounds data.
     class Boundsbox : public Inputbox<Geometry::Bounds> {
