@@ -13,6 +13,7 @@
 #include <Gorgon/Widgets/GeometryBoxes.h>
 #include <Gorgon/Widgets/Progressbar.h>
 #include <Gorgon/Widgets/Scrollbar.h>
+#include <Gorgon/Widgets/Composer.h>
 #include <Gorgon/UI/RadioControl.h>
 #include <Gorgon/UI/Organizers/List.h>
 #include <Gorgon/Graphics/BlankImage.h>
@@ -45,6 +46,20 @@ std::string StringVal(float value, std::string min, std::string max) {
     return max.substr(0, (max.length() - min.length()) * value + min.length());
 }
 
+class LabelInput : public Widgets::Composer {
+public:
+    LabelInput() {
+        Resize(l.Size.Width, t.Size.Height);
+        Add(l);
+        Add(t);
+        l.Size.Width = t.Size.Width;
+        t.Location.X = l.Size.Width + Widgets::Registry::Active().GetSpacing();
+        l.Location.Y = (t.Size.Height-l.Size.Height) / 2;
+    }
+    
+    Widgets::Label l;
+    Widgets::Textbox t;
+};
 
 int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
@@ -58,7 +73,7 @@ int main() {
     generator.Activate();*/
 
     Widgets::Panel blank/*(Gorgon::Widgets::Registry::Panel_Blank)*/;
-    blank.SetHeight(600);
+    blank.SetHeight(300);
     Gorgon::Widgets::Button btn("Save Âj",Gorgon::Widgets::Registry::Button_Regular);
     Gorgon::Widgets::Button icnbtn("+", Gorgon::Widgets::Registry::Button_Icon);
     Gorgon::Widgets::Button icnbtn2("Âj", Gorgon::Widgets::Registry::Button_Icon);
@@ -171,6 +186,13 @@ int main() {
     addme(blank, bar);
     addme(blank, scroll1);
     addme(blank, scroll2);
+    
+    LabelInput li;
+    li.l.Text = "Some input: ";
+    li.t = "hello";
+    
+    addme(blank, li);
+    
 
     /*Widgets::Progressor<std::string, StringDiv, StringVal, Gorgon::TextualProperty> bar2;
     bar2.Maximum = "Hello world";

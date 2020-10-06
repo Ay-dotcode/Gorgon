@@ -1078,24 +1078,71 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::BlankPanel() {
-        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, BorderedWidgetHeight * 10 + Spacing * 9};
+        Geometry::Size defsize = {
+            WidgetWidth * 2 + Spacing, 
+            BorderedWidgetHeight * 10 + Spacing * 9};
         
         UI::Template temp;
         temp.SetSpacing(Spacing);
         temp.SetSize(defsize);
         
-        temp.AddContainer(0, UI::ComponentCondition::Always)
+        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always)
             .AddIndex(1)
-            .SetClip(true)
         ;
+        bg.SetClip(true);
         
-        auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always);
+        auto &vp = temp.AddContainer(1, UI::ComponentCondition::Always)
+            .AddIndex(2)
+        ;
+        vp.SetTag(UI::ComponentTemplate::ViewPortTag);
+        vp.SetSize(100, 100, UI::Dimension::Percent);
+        vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        vp.SetClip(true);
+        
+        auto &cont = temp.AddContainer(2, UI::ComponentCondition::Always);
         cont.SetTag(UI::ComponentTemplate::ContentsTag);
         cont.SetSize(0, 0, UI::Dimension::Percent);
+        cont.SetSizing(UI::ComponentTemplate::Fixed);
         cont.SetPositioning(cont.Absolute);
         cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
-        cont.SetPosition(0, 0);
         
+        auto &vst = operator[](Scrollbar_Vertical);
+        auto &hst = operator[](Scrollbar_Horizontal);
+        
+        temp.SetSize(temp.GetWidth()+vst.GetWidth()+Spacing, temp.GetHeight());
+        
+        bg
+            .AddIndex(3) //VScroll
+            .AddIndex(4) //HScroll
+        ;
+        
+        auto &vs = temp.AddPlaceholder(3, UI::ComponentCondition::VScroll);
+        vs.SetTemplate(vst);
+        vs.SetTag(UI::ComponentTemplate::VScrollTag);
+        vs.SetSize(vst.GetWidth(), {100, UI::Dimension::Percent});
+        vs.SetSizing(UI::ComponentTemplate::Fixed);
+        vs.SetAnchor(UI::Anchor::TopRight, UI::Anchor::TopRight, UI::Anchor::TopLeft);
+        vs.SetMargin(Spacing, 0, 0, 0);
+        
+        auto &hs = temp.AddPlaceholder(4, UI::ComponentCondition::HScroll);
+        hs.SetPositioning(UI::ComponentTemplate::Absolute);
+        hs.SetTemplate(hst);
+        hs.SetTag(UI::ComponentTemplate::HScrollTag);
+        hs.SetSize({100, UI::Dimension::Percent}, hst.GetHeight());
+        hs.SetSizing(UI::ComponentTemplate::Fixed);
+        hs.SetAnchor(UI::Anchor::None, UI::Anchor::BottomCenter, UI::Anchor::BottomCenter);
+        hs.SetMargin(0, Spacing, vst.GetWidth()+Spacing, 0);
+        
+        {
+            auto &vp = temp.AddContainer(1, UI::ComponentCondition::HScroll)
+                .AddIndex(2)
+            ;
+            vp.SetTag(UI::ComponentTemplate::ViewPortTag);
+            vp.SetSize(100, 100, UI::Dimension::Percent);
+            vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+            vp.SetClip(true);
+            vp.SetIndent(0, 0, 0, hst.GetHeight()+Spacing);
+        }
         return temp;
     }
     

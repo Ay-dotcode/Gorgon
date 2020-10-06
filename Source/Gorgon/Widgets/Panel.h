@@ -172,9 +172,7 @@ namespace Gorgon { namespace Widgets {
         
         virtual void focused() override;
 
-
         virtual void focuslost() override;
-
 
         virtual Layer &getlayer() override;
         

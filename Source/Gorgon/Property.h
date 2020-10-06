@@ -126,6 +126,12 @@ namespace Gorgon {
 			return *this;
 		}
 
+		NumericProperty &operator =(const NumericProperty &other) { 
+			(this->Object.*Setter_)(other.Get());
+
+			return *this;
+		}
+
         template<class AC_, class O_, O_(C_::*G_)() const, void(C_::*S_)(const O_ &)>
 		NumericProperty &operator =(const Property<AC_, O_, G_, S_> &prop) {
 			(this->Object.*Setter_)((T_)(O_)prop);

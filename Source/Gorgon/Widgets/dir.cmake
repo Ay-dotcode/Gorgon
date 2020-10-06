@@ -6,6 +6,9 @@ SET(Local
 	Checkbox.cpp
 	Common.h
 	
+	Composer.h
+	Composer.cpp
+	
 	Generator.h
 	Generator.cpp
 	
@@ -31,4 +34,5 @@ SET(Local
 	
 	Slider.h
 	Scrollbar.h
+	
 )
