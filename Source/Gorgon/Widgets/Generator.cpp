@@ -128,7 +128,7 @@ namespace Gorgon { namespace Widgets {
         lettervsize = regularrenderer->GetLetterHeight();
         asciivsize = regularrenderer->GetLetterHeight(true);
         
-        int totalh = regularrenderer->GetLineGap();
+        int totalh = (int)regularrenderer->GetLineGap();
         
         Spacing = (int)std::round((float)totalh / (2 * Density / 3));
         Focus.Spacing = std::max(1, Spacing / 2);
@@ -780,7 +780,7 @@ namespace Gorgon { namespace Widgets {
                 }, CGI::SolidFill<>(color));
             }
             else {
-                CGI::DrawLines(*icon, tick, 1.2*ShapeBorder, CGI::SolidFill<>(color));
+                CGI::DrawLines(*icon, tick, 1.2f*ShapeBorder, CGI::SolidFill<>(color));
             }
             icon->Prepare();
             

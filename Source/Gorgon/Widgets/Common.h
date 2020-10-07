@@ -14,7 +14,7 @@ namespace Gorgon { namespace Widgets {
     
     template<class T_>
     T_ FloatToValue(float value, T_ min, T_ max) {
-        return (max - min) * value + min;
+        return T_((max - min) * value + min);
     }
     
     ///@endcond

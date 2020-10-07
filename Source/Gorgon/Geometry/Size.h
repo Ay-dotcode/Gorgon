@@ -48,8 +48,14 @@ namespace Gorgon { namespace Geometry {
 		/// Conversion from string
 		explicit basic_Size(const std::string &str) {
 			auto s=str.begin();
+
+			if(s == str.end())
+				Width = Height = 0;
 			
-			while(*s==' ' || *s=='\t') s++;
+			while(s != str.end() && (*s==' ' || *s=='\t')) s++;
+
+			if(s == str.end())
+				Width = Height = 0;
             
             auto pos = str.find_first_of('x', s-str.begin());
             if(pos != str.npos)
@@ -59,9 +65,11 @@ namespace Gorgon { namespace Geometry {
             
 			while(s!=str.end() && *s!='x' && *s!=',') s++;
 			
-			if(*s=='x' || *s==',') s++;
-			
-			Height=String::To<T_>(&str[s-str.begin()]);
+			if(s != str.end()) {
+				if(*s=='x' || *s==',') s++;
+
+				Height = String::To<T_>(&str[s-str.begin()]);
+			}
 		}
 		
 		

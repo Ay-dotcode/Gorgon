@@ -512,7 +512,7 @@ namespace Gorgon { namespace Widgets {
             
             stack.SetOtherMouseEvent([this](UI::ComponentTemplate::Tag, Input::Mouse::EventType type, Geometry::Point, float amount) {
                 if(type == Input::Mouse::EventType::Scroll_Vert || type == Input::Mouse::EventType::Scroll_Hor) {
-                    SetValue(GetValue() - amount * smallchange);
+                    SetValue(T_(GetValue() - amount * smallchange));
                     
                     return true;
                 }
