@@ -95,7 +95,7 @@ int main() {
     
     radio.SetColumns(2);
 
-    Gorgon::Widgets::Inputbox<std::string> input;
+    Gorgon::Widgets::Sizefbox input;
 
     Gorgon::Widgets::Checkbox chk("Black",Gorgon::Widgets::Registry::Checkbox_Regular);
     Gorgon::Widgets::Checkbox chk2("Lattej");

@@ -50,9 +50,13 @@ namespace Gorgon { namespace Geometry {
 			auto s=str.begin();
 			
 			while(*s==' ' || *s=='\t') s++;
-			
-			Width=String::To<T_>(&str[s-str.begin()]);
-			
+            
+            auto pos = str.find_first_of('x', s-str.begin());
+            if(pos != str.npos)
+                Width=String::To<T_>(str.substr(s-str.begin(), pos-(s-str.begin())));
+            else
+                Width=String::To<T_>(&str[s-str.begin()]);
+            
 			while(s!=str.end() && *s!='x' && *s!=',') s++;
 			
 			if(*s=='x' || *s==',') s++;
