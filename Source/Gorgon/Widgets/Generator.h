@@ -130,7 +130,7 @@ namespace Gorgon { namespace Widgets {
         /// is undefined behaviour.
         SimpleGenerator() : Generator(false) {
         }
-		
+        
         /// Initializes the generator
         void Init(int fontsize = 14, std::string fontname = "");
         
@@ -181,14 +181,16 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template Layerbox() override;
         
+        UI::Template ListItem();
+        
 
-		virtual int GetSpacing()const override {
-			return Spacing;
-		}
+        virtual int GetSpacing()const override {
+            return Spacing;
+        }
 
-		virtual int GetEmSize()const override {
-			return lettervsize.first + lettervsize.second;
-		}
+        virtual int GetEmSize()const override {
+            return lettervsize.first + lettervsize.second;
+        }
 
         Graphics::BitmapRectangleProvider &NormalBorder();
         Graphics::BitmapRectangleProvider &HoverBorder();

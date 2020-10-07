@@ -18,5 +18,5 @@ namespace Gorgon { namespace Widgets {
     }
     
     ///@endcond
-
+    
 } }

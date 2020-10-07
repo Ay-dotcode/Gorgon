@@ -219,6 +219,24 @@ namespace Gorgon {
         /// for the base state.
         Closed,
         
+        /// In lists denotes the item is in odd position
+        Odd,
+        
+        /// In lists denotes the item is in even position
+        Even,
+        
+        /// In a list this denotes the item is at the first place
+        First,
+
+        /// In a list this denotes the item is somewhere in the middle
+        Middle,
+        
+        /// In a list this denotes the item is at the last place
+        Last,
+
+        /// In a list this denotes the item alone
+        Alone,
+        
         /// This is for widgets that can be activated, like a count down timer
         Active,
         
@@ -282,9 +300,10 @@ namespace Gorgon {
         /// This widget is the default widget of its container
         Default,
         
-        
         /// This widget is the cancel widget of its container
         Cancel,
+        
+        
         
         /// Do not use this value
         DataEffectStart = Cancel,

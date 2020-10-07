@@ -50,12 +50,20 @@ namespace Gorgon {
 	/// A class that has no members and can be used as placeholder
 	class Empty {};
     
-    /// This enumeration helps with systems that has boolena parameters
+    /// This enumeration helps with systems that has boolen parameters
     /// that can be detected automatically, but can also be overriden.
     enum class YesNoAuto {
         No = 0,
         Yes = 1,
         Auto = 2
+    };
+
+    /// This enumeration helps with systems that has boolen parameters
+    /// that can be unset/empty.
+    enum class YesNoUnset {
+        No = 0,
+        Yes = 1,
+        Unset = 2
     };
 
 	/// Returns the number of bits that are 1 in a number
@@ -137,6 +145,29 @@ namespace Gorgon {
 
 		virtual void Update() = 0;
 	};
+    
+    /// Marks the parity as Odd or Even. Not every target will support None,
+    /// but it is provided for places that support it.
+    enum class Parity {
+        None = 0,
+        Odd  = 1,
+        Even = 2,
+    };
+    
+    /// Defines where an item is located in a list
+    enum class ItemPosition {
+        /// Item not in the list
+        Nowhere = 0,
+        /// Item is alone in the list
+        Alone   = 1,
+        /// Item is the first item
+        First   = 2,
+        /// Does not mean exact middle
+        Middle  = 3,
+        /// Item is the last item
+        Last    = 4
+    };
+
     
 #ifdef DOXYGEN
 #   define ENUMCLASS enum

@@ -1542,4 +1542,107 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
+    
+    UI::Template SimpleGenerator::ListItem() {
+        Geometry::Size defsize = {WidgetWidth, BorderedWidgetHeight};
+        
+        UI::Template temp;
+        temp.SetSpacing(Spacing);
+        temp.SetSize(defsize);
+        
+        
+        temp.AddContainer(0, UI::ComponentCondition::Always)
+            .AddIndex(1) //border
+            .AddIndex(2) //boxed content
+            .AddIndex(9) //bottom sep
+        ;
+        
+        auto setupborder = [&](auto &anim, UI::ComponentCondition condition) {
+            auto &bg = temp.AddContainer(1, condition);
+            bg.Background.SetAnimation(anim);
+            bg.SetSize(100, 100, UI::Dimension::Percent);
+            bg.SetPositioning(UI::ComponentTemplate::Absolute);
+        };
+
+        setupborder(NormalBG(), UI::ComponentCondition::Always);
+        setupborder(HoverBG(), UI::ComponentCondition::Hover);
+        setupborder(DownBG(), UI::ComponentCondition::Down);
+        setupborder(DisabledBG(), UI::ComponentCondition::Disabled);
+        
+        auto &boxed = temp.AddContainer(2, UI::ComponentCondition::Always)
+            .AddIndex(3) //clip
+            .AddIndex(4) //focus
+        ;
+        boxed.SetSize(100, 100, UI::Dimension::Percent);
+        boxed.SetBorderSize(Border.Width);
+        boxed.SetPadding(std::max(Border.Radius / 2, Focus.Spacing));
+        boxed.SetPositioning(UI::ComponentTemplate::Absolute);
+        
+        auto &clip = temp.AddContainer(3, UI::ComponentCondition::Always)
+            .AddIndex(5)
+        ;
+        clip.SetClip(true);
+        clip.SetPadding(Focus.Spacing + Focus.Width);
+        clip.SetSize(100, 100, UI::Dimension::Percent);
+        
+        //Contents
+        auto &content = temp.AddContainer(5, UI::ComponentCondition::Always)
+            .AddIndex(6) //icon
+            .AddIndex(7) //text
+        ;
+        content.SetSize(100, 100, UI::Dimension::Percent);
+        content.SetSize(100, 100, UI::Dimension::Percent);
+        content.SetSizing(UI::ComponentTemplate::Automatic);
+        content.SetPositioning(UI::ComponentTemplate::Absolute);
+        content.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+        
+        //Icon container
+        auto &iconcont = temp.AddContainer(6, UI::ComponentCondition::Icon1IsSet)
+            .AddIndex(8)
+        ;
+        iconcont.SetMargin(0, 0, Spacing, 0);
+        iconcont.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        iconcont.SetSizing(UI::ComponentTemplate::Automatic);
+        
+        auto setupicon = [&](auto &icon) -> auto& {
+            icon.SetDataEffect(UI::ComponentTemplate::Icon1);
+            icon.SetSizing(UI::ComponentTemplate::Automatic);
+            
+            return icon;
+        };
+        
+        setupicon(temp.AddGraphics(8, UI::ComponentCondition::Always));
+        setupicon(temp.AddGraphics(8, UI::ComponentCondition::Disabled)).SetColor({1.0f, 0.5f});
+        
+        //Text
+        auto setuptext = [&](Graphics::RGBA color, UI::ComponentCondition condition) {
+            auto &txt = temp.AddTextholder(7, condition);
+            txt.SetRenderer(CenteredFont);
+            txt.SetColor(color);
+            txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+            txt.SetDataEffect(UI::ComponentTemplate::Text);
+            txt.SetSize(100, 100, UI::Dimension::Percent);
+            txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        };
+        
+        setuptext(Forecolor.Regular, UI::ComponentCondition::Always);
+        setuptext(Forecolor.Regular.BlendWith(Forecolor.Hover), UI::ComponentCondition::Hover);
+        setuptext(Forecolor.Regular.BlendWith(Forecolor.Down), UI::ComponentCondition::Down);
+        setuptext(Forecolor.Regular.BlendWith(Forecolor.Disabled), UI::ComponentCondition::Disabled);
+
+        setupfocus(temp.AddGraphics(4, UI::ComponentCondition::Focused));
+        
+        auto &sep = temp.AddGraphics(9, UI::ComponentCondition::Always);
+        sep.SetFillArea(true);
+        sep.Content.SetAnimation(GrooveBG());
+        sep.SetSize({100, UI::Dimension::Percent}, 5);
+        sep.SetSizing(UI::ComponentTemplate::Fixed);
+        sep.SetPositioning(UI::ComponentTemplate::Absolute);
+        sep.SetAnchor(UI::Anchor::None, UI::Anchor::BottomCenter, UI::Anchor::BottomCenter);
+        
+        temp.AddIgnored(9, UI::ComponentCondition::Last);
+        temp.AddIgnored(9, UI::ComponentCondition::Alone);
+
+        return temp;
+    }
 }}

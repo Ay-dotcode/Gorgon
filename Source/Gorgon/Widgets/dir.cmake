@@ -23,6 +23,9 @@ SET(Local
 	Layerbox.h
 	Layerbox.cpp
 	
+	ListItem.h
+	ListItem.cpp
+	
 	Panel.h
 	Panel.cpp
 	

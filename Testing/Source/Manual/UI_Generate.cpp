@@ -14,6 +14,7 @@
 #include <Gorgon/Widgets/Progressbar.h>
 #include <Gorgon/Widgets/Scrollbar.h>
 #include <Gorgon/Widgets/Composer.h>
+#include <Gorgon/Widgets/ListItem.h>
 #include <Gorgon/UI/RadioControl.h>
 #include <Gorgon/UI/Organizers/List.h>
 #include <Gorgon/Graphics/BlankImage.h>
@@ -45,21 +46,6 @@ float StringDiv(std::string left, std::string min, std::string max) {
 std::string StringVal(float value, std::string min, std::string max) {
     return max.substr(0, (max.length() - min.length()) * value + min.length());
 }
-
-class LabelInput : public Widgets::Composer {
-public:
-    LabelInput() {
-        Resize(l.Size.Width, t.Size.Height);
-        Add(l);
-        Add(t);
-        l.Size.Width = t.Size.Width;
-        t.Location.X = l.Size.Width + Widgets::Registry::Active().GetSpacing();
-        l.Location.Y = (t.Size.Height-l.Size.Height) / 2;
-    }
-    
-    Widgets::Label l;
-    Widgets::Textbox t;
-};
 
 int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
@@ -95,7 +81,7 @@ int main() {
     
     radio.SetColumns(2);
 
-    Gorgon::Widgets::Sizefbox input;
+    Gorgon::Widgets::Textbox input;
 
     Gorgon::Widgets::Checkbox chk("Black",Gorgon::Widgets::Registry::Checkbox_Regular);
     Gorgon::Widgets::Checkbox chk2("Lattej");
@@ -191,12 +177,6 @@ int main() {
     addme(blank, scroll2);
     addme(blank, sizef);
 
-    
-    LabelInput li;
-    li.l.Text = "Some input: ";
-    li.t = "hello";
-    
-    addme(blank, li);
     
 
     /*Widgets::Progressor<std::string, StringDiv, StringVal, Gorgon::TextualProperty> bar2;
