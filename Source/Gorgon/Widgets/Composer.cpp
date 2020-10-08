@@ -40,5 +40,28 @@ namespace Gorgon { namespace Widgets {
             RemoveFocus();
     }
 
-    
+    void Composer::hide() {
+        base.Hide();
+        if (HasParent())
+            boundschanged();
+    }
+
+    void Composer::show() {
+        base.Show();
+        if (HasParent())
+            boundschanged();
+    }
+
+    void Composer::Resize(const Geometry::Size &size) {
+        base.Resize(size);
+        if (IsVisible() && HasParent())
+            boundschanged();
+
+    }
+    void Composer::Move(const Geometry::Point &location) {
+        base.Move(location);
+        if (IsVisible() && HasParent())
+            boundschanged();
+    }
+
 } }

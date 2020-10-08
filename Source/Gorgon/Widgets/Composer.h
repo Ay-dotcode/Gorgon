@@ -21,10 +21,13 @@ namespace Gorgon { namespace Widgets {
         ~Composer() { }
         
         using WidgetBase::Resize;
-        
+       
+        using WidgetBase::Move;
+
         using WidgetBase::Remove;
         
         using WidgetContainer::Remove;
+
         
         virtual bool Activate() override;
 
@@ -46,18 +49,14 @@ namespace Gorgon { namespace Widgets {
             return true;
         }
         
-        virtual void Resize(const Geometry::Size &size) override {
-            base.Resize(size);
-        }
-        
+        virtual void Resize(const Geometry::Size &size) override;
+
         virtual Geometry::Point GetLocation() const override {
             return base.GetLocation();
         }
         
-        virtual void Move(const Geometry::Point &location) override {
-            base.Move(location);
-        }
-        
+        virtual void Move(const Geometry::Point &location) override;
+
         using WidgetBase::EnsureVisible;
         
         bool EnsureVisible(const UI::WidgetBase &widget) override {
@@ -111,13 +110,9 @@ namespace Gorgon { namespace Widgets {
     private:
         bool enabled = true;
         
-        virtual void hide() override {
-            base.Hide();
-        }
-        
-        virtual void show() override {
-            base.Show();
-        }
+        virtual void hide() override;
+
+        virtual void show() override;
         
         Layer base;
     };
