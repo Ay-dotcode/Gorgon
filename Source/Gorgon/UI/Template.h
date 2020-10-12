@@ -869,6 +869,9 @@ namespace Gorgon {
             ViewPortTag,
             SelectionTag,
             CaretTag,
+            ItemTag,
+            HeaderTag,
+            SpacerTag
         };
         
         /// Some components are repeated along some axis, this property controls how they will be

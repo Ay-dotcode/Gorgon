@@ -82,20 +82,6 @@ namespace Gorgon { namespace Widgets {
     }
     
 
-    void ListItem::SetFocusState(bool value) {
-        if(value == focus)
-            return;
-        
-        focus = value;
-        
-        if(value) {
-            stack.AddCondition(UI::ComponentCondition::Focused);
-        }
-        else {
-            stack.RemoveCondition(UI::ComponentCondition::Focused);
-        }
-    }
-
 
     void ListItem::SetSelected(bool value) {
         if(value == selected)
@@ -200,7 +186,7 @@ namespace Gorgon { namespace Widgets {
 
     
     bool ListItem::allowfocus() const {
-        return false;
+        return true;
     }
     
 

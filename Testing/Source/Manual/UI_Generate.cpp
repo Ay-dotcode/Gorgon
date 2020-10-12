@@ -14,6 +14,7 @@
 #include <Gorgon/Widgets/Progressbar.h>
 #include <Gorgon/Widgets/Scrollbar.h>
 #include <Gorgon/Widgets/Composer.h>
+#include <Gorgon/Widgets/Listbox.h>
 #include <Gorgon/Widgets/ListItem.h>
 #include <Gorgon/UI/RadioControl.h>
 #include <Gorgon/UI/Organizers/List.h>
@@ -52,9 +53,12 @@ int main() {
 
     ///Blank Panel & elements with Registry & Regulars
     /*Widgets::SimpleGenerator generator;
-    generator.Init(13);
+    generator.Density = 5;
+    generator.Init(9);
     generator.UpdateBorders();
-    generator.Border.Radius = 0;
+    generator.Border.Width = 2;
+    generator.Border.Radius = 8;
+    generator.Border.Divisions = 0;
     generator.UpdateDimensions();
     generator.Activate();*/
 
@@ -151,6 +155,7 @@ int main() {
     scroll1 = 100;
     scroll1.Range = 20;
 
+    
     Widgets::HScrollbar scroll2(200);
     scroll2.Range = 20;
     //scroll2.SetValue(200, false);
@@ -176,6 +181,9 @@ int main() {
     addme(blank, scroll1);
     addme(blank, scroll2);
     addme(blank, sizef);
+    
+    Widgets::SimpleListbox<int> list;
+    list.SetSelectionFollowsFocus(false);
 
     
 

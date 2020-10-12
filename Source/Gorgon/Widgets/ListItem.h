@@ -18,11 +18,10 @@ namespace Gorgon { namespace Widgets {
     * This widget is meant to be used in listboxes to display the contents.
     * ListItem only supports strings; therefore, conversion is necessary at
     * the Listbox side. ListboxItem does not perform any operation by itself.
-    * All state changes should be facilitated by the listbox. They cannot be
-    * focused, focus state is faked. State changes apart from hover/down/
-    * disabled are not automatic. This item will not handle keys and is not
-    * meant to have focus. Finally, apart from the inherited properties, this
-    * widget does not feature any properties.
+    * All state changes should be facilitated by the listbox. State changes 
+    * apart from hover/down/disabled/focused are not automatic. Finally, apart
+    * from the inherited properties, this widget does not feature any 
+    * properties.
     *
     * ClickEvent will be raise when the widget is clicked. This event will be
     * raised first if the widget will be toggled too. Toggle event will be
@@ -104,15 +103,6 @@ namespace Gorgon { namespace Widgets {
         /// Moves the given animation to the icon of the label
         void OwnIcon(Graphics::Bitmap &&value);
 
-
-        /// Sets the focus state of the widget. This is different from actual
-        /// focus where the widget will receive keyevents.
-        void SetFocusState(bool value);
-
-        /// Returns the current focus state of the widget.
-        bool GetFocusState() const {
-            return focus;
-        }
 
 
         /// Sets selection status of the widget. Depending on the template,

@@ -48,7 +48,7 @@ namespace Gorgon { namespace Widgets {
         internal::SliderValueMapping valuemapping = internal::SliderValueMapping::OneValue
         
     >
-    class SliderBase: 
+    class SliderBase : 
         public UI::ComponentStackWidget,
         public P_<
             UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>, 
