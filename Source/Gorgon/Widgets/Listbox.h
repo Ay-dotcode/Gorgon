@@ -520,6 +520,8 @@ namespace Gorgon { namespace Widgets {
         ~ListboxBase() { }
         
         S_ storage;
+        
+        Containers::Collection<W_> widgets;
     };
     
     /**

@@ -111,6 +111,11 @@ namespace Gorgon { namespace Widgets {
         delete hoverbg;
         delete downbg;
         delete disabledbg;
+        delete normalstraight;
+        delete altstraight;
+        delete hoverstraight;
+        delete downstraight;
+        delete disabledstraight;
         delete normalrbg;
         delete hoverrbg;
         delete downrbg;
@@ -279,6 +284,53 @@ namespace Gorgon { namespace Widgets {
         }
 
         return *disabledbg;
+    }
+
+    Graphics::BitmapRectangleProvider &SimpleGenerator::NormalStraightBG() {
+        if(!normalstraight)
+            normalstraight = makeborder(0x0, Background.Regular, 0, -1, 0);
+        
+        return *normalstraight;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::AltStraightBG() {
+        if(!altstraight) {
+            auto c = Background.Regular;
+            c.Blend(Background.Alternate);
+            altstraight = makeborder(0x0, c, 0, -1, 0);
+        }
+        
+        return *altstraight;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::HoverStraightBG() {
+        if(!hoverstraight) {
+            auto c = Background.Regular;
+            c.Blend(Background.Hover);
+            hoverstraight = makeborder(0x0, c, 0, -1, 0);
+        }
+        
+        return *hoverstraight;
+    }
+
+    Graphics::BitmapRectangleProvider &SimpleGenerator::DownStraightBG() {
+        if(!downstraight) {
+            auto c = Background.Regular;
+            c.Blend(Background.Down);
+            downstraight = makeborder(0x0, c, 0, -1, 0);
+        }
+
+        return *downstraight;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::DisabledStraightBG() {
+        if(!disabledstraight) {
+            auto c = Background.Regular;
+            c.Blend(Background.Disabled);
+            disabledstraight = makeborder(0x0, c, 0, -1, 0);
+        }
+
+        return *disabledstraight;
     }
     
     Graphics::BitmapRectangleProvider &SimpleGenerator::NormalRBG() {
@@ -1370,6 +1422,7 @@ namespace Gorgon { namespace Widgets {
         
         {
             auto &img = *new Graphics::BlankImage(8, 8, Background.Selected);
+            drawables.Add(img);
             
             auto &selection = temp.AddGraphics(7, UI::ComponentCondition::Focused);
             selection.Content.SetDrawable(img);
@@ -1542,43 +1595,69 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
-    
-    UI::Template SimpleGenerator::ListItem() {
-        Geometry::Size defsize = {WidgetWidth, BorderedWidgetHeight};
+    UI::Template SimpleGenerator::Listbox() {
+        Geometry::Size defsize = {WidgetWidth*2+Spacing, BorderedWidgetHeight*10};
         
         UI::Template temp;
+        
         temp.SetSpacing(Spacing);
         temp.SetSize(defsize);
         
+        auto &vst = operator[](Scrollbar_Vertical);
         
-        temp.AddContainer(0, UI::ComponentCondition::Always)
-            .AddIndex(1) //border
-            .AddIndex(2) //boxed content
-            .AddIndex(9) //bottom sep
+        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always)
+            .AddIndex(1) //content
+            .AddIndex(3) //focused border
+            .AddIndex(4) //listitem
+            .AddIndex(5) //scrollbar
+        ;
+        bg.Background.SetAnimation(NormalBG());
+        bg.SetBorderSize(Border.Width);
+        bg.SetPadding(std::max(Border.Radius / 2, Focus.Spacing));
+        
+        auto &viewport = temp.AddContainer(1, UI::ComponentCondition::Always)
+            .AddIndex(2)
+        ;
+        viewport.SetTag(UI::ComponentTemplate::ContentsTag);
+        viewport.SetClip(true);
+        
+        auto &contents = temp.AddContainer(2, UI::ComponentCondition::Always);
+        contents.SetTag(UI::ComponentTemplate::ContentsTag);
+        
+        //focused border
+        auto &border = temp.AddContainer(3, UI::ComponentCondition::Always, UI::ComponentCondition::Focused);
+        border.SetValueModification(UI::ComponentTemplate::ModifyAlpha, UI::ComponentTemplate::UseTransition);
+        border.SetValueRange(0, 0.5, 1);
+        border.SetReversible(true);
+        border.SetPositioning(UI::ComponentTemplate::Absolute);
+        border.Background.SetAnimation(NormalEmptyBorder());
+        
+        temp.AddPlaceholder(4, UI::ComponentCondition::Always)
+            .SetTemplate(listbox_listitem)
+        ;
+        
+        
+        //****** listitem
+        
+        listbox_listitem.AddContainer(0, UI::ComponentCondition::Always)
+            .AddIndex(1) //background
+            .AddIndex(2) //cliped content
+            .AddIndex(3) //focus
         ;
         
         auto setupborder = [&](auto &anim, UI::ComponentCondition condition) {
-            auto &bg = temp.AddContainer(1, condition);
+            auto &bg = listbox_listitem.AddContainer(1, condition);
             bg.Background.SetAnimation(anim);
             bg.SetSize(100, 100, UI::Dimension::Percent);
             bg.SetPositioning(UI::ComponentTemplate::Absolute);
         };
 
-        setupborder(NormalBG(), UI::ComponentCondition::Always);
-        setupborder(HoverBG(), UI::ComponentCondition::Hover);
-        setupborder(DownBG(), UI::ComponentCondition::Down);
-        setupborder(DisabledBG(), UI::ComponentCondition::Disabled);
+        setupborder(AltStraightBG(), UI::ComponentCondition::Even);
+        setupborder(HoverStraightBG(), UI::ComponentCondition::Hover);
+        setupborder(DownStraightBG(), UI::ComponentCondition::Down);
+        setupborder(DisabledStraightBG(), UI::ComponentCondition::Disabled);
         
-        auto &boxed = temp.AddContainer(2, UI::ComponentCondition::Always)
-            .AddIndex(3) //clip
-            .AddIndex(4) //focus
-        ;
-        boxed.SetSize(100, 100, UI::Dimension::Percent);
-        boxed.SetBorderSize(Border.Width);
-        boxed.SetPadding(std::max(Border.Radius / 2, Focus.Spacing));
-        boxed.SetPositioning(UI::ComponentTemplate::Absolute);
-        
-        auto &clip = temp.AddContainer(3, UI::ComponentCondition::Always)
+        auto &clip = listbox_listitem.AddContainer(2, UI::ComponentCondition::Always)
             .AddIndex(5)
         ;
         clip.SetClip(true);
@@ -1586,18 +1665,29 @@ namespace Gorgon { namespace Widgets {
         clip.SetSize(100, 100, UI::Dimension::Percent);
         
         //Contents
-        auto &content = temp.AddContainer(5, UI::ComponentCondition::Always)
+        auto &content = listbox_listitem.AddContainer(5, UI::ComponentCondition::Always)
             .AddIndex(6) //icon
             .AddIndex(7) //text
         ;
         content.SetSize(100, 100, UI::Dimension::Percent);
-        content.SetSize(100, 100, UI::Dimension::Percent);
         content.SetSizing(UI::ComponentTemplate::Automatic);
         content.SetPositioning(UI::ComponentTemplate::Absolute);
-        content.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+        content.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        content.SetPadding(Focus.Spacing);
+        
+        //Contents when selected
+        auto &contentsel = listbox_listitem.AddContainer(5, UI::ComponentCondition::State2)
+            .AddIndex(6) //icon
+            .AddIndex(9) //bg
+        ;
+        contentsel.SetSize(100, 100, UI::Dimension::Percent);
+        contentsel.SetPositioning(UI::ComponentTemplate::Absolute);
+        contentsel.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        contentsel.SetPadding(Focus.Spacing);
+        
         
         //Icon container
-        auto &iconcont = temp.AddContainer(6, UI::ComponentCondition::Icon1IsSet)
+        auto &iconcont = listbox_listitem.AddContainer(6, UI::ComponentCondition::Icon1IsSet)
             .AddIndex(8)
         ;
         iconcont.SetMargin(0, 0, Spacing, 0);
@@ -1611,13 +1701,13 @@ namespace Gorgon { namespace Widgets {
             return icon;
         };
         
-        setupicon(temp.AddGraphics(8, UI::ComponentCondition::Always));
-        setupicon(temp.AddGraphics(8, UI::ComponentCondition::Disabled)).SetColor({1.0f, 0.5f});
+        setupicon(listbox_listitem.AddGraphics(8, UI::ComponentCondition::Always));
+        setupicon(listbox_listitem.AddGraphics(8, UI::ComponentCondition::Disabled)).SetColor({1.0f, 0.5f});
         
         //Text
-        auto setuptext = [&](Graphics::RGBA color, UI::ComponentCondition condition) {
-            auto &txt = temp.AddTextholder(7, condition);
-            txt.SetRenderer(CenteredFont);
+        auto setuptext = [&](Graphics::RGBA color, UI::ComponentCondition condition, int index = 7) {
+            auto &txt = listbox_listitem.AddTextholder(index, condition);
+            txt.SetRenderer(RegularFont);
             txt.SetColor(color);
             txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             txt.SetDataEffect(UI::ComponentTemplate::Text);
@@ -1629,20 +1719,27 @@ namespace Gorgon { namespace Widgets {
         setuptext(Forecolor.Regular.BlendWith(Forecolor.Hover), UI::ComponentCondition::Hover);
         setuptext(Forecolor.Regular.BlendWith(Forecolor.Down), UI::ComponentCondition::Down);
         setuptext(Forecolor.Regular.BlendWith(Forecolor.Disabled), UI::ComponentCondition::Disabled);
-
-        setupfocus(temp.AddGraphics(4, UI::ComponentCondition::Focused));
         
-        auto &sep = temp.AddGraphics(9, UI::ComponentCondition::Always);
-        sep.SetFillArea(true);
-        sep.Content.SetAnimation(GrooveBG());
-        sep.SetSize({100, UI::Dimension::Percent}, 5);
-        sep.SetSizing(UI::ComponentTemplate::Fixed);
-        sep.SetPositioning(UI::ComponentTemplate::Absolute);
-        sep.SetAnchor(UI::Anchor::None, UI::Anchor::BottomCenter, UI::Anchor::BottomCenter);
-        
-        temp.AddIgnored(9, UI::ComponentCondition::Last);
-        temp.AddIgnored(9, UI::ComponentCondition::Alone);
+        //Text bg
+        auto &textbg = listbox_listitem.AddContainer(9, UI::ComponentCondition::Always)
+            .AddIndex(7)
+        ;            
+        auto &img = *new Graphics::BlankImage(8, 8, Background.Selected);
+        drawables.Add(img);
+        textbg.Background.SetAnimation(img);
+        textbg.SetMargin(0, Focus.Spacing);
+        textbg.SetPadding(0, Focus.Spacing);
 
+        setupfocus(listbox_listitem.AddGraphics(3, UI::ComponentCondition::Focused));
+        
+        auto &vs = temp.AddPlaceholder(5, UI::ComponentCondition::VScroll);
+        vs.SetTemplate(vst);
+        vs.SetTag(UI::ComponentTemplate::VScrollTag);
+        vs.SetSize(vst.GetWidth(), {100, UI::Dimension::Percent});
+        vs.SetSizing(UI::ComponentTemplate::Fixed);
+        vs.SetAnchor(UI::Anchor::TopRight, UI::Anchor::TopRight, UI::Anchor::TopLeft);
+        vs.SetMargin(Spacing, 0, 0, 0);
+        
         return temp;
     }
 }}

@@ -65,6 +65,9 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template BlankLayerbox() = 0;
         
+        
+        virtual UI::Template Listbox() = 0;
+        
     protected:
         
         virtual UI::Template &generate(Gorgon::Widgets::Registry::TemplateType type) override {
@@ -107,6 +110,8 @@ namespace Gorgon { namespace Widgets {
                 return *new UI::Template(VScrollbar());
             case Scrollbar_Horizontal:
                 return *new UI::Template(HScrollbar());
+            case Listbox_Regular:
+                return *new UI::Template(Listbox());
             default:
                 return *new UI::Template();
             }
@@ -181,14 +186,16 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template Layerbox() override;
         
+        virtual UI::Template Listbox() override;
+        
         UI::Template ListItem();
         
 
-        virtual int GetSpacing()const override {
+        virtual int GetSpacing() const override {
             return Spacing;
         }
 
-        virtual int GetEmSize()const override {
+        virtual int GetEmSize() const override {
             return lettervsize.first + lettervsize.second;
         }
 
@@ -211,6 +218,11 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider &HoverBG();
         Graphics::BitmapRectangleProvider &DownBG();
         Graphics::BitmapRectangleProvider &DisabledBG();
+        Graphics::BitmapRectangleProvider &NormalStraightBG();
+        Graphics::BitmapRectangleProvider &AltStraightBG();
+        Graphics::BitmapRectangleProvider &HoverStraightBG();
+        Graphics::BitmapRectangleProvider &DownStraightBG();
+        Graphics::BitmapRectangleProvider &DisabledStraightBG();
         Graphics::BitmapRectangleProvider &NormalRBG();
         Graphics::BitmapRectangleProvider &HoverRBG();
         Graphics::BitmapRectangleProvider &DownRBG();
@@ -253,11 +265,11 @@ namespace Gorgon { namespace Widgets {
         } Border;
         
         struct BackgroundInfo {
-            Graphics::RGBA Regular = {Graphics::Color::Ivory, 0.8};
-            Graphics::RGBA Hover   = {Graphics::Color::Tan, 0.5};
-            Graphics::RGBA Down    = {Graphics::Color::Crimson, 0.2};
-            Graphics::RGBA Disabled=  Graphics::Color::LightGrey;
-
+            Graphics::RGBA Regular  = {Graphics::Color::Ivory, 0.8};
+            Graphics::RGBA Alternate= {Graphics::Color::White, 0.8};
+            Graphics::RGBA Hover    = {Graphics::Color::Tan, 0.5};
+            Graphics::RGBA Down     = {Graphics::Color::Crimson, 0.2};
+            Graphics::RGBA Disabled =  Graphics::Color::LightGrey;
             
             Graphics::RGBA Edit    = {Graphics::Color::White};
             Graphics::RGBA Panel   = {Graphics::Color::Grey, Graphics::Color::Ivory, 0.5};
@@ -273,6 +285,8 @@ namespace Gorgon { namespace Widgets {
             Graphics::RGBA Hover   = Graphics::Color::Black;
             Graphics::RGBA Down    = Graphics::Color::Black;
             Graphics::RGBA Error   = Graphics::Color::Red;
+            Graphics::RGBA Inverted= {Graphics::Color::White, 0.8};
+            Graphics::RGBA InvertedActive  = Graphics::Color::White;
         } Forecolor;
         
         
@@ -324,11 +338,18 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider *hoverbg = nullptr;
         Graphics::BitmapRectangleProvider *downbg = nullptr;
         Graphics::BitmapRectangleProvider *disabledbg = nullptr;
+        Graphics::BitmapRectangleProvider *normalstraight = nullptr;
+        Graphics::BitmapRectangleProvider *altstraight = nullptr;
+        Graphics::BitmapRectangleProvider *hoverstraight = nullptr;
+        Graphics::BitmapRectangleProvider *downstraight = nullptr;
+        Graphics::BitmapRectangleProvider *disabledstraight = nullptr;
         Graphics::BitmapRectangleProvider *groovebg = nullptr;
         Graphics::BitmapRectangleProvider *objectshape = nullptr;
         Graphics::MaskedObjectProvider *innerobjectshape = nullptr;
         
         Graphics::RectangleProvider *focusborder = nullptr;
+        
+        UI::Template listbox_listitem;
 
         std::pair<int, int> lettervsize, asciivsize;
     };

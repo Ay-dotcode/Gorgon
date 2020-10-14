@@ -44,6 +44,8 @@ namespace Gorgon { namespace Widgets {
             Scrollbar_Horizontal,
             Scrollbar_Vertical,
             
+            Listbox_Regular,
+            
             ///Do not use this value
             Max 
         };
