@@ -132,7 +132,7 @@ namespace Gorgon { namespace Widgets {
             /// bounds this function will throw std::out_of_range exception. -1
             /// can be used to remove selected item.
             void SetSelectedIndex(long index) {
-                if(index < -1 || index >= dynamic_cast<F_&>(*this).GetSize())
+                if(index < -1 || index >= dynamic_cast<F_&>(*this).GetCount())
                     throw std::out_of_range("Selected index does not exits");
                 
                 if(index == selectedindex)
@@ -239,7 +239,7 @@ namespace Gorgon { namespace Widgets {
             
             virtual ~LBSELTR_Single() { }
             
-            void clicked(long index, W_ &w) {
+            void sel_clicked(long index, W_ &w) {
                 if(focusonly) {
                     if(selectedindex == index)
                         return;
@@ -271,8 +271,8 @@ namespace Gorgon { namespace Widgets {
                 dynamic_cast<UI::Widget*>(this)->Focus();
             }
             
-            void toggled(long index, W_ &w) {
-                if(selectedindex == index)
+            void sel_toggled(long index, W_ &w) {
+                if(selectedindex == index || focusonly)
                     return;
                 
                 if(selected)
@@ -292,7 +292,7 @@ namespace Gorgon { namespace Widgets {
                 ChangedEvent(index);
             }
             
-            void apply(long index, W_ &w, const T_ &) {
+            void sel_apply(long index, W_ &w, const T_ &) {
                 if(index == focusindex) {
                     w.Focus();
                 }
@@ -312,16 +312,16 @@ namespace Gorgon { namespace Widgets {
                 }
             }
             
-            void prepare(W_ &w) {
+            void sel_prepare(W_ &w) {
                 w.ClickEvent.Register([&w, this] {
-                    clicked(dynamic_cast<F_*>(this)->getindex(w), w);
+                    sel_clicked(dynamic_cast<F_*>(this)->getindex(w), w);
                 });
                 w.ToggleEvent.Register([&w, this] {
-                    toggled(dynamic_cast<F_*>(this)->getindex(w), w);
+                    sel_toggled(dynamic_cast<F_*>(this)->getindex(w), w);
                 });
             }
             
-            void insert(long index, long count) { 
+            void sel_insert(long index, long count) { 
                 if(index <= focusindex)
                     focusindex += count;
                 
@@ -329,7 +329,7 @@ namespace Gorgon { namespace Widgets {
                     selectedindex += count;
             }
             
-            void move(long index, long target) { 
+            void sel_move(long index, long target) { 
                 //move triggers apply to both indexes
                 
                 if(index == focusindex) {
@@ -353,7 +353,7 @@ namespace Gorgon { namespace Widgets {
                 }
             }
             
-            void remove(long index, long count) { 
+            void sel_remove(long index, long count) { 
                 //removed items will be repurposed using apply,
                 if(index <= focusindex) {
                     if(index+count > focusindex) {
@@ -376,7 +376,7 @@ namespace Gorgon { namespace Widgets {
                 }
             }
             
-            void destroy(W_ &w) {
+            void sel_destroy(W_ &w) {
                 if(&w == selected) {
                     selected = nullptr;
                     selectedindex = -1;
@@ -421,7 +421,60 @@ namespace Gorgon { namespace Widgets {
                 Add(std::forward<A_>(rest)...);
             }
             
-            //insert, remove, move
+            void Insert(long before, T_ val) {
+                storage.insert(storage.begin()+before, val);
+                
+                dynamic_cast<F_*>(this)->sel_insert(before, 1);
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
+            template<class... A_>
+            void Insert(long before, T_ val, A_&& ...rest) {
+                //TODO optimize
+                Insert(std::forward<A_>(rest)...);
+                
+                storage.insert(storage.begin()+before, val);
+                dynamic_cast<F_*>(this)->sel_insert(before, 1);
+            }
+            
+            void Remove(long index) {
+                storage.erase(storage.begin()+index);
+                
+                dynamic_cast<F_*>(this)->sel_remove(index, 1);
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
+            void MoveBefore(long index, long before) {
+                if(index==before)
+                    return;
+
+                if(index>before) {
+                    auto t = storage[index];
+                    for(unsigned i=index; i>before; i--)
+                        storage[i] = storage[i-1];
+
+                    storage[before]=t;
+                }
+                else if(before==storage.size()) {
+                    auto t = storage[index];
+
+                    for(unsigned i=index; i<storage.size()-1; i++)
+                        storage[i] = storage[i+1];
+
+                    storage[storage.size()-1] = t;
+                }
+                else {
+                    auto t = storage[index];
+                    for(unsigned i=index; i<before; i++)
+                        storage[i] = storage[i+1];
+
+                    storage[before] = t;
+                }
+                
+                dynamic_cast<F_*>(this)->sel_move(index, before);
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
             
             /**
              * @name Iteration 
@@ -538,9 +591,9 @@ namespace Gorgon { namespace Widgets {
      * Defult traits allow single select. It is possible to construct list of 
      * particular widgets that has no concept of selection if selection traits
      * is set to internal::LBSELTR_None.
-     * This class should support click and toggle functions both taking long 
-     * index, const T_ & value, W_ &widget. Click function will be called when
-     * the user uses arrow keys to select an item. It is this classes
+     * This class should support sel_click and sel_toggle functions both taking
+     * long index, const T_ & value, W_ &widget. Click function will be called 
+     * when the user uses arrow keys to select an item. It is this classes 
      * responsibility to handle actual click and toggle functions.
      * apply function should apply selection related traits to the widget taking
      * long index, W_ &widget, const T_ & value. Any item that is benched will
@@ -548,13 +601,13 @@ namespace Gorgon { namespace Widgets {
      * This class should contain `insert(before, count)` to add count elements
      * before the given index. These elements must be default initialized to a
      * non-selected normal state. 
-     * `move(index, before)` should move the indexed item before the given 
+     * `sel_move(index, before)` should move the indexed item before the given 
      * index. 
-     * `remove(index, count)` should remove count number of items 
+     * `sel_remove(index, count)` should remove count number of items 
      * starting from the given index. 
-     * `prepare(W_ &)` function should prepare the given widget for the first
+     * `sel_prepare(W_ &)` function should prepare the given widget for the first
      * usage. This is only called once on a newly created widget.
-     * `destroy(W_ &)` function is called when a widget is about to be 
+     * `sel_destroy(W_ &)` function is called when a widget is about to be 
      * destroyed.
      * Index parameters should be long int. These functions should be protected
      * as ListboxBase will be derived from SELTR_. Finally, SELTR_ should have a 
@@ -626,6 +679,8 @@ namespace Gorgon { namespace Widgets {
             
             std::map<UI::ComponentTemplate::Tag, int> tagcounts;
             
+            //TODO improve performance by rolling
+            
             //remove all first
             for(auto &p : widgetlist) {
                 p.second->Remove();
@@ -640,6 +695,8 @@ namespace Gorgon { namespace Widgets {
             int y = 0;
             long i = int(scrolloffset), c = 0;
             int totalh = 0;
+            if(i < 0)
+                i = 0;
             while(y < b.Height() && i < elms) {
                 auto &v   = this->getelm(i);
                 auto  tr  = this->access(i);
@@ -654,7 +711,7 @@ namespace Gorgon { namespace Widgets {
                 
                 contents.Add(*w);
                 tr.Apply(*w, v, {0, (int)i}, {1, (int)elms});
-                this->SELTR_::apply(i, *w, v);
+                this->sel_apply(i, *w, v);
                 
                 if(y == 0) {
                     y = -int(std::round(w->GetHeight() * (scrolloffset - int(scrolloffset))));
@@ -724,7 +781,7 @@ namespace Gorgon { namespace Widgets {
             while(ws.GetSize() <= order) {
                 auto &w = ws.AddNew(*temp);
                 this->TRF_::prepare(w);
-                this->SELTR_::prepare(w);
+                this->sel_prepare(w);
             }
             
             return &ws[order];
@@ -799,6 +856,9 @@ namespace Gorgon { namespace Widgets {
         virtual bool Activate() {
             return false;
         }
+        
+        using Base::ComponentStackWidget::Widget::Remove;
+        using internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, SimpleListbox<T_>>::Remove;
     };
     
 } }

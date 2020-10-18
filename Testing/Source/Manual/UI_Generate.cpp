@@ -170,8 +170,18 @@ int main() {
     list.Add("Âj");
     list.Add("9");
     list.Add("Hello", "World", "You", "are", "welcome", "to", "use", "the", "Gorgon", "Library");
-    list.ChangedEvent.Register([&list]{
+    list.SetSelectedIndex(3);
+    list.Insert(2, "!");
+    list.MoveBefore(2, 5);
+    list.ChangedEvent.Register([&list](long index) {
+        if(index == -1)
+            return;
+        
         std::cout<<list.GetSelectedItem()<<std::endl;
+        if(index == 0)
+            return;
+        
+        list.Remove(index - 1);
     });
     
     app.wind.Add(blank);
