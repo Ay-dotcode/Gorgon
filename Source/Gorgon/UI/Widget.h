@@ -13,7 +13,7 @@ namespace Gorgon { namespace UI {
     /**
     * This class is the base for all widgets. 
     */
-    class WidgetBase {
+    class Widget {
     friend class WidgetContainer;
         //Non-virtual functions for visual studio
 
@@ -34,14 +34,14 @@ namespace Gorgon { namespace UI {
         }
     public:
         
-        WidgetBase() : Location(this), Size(this) {
+        Widget() : Location(this), Size(this) {
         }
         
-        WidgetBase(WidgetBase &&) = default;
+        Widget(Widget &&) = default;
         
-        WidgetBase& operator =(WidgetBase &&) = default;
+        Widget& operator =(Widget &&) = default;
         
-        virtual ~WidgetBase() { }
+        virtual ~Widget() { }
         
         /// Moves this widget to the given position.
         void Move(int x, int y) { Move({x, y}); }
@@ -158,7 +158,7 @@ namespace Gorgon { namespace UI {
         virtual bool Done() { return true; }
 
         /// This event will be fired when the widget receives or looses focus.
-        Event<WidgetBase> FocusEvent = Event<WidgetBase>{*this};
+        Event<Widget> FocusEvent = Event<Widget>{*this};
 
         /// This event will be fired when the area that the widget occupies on
         /// its container is changed. It will be fired when the widget is hidden
@@ -167,10 +167,10 @@ namespace Gorgon { namespace UI {
         /// if the object does not have a parent movement and resize will not
         /// trigger this event. Organizers use this event to rearrange widgets, 
         /// thus it is not advisable to remove all handlers from this event.
-        Event<WidgetBase> BoundsChangedEvent = Event<WidgetBase>{*this};
+        Event<Widget> BoundsChangedEvent = Event<Widget>{*this};
         
-        Geometry::PointProperty<WidgetBase, &WidgetBase::getlocation, &WidgetBase::move> Location;
-        Geometry::SizeProperty<WidgetBase, &WidgetBase::getsize, &WidgetBase::resize> Size;
+        Geometry::PointProperty<Widget, &Widget::getlocation, &Widget::move> Location;
+        Geometry::SizeProperty<Widget, &Widget::getsize, &Widget::resize> Size;
         
         /// This is a debug feature
         void setname(std::string value) {

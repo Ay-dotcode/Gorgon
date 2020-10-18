@@ -17,7 +17,7 @@ namespace Gorgon { namespace Widgets {
      * widget might cause unexpected behavior. All other container functionality should work as intended.
      */
     template<class T_, class W_ = Checkbox>
-    class RadioButtons : public UI::WidgetBase, protected UI::RadioControl<T_, W_>, public UI::WidgetContainer {
+    class RadioButtons : public UI::Widget, protected UI::RadioControl<T_, W_>, public UI::WidgetContainer {
         friend class UI::WidgetContainer;
     public:
         explicit RadioButtons(const UI::Template &temp) : temp(temp) { 
@@ -113,14 +113,14 @@ namespace Gorgon { namespace Widgets {
                 elm.Check();
         }
 
-        using WidgetBase::Enable;
+        using Widget::Enable;
 
         /// Enables the given element
         void Enable(const T_ &value) {
             SetEnabled(value, true);
         }
 
-        using WidgetBase::Disable;
+        using Widget::Disable;
 
 
         /// Disables the given element
@@ -128,7 +128,7 @@ namespace Gorgon { namespace Widgets {
             SetEnabled(value, false);
         }
 
-        using WidgetBase::ToggleEnabled;
+        using Widget::ToggleEnabled;
 
         /// Toggles enabled state of the given element
         void ToggleEnabled(const T_ &value) {
@@ -177,15 +177,15 @@ namespace Gorgon { namespace Widgets {
             return contents.IsVisible();
         }
         
-        bool EnsureVisible(const UI::WidgetBase &) override {
+        bool EnsureVisible(const UI::Widget &) override {
             return EnsureVisible();
         }
 
-        using WidgetBase::Resize;
+        using Widget::Resize;
 
-        using WidgetBase::Move;
+        using Widget::Move;
         
-        using WidgetBase::EnsureVisible;
+        using Widget::EnsureVisible;
         
         void Move(const Geometry::Point &location) override {
             contents.Move(location);
@@ -207,7 +207,7 @@ namespace Gorgon { namespace Widgets {
 
         using UI::RadioControl<T_, W_>::Set;
         
-        using WidgetBase::IsVisible;
+        using Widget::IsVisible;
 
         virtual void SetEnabled(bool value) override {
             if(enabled == value)
@@ -269,7 +269,7 @@ namespace Gorgon { namespace Widgets {
             if(!HasFocusedWidget())
                 FocusFirst();
             
-            WidgetBase::focused();
+            Widget::focused();
         }
         
         Gorgon::Layer &getlayer() override {
@@ -283,7 +283,7 @@ namespace Gorgon { namespace Widgets {
                 distributeparentenabled(state);
         }
         
-        virtual bool addingwidget(WidgetBase &widget) override { 
+        virtual bool addingwidget(Widget &widget) override { 
             for(auto p : this->elements) {
                 if(&p.second == &widget)
                     return true;
@@ -292,7 +292,7 @@ namespace Gorgon { namespace Widgets {
             return false;
         }
         
-        virtual bool removingwidget(WidgetBase &) override { return false; }
+        virtual bool removingwidget(Widget &) override { return false; }
         
         void rearrange() {
             int total = 0, col = 0;
@@ -342,7 +342,7 @@ namespace Gorgon { namespace Widgets {
         }
 
         virtual void focuslost() override {
-            WidgetBase::focuslost();
+            Widget::focuslost();
 
             if(HasFocusedWidget()) {
                 ForceRemoveFocus();

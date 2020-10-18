@@ -1596,7 +1596,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::Listbox() {
-        Geometry::Size defsize = {WidgetWidth*2+Spacing, BorderedWidgetHeight*10};
+        Geometry::Size defsize = {WidgetWidth*2+Spacing, BorderedWidgetHeight*8};
         
         UI::Template temp;
         
@@ -1612,8 +1612,7 @@ namespace Gorgon { namespace Widgets {
             .AddIndex(5) //scrollbar
         ;
         bg.Background.SetAnimation(NormalBG());
-        bg.SetBorderSize(Border.Width);
-        bg.SetPadding(std::max(Border.Radius / 2, Focus.Spacing));
+        bg.SetPadding(std::max(Border.Radius / 2, Focus.Spacing)+Border.Width);
         
         auto &viewport = temp.AddContainer(1, UI::ComponentCondition::Always)
             .AddIndex(2)
@@ -1630,14 +1629,26 @@ namespace Gorgon { namespace Widgets {
         border.SetValueRange(0, 0.5, 1);
         border.SetReversible(true);
         border.SetPositioning(UI::ComponentTemplate::Absolute);
+        border.SetMargin(-Border.Width-std::max(Border.Radius / 2, Focus.Spacing));
         border.Background.SetAnimation(NormalEmptyBorder());
         
-        temp.AddPlaceholder(4, UI::ComponentCondition::Always)
-            .SetTemplate(listbox_listitem)
-        ;
+        auto &item = temp.AddPlaceholder(4, UI::ComponentCondition::Always);
+        item.SetTemplate(listbox_listitem);
+        item.SetTag(UI::ComponentTemplate::ItemTag);
+        
+        auto &vs = temp.AddPlaceholder(5, UI::ComponentCondition::VScroll);
+        vs.SetTemplate(vst);
+        vs.SetTag(UI::ComponentTemplate::VScrollTag);
+        vs.SetSize(vst.GetWidth(), {100, UI::Dimension::Percent});
+        vs.SetSizing(UI::ComponentTemplate::Fixed);
+        vs.SetAnchor(UI::Anchor::TopRight, UI::Anchor::TopRight, UI::Anchor::TopLeft);
+        vs.SetMargin(Spacing, 0, 0, 0);
         
         
         //****** listitem
+        
+        //TODO fix height
+        listbox_listitem.SetSize(defsize.Width - (Border.Width + std::max(Border.Radius / 2, Focus.Spacing)) * 2, WidgetHeight);
         
         listbox_listitem.AddContainer(0, UI::ComponentCondition::Always)
             .AddIndex(1) //background
@@ -1661,7 +1672,7 @@ namespace Gorgon { namespace Widgets {
             .AddIndex(5)
         ;
         clip.SetClip(true);
-        clip.SetPadding(Focus.Spacing + Focus.Width);
+        clip.SetPadding(Focus.Width);
         clip.SetSize(100, 100, UI::Dimension::Percent);
         
         //Contents
@@ -1670,7 +1681,6 @@ namespace Gorgon { namespace Widgets {
             .AddIndex(7) //text
         ;
         content.SetSize(100, 100, UI::Dimension::Percent);
-        content.SetSizing(UI::ComponentTemplate::Automatic);
         content.SetPositioning(UI::ComponentTemplate::Absolute);
         content.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         content.SetPadding(Focus.Spacing);
@@ -1712,7 +1722,7 @@ namespace Gorgon { namespace Widgets {
             txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             txt.SetDataEffect(UI::ComponentTemplate::Text);
             txt.SetSize(100, 100, UI::Dimension::Percent);
-            txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+            txt.SetMargin(0, Focus.Spacing * 2);
         };
         
         setuptext(Forecolor.Regular, UI::ComponentCondition::Always);
@@ -1727,18 +1737,10 @@ namespace Gorgon { namespace Widgets {
         auto &img = *new Graphics::BlankImage(8, 8, Background.Selected);
         drawables.Add(img);
         textbg.Background.SetAnimation(img);
-        textbg.SetMargin(0, Focus.Spacing);
+        textbg.SetMargin(0, -Focus.Spacing);
         textbg.SetPadding(0, Focus.Spacing);
 
         setupfocus(listbox_listitem.AddGraphics(3, UI::ComponentCondition::Focused));
-        
-        auto &vs = temp.AddPlaceholder(5, UI::ComponentCondition::VScroll);
-        vs.SetTemplate(vst);
-        vs.SetTag(UI::ComponentTemplate::VScrollTag);
-        vs.SetSize(vst.GetWidth(), {100, UI::Dimension::Percent});
-        vs.SetSizing(UI::ComponentTemplate::Fixed);
-        vs.SetAnchor(UI::Anchor::TopRight, UI::Anchor::TopRight, UI::Anchor::TopLeft);
-        vs.SetMargin(Spacing, 0, 0, 0);
         
         return temp;
     }

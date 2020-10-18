@@ -1,16 +1,16 @@
-#include "WidgetBase.h"
+#include "Widget.h"
 #include "WidgetContainer.h"
 
 namespace Gorgon { namespace UI {
 
-	bool WidgetBase::Remove() {
+	bool Widget::Remove() {
 		if(!parent)
 			return true;
 
 		return parent->Remove(*this);
 	}
 
-	bool WidgetBase::Focus() {
+	bool Widget::Focus() {
 		if(!parent)
 			return false;
 
@@ -20,14 +20,14 @@ namespace Gorgon { namespace UI {
 		return parent->SetFocusTo(*this);
 	}
 
-	bool WidgetBase::Defocus() {
+	bool Widget::Defocus() {
 		if(!IsFocused() || !parent)
 			return true;
 
 		return parent->RemoveFocus();
 	}
 
-	WidgetContainer &WidgetBase::GetParent() const {
+	WidgetContainer &Widget::GetParent() const {
 		if(parent == nullptr)
 			throw std::runtime_error("Widget has no parent");
 
@@ -35,7 +35,7 @@ namespace Gorgon { namespace UI {
 	}
 
 
-    void WidgetBase::SetVisible(bool value) {
+    void Widget::SetVisible(bool value) {
         if(visible != value) {
             visible = value;
             
@@ -52,14 +52,14 @@ namespace Gorgon { namespace UI {
     }
     
     
-    bool WidgetBase::EnsureVisible() const {
+    bool Widget::EnsureVisible() const {
         if(!parent)
             return false;
         
         return parent->EnsureVisible(*this);
     }
 
-    void WidgetBase::boundschanged(){
+    void Widget::boundschanged(){
         if(parent)
             parent->childboundschanged(this);
         
@@ -68,7 +68,7 @@ namespace Gorgon { namespace UI {
 
 
     /// Called when this widget added to the given container
-    void WidgetBase::addedto(WidgetContainer &container) {
+    void Widget::addedto(WidgetContainer &container) {
         if(parent == &container)
             return;
 
@@ -80,7 +80,7 @@ namespace Gorgon { namespace UI {
         parentenabledchanged(parent->IsEnabled());
     }
 
-    void WidgetBase::removed(){
+    void Widget::removed(){
         if(!parent)
             return;
         
@@ -93,13 +93,13 @@ namespace Gorgon { namespace UI {
     }
     
 
-    void WidgetBase::focuslost() {
+    void Widget::focuslost() {
         focus = false;
         FocusEvent();
     }
 
 
-    void WidgetBase::focused() {
+    void Widget::focused() {
         focus = true;
         FocusEvent();
     }

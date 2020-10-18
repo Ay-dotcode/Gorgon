@@ -25,12 +25,12 @@ namespace Gorgon { namespace Widgets {
     void Composer::focused() {
         if(!HasFocusedWidget())
             FocusFirst();
-        WidgetBase::focused();
+        Widget::focused();
     }
     
     void Composer::focuslost() {
         RemoveFocus();
-        WidgetBase::focuslost();
+        Widget::focuslost();
     }
 
     void Composer::focuschanged() { 

@@ -38,7 +38,7 @@ namespace Gorgon { namespace Widgets {
         {
         }
 
-        explicit Scrollbar(const UI::Template &temp, T_ cur = T_{}) : Scrollbar(temp, cur, T_{temp.GetSpacing()*64}) { }
+        explicit Scrollbar(const UI::Template &temp, T_ cur = T_{}) : Scrollbar(temp, cur, T_(temp.GetSpacing()*64)) { }
 
         Scrollbar(const UI::Template &temp, T_ cur, T_ max) : 
             Base(temp, cur, max)
@@ -92,5 +92,11 @@ namespace Gorgon { namespace Widgets {
     
     using HScrollbar = Scrollbar<int, FloatDivider<int>, FloatToValue<int>, Gorgon::NumericProperty, Registry::Scrollbar_Horizontal>;
     using VScrollbar = Scrollbar<int, FloatDivider<int>, FloatToValue<int>, Gorgon::NumericProperty, Registry::Scrollbar_Vertical>;
+    
+    template<class T_>
+    using HScroller = Scrollbar<T_, FloatDivider<T_>, FloatToValue<T_>, Gorgon::NumericProperty, Registry::Scrollbar_Horizontal>;
+
+    template<class T_>
+    using VScroller = Scrollbar<T_, FloatDivider<T_>, FloatToValue<T_>, Gorgon::NumericProperty, Registry::Scrollbar_Vertical>;
     
 } }

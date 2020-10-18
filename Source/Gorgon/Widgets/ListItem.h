@@ -37,7 +37,11 @@ namespace Gorgon { namespace Widgets {
         ListItem(const UI::Template &temp) :
             UI::ComponentStackWidget(temp)
         {
-            stack.HandleMouse();
+            stack.HandleMouse(); 
+            stack.SetClickEvent([&](auto, auto, auto) {
+                ClickEvent();
+                ToggleEvent();
+            });
         }
 
         /// Changes the text displayed. Depending on the template, text might be

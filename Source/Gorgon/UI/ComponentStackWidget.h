@@ -1,6 +1,6 @@
 #pragma once
 
-#include "WidgetBase.h"
+#include "Widget.h"
 #include "ComponentStack.h"
 #include "WidgetContainer.h"
 
@@ -11,9 +11,9 @@ namespace Gorgon { namespace UI {
      * This class acts as a widget base that uses component stack to handle
      * rendering, resizing and other operations.
      */
-    class ComponentStackWidget : public WidgetBase {
+    class ComponentStackWidget : public Widget {
     public:
-        ComponentStackWidget(const Template &temp, std::map<ComponentTemplate::Tag, std::function<WidgetBase *(const Template &)>> generators = {}) : stack(*new ComponentStack(temp, temp.GetSize(), generators)) { }
+        ComponentStackWidget(const Template &temp, std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> generators = {}) : stack(*new ComponentStack(temp, temp.GetSize(), generators)) { }
         
         ComponentStackWidget(ComponentStackWidget &&) = default;
         
@@ -23,7 +23,7 @@ namespace Gorgon { namespace UI {
             delete &stack;
         }
         
-        using WidgetBase::Move;
+        using Widget::Move;
         
         virtual void Move(const Geometry::Point &location) override {
 			stack.Move(location);
@@ -32,7 +32,7 @@ namespace Gorgon { namespace UI {
                 boundschanged();
 		}
         
-        using WidgetBase::Resize;
+        using Widget::Resize;
         
         virtual void Resize(const Geometry::Size &size) override {
             stack.Resize(size);
@@ -93,19 +93,19 @@ namespace Gorgon { namespace UI {
         }
 
 		virtual void focused() override {
-            WidgetBase::focused();
+            Widget::focused();
 			stack.AddCondition(ComponentCondition::Focused);
 			FocusEvent();
 		}
 
 		virtual void focuslost() override {
-            WidgetBase::focuslost();
+            Widget::focuslost();
 			stack.RemoveCondition(ComponentCondition::Focused);
 			FocusEvent();
 		}
         
 		virtual void removed() override {
-			WidgetBase::removed();
+			     Widget::removed();
 
 			stack.FinalizeTransitions();
 		}

@@ -2,7 +2,7 @@
 
 #include <stdexcept>
 
-#include "WidgetBase.h"
+#include "Widget.h"
 #include "../Layer.h"
 #include "../Input/Keyboard.h"
 #include "Organizers/Base.h"
@@ -17,7 +17,7 @@ namespace Gorgon { namespace UI {
     * at the same time.
     */
     class WidgetContainer {
-        friend class WidgetBase;
+        friend class Widget;
     public:
         /// Defines focus strategy for the container. Default is Inherit
         enum FocusStrategy {
@@ -58,35 +58,35 @@ namespace Gorgon { namespace UI {
         /// be placed to the top of the z-order, to the end of the
         /// focus order. If the given widget cannot be added, this
         /// function will return false.
-        bool Add(WidgetBase &widget);
+        bool Add(Widget &widget);
 
         /// Add the given widget to this container. Widget will
         /// be placed to the top of the z-order, and to the specified
         /// focus order. If the given widget cannot be added, this
         /// function will return false. If the index is out of bounds
         /// the widget will be added at the end.
-        bool Insert(WidgetBase &widget, int index);
+        bool Insert(Widget &widget, int index);
 
         /// Removes the given widget from this container. If the
         /// widget does not exits, this function will return true without
         /// taking any additional action. If the widget cannot be removed
         /// from the container, this function will return false.
-        bool Remove(WidgetBase &widget);
+        bool Remove(Widget &widget);
 
         /// Forcefully removes the given widget from this container.
-        void ForceRemove(WidgetBase &widget);
+        void ForceRemove(Widget &widget);
 
         /// Changes the focus order of the given widget. If the order
         /// is out of bounds, the widget will be moved to the end.
         /// You may use the functions in the widget to manage focus order.
-        void ChangeFocusOrder(WidgetBase &widget, int order);
+        void ChangeFocusOrder(Widget &widget, int order);
 
-        int GetFocusOrder(const WidgetBase &widget) const;
+        int GetFocusOrder(const Widget &widget) const;
 
         /// Changes the z-order of the widget. If the order is out of
         /// bounds, the widget will be drawn on top. You may use the
         /// functions in the widget to manage z-order.
-        void ChangeZorder(WidgetBase &widget, int order);
+        void ChangeZorder(Widget &widget, int order);
         
         /// Focuses the first widget that accepts focus. If none of the
         /// widgets accept focus or if the currently focused widget blocks
@@ -112,7 +112,7 @@ namespace Gorgon { namespace UI {
         /// accept focus then this function will return false. Additionally, 
         /// if the currently focused widget blocks focus transfer, this function 
         /// will return false.
-        bool FocusNext(const WidgetBase &widget) { return FocusNext(GetFocusOrder(widget)); }
+        bool FocusNext(const Widget &widget) { return FocusNext(GetFocusOrder(widget)); }
 
         /// Focuses the last widget in the container. If none of the
         /// widgets accept focus or if the currently focused widget blocks
@@ -131,7 +131,7 @@ namespace Gorgon { namespace UI {
         /// this function will return false. Additionally, if the currently
         /// focused widget blocks focus transfer, this function will
         /// return false.
-        bool FocusPrevious(const WidgetBase& widget) { return FocusNext(GetFocusOrder(widget)); }
+        bool FocusPrevious(const Widget& widget) { return FocusNext(GetFocusOrder(widget)); }
 
         /// Focuses the previous widget that accepts focus. If no widget 
         /// other than the currently focused widget accept focus then 
@@ -141,7 +141,7 @@ namespace Gorgon { namespace UI {
         bool FocusPrevious(int before);
 
         /// Sets the focus to the given widget
-        bool SetFocusTo(WidgetBase &widget);
+        bool SetFocusTo(Widget &widget);
         
         /// Removes the focus from the focused widget
         bool RemoveFocus();
@@ -154,14 +154,14 @@ namespace Gorgon { namespace UI {
 
         /// Returns the focused widget. If no widget is focused, this function
         /// will throw.
-        WidgetBase &GetFocus() const;
+        Widget &GetFocus() const;
         
         /// Ensures the widget is visible. Returns true if the container can be
         /// scroll to make sure the given widget is visible. This function cannot
         /// be expected to take outside factors into account, such as occlusion.
         /// This function does not change the visibility of the widget and will
         /// return false if the widget is not visible.
-        virtual bool EnsureVisible(const WidgetBase &widget) = 0;
+        virtual bool EnsureVisible(const Widget &widget) = 0;
         
         /// Should return whether the container is visible. Due to
         /// different container designs and capabilities, setting
@@ -252,12 +252,12 @@ namespace Gorgon { namespace UI {
         }
         
         /// Returns the widget at the given index
-        const WidgetBase &operator [](int ind) const {
+        const Widget &operator [](int ind) const {
             return widgets[ind];
         }
         
         /// Returns the widget at the given index
-        WidgetBase &operator [](int ind) {
+        Widget &operator [](int ind) {
             return widgets[ind];
         }
         
@@ -268,7 +268,7 @@ namespace Gorgon { namespace UI {
         /// can be designated as default widget. If there is no default object, 
         /// this function will throw. Use HasDefault to check if this container 
         /// has a default widget.
-        virtual WidgetBase &GetDefault() const {
+        virtual Widget &GetDefault() const {
             if(!def) 
                 throw std::runtime_error("Container does not have a default");
             
@@ -280,7 +280,7 @@ namespace Gorgon { namespace UI {
         
         /// Sets the default object of the container. Ideally this should be
         /// a button or a similar widget.
-        virtual void SetDefault(WidgetBase &widget) { def=&widget; }
+        virtual void SetDefault(Widget &widget) { def=&widget; }
         
         /// Removes the default widget of this container.
         virtual void RemoveDefault() { def=nullptr; }
@@ -290,7 +290,7 @@ namespace Gorgon { namespace UI {
         /// Cancel elements are generally buttons, however, any widget can 
         /// be cancel widget. If there is no cancel object set, this function 
         /// will throw. Use HasCancel to check if this container has a cancel widget.
-        virtual WidgetBase &GetCancel() const { 
+        virtual Widget &GetCancel() const { 
             if(!def) 
                 throw std::runtime_error("Container does not have a default");
             
@@ -302,7 +302,7 @@ namespace Gorgon { namespace UI {
         
         /// Sets the cancel widget of the container. Ideally this should be
         /// a button or a similar widget.
-        virtual void SetCancel(WidgetBase &widget) { cancel=&widget; }
+        virtual void SetCancel(Widget &widget) { cancel=&widget; }
         
         /// Removes the cancel widget of this container.
         virtual void RemoveCancel() { cancel=nullptr; }
@@ -369,22 +369,22 @@ namespace Gorgon { namespace UI {
 
     protected:
         /// This container is sorted by the focus order
-        Containers::Collection<WidgetBase> widgets;
+        Containers::Collection<Widget> widgets;
 
         /// This function can return false to prevent the given
         /// widget from getting added to the container.
-        virtual bool addingwidget(WidgetBase &) { return true; }
+        virtual bool addingwidget(Widget &) { return true; }
 
         /// This function is called after a widget is added.
-        virtual void widgetadded(WidgetBase &) { }
+        virtual void widgetadded(Widget &) { }
 
         /// This function is called before removing a widget. Return false
         /// to prevent that widget from getting removed. This widget is
         /// guaranteed to be in this container
-        virtual bool removingwidget(WidgetBase &) { return true; }
+        virtual bool removingwidget(Widget &) { return true; }
 
         /// This function is called after a widget is removed
-        virtual void widgetremoved(WidgetBase &) { }
+        virtual void widgetremoved(Widget &) { }
 
         /// If this widget is not top level, return the current strategy used by the
         /// parent. Never return Inherit from this function.
@@ -412,14 +412,14 @@ namespace Gorgon { namespace UI {
         void distributeparentenabled(bool state);
 
         /// The boundary of any of the children is changed. Source could be nullptr
-        virtual void childboundschanged(WidgetBase *source);
+        virtual void childboundschanged(Widget *source);
 
     private:
         bool isenabled              = true;
         bool tabswitch              = true;
-        WidgetBase *def             = nullptr;
-        WidgetBase *cancel          = nullptr;
-        WidgetBase *focused         = nullptr;
+        Widget *def             = nullptr;
+        Widget *cancel          = nullptr;
+        Widget *focused         = nullptr;
         int focusindex	            = -1;
         Organizers::Base *organizer = nullptr;
         bool ownorganizer           = false;

@@ -85,7 +85,7 @@ namespace Gorgon { namespace UI {
         }
         
         /// Window does not do any scrolling, thus cannot ensure visibility
-        bool EnsureVisible(const UI::WidgetBase &) override {
+        bool EnsureVisible(const UI::Widget &) override {
             return true;
         }
         

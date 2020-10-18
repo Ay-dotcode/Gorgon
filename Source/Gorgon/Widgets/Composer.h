@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../UI/WidgetBase.h"
+#include "../UI/Widget.h"
 #include "../UI/WidgetContainer.h"
 
 namespace Gorgon { namespace Widgets {
@@ -16,15 +16,15 @@ namespace Gorgon { namespace Widgets {
      * in widgets in the composer. This object does not support scrolling, however,
      * you may place a panel in it to have that functionality.
      */
-    class Composer : public UI::WidgetBase, protected UI::WidgetContainer {
+    class Composer : public UI::Widget, protected UI::WidgetContainer {
     public:
         ~Composer() { }
         
-        using WidgetBase::Resize;
+        using Widget::Resize;
        
-        using WidgetBase::Move;
+        using Widget::Move;
 
-        using WidgetBase::Remove;
+        using Widget::Remove;
         
         using WidgetContainer::Remove;
 
@@ -57,15 +57,15 @@ namespace Gorgon { namespace Widgets {
         
         virtual void Move(const Geometry::Point &location) override;
 
-        using WidgetBase::EnsureVisible;
+        using Widget::EnsureVisible;
         
-        bool EnsureVisible(const UI::WidgetBase &widget) override {
+        bool EnsureVisible(const UI::Widget &widget) override {
             return true;
         }
 
-        using WidgetBase::Enable;
-        using WidgetBase::Disable;
-        using WidgetBase::ToggleEnabled;
+        using Widget::Enable;
+        using Widget::Disable;
+        using Widget::ToggleEnabled;
 
         virtual void SetEnabled(bool value) override {
             if(value != IsEnabled()) {

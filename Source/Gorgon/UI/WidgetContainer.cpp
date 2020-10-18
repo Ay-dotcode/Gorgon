@@ -2,7 +2,7 @@
 
 namespace Gorgon { namespace UI {
     
-    bool WidgetContainer::Add(WidgetBase &widget) {
+    bool WidgetContainer::Add(Widget &widget) {
         if(widgets.Find(widget) != widgets.end())
             return true;
 
@@ -25,7 +25,7 @@ namespace Gorgon { namespace UI {
         return true;
     }
 
-    bool WidgetContainer::Insert(WidgetBase &widget, int index) {
+    bool WidgetContainer::Insert(Widget &widget, int index) {
         if(widgets.Find(widget) != widgets.end()) {
             ChangeFocusOrder(widget, index);
             ChangeZorder(widget, index);
@@ -54,7 +54,7 @@ namespace Gorgon { namespace UI {
         return true;
     }
 
-    bool WidgetContainer::Remove(WidgetBase &widget) {
+    bool WidgetContainer::Remove(Widget &widget) {
         auto pos = widgets.Find(widget);
 
         //not our widget
@@ -72,7 +72,7 @@ namespace Gorgon { namespace UI {
         return true;
     }
 
-    void WidgetContainer::ForceRemove(WidgetBase &widget) {
+    void WidgetContainer::ForceRemove(Widget &widget) {
         auto pos = widgets.Find(widget);
 
         //not our widget
@@ -92,7 +92,7 @@ namespace Gorgon { namespace UI {
         widget.removed();
     }
 
-    void WidgetContainer::ChangeFocusOrder(WidgetBase &widget, int order) {
+    void WidgetContainer::ChangeFocusOrder(Widget &widget, int order) {
         auto pos = widgets.Find(widget);
 
         //not our widget
@@ -115,7 +115,7 @@ namespace Gorgon { namespace UI {
         widgets.MoveBefore(widget, order);
     }
 
-    int WidgetContainer::GetFocusOrder(const WidgetBase& widget) const {
+    int WidgetContainer::GetFocusOrder(const Widget& widget) const {
         auto pos = widgets.Find(widget);
 
         if(pos == widgets.end())
@@ -124,7 +124,7 @@ namespace Gorgon { namespace UI {
         return pos - widgets.begin();
     }
 
-    void WidgetContainer::ChangeZorder(WidgetBase &widget, int order) {
+    void WidgetContainer::ChangeZorder(Widget &widget, int order) {
         auto &l = getlayer();
         auto pos = widgets.Find(widget);
 
@@ -171,8 +171,8 @@ namespace Gorgon { namespace UI {
         //if this container is top level focus will rollover
 
         // if this container is a widget
-        if(dynamic_cast<WidgetBase*>(this)) {
-            auto w = dynamic_cast<WidgetBase*>(this);
+        if(dynamic_cast<Widget*>(this)) {
+            auto w = dynamic_cast<Widget*>(this);
 
             // that has a parent
             if(w->HasParent()) {
@@ -243,8 +243,8 @@ namespace Gorgon { namespace UI {
         //if this container is top level focus will rollover
         
         // if this container is a widget
-        if(dynamic_cast<WidgetBase*>(this)) {
-            auto w = dynamic_cast<WidgetBase*>(this);
+        if(dynamic_cast<Widget*>(this)) {
+            auto w = dynamic_cast<Widget*>(this);
             
             // that has a parent
             if(w->HasParent()) {
@@ -294,7 +294,7 @@ namespace Gorgon { namespace UI {
         return false;
     }
 
-    bool WidgetContainer::SetFocusTo(WidgetBase &widget) {
+    bool WidgetContainer::SetFocusTo(Widget &widget) {
         if(CurrentFocusStrategy() == Deny)
             return false;
         
@@ -359,7 +359,7 @@ namespace Gorgon { namespace UI {
     }
 
 
-    Gorgon::UI::WidgetBase & WidgetContainer::GetFocus() const {
+    Gorgon::UI::Widget & WidgetContainer::GetFocus() const {
         if(!focused)
             throw std::runtime_error("No widget is focused");
 
@@ -428,7 +428,7 @@ namespace Gorgon { namespace UI {
             w.parentenabledchanged(state);
     }
 
-    void WidgetContainer::childboundschanged(WidgetBase *) {
+    void WidgetContainer::childboundschanged(Widget *) {
         if(organizer)
             organizer->Reorganize();
     }

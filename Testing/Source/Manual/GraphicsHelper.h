@@ -68,7 +68,7 @@ public:
 #else
         bool found = false;
         std::streambuf *buf;
-        OS::Start("fc-match", buf, {"-v", "emoji"});
+        OS::Start("fc-match", buf, {"-v", "sans"});
         
         if(buf) {
             std::istream in(buf);

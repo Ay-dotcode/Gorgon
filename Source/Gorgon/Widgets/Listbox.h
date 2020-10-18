@@ -7,10 +7,9 @@
 #include "Registry.h"
 #include "ListItem.h"
 #include <vector>
+#include "Scrollbar.h"
 
 namespace Gorgon { namespace Widgets {
-    
-    //TODO how to deal with pointers and references
     
     /**
      * This is the abstract base of listboxes. It is mainly used to allow list
@@ -21,8 +20,6 @@ namespace Gorgon { namespace Widgets {
     public:
         virtual ~ListBase() {
         }
-        
-        //TODO add, remove, insert, move, push_back (for back inserter)
         
         /// Returns the item at the given point. This operator will not perform
         /// bounds checking.
@@ -36,6 +33,19 @@ namespace Gorgon { namespace Widgets {
         virtual long GetCount() const = 0;
         
         /// For internal use.
+        /// Returns the first widget used to represent any item at within the 
+        /// listbox. This function will return nullptr if there are no items in the
+        /// list.
+        virtual long getindex(const W_ &widget) = 0;
+        
+        /// This function should refresh the contents of the listbox. Normally, 
+        /// calling this function is not necessary as it is handled internally.
+        /// This function may defer refresh to next frame.
+        virtual void Refresh() = 0;
+        
+    protected:
+
+        /// For internal use.
         /// Returns the widget used to represent the item at the given index. This
         /// function will return nullptr if the index does not currently have a
         /// visual representation. This is not an edge case, any item that is not
@@ -47,6 +57,7 @@ namespace Gorgon { namespace Widgets {
         /// listbox. This function will return nullptr if there are no items in the
         /// list.
         virtual W_ *getrepresentation() = 0;
+        
     };
     
     /// @cond internal
@@ -58,12 +69,13 @@ namespace Gorgon { namespace Widgets {
         class LBTR_blank {
         public:
             void Apply(W_ &, const T_ &, Geometry::Point, Geometry::Size) { }
+            
             UI::ComponentTemplate::Tag Tag(const T_ &, Geometry::Point, Geometry::Size) {
-                return UI::ComponentTemplate::UnknownTag;
+                return UI::ComponentTemplate::ItemTag;
             }
         };
         
-        template <class T_, class W_>
+        template <class T_, class W_, class F_>
         class LBTRF_blank {
             using TR_ = LBTR_blank<T_, W_>;
         protected:
@@ -92,7 +104,7 @@ namespace Gorgon { namespace Widgets {
         
         //This class allows single selection. The selected item will
         //follow the focus by default. If desired, this can be changed
-        template<class T_, class W_>
+        template<class T_, class W_, class F_>
         class LBSELTR_Single {
         public:
             /// Returns true if this listbox has a selected item.
@@ -107,7 +119,7 @@ namespace Gorgon { namespace Widgets {
                 if(selectedindex == -1)
                     throw std::runtime_error("Nothing is selected.");
                 
-                return dynamic_cast<ListBase<T_, W_>&>(*this)[selectedindex];
+                return dynamic_cast<const F_&>(*this)[selectedindex];
             }
             
             /// Returns the index of the selected item. -1 will be returned if 
@@ -120,7 +132,7 @@ namespace Gorgon { namespace Widgets {
             /// bounds this function will throw std::out_of_range exception. -1
             /// can be used to remove selected item.
             void SetSelectedIndex(long index) {
-                if(index < -1 || index >= dynamic_cast<ListBase<T_, W_>&>(*this).GetSize())
+                if(index < -1 || index >= dynamic_cast<F_&>(*this).GetSize())
                     throw std::out_of_range("Selected index does not exits");
                 
                 if(index == selectedindex)
@@ -128,18 +140,18 @@ namespace Gorgon { namespace Widgets {
                 
                 if(focusonly) {
                     if(index == -1) {
-                        W_ *elm = dynamic_cast<ListBase<T_, W_>&>(*this).getrepresentation();
+                        W_ *elm = dynamic_cast<F_&>(*this).getrepresentation();
                         if(elm != nullptr && elm->HasParent()) {
                             elm->GetParent().RemoveFocus();
                         }
                     }
                     else {
-                        W_ *elm = dynamic_cast<ListBase<T_, W_>&>(*this).getrepresentation(index);
+                        W_ *elm = dynamic_cast<F_&>(*this).getrepresentation(index);
                         if(elm != nullptr) {
                             elm->Focus();
                         }
                         else {
-                            elm = dynamic_cast<ListBase<T_, W_>&>(*this).getrepresentation();
+                            elm = dynamic_cast<F_&>(*this).getrepresentation();
                             
                             if(elm != nullptr && elm->HasParent()) {
                                 elm->GetParent().RemoveFocus();
@@ -154,13 +166,14 @@ namespace Gorgon { namespace Widgets {
                     selected->SetSelected(false);
                 
                 if(index != -1) {
-                    W_ *elm = dynamic_cast<ListBase<T_, W_>&>(*this).getrepresentation(index);
+                    W_ *elm = dynamic_cast<F_&>(*this).getrepresentation(index);
                     
                     if(elm)
                         elm->SetSelected(true);
                 }
                 
                 selectedindex = index;
+                ChangedEvent(selectedindex);
             }
             
             void RemoveSelection() {
@@ -170,7 +183,7 @@ namespace Gorgon { namespace Widgets {
             /// Selects the first item that has the given value. If item does
             /// not exists, this function will remove the selection
             void SetSelection(T_ item) {
-                auto &me = dynamic_cast<ListBase<T_, W_>&>(*this);
+                auto &me = dynamic_cast<F_&>(*this);
                 
                 for(long i=0; i<me.GetSize(); i++) {
                     if(me[i] == item) {
@@ -199,7 +212,7 @@ namespace Gorgon { namespace Widgets {
                     if(focusindex != -1) {
                         if(selectedindex != focusindex) {
                             selectedindex = focusindex;
-                            SelectionChanged(selectedindex);
+                            ChangedEvent(selectedindex);
                         }
                     }
                     else {
@@ -210,11 +223,21 @@ namespace Gorgon { namespace Widgets {
                 focusonly = value;
             }
             
-            Event<LBSELTR_Single, long> SelectionChanged = Event<LBSELTR_Single, long>{this};
+            operator T_() {
+                return GetSelectedItem();
+            }
+            
+            operator T_() const {
+                return GetSelectedItem();
+            }
+            
+            Event<LBSELTR_Single, long> ChangedEvent = Event<LBSELTR_Single, long>{this};
             
         protected:
             LBSELTR_Single() {
             }
+            
+            virtual ~LBSELTR_Single() { }
             
             void clicked(long index, W_ &w) {
                 if(focusonly) {
@@ -225,19 +248,27 @@ namespace Gorgon { namespace Widgets {
                         selected->SetSelected(false);
                     
                     w.SetSelected(true);
-                    w.Focus();
+                    
+                    if(dynamic_cast<UI::Widget*>(this)->IsFocused())
+                        w.Focus();
                     
                     selected = &w;
                     selectedindex = index;
                     focusindex    = index;
+                    
+                    ChangedEvent(index);
                 }
                 else {
                     if(focusindex == index)
                         return;
                     
-                    w.Focus();
+                    if(dynamic_cast<UI::Widget*>(this)->IsFocused())
+                        w.Focus();
+                    
                     focusindex = index;
                 }
+                
+                dynamic_cast<UI::Widget*>(this)->Focus();
             }
             
             void toggled(long index, W_ &w) {
@@ -252,9 +283,13 @@ namespace Gorgon { namespace Widgets {
                 selected = &w;
                 
                 if(focusonly) {
-                    w.Focus();
+                    if(dynamic_cast<UI::Widget*>(this)->IsFocused())
+                        w.Focus();
+                    
                     focusindex = index;
                 }
+                
+                ChangedEvent(index);
             }
             
             void apply(long index, W_ &w, const T_ &) {
@@ -262,23 +297,28 @@ namespace Gorgon { namespace Widgets {
                     w.Focus();
                 }
                 else if(w.IsFocused()) {
-                    w.RemoveFocus();
+                    w.Defocus();
                 }
                 
                 if(index == selectedindex) {
                     w.SetSelected(true);
-                    w = &w;
+                    selected = &w;
                 }
                 else {
                     w.SetSelected(false);
                     
                     if(&w == selected)
-                        w = nullptr;
+                        selected = nullptr;
                 }
             }
             
-            void prepare(W_ &) {
-                //nothing to be done
+            void prepare(W_ &w) {
+                w.ClickEvent.Register([&w, this] {
+                    clicked(dynamic_cast<F_*>(this)->getindex(w), w);
+                });
+                w.ToggleEvent.Register([&w, this] {
+                    toggled(dynamic_cast<F_*>(this)->getindex(w), w);
+                });
             }
             
             void insert(long index, long count) { 
@@ -318,6 +358,7 @@ namespace Gorgon { namespace Widgets {
                 if(index <= focusindex) {
                     if(index+count > focusindex) {
                         focusindex = -1;
+                        ChangedEvent(-1);
                     }
                     else {
                         focusindex -= count;
@@ -327,6 +368,7 @@ namespace Gorgon { namespace Widgets {
                 if(index <= selectedindex) {
                     if(index+count > selectedindex) {
                         selectedindex = -1;
+                        ChangedEvent(-1);
                     }
                     else {
                         selectedindex -= count;
@@ -338,10 +380,19 @@ namespace Gorgon { namespace Widgets {
                 if(&w == selected) {
                     selected = nullptr;
                     selectedindex = -1;
+                    ChangedEvent(-1);
                 }
                 if(w.IsFocused()) {
                     focusindex = -1;
                     w.RemoveFocus();
+                }
+            }
+            
+            void reapplyfocus() {
+                if(focusindex != -1) {
+                    auto w = dynamic_cast<F_*>(this)->getrepresentation(focusindex);
+                    if(w)
+                        w->Focus();
                 }
             }
             
@@ -352,17 +403,71 @@ namespace Gorgon { namespace Widgets {
             W_ *selected = nullptr;
         };
         
-        template<class S_>
-        typename std::enable_if<TMP::FunctionTraits<decltype(&S_::size)>::IsMember, long>::type 
-        getsize(const S_ &storage) {
-            return storage.size();
-        }
+        template<class T_, class W_, class S_, class F_>
+        class LBSTR_STLVector {
+        public:
+            using Storage = S_;
+            
+            void Add(T_ val) {
+                storage.push_back(val);
+                
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
+            template<class... A_>
+            void Add(T_ val, A_&& ...rest) {
+                storage.push_back(val);
+                
+                Add(std::forward<A_>(rest)...);
+            }
+            
+            //insert, remove, move
+            
+            /**
+             * @name Iteration 
+             * 
+             * These functions allow iteration of the listbox. If 
+             * the contents are changed through these functions, 
+             * you must call Refresh manually.
+             * 
+             * @{
+             */
+            auto begin() {
+                return storage.begin();
+            }
+            
+            auto begin() const {
+                return storage.begin();
+            }
+            
+            auto end() {
+                return storage.end();
+            }
+            
+            auto end() const {
+                return storage.end();
+            }
+            
+            /// @}
         
-        template<class S_>
-        typename std::enable_if<TMP::FunctionTraits<decltype(&S_::GetCount)>::IsMember, long>::type
-        getsize(const S_ &storage) {
-            return storage.GetCount();
-        }
+        protected:
+            LBSTR_STLVector() {}
+            virtual ~LBSTR_STLVector() {}
+            
+            long getsize() const {
+                return storage.size();
+            }
+            
+            T_ &getelm(long index) {
+                return storage[index];
+            }
+            
+            const T_ &getelm(long index) const {
+                return storage[index];
+            }
+            
+            Storage storage;
+        };
     }
     /// @endcond
     
@@ -384,8 +489,6 @@ namespace Gorgon { namespace Widgets {
      * *Template parameters*
      * 
      * T_ is the stored data type. 
-     * 
-     * S_ is the storage for T_.
      * 
      * W_ is the widget that will be used to represent items.
      * 
@@ -416,6 +519,15 @@ namespace Gorgon { namespace Widgets {
      * as ListboxBase will be derived from TRF_. Finally, TRF_ should have a 
      * protected constructor/destructor.
      * 
+     * STR_ is the storage traits for T_. This class should contain typedef
+     * Storage which is the storage. It should have functions that allows it
+     * to handle Add/Remove/Insert/Move/getsize/getelm functions. Only 
+     * getsize and getelm functions are mandatory. getelm should take a long
+     * index and should return the stored value. GetSize should return long.
+     * Additionally, this function should have a protected storage member
+     * named storage. After every modifying operation, this function should
+     * call Refresh. Ideally, this class should contain 
+     * 
      * useisvisible controls if elements can be hidden. If this is true, TR_
      * should have IsVisible function returning bool. This parameter will
      * slowdown listbox considerably when many items are stored as each item
@@ -428,7 +540,8 @@ namespace Gorgon { namespace Widgets {
      * is set to internal::LBSELTR_None.
      * This class should support click and toggle functions both taking long 
      * index, const T_ & value, W_ &widget. Click function will be called when
-     * the user uses arrow keys to select an item.
+     * the user uses arrow keys to select an item. It is this classes
+     * responsibility to handle actual click and toggle functions.
      * apply function should apply selection related traits to the widget taking
      * long index, W_ &widget, const T_ & value. Any item that is benched will
      * be applied to as well with an index of -1.
@@ -446,35 +559,42 @@ namespace Gorgon { namespace Widgets {
      * Index parameters should be long int. These functions should be protected
      * as ListboxBase will be derived from SELTR_. Finally, SELTR_ should have a 
      * protected constructor/destructor.
+     * reapplyfocus function should apply the focus to the focused element. This
+     * function is called after listbox receives focus.
      * 
      * TW_ function should take a T_ and set this to its W_ representation. 
      * 
      * WT_ should read the data from W_ and set it to T_.
      */
     template<
-        class T_, class S_, class W_, class TR_, class TRF_, 
-        bool useisvisible = false, class SELTR_ = internal::LBSELTR_Single<T_, W_>,
+        class T_, class W_, class TR_, class TRF_, 
+        class STR_, class SELTR_, 
+        bool useisvisible = false,
         void (*TW_)(const T_ &, W_ &) = internal::SetTextUsingFrom<T_, W_>,
         void (*WT_)(W_ &, T_ &)       = internal::GetTextUsingTo  <T_, W_>
     >
-    class ListboxBase : public UI::ComponentStackWidget, public ListBase<T_, W_>, public TRF_, public SELTR_ {
+    class ListboxBase : public UI::ComponentStackWidget, 
+                        public ListBase<T_, W_>, 
+                        public TRF_, 
+                        public SELTR_, public STR_ 
+    {
     public:
         
         /// Returns the item at the given point. This operator will not perform
         /// bounds checking.
         virtual T_ &operator[](long index) override {
-            return storage[index];
+            return this->getelm(index);
         }
 
         /// Returns the item at the given point. This operator will not perform
         /// bounds checking.
         virtual const T_ &operator[](long index) const override {
-            return storage[index];
+            return this->getelm(index);
         }
         
         /// Returns the number of elements in the list.
         virtual long GetCount() const override {
-            return internal::getsize(storage);
+            return this->STR_::getsize();
         }
         
         /// For internal use.
@@ -483,7 +603,7 @@ namespace Gorgon { namespace Widgets {
         /// visual representation. This is not an edge case, any item that is not
         /// in view will most likely not have a representation.
         virtual W_ *getrepresentation(long index) override {
-            return nullptr;
+            return widgetlist.count(index) ? widgetlist[index] : nullptr;
         }
         
         /// For internal use.
@@ -494,34 +614,156 @@ namespace Gorgon { namespace Widgets {
             return nullptr;
         }
         
-        auto begin() {
-            return storage.begin();
+        virtual long getindex(const W_ &widget) override {
+            return indexes.count(&widget) ? indexes[&widget] : -1;
         }
         
-        auto begin() const {
-            return storage.begin();
+        virtual void Refresh() override {
+            if(!contents.IsReady())
+                return;
+
+            auto elms = this->STR_::getsize();
+            
+            std::map<UI::ComponentTemplate::Tag, int> tagcounts;
+            
+            //remove all first
+            for(auto &p : widgetlist) {
+                p.second->Remove();
+            }
+            indexes.clear();
+            widgetlist.clear();
+            
+            auto b = stack.TagBounds(UI::ComponentTemplate::ViewPortTag);
+            if(b.Width() == 0 || b.Height() == 0)
+                b = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
+            
+            int y = 0;
+            long i = int(scrolloffset), c = 0;
+            int totalh = 0;
+            while(y < b.Height() && i < elms) {
+                auto &v   = this->getelm(i);
+                auto  tr  = this->access(i);
+                auto  tag = tr.Tag(v, {0, (int)i}, {1, (int)elms});
+                
+                auto w = getwidget(tag, tagcounts[tag]++);
+                
+                if(w == nullptr)
+                    return;
+
+                TW_(v, *w);
+                
+                contents.Add(*w);
+                tr.Apply(*w, v, {0, (int)i}, {1, (int)elms});
+                this->SELTR_::apply(i, *w, v);
+                
+                if(y == 0) {
+                    y = -int(std::round(w->GetHeight() * (scrolloffset - int(scrolloffset))));
+                }
+                
+                indexes.insert({w, i});
+                widgetlist.insert({i, w});
+                
+                w->Move(0, y);
+                
+                //to be moved to resize
+                w->SetWidth(b.Width());
+                auto advance = w->GetHeight() + stack.GetTemplate().GetSpacing() / 2;
+                y += advance;
+                totalh += advance;
+                i++;
+                c++;
+            }
+            
+            auto scroller = dynamic_cast<VScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
+            if(scroller) {
+                scroller->SetMaximum(elms);
+                
+                if(totalh == 0)
+                    scroller->Range = 0;
+                else
+                    scroller->Range = b.Height() / (float(totalh) / c);
+            }
         }
         
-        auto end() {
-            return storage.end();
-        }
-        
-        auto end() const {
-            return storage.end();
-        }
         
     protected:
         ListboxBase(const UI::Template &temp) : 
-            ComponentStackWidget(temp)
+            ComponentStackWidget(temp, { 
+                { UI::ComponentTemplate::ItemTag   , {}},
+                { UI::ComponentTemplate::HeaderTag , {}},
+                { UI::ComponentTemplate::SpacerTag , {}},
+                { UI::ComponentTemplate::VScrollTag, 
+                    std::bind(&ListboxBase::createvscroll, this, std::placeholders::_1)
+                },
+            } )
         {
             stack.HandleMouse();
+            stack.SetClickEvent([&](auto, auto, auto) {
+                Focus();
+            });
+            contents.SetLayer(stack.GetLayerOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag)));
+            stack.AddCondition(UI::ComponentCondition::VScroll);
         }
         
-        ~ListboxBase() { }
+        ~ListboxBase() {
+            for(auto &p : widgets) {
+                p.second.Destroy();
+            }
+        }
         
-        S_ storage;
+        //this will return the widget with the tag and the order (not index). If the requested
+        //widget does not exists, it will be created
+        W_ *getwidget(UI::ComponentTemplate::Tag tag, int order) {
+            auto temp = stack.GetTemplate(tag);
+            
+            if(temp == nullptr)
+                return nullptr;
+            
+            auto &ws = widgets[tag];
+            
+            while(ws.GetSize() <= order) {
+                auto &w = ws.AddNew(*temp);
+                this->TRF_::prepare(w);
+                this->SELTR_::prepare(w);
+            }
+            
+            return &ws[order];
+        }
         
-        Containers::Collection<W_> widgets;
+        virtual void focused() override {
+            ComponentStackWidget::focused();
+            this->reapplyfocus();
+        }
+
+        virtual void focuslost() override {
+            ComponentStackWidget::focuslost();
+            contents.RemoveFocus();
+        }
+        
+        UI::Widget *createvscroll(const UI::Template &temp) {
+            auto vscroller = new VScroller<float>(temp);
+            vscroller->Maximum = this->STR_::getsize();
+            vscroller->Range   = 1;
+            *vscroller         = scrolloffset;
+            //vscroller->SetSmoothChangeSpeed(scrollspeed);
+            vscroller->ValueChanged.Register(*this, &ListboxBase::scrollto);
+            
+            return vscroller;
+        }
+        
+        void scrollto(float target) {
+            if(scrolloffset == target)
+                return;
+            
+            scrolloffset = target;
+            Refresh();
+        }
+        
+        std::map<UI::ComponentTemplate::Tag, Containers::Collection<W_>> widgets;
+        std::map<const W_*, long> indexes;
+        std::map<long, W_*> widgetlist;
+        UI::LayerAdapter contents;
+        float scrolloffset = 0.f;
     };
     
     /**
@@ -531,19 +773,27 @@ namespace Gorgon { namespace Widgets {
      */
     template<class T_>
     class SimpleListbox : 
-        public ListboxBase<T_, 
-            std::vector<T_>, ListItem, 
+        public ListboxBase<T_, ListItem, 
             internal::LBTR_blank <T_, ListItem>,
-            internal::LBTRF_blank<T_, ListItem>
+            internal::LBTRF_blank<T_, ListItem, SimpleListbox<T_>>,
+            internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, SimpleListbox<T_>>,
+            internal::LBSELTR_Single<T_, ListItem, SimpleListbox<T_>>
         >
     {
-        using Base = ListboxBase<T_, 
-            std::vector<T_>, ListItem, 
+        using Base = ListboxBase<T_, ListItem, 
             internal::LBTR_blank <T_, ListItem>,
-            internal::LBTRF_blank<T_, ListItem>
+            internal::LBTRF_blank<T_, ListItem, SimpleListbox<T_>>,
+            internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, SimpleListbox<T_>>,
+            internal::LBSELTR_Single<T_, ListItem, SimpleListbox<T_>>
         >;
+        
+        friend internal::LBTR_blank <T_, ListItem>;
+        friend internal::LBTRF_blank<T_, ListItem, SimpleListbox<T_>>;
+        friend internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, SimpleListbox<T_>>;
+        friend internal::LBSELTR_Single<T_, ListItem, SimpleListbox<T_>>;
+        
     public:
-        SimpleListbox() : Base(Registry::Active()[Registry::Checkbox_Regular]) {
+        explicit SimpleListbox(Registry::TemplateType temp = Registry::Listbox_Regular) : Base(Registry::Active()[temp]) {
         }
         
         virtual bool Activate() {

@@ -3,7 +3,7 @@
 #include "../Graphics/Font.h"
 #include "../Time.h"
 #include "../Config.h"
-#include "WidgetBase.h"
+#include "Widget.h"
 
 #include "math.h"
 
@@ -34,7 +34,7 @@ namespace Gorgon { namespace UI {
         return true;
     }
 
-    ComponentStack::ComponentStack(const Template& temp, Geometry::Size size, std::map<ComponentTemplate::Tag, std::function<WidgetBase *(const Template &)>> generators) : 
+    ComponentStack::ComponentStack(const Template& temp, Geometry::Size size, std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> generators) : 
         ConditionChanged(this),
         size(size),
         temp(temp),
@@ -1105,6 +1105,7 @@ namespace Gorgon { namespace UI {
             }
         }
         
+        
         //translate the given coordinate to local coordinates
         auto pnt = location;
         if(!relative)
@@ -1115,15 +1116,20 @@ namespace Gorgon { namespace UI {
             //default is position modification, if the mode is not valid
             //for mouse coordinates, this will be used.
             default: {
-                if(ct.GetPositioning() == ct.Absolute || ct.GetPositioning() == ct.AbsoluteSliding) {                    
+                if(ct.GetPositioning() == ct.Absolute || ct.GetPositioning() == ct.AbsoluteSliding) {   
                     //get the rate
                     val[0] = float(pnt.X) / bounds.Width();
                     val[1] = float(pnt.Y) / bounds.Height();
                     
                     //if x or y is effected, this will adjust the value accordingly
-                    if(ct.GetValueModification() == ContainerTemplate::ModifyX)
+                    if(ct.GetValueModification() == ContainerTemplate::ModifyX) {
+                        if(bounds.Width() == 0)
+                            return {0, 0, 0, 0};
                         val[1] = 0;
+                    }
                     else if(ct.GetValueModification() == ContainerTemplate::ModifyY) {
+                        if(bounds.Height() == 0)
+                            return {0, 0, 0, 0};
                         val[0] = val[1];
                         val[1] = 0;
                     }
@@ -1171,6 +1177,8 @@ namespace Gorgon { namespace UI {
                 //scale it to 0-1
                 val[0] = float(val[0]) / bounds.Width();
                 val[1] = float(val[1]) / bounds.Height();
+                
+                //TODO nan check
 
                 break;
         }
@@ -3585,7 +3593,21 @@ realign:
         }
     }
     
-    WidgetBase *ComponentStack::GetWidget(ComponentTemplate::Tag tag) {
+    const Template *ComponentStack::GetTemplate(ComponentTemplate::Tag tag) {
+        auto comp = gettag(tag);
+        
+        if(comp == nullptr)
+            return nullptr;
+        
+        auto temp = dynamic_cast<const PlaceholderTemplate*>(&comp->GetTemplate());
+        
+        if(!temp->HasTemplate())
+            return nullptr;
+        
+        return &temp->GetTemplate();
+    }
+    
+    Widget *ComponentStack::GetWidget(ComponentTemplate::Tag tag) {
         auto comp = gettag(tag);
         
         if(comp == nullptr)

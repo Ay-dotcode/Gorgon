@@ -126,7 +126,7 @@ int main() {
     });
     //blank.CreateOrganizer<Gorgon::UI::Organizers::List>().SetSpacing(Gorgon::Widgets::Registry::Active().GetSpacing());
 
-    auto addme = [&](auto &pnl, UI::WidgetBase &w) {
+    auto addme = [&](auto &pnl, UI::Widget &w) {
         Geometry::Point offsetx = {Widgets::Registry::Active().GetSpacing(), 0};
         if(pnl.UI::WidgetContainer::begin() != pnl.UI::WidgetContainer::end()) {
             auto &last = *(pnl.UI::WidgetContainer::end() - 1);
@@ -163,12 +163,22 @@ int main() {
     Gorgon::Widgets::Sizefbox sizef;
     sizef.ChangedEvent.Register([&] {
         std::cout << "size f changed " << sizef.GetText();
-
     });
+    
+    Widgets::SimpleListbox<std::string> list;
+    list.Add("5");
+    list.Add("Âj");
+    list.Add("9");
+    list.Add("Hello", "World", "You", "are", "welcome", "to", "use", "the", "Gorgon", "Library");
+    list.ChangedEvent.Register([&list]{
+        std::cout<<list.GetSelectedItem()<<std::endl;
+    });
+    
     app.wind.Add(blank);
     addme(blank, btn);
     addme(blank, icnbtn);
     addme(blank, icnbtn2);
+    addme(blank, list);
     addme(blank, icnbtn3);
     addme(blank, l);
     addme(blank, radio);
@@ -182,9 +192,6 @@ int main() {
     addme(blank, scroll2);
     addme(blank, sizef);
     
-    Widgets::SimpleListbox<int> list;
-    list.SetSelectionFollowsFocus(false);
-
     
 
     /*Widgets::Progressor<std::string, StringDiv, StringVal, Gorgon::TextualProperty> bar2;

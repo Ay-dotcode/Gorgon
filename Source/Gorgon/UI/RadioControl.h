@@ -178,7 +178,7 @@ namespace Gorgon { namespace UI {
             
             int col = 0;
             for(auto p : elements) {
-                auto w = dynamic_cast<WidgetBase *>(&p.second);
+                auto w = dynamic_cast<Widget*>(&p.second);
                 
                 if(!w)
                     continue;

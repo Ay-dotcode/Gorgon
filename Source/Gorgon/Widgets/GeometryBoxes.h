@@ -17,7 +17,7 @@ namespace Gorgon { namespace Widgets {
     public:
         using Inputbox::operator=;
         
-        using WidgetBase::Move;
+        using Widget::Move;
 
         /// Initializes the inputbox
         explicit Pointbox(const UI::Template &temp, Geometry::Point value = {0, 0}) : Inputbox(temp, value) {
@@ -49,7 +49,7 @@ namespace Gorgon { namespace Widgets {
     public:
         using Inputbox::operator=;
         
-        using WidgetBase::Move;
+        using Widget::Move;
 
 
         /// Initializes the inputbox
@@ -83,7 +83,7 @@ namespace Gorgon { namespace Widgets {
     public:
         using Inputbox::operator=;
         
-        using WidgetBase::Move;
+        using Widget::Move;
 
 
         /// Initializes the inputbox
@@ -115,7 +115,7 @@ namespace Gorgon { namespace Widgets {
     public:
         using Inputbox::operator=;
 
-        using WidgetBase::Move;
+        using Widget::Move;
 
 
         /// Initializes the inputbox

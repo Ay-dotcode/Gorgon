@@ -12,7 +12,7 @@
 
 namespace Gorgon { namespace UI {
     
-    class WidgetBase;
+    class Widget;
 
     /**
      * Component stack is the backbone of a widget. It manages the components inside the 
@@ -28,7 +28,7 @@ namespace Gorgon { namespace UI {
         /// Initializes a component stack with the given size. Generators are used to create widgets
         /// for the placeholders. If a function is empty or returns nullptr, neither a substack nor a
         /// widget will be placed there.
-        ComponentStack(const Template &temp, Geometry::Size size, std::map<ComponentTemplate::Tag, std::function<WidgetBase *(const Template &)>> generators = {});
+        ComponentStack(const Template &temp, Geometry::Size size, std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> generators = {});
         
         /// Initiates a component stack with default size
         explicit ComponentStack(const Template &temp) : ComponentStack(temp, temp.GetSize()) 
@@ -252,9 +252,12 @@ namespace Gorgon { namespace UI {
             return temp;
         }
         
+        /// Returns the template used by the component with given tag
+        const Template *GetTemplate(ComponentTemplate::Tag tag);
+        
         /// Returns the widget associated with the tag. If such widget does not exists
         /// nullptr will be returned instead.
-        WidgetBase *GetWidget(ComponentTemplate::Tag tag);
+        Widget *GetWidget(ComponentTemplate::Tag tag);
 
         /// Updates the layout of the component stack
         virtual void Update() override { Update(false); }
@@ -713,8 +716,8 @@ namespace Gorgon { namespace UI {
         std::function<void()> update_fn;
         std::function<void()> render_fn;
         
-        std::map<ComponentTemplate::Tag, std::function<WidgetBase *(const Template &)>> widgetgenerators;
-        Containers::Hashmap<const ComponentTemplate *, WidgetBase> widgets;
+        std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> widgetgenerators;
+        Containers::Hashmap<const ComponentTemplate *, Widget> widgets;
         
         std::function<std::string(int ind, ComponentTemplate::DataEffect, const std::array<float, 4> &value)> valuetotext;
         

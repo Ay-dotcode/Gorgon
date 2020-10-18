@@ -356,8 +356,11 @@ namespace Gorgon { namespace Widgets {
             auto v = DIV_(val, min, actualmax());
             if(v < 0)
                 val = min;
-            if(v > 1)
+            else if(v > 1)
                 val = actualmax();
+            else if(!(v <= 1)) { // in case of nan
+                val = 0;
+            }
             
             if(value != val) {
                 value = val;

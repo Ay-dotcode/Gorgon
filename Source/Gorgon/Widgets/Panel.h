@@ -18,9 +18,9 @@ namespace Gorgon { namespace Widgets {
         
         explicit Panel(Registry::TemplateType type = Registry::Panel_Regular) : Panel(Registry::Active()[type]) { }
 
-        using WidgetBase::Resize;
+        using Widget::Resize;
         
-        using WidgetBase::Remove;
+        using Widget::Remove;
         
         using WidgetContainer::Remove;
         
@@ -148,13 +148,13 @@ namespace Gorgon { namespace Widgets {
             return scrollspeed != 0;
         }
         
-        using WidgetBase::EnsureVisible;
+        using Widget::EnsureVisible;
         
-        bool EnsureVisible(const UI::WidgetBase &widget) override;
+        bool EnsureVisible(const UI::Widget &widget) override;
 
-        using WidgetBase::Enable;
-        using WidgetBase::Disable;
-        using WidgetBase::ToggleEnabled;
+        using Widget::Enable;
+        using Widget::Disable;
+        using Widget::ToggleEnabled;
 
         virtual void SetEnabled(bool value) override {
             if(value != IsEnabled()) {
@@ -178,7 +178,7 @@ namespace Gorgon { namespace Widgets {
         
         void focuschanged() override;
         
-        virtual void childboundschanged(WidgetBase *source) override;
+        virtual void childboundschanged(Widget *source) override;
         
         void updatecontent();
         
@@ -214,15 +214,15 @@ namespace Gorgon { namespace Widgets {
                 distributeparentenabled(state);
         }
         
-        virtual UI::WidgetBase *createvscroll(const UI::Template &temp);
+        virtual UI::Widget *createvscroll(const UI::Template &temp);
         
-        virtual UI::WidgetBase *createhscroll(const UI::Template &temp);
+        virtual UI::Widget *createhscroll(const UI::Template &temp);
         
         int overscroll = 0;
         bool scrollclipped = true;
         Geometry::Point scrolldist = {80, 45};
         Geometry::Point scrolloffset = {0, 0};
-        int scrollspeed = 250;
+        int scrollspeed = 500;
         Geometry::Point target = {0, 0};
         bool isscrolling = false;
         float scrollleftover = 0;

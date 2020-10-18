@@ -79,6 +79,8 @@ namespace Gorgon { namespace Widgets {
         stack.AddCondition(UI::ComponentCondition::VScroll);
 
         SetSmoothScrollSpeed(scrollspeed);
+        
+        scrolldist = {temp.GetWidth()/4, temp.GetHeight()/4};
     }
 
     bool Panel::Activate() {
@@ -172,12 +174,12 @@ namespace Gorgon { namespace Widgets {
     void Panel::focused() {
         if(!HasFocusedWidget())
             FocusFirst();
-        WidgetBase::focused();
+        Widget::focused();
     }
     
     void Panel::focuslost() {
         RemoveFocus();
-        WidgetBase::focuslost();
+        Widget::focuslost();
     }
     
     Gorgon::Layer &Panel::getlayer() {
@@ -305,7 +307,7 @@ namespace Gorgon { namespace Widgets {
         return scrolloffset;
     }
     
-    void Panel::childboundschanged(WidgetBase *source) {
+    void Panel::childboundschanged(Widget *source) {
         WidgetContainer::childboundschanged(source);
         
         if(updaterequired)
@@ -407,7 +409,7 @@ namespace Gorgon { namespace Widgets {
             stack.SetValueTransitionSpeed({(float)value / s.Width, (float)value / s.Height, 0, 0});
     }
     
-    bool Panel::EnsureVisible(const UI::WidgetBase &widget) {
+    bool Panel::EnsureVisible(const UI::Widget &widget) {
         if(widgets.Find(widget) == widgets.end())
             return false;
         
@@ -462,7 +464,7 @@ namespace Gorgon { namespace Widgets {
         hscroll = horizontal;
     }
     
-    UI::WidgetBase* Panel::createvscroll(const UI::Template& temp) {
+    UI::Widget* Panel::createvscroll(const UI::Template& temp) {
         auto vscroller = new VScrollbar(temp);
         vscroller->Maximum = stack.TagBounds(UI::ComponentTemplate::ContentsTag).Height();
         vscroller->Range   = GetInteriorSize().Height;
@@ -473,7 +475,7 @@ namespace Gorgon { namespace Widgets {
         return vscroller;
     }
     
-    UI::WidgetBase* Panel::createhscroll(const UI::Template& temp) {
+    UI::Widget* Panel::createhscroll(const UI::Template& temp) {
         auto hscroller = new HScrollbar(temp);
         hscroller->Maximum = stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width();
         hscroller->Range   = GetInteriorSize().Width;

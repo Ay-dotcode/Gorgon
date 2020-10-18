@@ -22,12 +22,12 @@ namespace Gorgon { namespace UI {
             SetFocusStrategy(Deny);
         }
         
-        virtual bool EnsureVisible(const Gorgon::UI::WidgetBase &widget) override {
+        virtual bool EnsureVisible(const Gorgon::UI::Widget &widget) override {
             return false;
         }
         
         virtual Geometry::Size GetInteriorSize() const override {
-            return base->GetSize();
+            return base->GetCalculatedSize();
         }
         
         virtual bool ResizeInterior(Geometry::Size size) override {
@@ -38,6 +38,10 @@ namespace Gorgon { namespace UI {
         
         virtual bool IsVisible() const override {
             return base->IsVisible();
+        }
+        
+        bool IsReady() const {
+            return base != nullptr;
         }
         
         void SetLayer(Gorgon::Layer &value) {

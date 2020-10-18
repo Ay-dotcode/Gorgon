@@ -14,8 +14,8 @@ SET(Local
 	UI.cpp
 	TwoStateControl.h
 	Validators.h
-	WidgetBase.h
-	WidgetBase.cpp
+	Widget.h
+	Widget.cpp
 	WidgetContainer.h
 	WidgetContainer.cpp
 	Window.h
