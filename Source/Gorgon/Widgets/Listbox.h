@@ -403,6 +403,148 @@ namespace Gorgon { namespace Widgets {
             W_ *selected = nullptr;
         };
         
+        //This class allows single selection. The selected item will
+        //follow the focus by default. If desired, this can be changed
+        template<class T_, class W_, class F_>
+        class LBSELTR_Multi {
+        public:
+            
+            /*
+            ClearSelection
+            SetSelection(...)
+            AddToSelection(...)
+            IsSelected
+            GetSelectionCount
+            Selection -> subclass allows for(auto item : list.Selection)
+            SelectedIndexes -> subclass allows for(auto index : list.SelectedIndexes)
+            RemoveFromSelection
+            SelectionStrategy(Click toggles/Ctrl select)
+            SelectAll
+            */
+            
+            
+            Event<LBSELTR_Multi, long> ChangedEvent = Event<LBSELTR_Multi, long, bool>{this};
+            
+        protected:
+            LBSELTR_Multi() {
+            }
+            
+            virtual ~LBSELTR_Multi() { }
+            
+            void sel_clicked(long index, W_ &w) {
+                if(focusindex == index)
+                    return;
+                
+                if(dynamic_cast<UI::Widget*>(this)->IsFocused())
+                    w.Focus();
+                
+                focusindex = index;
+                
+                dynamic_cast<UI::Widget*>(this)->Focus();
+            }
+            
+            void sel_toggled(long index, W_ &w) {
+                /*if(selectedindex == index || focusonly)
+                    return;
+                
+                if(selected)
+                    selected->SetSelected(false);
+                
+                w.SetSelected(true);
+                selectedindex = index;
+                selected = &w;
+                
+                ChangedEvent(index);*/
+            }
+            
+            void sel_apply(long index, W_ &w, const T_ &) {
+                if(index == focusindex) {
+                    w.Focus();
+                }
+                else if(w.IsFocused()) {
+                    w.Defocus();
+                }
+                
+                /*if(index == selectedindex) {
+                    w.SetSelected(true);
+                    selected = &w;
+                }
+                else {
+                    w.SetSelected(false);
+                    
+                    if(&w == selected)
+                        selected = nullptr;
+                }*/
+            }
+            
+            void sel_prepare(W_ &w) {
+                w.ClickEvent.Register([&w, this] {
+                    sel_clicked(dynamic_cast<F_*>(this)->getindex(w), w);
+                });
+                w.ToggleEvent.Register([&w, this] {
+                    sel_toggled(dynamic_cast<F_*>(this)->getindex(w), w);
+                });
+            }
+            
+            void sel_insert(long index, long count) { 
+                if(index <= focusindex)
+                    focusindex += count;
+                
+                //update selection
+            }
+            
+            void sel_move(long index, long target) { 
+                //move triggers apply to both indexes
+                
+                if(index == focusindex) {
+                    focusindex = target;
+                }
+                else if(index > focusindex && target <= focusindex) {
+                    focusindex++;
+                }
+                else if(index < focusindex && target > focusindex) {
+                    focusindex--;
+                }
+                
+                //update selection
+            }
+            
+            void sel_remove(long index, long count) { 
+                //removed items will be repurposed using apply,
+                if(index <= focusindex) {
+                    if(index+count > focusindex) {
+                        focusindex = -1;
+                        ChangedEvent(-1);
+                    }
+                    else {
+                        focusindex -= count;
+                    }
+                }
+                
+                //update selection
+            }
+            
+            void sel_destroy(W_ &w) {
+                //update selection
+                
+                if(w.IsFocused()) {
+                    focusindex = -1;
+                    w.RemoveFocus();
+                }
+            }
+            
+            void reapplyfocus() {
+                if(focusindex != -1) {
+                    auto w = dynamic_cast<F_*>(this)->getrepresentation(focusindex);
+                    if(w)
+                        w->Focus();
+                }
+            }
+            
+            long focusindex = -1;
+            std::set<long> selected;
+        };
+        
         template<class T_, class W_, class S_, class F_>
         class LBSTR_STLVector {
         public:
@@ -758,12 +900,10 @@ namespace Gorgon { namespace Widgets {
             Refresh();
         }
         
-        
-        /// Scrolls the contents an additional amount.
+        /// Scrolls the contents an additional amount of items.
         void ScrollBy(float y) {
             ScrollTo(ScrollOffset() + y);
         }
-
         
         /// Returns the current scroll offset.
         float ScrollOffset() const {
@@ -1016,6 +1156,12 @@ namespace Gorgon { namespace Widgets {
         
         virtual bool Activate() {
             return false;
+        }
+        
+        SimpleListbox &operator =(const T_ value) {
+            this->SetSelection(value);
+            
+            return *this;
         }
         
         using Base::ComponentStackWidget::Widget::Remove;
