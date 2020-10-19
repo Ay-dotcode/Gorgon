@@ -173,6 +173,7 @@ int main() {
     list.SetSelectedIndex(3);
     list.Insert(2, "!");
     list.MoveBefore(2, 5);
+    list.SetOverscroll(2);
     list.ChangedEvent.Register([&list](long index) {
         if(index == -1)
             return;

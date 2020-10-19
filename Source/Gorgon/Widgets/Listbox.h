@@ -650,27 +650,6 @@ namespace Gorgon { namespace Widgets {
             return this->STR_::getsize();
         }
         
-        /// For internal use.
-        /// Returns the widget used to represent the item at the given index. This
-        /// function will return nullptr if the index does not currently have a
-        /// visual representation. This is not an edge case, any item that is not
-        /// in view will most likely not have a representation.
-        virtual W_ *getrepresentation(long index) override {
-            return widgetlist.count(index) ? widgetlist[index] : nullptr;
-        }
-        
-        /// For internal use.
-        /// Returns the first widget used to represent any item at within the 
-        /// listbox. This function will return nullptr if there are no items in the
-        /// list.
-        virtual W_ *getrepresentation() override {
-            return nullptr;
-        }
-        
-        virtual long getindex(const W_ &widget) override {
-            return indexes.count(&widget) ? indexes[&widget] : -1;
-        }
-        
         virtual void Refresh() override {
             if(!contents.IsReady())
                 return;
@@ -733,13 +712,124 @@ namespace Gorgon { namespace Widgets {
             
             auto scroller = dynamic_cast<VScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
             if(scroller) {
-                scroller->SetMaximum(elms);
+                scroller->SetMaximum(elms + overscroll);
                 
                 if(totalh == 0)
-                    scroller->Range = 0;
+                    maxdisplay = 0;
                 else
-                    scroller->Range = b.Height() / (float(totalh) / c);
+                    maxdisplay = b.Height() / (float(totalh) / c);
+                
+                scroller->Range = maxdisplay;
             }
+        }
+        
+        /// Scrolls the contents of the listbox so that the it will start displaying
+        /// items from the given location in list items. This function takes columns
+        /// into account.
+        void ScrollTo(float y) { 
+            float max = this->STR_::getsize() + overscroll - maxdisplay;
+            
+            if(y < 0)
+                y = 0;
+            
+            if(y > max)
+                y = max;
+            
+            if(target == y)
+                return;
+            
+            target = y;
+            
+            if(scrollspeed == 0) {
+                scrolloffset = y;
+                Refresh();
+            }
+            else {
+                if(!isscrolling) {
+                    stack.SetFrameEvent(std::bind(&ListboxBase::updatescroll, this));
+                    isscrolling = true;
+                }
+            }
+            
+            auto scroller = dynamic_cast<VScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
+            if(scroller)
+                *scroller = target;
+            
+            Refresh();
+        }
+        
+        
+        /// Scrolls the contents an additional amount.
+        void ScrollBy(float y) {
+            ScrollTo(ScrollOffset() + y);
+        }
+
+        
+        /// Returns the current scroll offset.
+        float ScrollOffset() const {
+            return scrolloffset;
+        }
+        
+        /// Sets the amount of extra scrolling distance after the bottom-most
+        /// widget is completely visible in pixels. Default is 0. Does not
+        /// apply if everything is visible.
+        void SetOverscroll(int value) {
+            if(overscroll == value)
+                return;
+            
+            overscroll = value;
+            
+            auto scroller = dynamic_cast<VScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
+            if(scroller)
+                scroller->SetMaximum(this->STR_::getsize() + overscroll);
+        }
+        
+        /// Returns the amount of extra scrolling distance after the bottom-most
+        /// widget is completely visible in pixels.
+        int GetOverscroll() const {
+            return overscroll;
+        }
+        
+        /// Sets the horizontal scroll distance per click in pixels. Default depends
+        /// on the default size of the panel.
+        void SetScrollDistance(int vert) {
+            scrolldist = vert;
+        }
+        
+        /// Returns the scroll distance per click
+        int GetScrollDistance() const {
+            return scrolldist;
+        }
+        
+        /// Disables smooth scrolling of the panel
+        void DisableSmoothScroll() {
+            SetSmoothScrollSpeed(0);
+        }
+        
+        /// Adjusts the smooth scrolling speed of the panel. Given value is
+        /// in items per second, default value is 20.
+        void SetSmoothScrollSpeed(int value) {
+            scrollspeed = value;
+            
+            auto scroller = dynamic_cast<VScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
+            if(scroller)
+                scroller->SetSmoothChangeSpeed(scrollspeed);
+            
+            auto elms = this->STR_::getsize();
+            
+            
+            stack.SetValueTransitionSpeed({elms > 0 ? float(value)/elms : 0, 0, 0, 0});
+        }
+        
+        /// Returns the smooth scrolling speed of the panel. If smooth scroll
+        /// is disabled, this value will be 0.
+        int GetSmoothScrollSpeed() const {
+            return scrollspeed;
+        }
+        
+        /// Returns if the smooth scroll is enabled.
+        bool IsSmoothScrollEnabled() const {
+            return scrollspeed != 0;
         }
         
         
@@ -755,9 +845,21 @@ namespace Gorgon { namespace Widgets {
             } )
         {
             stack.HandleMouse();
+            
             stack.SetClickEvent([&](auto, auto, auto) {
                 Focus();
             });
+            
+            stack.SetOtherMouseEvent([this](UI::ComponentTemplate::Tag tag, Input::Mouse::EventType type, Geometry::Point, float amount) {
+                if(type == Input::Mouse::EventType::Scroll_Vert) {
+                    ScrollBy(-amount*scrolldist);
+                    
+                    return true;
+                }
+                
+                return false;
+            });
+            
             contents.SetLayer(stack.GetLayerOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag)));
             stack.AddCondition(UI::ComponentCondition::VScroll);
         }
@@ -799,21 +901,74 @@ namespace Gorgon { namespace Widgets {
         
         UI::Widget *createvscroll(const UI::Template &temp) {
             auto vscroller = new VScroller<float>(temp);
-            vscroller->Maximum = this->STR_::getsize();
-            vscroller->Range   = 1;
-            *vscroller         = scrolloffset;
-            //vscroller->SetSmoothChangeSpeed(scrollspeed);
-            vscroller->ValueChanged.Register(*this, &ListboxBase::scrollto);
+            vscroller->Maximum      = this->STR_::getsize();
+            vscroller->Range        = 1;
+            *vscroller              = scrolloffset;
+            vscroller->SmallChange  = scrolldist;
+            vscroller->ValueChanged.Register(*this, &ListboxBase::ScrollTo);
             
             return vscroller;
         }
         
-        void scrollto(float target) {
-            if(scrolloffset == target)
-                return;
+        void updatescroll() {
+            if(!isscrolling)
+                Utils::ASSERT_FALSE("This should not happen");
             
-            scrolloffset = target;
+            auto cur = scrolloffset;
+            
+            float dist = (float)scrollspeed/1000 * Time::DeltaTime();
+            
+            bool done = false;
+            
+            if(target < cur) {
+                if(cur - dist <= target) {
+                    cur = target;
+                }
+                else {
+                    cur -= dist;
+                }
+            }
+            else if(target > cur) {
+                if(cur + dist >= target) {
+                    cur = target;
+                }
+                else {
+                    cur += dist;
+                }
+            }
+            else {
+                done = true;
+            }                
+            
+            scrolloffset = cur;
+            
             Refresh();
+            
+            if(done) {
+                isscrolling = false;
+                stack.RemoveFrameEvent();
+            }
+        }
+        
+        /// For internal use.
+        /// Returns the widget used to represent the item at the given index. This
+        /// function will return nullptr if the index does not currently have a
+        /// visual representation. This is not an edge case, any item that is not
+        /// in view will most likely not have a representation.
+        virtual W_ *getrepresentation(long index) override {
+            return widgetlist.count(index) ? widgetlist[index] : nullptr;
+        }
+        
+        /// For internal use.
+        /// Returns the first widget used to represent any item at within the 
+        /// listbox. This function will return nullptr if there are no items in the
+        /// list.
+        virtual W_ *getrepresentation() override {
+            return nullptr;
+        }
+        
+        virtual long getindex(const W_ &widget) override {
+            return indexes.count(&widget) ? indexes[&widget] : -1;
         }
         
         std::map<UI::ComponentTemplate::Tag, Containers::Collection<W_>> widgets;
@@ -821,6 +976,12 @@ namespace Gorgon { namespace Widgets {
         std::map<long, W_*> widgetlist;
         UI::LayerAdapter contents;
         float scrolloffset = 0.f;
+        float target = 0.f;
+        int overscroll = 1;
+        int scrollspeed = 20;
+        int scrolldist  = 5;
+        bool isscrolling = false;
+        int maxdisplay = 0; //maximum elements that can be displayed
     };
     
     /**

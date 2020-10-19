@@ -108,17 +108,20 @@ namespace Gorgon { namespace Widgets {
             return overscroll;
         }
         
-        /// Sets the horizontal scroll distance per click in pixels. Default is 45px.
+        /// Sets the horizontal scroll distance per click in pixels. Default depends
+        /// on the default size of the panel.
         void SetScrollDistance(int vert) {
             scrolldist.Y = vert;
         }
         
-        /// Sets the scroll distance per click in pixels. Default is 80, 45px.
+        /// Sets the scroll distance per click in pixels. Default depends
+        /// on the default size of the panel.
         void SetScrollDistance(int hor, int vert) {
             SetScrollDistance({hor, vert});
         }
         
-        /// Sets the scroll distance per click in pixels. Default is 80, 45px.
+        /// Sets the scroll distance per click in pixels. Default depends
+        /// on the default size of the panel.
         void SetScrollDistance(Geometry::Point dist) {
             scrolldist = dist;
         }
