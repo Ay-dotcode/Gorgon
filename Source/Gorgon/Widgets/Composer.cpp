@@ -13,6 +13,9 @@ namespace Gorgon { namespace Widgets {
     }
     
     bool Composer::allowfocus() const {
+        if(CurrentFocusStrategy() == Deny)
+            return false;
+
         for(auto &w : widgets) {
             if(w.AllowFocus()) {
                 return true;

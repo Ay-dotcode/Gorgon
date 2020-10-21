@@ -77,7 +77,14 @@ namespace Gorgon { namespace Widgets {
         virtual bool IsEnabled() const override {
             return enabled;
         }
-        
+
+        /// This function should be called whenever a key is pressed or released.
+        virtual bool KeyEvent(Input::Key key, float state) override { return distributekeyevent(key, state, true); }
+
+        /// This function should be called whenever a character is received from
+        /// operating system.
+        virtual bool CharacterEvent(Char c) override { return distributecharevent(c); }
+
     protected:
         //ensure this object is derived
         Composer() {
