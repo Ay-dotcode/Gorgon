@@ -165,16 +165,18 @@ int main() {
         std::cout << "size f changed " << sizef.GetText();
     });
     
-    Widgets::SimpleListbox<std::string> list;
+    Widgets::MultiListbox<std::string> list;
     list.Add("5");
     list.Add("Âj");
     list.Add("9");
     list.Add("Hello", "World", "You", "are", "welcome", "to", "use", "the", "Gorgon", "Library");
-    list.SetSelectedIndex(3);
+    list.AddToSelection(3);
+    list.AddToSelection(1, 4);
     list.Insert(2, "!");
+    list.Remove(2);
     list.MoveBefore(2, 5);
     list.SetOverscroll(2);
-    list.ChangedEvent.Register([&list](long index) {
+    /*list.ChangedEvent.Register([&list](long index) {
         if(index == -1)
             return;
         
@@ -183,7 +185,7 @@ int main() {
             return;
         
         list.Remove(index - 1);
-    });
+    });*/
     
     app.wind.Add(blank);
     addme(blank, btn);

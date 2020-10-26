@@ -379,8 +379,6 @@ namespace Gorgon { namespace Widgets {
             void sel_destroy(W_ &w) {
                 if(&w == selected) {
                     selected = nullptr;
-                    selectedindex = -1;
-                    ChangedEvent(-1);
                 }
                 if(w.IsFocused()) {
                     focusindex = -1;
@@ -407,26 +405,121 @@ namespace Gorgon { namespace Widgets {
         //follow the focus by default. If desired, this can be changed
         template<class T_, class W_, class F_>
         class LBSELTR_Multi {
+            class SelectionIndexHelper {
+            public:
+                SelectionIndexHelper(std::vector<long> &v) : v(v) {
+                }
+                
+                auto begin() {
+                    return v.begin();
+                }
+                
+                auto begin() const {
+                    return v.begin();
+                }
+                
+                auto end() {
+                    return v.end();
+                }
+                
+                auto end() const {
+                    return v.end();
+                }
+                
+            private:
+                std::vector<long> &v;
+            };
         public:
             
+            /// Removes all items from the selection
+            void ClearSelection() {
+                selected.clear();
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
+            /// Replaces the selection by the given index
+            void SetSelection(long ind) {
+                SetSelection(std::vector<long>{ind});
+            };
+            
+            /// Replaces the selection by the given indices
+            void SetSelection(std::vector<long> indices) {
+                selected = std::move(indices);
+                std::sort(selected.begin(), selected.end());
+                
+                //ensure nothing is duplicated
+                selected.erase(std::unique(selected.begin(), selected.end()), selected.end());
+                
+                dynamic_cast<F_*>(this)->Refresh();
+            };
+            
+            /// Replaces the selection by the given indices
+            template<class ...P_>
+            void SetSelection(P_&&... elms) {
+                SetSelection({elms...});
+            }
+            
+            /// Adds the given index to the selection
+            void AddToSelection(long ind) {
+                AddToSelection(std::vector<long>{ind});
+            };
+            
+            /// Adds the given indices to the selection
+            void AddToSelection(std::vector<long> indices) {
+                std::sort(indices.begin(), indices.end());
+                
+                selected.resize(selected.size() + indices.size());
+                auto sel = selected.rbegin();
+                auto cur = selected.rbegin() + indices.size();
+                auto ind = indices.rbegin();
+                
+                while(ind != indices.rend()) {
+                    if(cur == selected.rend() || *cur < *ind) {
+                        *sel = *ind;
+                        ind++;
+                    }
+                    else {
+                        *sel = *cur;
+                        cur++;
+                    }
+                    sel++;
+                }
+                
+                //ensure nothing is duplicated
+                selected.erase(std::unique(selected.begin(), selected.end()), selected.end());
+                
+                dynamic_cast<F_*>(this)->Refresh();
+            };
+            
+            /// Adds the given indices to the selection
+            template<class ...P_>
+            void AddToSelection(P_&&... elms) {
+                AddToSelection({elms...});
+            }
+            
+            /// Returns if the item in the given index is selected.
+            bool IsSelected(long index) const {
+                return std::binary_search(selected.begin(), selected.end(), index);
+            }
+            
+            /// Returns how many items are selected
+            long GetSelectionCount() const {
+                return long(selected.size());
+            }
+            
             /*
-            ClearSelection
-            SetSelection(...)
-            AddToSelection(...)
-            IsSelected
-            GetSelectionCount
             Selection -> subclass allows for(auto item : list.Selection)
-            SelectedIndexes -> subclass allows for(auto index : list.SelectedIndexes)
             RemoveFromSelection
             SelectionStrategy(Click toggles/Ctrl select)
             SelectAll
+            Invert
             */
+            SelectionIndexHelper SelectedIndices;
             
-            
-            Event<LBSELTR_Multi, long> ChangedEvent = Event<LBSELTR_Multi, long, bool>{this};
+            Event<LBSELTR_Multi, long, bool> ChangedEvent = Event<LBSELTR_Multi, long, bool>{this};
             
         protected:
-            LBSELTR_Multi() {
+            LBSELTR_Multi() : SelectedIndices(selected) {
             }
             
             virtual ~LBSELTR_Multi() { }
@@ -444,17 +537,20 @@ namespace Gorgon { namespace Widgets {
             }
             
             void sel_toggled(long index, W_ &w) {
-                /*if(selectedindex == index || focusonly)
-                    return;
+                auto item = std::lower_bound(selected.begin(), selected.end(), index);
                 
-                if(selected)
-                    selected->SetSelected(false);
-                
-                w.SetSelected(true);
-                selectedindex = index;
-                selected = &w;
-                
-                ChangedEvent(index);*/
+                if(item != selected.end() && *item == index) {
+                    w.SetSelected(false);
+                    selected.erase(item);
+                    
+                    ChangedEvent(index, false);
+                }
+                else {
+                    w.SetSelected(true);
+                    selected.insert(item, index);
+                    
+                    ChangedEvent(index, true);
+                }
             }
             
             void sel_apply(long index, W_ &w, const T_ &) {
@@ -465,16 +561,12 @@ namespace Gorgon { namespace Widgets {
                     w.Defocus();
                 }
                 
-                /*if(index == selectedindex) {
+                if(std::binary_search(selected.begin(), selected.end(), index)) {
                     w.SetSelected(true);
-                    selected = &w;
                 }
                 else {
                     w.SetSelected(false);
-                    
-                    if(&w == selected)
-                        selected = nullptr;
-                }*/
+                }
             }
             
             void sel_prepare(W_ &w) {
@@ -490,10 +582,15 @@ namespace Gorgon { namespace Widgets {
                 if(index <= focusindex)
                     focusindex += count;
                 
-                //update selection
+                auto item = std::lower_bound(selected.begin(), selected.end(), index);
+                for(; item != selected.end(); ++item) {
+                    *item += count;
+                }
             }
             
             void sel_move(long index, long target) { 
+                if(index == target) 
+                    return;
                 //move triggers apply to both indexes
                 
                 if(index == focusindex) {
@@ -506,7 +603,46 @@ namespace Gorgon { namespace Widgets {
                     focusindex--;
                 }
                 
-                //update selection
+                if(index < target) {
+                    auto from = std::lower_bound(selected.begin(), selected.end(), index);
+                    auto to = std::lower_bound(selected.begin(), selected.end(), target+1);
+                
+                    auto shifted = from;
+                    
+                    if(*from == index)
+                        shifted++;
+                    
+                    while(from < to) {
+                        *from = *shifted - 1;
+                        
+                        from++;
+                        shifted++;
+                    }
+                    
+                    if(shifted != from) {
+                        *shifted = target;
+                    }
+                }
+                else {
+                    auto from = std::lower_bound(selected.begin(), selected.end(), index-1);
+                    auto to = std::upper_bound(selected.begin(), selected.end(), target);
+                
+                    auto shifted = from;
+                    
+                    if(*from == index)
+                        shifted--;
+                    
+                    while(from > to) {
+                        *from = *shifted + 1;
+                        
+                        from--;
+                        shifted--;
+                    }
+                    
+                    if(shifted != from) {
+                        *shifted = target;
+                    }
+                }
             }
             
             void sel_remove(long index, long count) { 
@@ -514,19 +650,32 @@ namespace Gorgon { namespace Widgets {
                 if(index <= focusindex) {
                     if(index+count > focusindex) {
                         focusindex = -1;
-                        ChangedEvent(-1);
                     }
                     else {
                         focusindex -= count;
                     }
                 }
                 
-                //update selection
+                //move and update items that are after the point of removal
+                auto item = std::lower_bound(selected.begin(), selected.end(), index);
+                auto shifted = item;
+                while(shifted != selected.end()) {
+                    if(*item < index+count) {
+                        shifted++;
+                    }
+                    
+                    *item = *shifted - count;
+                    
+                    shifted++;
+                    item++;
+                }
+                
+                //remove the items to be removed, they are already moved to the end
+                if(item != selected.end())
+                    selected.erase(item, selected.end());
             }
             
             void sel_destroy(W_ &w) {
-                //update selection
-                
                 if(w.IsFocused()) {
                     focusindex = -1;
                     w.RemoveFocus();
@@ -542,7 +691,7 @@ namespace Gorgon { namespace Widgets {
             }
             
             long focusindex = -1;
-            std::set<long> selected;
+            std::vector<long> selected; //this list will be kept sorted
         };
         
         template<class T_, class W_, class S_, class F_>
@@ -617,6 +766,15 @@ namespace Gorgon { namespace Widgets {
                 dynamic_cast<F_*>(this)->Refresh();
             }
             
+            /// Return the index of the first item that has the given value.
+            /// Returns -1 if item not found.
+            long Find(const T_ item, long start = 0) {
+                auto it = std::find(storage.begin() + start, storage.end(), item);
+                if(it == storage.end())
+                    return -1;
+                else
+                    return it-storage.begin();
+            }
             
             /**
              * @name Iteration 
@@ -1166,6 +1324,50 @@ namespace Gorgon { namespace Widgets {
         
         using Base::ComponentStackWidget::Widget::Remove;
         using internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, SimpleListbox<T_>>::Remove;
+    };
+    
+    /**
+     * This is a simple multi select listbox. It does not store any additional 
+     * information about each item, therefore, can store large amounts of items. 
+     * Items are stored in a std::vector.
+     */
+    template<class T_>
+    class MultiListbox : 
+        public ListboxBase<T_, ListItem, 
+            internal::LBTR_blank <T_, ListItem>,
+            internal::LBTRF_blank<T_, ListItem, MultiListbox<T_>>,
+            internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, MultiListbox<T_>>,
+            internal::LBSELTR_Multi<T_, ListItem, MultiListbox<T_>>
+        >
+    {
+        using Base = ListboxBase<T_, ListItem, 
+            internal::LBTR_blank <T_, ListItem>,
+            internal::LBTRF_blank<T_, ListItem, MultiListbox<T_>>,
+            internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, MultiListbox<T_>>,
+            internal::LBSELTR_Multi<T_, ListItem, MultiListbox<T_>>
+        >;
+        
+        friend internal::LBTR_blank <T_, ListItem>;
+        friend internal::LBTRF_blank<T_, ListItem, MultiListbox<T_>>;
+        friend internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, MultiListbox<T_>>;
+        friend internal::LBSELTR_Multi<T_, ListItem, MultiListbox<T_>>;
+        
+    public:
+        explicit MultiListbox(Registry::TemplateType temp = Registry::Listbox_Regular) : Base(Registry::Active()[temp]) {
+        }
+        
+        virtual bool Activate() {
+            return false;
+        }
+        
+        MultiListbox &operator =(const T_ value) {
+            this->SetSelection(value);
+            
+            return *this;
+        }
+        
+        using Base::ComponentStackWidget::Widget::Remove;
+        using internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, MultiListbox<T_>>::Remove;
     };
     
 } }
