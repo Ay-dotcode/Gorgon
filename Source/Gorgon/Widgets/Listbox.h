@@ -382,7 +382,7 @@ namespace Gorgon { namespace Widgets {
                 }
                 if(w.IsFocused()) {
                     focusindex = -1;
-                    w.RemoveFocus();
+                    w.Defocus();
                 }
             }
             
@@ -405,16 +405,15 @@ namespace Gorgon { namespace Widgets {
         //follow the focus by default. If desired, this can be changed
         template<class T_, class W_, class F_>
         class LBSELTR_Multi {
+            template <class F1_> friend class ItemIterator_;
+            friend class SelectionHelper;
+
             class SelectionIndexHelper {
             public:
-                SelectionIndexHelper(std::vector<long> &v) : v(v) {
+                SelectionIndexHelper(const std::vector<long> &v) : v(v) {
                 }
                 
                 auto begin() {
-                    return v.begin();
-                }
-                
-                auto begin() const {
                     return v.begin();
                 }
                 
@@ -422,18 +421,182 @@ namespace Gorgon { namespace Widgets {
                     return v.end();
                 }
                 
-                auto end() const {
-                    return v.end();
-                }
-                
             private:
-                std::vector<long> &v;
+                const std::vector<long> &v;
+            };
+
+            class SelectionHelper {
+            public:
+                SelectionHelper(LBSELTR_Multi &l) : l(l) {
+                }
+
+                auto begin() {
+                    auto &me = dynamic_cast<F_ &>(l);
+                    return ItemIterator(me, l.selected, 0);
+                }
+
+                auto end() {
+                    auto &me = dynamic_cast<F_ &>(l);
+                    return ItemIterator(me, l.selected, l.selected.size());
+                }
+
+                auto begin() const {
+                    auto &me = dynamic_cast<F_ &>(l);
+                    return ConstItemIterator(me, l.selected, 0);
+                }
+
+                auto end() const {
+                    auto &me = dynamic_cast<F_ &>(l);
+                    return ConstItemIterator(me, l.selected, l.selected.size());
+                }
+
+            private:
+                LBSELTR_Multi &l;
+            };
+
+
+            template <class O_, class F1_>
+            class ItemIterator_ : public Containers::Iterator<ItemIterator_<O_, F1_>, O_> {
+                friend class SelectionHelper;
+                friend class ConstItemIterator;
+                friend class Containers::Iterator<ItemIterator_<O_, F1_>, O_>;
+            public:
+                /// Default constructor, creates an iterator pointing to invalid location
+                ItemIterator_(): list(NULL), offset(-1) {
+                }
+                /// Copies another iterator
+                ItemIterator_(const ItemIterator_ &it): list(it.list), offset(it.offset) {
+                }
+
+            protected:
+                ItemIterator_(F1_ &list, const std::vector<long> &inds, long offset = 0): list(&list), inds(&inds), offset(offset) {
+                }
+
+                /// Satisfies the needs of Iterator
+                O_ &current() const {
+                    if(!isvalid())
+                        throw std::out_of_range("Iterator is not valid.");
+
+                    return (*list)[(*inds)[offset]];
+                }
+
+                bool isvalid() const {
+                    return list && inds && offset>=0 && offset<(inds->size());
+                }
+
+                bool moveby(long amount) {
+                    //sanity check
+                    if(amount==0)  return isvalid();
+
+                    offset += amount;
+
+                    return isvalid();
+                }
+
+                bool compare(const ItemIterator_ &it) const {
+                    if(!it.isvalid() && !isvalid()) return true;
+                    return it.offset==offset;
+                }
+
+                void set(const ItemIterator_ &it) {
+                    list = it.list;
+                    offset = it.offset;
+                }
+
+                long distance(const ItemIterator_ &it) const {
+                    return it.offset-offset;
+                }
+
+                bool isbefore(const ItemIterator_ &it) const {
+                    return offset<it.offset;
+                }
+
+                F1_ *list = nullptr;
+                long offset = 0;
+                const std::vector<long> *inds = nullptr;
             };
         public:
+            /// Regular iterator. @see Container::Iterator
+            typedef ItemIterator_<T_, F_> ItemIterator;
+
+            /// Const iterator allows iteration of const collections
+            class ConstItemIterator : public ItemIterator_<const T_, const F_> {
+                friend class SelectionHelper;
+                friend class Containers::Iterator<ItemIterator_<const T_, const F_>, T_>;
+
+            public:
+                ///Regular iterators can be converted to const iterators
+                ConstItemIterator(const ItemIterator &it) {
+                    this->list = it.list;
+                    this->offset = it.offset;
+                }
+
+            private:
+                ConstItemIterator(const F_ &c, const std::vector<long> &inds, long offset = 0): ItemIterator_<const T_, const F_>(c, inds, offset) {
+                }
+            };
+
+            enum SelectionMethod {
+                /// Clicking on the item will toggle its selected state
+                Toggle,
+
+                /// Clicking on the item will set the selection to be
+                /// that item only. Ctrl clicking toggles
+                UseCtrl,
+            };
+            
+            enum EventMethod {
+                /// Event will be fired only once per action
+                Once,
+                
+                /// Even will be fired per changed item
+                ForEachItem
+            };
+            
+            /// Changes selection method. Default method is toggle. In toggle
+            /// method, clicking on an item will toggle its state without
+            /// effecting other items. In UseCtrl method, if an item is clicked
+            /// with Ctrl key pressed, it will be toggled. If Ctrl is not pressed,
+            /// it will become the only selected item. 
+            void SetSelectionMethod(SelectionMethod value) {
+                method = value;
+            }
+            
+            /// Returns the selection method.
+            SelectionMethod GetSelectionMethod() const {
+                return method;
+            }
+            
+            /// Changes event method. Default method is ForEachItem. In ForEachItem
+            /// method, ChangedEvent will be fired for each item that is affected.
+            /// index and status parameters will be set. If event method is set to
+            /// Once, ChangedEvent will be fired once per action. index and status
+            /// parameter will be set only if one item is affected. Otherwise,
+            /// index will be set to -1 and status is set to false.
+            void SetEventMethod(EventMethod value) {
+                event = value;
+            }
+            
+            /// Returns the event method.
+            EventMethod GetEventMethod() const {
+                return event;
+            }
             
             /// Removes all items from the selection
             void ClearSelection() {
-                selected.clear();
+                if(event == Once) {
+                    selected.clear();
+                    ChangedEvent(-1, false);
+                }
+                else {
+                    std::vector<long> old;
+                    std::swap(old, selected);
+                    
+                    for(auto ind : old) {
+                        ChangedEvent(ind, false);
+                    }
+                }
+                
                 dynamic_cast<F_*>(this)->Refresh();
             }
             
@@ -444,11 +607,23 @@ namespace Gorgon { namespace Widgets {
             
             /// Replaces the selection by the given indices
             void SetSelection(std::vector<long> indices) {
+                if(event == ForEachItem)
+                    ClearSelection();
+                
                 selected = std::move(indices);
                 std::sort(selected.begin(), selected.end());
                 
                 //ensure nothing is duplicated
                 selected.erase(std::unique(selected.begin(), selected.end()), selected.end());
+                
+                if(event == ForEachItem) {
+                    for(auto ind : selected) {
+                        ChangedEvent(ind, true);
+                    }
+                }
+                else {
+                    ChangedEvent(-1, false);
+                }
                 
                 dynamic_cast<F_*>(this)->Refresh();
             };
@@ -476,17 +651,25 @@ namespace Gorgon { namespace Widgets {
                 while(ind != indices.rend()) {
                     if(cur == selected.rend() || *cur < *ind) {
                         *sel = *ind;
-                        ind++;
+                        
+                        if(event == ForEachItem)
+                            ChangedEvent(*ind, true);
+                        
+                        ++ind;
                     }
                     else {
                         *sel = *cur;
-                        cur++;
+                        ++cur;
                     }
-                    sel++;
+                    ++sel;
                 }
                 
                 //ensure nothing is duplicated
                 selected.erase(std::unique(selected.begin(), selected.end()), selected.end());
+                
+                if(event == Once) {
+                    ChangedEvent(-1, false);
+                }
                 
                 dynamic_cast<F_*>(this)->Refresh();
             };
@@ -507,19 +690,88 @@ namespace Gorgon { namespace Widgets {
                 return long(selected.size());
             }
             
+            /// Removes the given index from the selection
+            void RemoveFromSelection(long index) {
+                auto item = std::lower_bound(selected.begin(), selected.end(), index);
+                
+                if(item != selected.end() && *item == index) {
+                    selected.erase(item);
+                    ChangedEvent(index, false);
+                }
+                
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
+            /// Selects all items
+            void SelectAll() {
+                auto elms = dynamic_cast<F_*>(this)->GetCount();
+                
+                std::vector<long> old;
+                old.reserve(elms);
+                
+                std::swap(old, selected);
+                
+                auto sel = old.begin();
+                for(int i=0; i<elms; i++) {
+                    if(sel != old.end() && *sel == i)
+                        ++sel;
+                    else if(event == ForEachItem)
+                        ChangedEvent(i, true);
+                        
+                    selected.push_back(i);
+                }
+                
+                if(event == Once)
+                    ChangedEvent(-1, false);
+                
+                
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
+            /// Inverts the selection.
+            void InvertSelection() {
+                std::vector<long> old;
+                
+                auto elms = dynamic_cast<F_*>(this)->GetCount();
+                old.reserve(elms-selected.size());
+                
+                std::swap(selected, old);
+                
+                auto sel = old.begin();
+                for(int i=0; i<elms; i++) {
+                    if(sel != old.end() && *sel == i) {
+                        ++sel;
+                        
+                        if(event == ForEachItem)
+                            ChangedEvent(i, false);
+                    }
+                    else {
+                        selected.push_back(i);
+                        
+                        if(event == ForEachItem)
+                            ChangedEvent(i, true);
+                    }
+                }
+                
+                if(event == Once)
+                    ChangedEvent(-1, false);
+                
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
             /*
             Selection -> subclass allows for(auto item : list.Selection)
-            RemoveFromSelection
-            SelectionStrategy(Click toggles/Ctrl select)
-            SelectAll
-            Invert
             */
             SelectionIndexHelper SelectedIndices;
+            SelectionHelper Selection;
             
             Event<LBSELTR_Multi, long, bool> ChangedEvent = Event<LBSELTR_Multi, long, bool>{this};
             
         protected:
-            LBSELTR_Multi() : SelectedIndices(selected) {
+            LBSELTR_Multi() : 
+                SelectedIndices(selected),
+                Selection(*this)
+            {
             }
             
             virtual ~LBSELTR_Multi() { }
@@ -537,19 +789,42 @@ namespace Gorgon { namespace Widgets {
             }
             
             void sel_toggled(long index, W_ &w) {
-                auto item = std::lower_bound(selected.begin(), selected.end(), index);
-                
-                if(item != selected.end() && *item == index) {
-                    w.SetSelected(false);
-                    selected.erase(item);
+                if(method == Toggle) {
+                    auto item = std::lower_bound(selected.begin(), selected.end(), index);
                     
-                    ChangedEvent(index, false);
+                    if(item != selected.end() && *item == index) {
+                        w.SetSelected(false);
+                        selected.erase(item);
+                        
+                        ChangedEvent(index, false);
+                    }
+                    else {
+                        w.SetSelected(true);
+                        selected.insert(item, index);
+                        
+                        ChangedEvent(index, true);
+                    }
                 }
                 else {
-                    w.SetSelected(true);
-                    selected.insert(item, index);
-                    
-                    ChangedEvent(index, true);
+                    if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::Ctrl) {
+                        auto item = std::lower_bound(selected.begin(), selected.end(), index);
+                        
+                        if(item != selected.end() && *item == index) {
+                            w.SetSelected(false);
+                            selected.erase(item);
+                            
+                            ChangedEvent(index, false);
+                        }
+                        else {
+                            w.SetSelected(true);
+                            selected.insert(item, index);
+                            
+                            ChangedEvent(index, true);
+                        }
+                    }
+                    else {
+                        SetSelection(index);
+                    }
                 }
             }
             
@@ -610,13 +885,13 @@ namespace Gorgon { namespace Widgets {
                     auto shifted = from;
                     
                     if(*from == index)
-                        shifted++;
+                        ++shifted;
                     
                     while(from < to) {
                         *from = *shifted - 1;
                         
-                        from++;
-                        shifted++;
+                        ++from;
+                        ++shifted;
                     }
                     
                     if(shifted != from) {
@@ -630,13 +905,13 @@ namespace Gorgon { namespace Widgets {
                     auto shifted = from;
                     
                     if(*from == index)
-                        shifted--;
+                        --shifted;
                     
                     while(from > to) {
                         *from = *shifted + 1;
                         
-                        from--;
-                        shifted--;
+                        --from;
+                        --shifted;
                     }
                     
                     if(shifted != from) {
@@ -666,8 +941,8 @@ namespace Gorgon { namespace Widgets {
                     
                     *item = *shifted - count;
                     
-                    shifted++;
-                    item++;
+                    ++shifted;
+                    ++item;
                 }
                 
                 //remove the items to be removed, they are already moved to the end
@@ -678,7 +953,7 @@ namespace Gorgon { namespace Widgets {
             void sel_destroy(W_ &w) {
                 if(w.IsFocused()) {
                     focusindex = -1;
-                    w.RemoveFocus();
+                    w.Defocus();
                 }
             }
             
@@ -692,6 +967,8 @@ namespace Gorgon { namespace Widgets {
             
             long focusindex = -1;
             std::vector<long> selected; //this list will be kept sorted
+            SelectionMethod method = Toggle;
+            EventMethod event      = ForEachItem;
         };
         
         template<class T_, class W_, class S_, class F_>
@@ -1285,7 +1562,7 @@ namespace Gorgon { namespace Widgets {
     /**
      * This is a simple listbox. It does not store any additional information
      * about each item, therefore, can store large amounts of items. Items are
-     * stored in a std::vector. Only one element can be selected at a time.
+     * stored in an std::vector. Only one element can be selected at a time.
      */
     template<class T_>
     class SimpleListbox : 
@@ -1328,8 +1605,13 @@ namespace Gorgon { namespace Widgets {
     
     /**
      * This is a simple multi select listbox. It does not store any additional 
-     * information about each item, therefore, can store large amounts of items. 
-     * Items are stored in a std::vector.
+     * information about each item, therefore, can store large amounts of items.
+     * However, default event strategy is triggering the event for every selected
+     * and unselected item. This might cause problems if the list is too long. 
+     * When the event method is set to single, only one event will be called for
+     * single action. Items are stored in an std::vector. You may use Selection
+     * and SelectedIndices to iterate selected elements. In both members, selection
+     * is always sorted by the position in the listbox.
      */
     template<class T_>
     class MultiListbox : 

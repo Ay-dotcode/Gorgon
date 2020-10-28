@@ -139,8 +139,8 @@ namespace Gorgon {
 			public:
 				///Regular iterators can be converted to const iterators
 				ConstIterator(const Iterator &it) {
-					this->Col=it.col;
-					this->Offset=it.offset;
+					this->col=it.col;
+					this->offset=it.offset;
 				}
 
 			private:

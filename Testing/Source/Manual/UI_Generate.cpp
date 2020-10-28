@@ -166,6 +166,8 @@ int main() {
     });
     
     Widgets::MultiListbox<std::string> list;
+    list.SetSelectionMethod(list.UseCtrl);
+    list.SetEventMethod(list.Once);
     list.Add("5");
     list.Add("Âj");
     list.Add("9");
@@ -176,16 +178,14 @@ int main() {
     list.Remove(2);
     list.MoveBefore(2, 5);
     list.SetOverscroll(2);
-    /*list.ChangedEvent.Register([&list](long index) {
-        if(index == -1)
-            return;
-        
-        std::cout<<list.GetSelectedItem()<<std::endl;
-        if(index == 0)
-            return;
-        
-        list.Remove(index - 1);
-    });*/
+    list.InvertSelection();
+    list.ChangedEvent.Register([&list](long index, bool state) {
+        const auto &l = list;
+        for(auto s : l.Selection)
+            std::cout<<s<<std::endl;
+
+        std::cout<<index<<": "<<(state ? "true" : "false")<<std::endl;
+    });
     
     app.wind.Add(blank);
     addme(blank, btn);
