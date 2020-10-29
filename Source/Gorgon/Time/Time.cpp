@@ -338,6 +338,15 @@ namespace Gorgon { namespace Time {
 		return difftime(x, y);
 	}
 	
+	bool Date::operator == (const Date &other) const{
+        tm a = totm(*this), b = totm(other);
+        
+        time_t x = mktime(&a);
+		time_t y = mktime(&b);
+        
+        return y == x;
+    }
+	
 	void Date::AddYears(int years) {
 		tm a = totm(*this);
 		a.tm_year += years;

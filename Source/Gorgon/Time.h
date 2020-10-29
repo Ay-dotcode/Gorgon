@@ -175,7 +175,20 @@ namespace Gorgon {
 			/// Gives the difference between two dates.
 			double operator - (const Date &other);
 			
-			/// Unsets the stored time
+			/// Compares 2 dates
+            bool operator == (const Date &other) const;
+            
+            /// Output stream operator overload 
+            std::ostream &operator << (std::ostream &out){
+                if(timezone){
+                    out<<ISODateTime(timezone);
+                }else
+                    out<<ISODate();
+                    
+                return out;
+            }
+            
+            /// Unsets the stored time
 			void Unset() {
 				Year=0;
 				Month=Empty;
