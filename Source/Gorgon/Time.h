@@ -178,16 +178,6 @@ namespace Gorgon {
 			/// Compares 2 dates
             bool operator == (const Date &other) const;
             
-            /// Output stream operator overload 
-            std::ostream &operator << (std::ostream &out){
-                if(timezone){
-                    out<<ISODateTime(timezone);
-                }else
-                    out<<ISODate();
-                    
-                return out;
-            }
-            
             /// Unsets the stored time
 			void Unset() {
 				Year=0;
@@ -234,6 +224,16 @@ namespace Gorgon {
 			int Timezone;
 		};
 		
+        /// Output stream operator overload 
+        std::ostream &operator << (std::ostream &out, const Date &date) {
+            if(timezone){
+                out<<date.ISODateTime(timezone);
+            }else
+                out<<date.ISODate();
+                    
+            return out;
+        }
+        
 		/// Returns current time in milliseconds. 
 		/// @warning FrameStart should be used unless exact time is required.
 		/// This function works slower and changes during a frame, which may
