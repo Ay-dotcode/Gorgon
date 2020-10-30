@@ -1407,6 +1407,41 @@ namespace Gorgon { namespace Widgets {
             return scrollspeed != 0;
         }
         
+        using UI::Widget::EnsureVisible;
+        
+        /// Ensures the given index is completely visible on the screen.
+        void EnsureVisible(long index) {
+            float targetind = float(index);
+            
+            auto md = maxdisplay;
+            
+            if(targetind >= target && targetind < floor(target + md)) {
+                return; //already visible
+            }
+            else if(targetind >= floor(target + md)) {
+                targetind -= md - 1.5; //show the next item a little bit
+            }
+            else {
+                targetind -= 0.5; //show the next item a little bit
+            }
+            
+            auto elms = this->GetCount();
+            
+            if(targetind < 0)
+                targetind = 0;
+            if(targetind > overscroll + elms)
+                targetind = overscroll + elms;
+            
+            ScrollTo(targetind);
+            
+            //if max display changes, call ensure visible again
+            if(md != maxdisplay)
+                EnsureVisible(index);
+        }
+        
+        bool KeyEvent(Input::Key key, float amout) override {
+            return false;
+        }
         
     protected:
         ListboxBase(const UI::Template &temp) : 
@@ -1556,7 +1591,7 @@ namespace Gorgon { namespace Widgets {
         int scrollspeed = 20;
         int scrolldist  = 5;
         bool isscrolling = false;
-        int maxdisplay = 0; //maximum elements that can be displayed
+        float maxdisplay = 0; //maximum elements that can be displayed
     };
     
     /**

@@ -186,6 +186,8 @@ int main() {
 
         std::cout<<index<<": "<<(state ? "true" : "false")<<std::endl;
     });
+    list.EnsureVisible(11);
+    list.EnsureVisible(1);
     
     app.wind.Add(blank);
     addme(blank, btn);
