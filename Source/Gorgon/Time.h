@@ -226,9 +226,9 @@ namespace Gorgon {
 		
         /// Output stream operator overload 
         std::ostream &operator << (std::ostream &out, const Date &date) {
-            if(timezone){
+            if(timezone)
                 out<<date.ISODateTime(timezone);
-            }else
+            else
                 out<<date.ISODate();
                     
             return out;
