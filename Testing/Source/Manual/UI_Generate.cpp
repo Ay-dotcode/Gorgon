@@ -165,27 +165,28 @@ int main() {
         std::cout << "size f changed " << sizef.GetText();
     });
     
-    Widgets::MultiListbox<std::string> list;
-    list.SetSelectionMethod(list.UseCtrl);
-    list.SetEventMethod(list.Once);
+    Widgets::SimpleListbox<std::string> list;
+    /*list.SetSelectionMethod(list.UseCtrl);
+    list.SetEventMethod(list.Once);*/
+    list.SetSelectionFollowsFocus(false);
     list.Add("5");
     list.Add("Âj");
     list.Add("9");
     list.Add("Hello", "World", "You", "are", "welcome", "to", "use", "the", "Gorgon", "Library");
-    list.AddToSelection(3);
-    list.AddToSelection(1, 4);
+    //list.AddToSelection(3);
+    //list.AddToSelection(1, 4);
     list.Insert(2, "!");
     list.Remove(2);
     list.MoveBefore(2, 5);
     list.SetOverscroll(2);
-    list.InvertSelection();
-    list.ChangedEvent.Register([&list](long index, bool state) {
+    //list.InvertSelection();
+    /*list.ChangedEvent.Register([&list](long index, bool state) {
         const auto &l = list;
         for(auto s : l.Selection)
             std::cout<<s<<std::endl;
 
         std::cout<<index<<": "<<(state ? "true" : "false")<<std::endl;
-    });
+    });*/
     list.EnsureVisible(11);
     list.EnsureVisible(1);
     

@@ -170,10 +170,43 @@ namespace Gorgon { namespace Widgets {
                     
                     if(elm)
                         elm->SetSelected(true);
+                    
+                    selected = elm;
                 }
                 
                 selectedindex = index;
                 ChangedEvent(selectedindex);
+            }
+
+            /// Sets the index of the focused element. If set to -1, nothing is
+            /// focused
+            void SetFocusIndex(long value) {
+                if(focusindex == value)
+                    return;
+                
+                if(focusonly) {
+                    SetSelectedIndex(value);
+                    return;
+                }
+                
+                if(value != -1) {
+                    auto w = dynamic_cast<F_*>(this)->getrepresentation(value);
+                    if(w)
+                        w->Focus();
+                }
+                else {
+                    auto w = dynamic_cast<F_*>(this)->getrepresentation(focusindex);
+                    if(w)
+                        w->Defocus();
+                }
+                
+                focusindex = value;
+            }
+            
+            /// Returns the index of the focused element. If nothing is focused,
+            /// returns -1.
+            long GetFocusIndex() const {
+                return focusindex;
             }
             
             void RemoveSelection() {
@@ -469,7 +502,7 @@ namespace Gorgon { namespace Widgets {
                 }
 
             protected:
-                ItemIterator_(F1_ &list, const std::vector<long> &inds, long offset = 0): list(&list), inds(&inds), offset(offset) {
+                ItemIterator_(F1_ &list, const std::vector<long> &inds, long offset = 0): list(&list), offset(offset), inds(&inds) {
                 }
 
                 /// Satisfies the needs of Iterator
@@ -580,6 +613,32 @@ namespace Gorgon { namespace Widgets {
             /// Returns the event method.
             EventMethod GetEventMethod() const {
                 return event;
+            }
+            
+            /// Returns the index of the focused element. If nothing is focused,
+            /// returns -1.
+            long GetFocusIndex() const {
+                return focusindex;
+            }
+            
+            /// Sets the index of the focused element. If set to -1, nothing is
+            /// focused
+            void SetFocusIndex(long value) {
+                if(focusindex == value)
+                    return;
+                
+                if(value != -1) {
+                    auto w = dynamic_cast<F_*>(this)->getrepresentation(value);
+                    if(w)
+                        w->Focus();
+                }
+                else {
+                    auto w = dynamic_cast<F_*>(this)->getrepresentation(focusindex);
+                    if(w)
+                        w->Defocus();
+                }
+                
+                focusindex = value;
             }
             
             /// Removes all items from the selection
@@ -788,8 +847,8 @@ namespace Gorgon { namespace Widgets {
                 dynamic_cast<UI::Widget*>(this)->Focus();
             }
             
-            void sel_toggled(long index, W_ &w) {
-                if(method == Toggle) {
+            void sel_toggled(long index, W_ &w, bool forcetoggle = true) {
+                if(method == Toggle || forcetoggle) {
                     auto item = std::lower_bound(selected.begin(), selected.end(), index);
                     
                     if(item != selected.end() && *item == index) {
@@ -849,7 +908,7 @@ namespace Gorgon { namespace Widgets {
                     sel_clicked(dynamic_cast<F_*>(this)->getindex(w), w);
                 });
                 w.ToggleEvent.Register([&w, this] {
-                    sel_toggled(dynamic_cast<F_*>(this)->getindex(w), w);
+                    sel_toggled(dynamic_cast<F_*>(this)->getindex(w), w, false);
                 });
             }
             
@@ -1297,6 +1356,7 @@ namespace Gorgon { namespace Widgets {
                     maxdisplay = b.Height() / (float(totalh) / c);
                 
                 scroller->Range = maxdisplay;
+                scroller->LargeChange = maxdisplay * 0.8f;
             }
         }
         
@@ -1439,7 +1499,19 @@ namespace Gorgon { namespace Widgets {
                 EnsureVisible(index);
         }
         
-        bool KeyEvent(Input::Key key, float amout) override {
+        bool KeyEvent(Input::Key key, float state) override {
+            namespace Keycodes = Input::Keyboard::Keycodes;
+            
+            if(repeater.KeyEvent(key, state))
+                return true;
+            
+            if(key == Keycodes::Space && contents.HasFocusedWidget() && state != 0) {
+                auto w = dynamic_cast<W_*>(&contents.GetFocus());
+                if(w) {
+                    this->sel_toggled(indexes.count(w) ? indexes[w] : -1, *w);
+                }
+            }
+
             return false;
         }
         
@@ -1472,6 +1544,49 @@ namespace Gorgon { namespace Widgets {
             
             contents.SetLayer(stack.GetLayerOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag)));
             stack.AddCondition(UI::ComponentCondition::VScroll);
+            
+            repeater.Register(Input::Keyboard::Keycodes::Up);
+            repeater.Register(Input::Keyboard::Keycodes::Down);
+            repeater.Register(Input::Keyboard::Keycodes::PageUp);
+            repeater.Register(Input::Keyboard::Keycodes::PageDown);
+            
+            
+            repeater.Repeat.Register([this](Input::Key key) {
+                namespace Keycodes = Input::Keyboard::Keycodes;
+                using Input::Keyboard::Modifier;
+                
+                long org = this->GetFocusIndex();
+                long ind = org;
+                
+                switch(key) {
+                case Keycodes::Down:
+                    ind++;
+                    break;
+                    
+                case Keycodes::Up:
+                    ind--;
+                    break;
+                    
+                case Keycodes::PageDown:
+                    ind += long(floor(maxdisplay));
+                    break;
+                    
+                case Keycodes::PageUp:
+                    ind -= long(floor(maxdisplay));
+                    break;
+                }
+                
+                if(ind < 0)
+                    ind = 0;
+                if(ind >= this->GetCount())
+                    ind = this->GetCount() - 1;
+                
+                if(ind != org) {
+                    this->SetFocusIndex(ind);
+                    EnsureVisible(ind);
+                }
+
+            });
         }
         
         ~ListboxBase() {
@@ -1592,6 +1707,8 @@ namespace Gorgon { namespace Widgets {
         int scrolldist  = 5;
         bool isscrolling = false;
         float maxdisplay = 0; //maximum elements that can be displayed
+        
+        Input::KeyRepeater repeater;
     };
     
     /**
