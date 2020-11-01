@@ -16,18 +16,21 @@ namespace Gorgon { namespace CGI {
    
     ///@cond internal
     namespace internal {
-        struct vertexinfo {
-            vertexinfo() = default;
+    struct vertexinfo {
+        vertexinfo() = default;
 
-            vertexinfo (Float first, Float second) : first(first), second(second) { }
+        vertexinfo (Float first, Float second, int list) : 
+            first(first), second(second), list(list)
+        { }
 
-            Float first, second;
-            bool skip = false;
-            int wind = false;
-        };
-        
-        template<class PL_, class F_, class T_>
-        void findpolylinestofill(const PL_ &pointlist, T_ ymin, T_ ymax, F_ fn, T_ step = 1, T_ cover = 1) {
+        Float first, second;
+        int list;
+        bool skip = false;
+        int wind = false;
+    };
+    
+    template<class PL_, class F_, class T_>
+    void findpolylinestofill(const PL_ &pointlist, T_ ymin, T_ ymax, F_ fn, T_ step = 1, T_ cover = 1) {
         using std::swap;
         
         for(T_ y = ymin; y<ymax; y += step) {
@@ -35,6 +38,7 @@ namespace Gorgon { namespace CGI {
             
             std::vector<vertexinfo> xpoints;
             
+            int listind = 0;
             for(const auto &points : pointlist) {
                 int N = (int)points.GetSize();
                 
@@ -103,7 +107,7 @@ namespace Gorgon { namespace CGI {
                             }
                             
                             firstdir = line.YDirection();
-                            xpoints.push_back({x1, x2});
+                            xpoints.push_back({x1, x2, listind});
                             xpoints.back().wind = firstdir;
                         }
                         
@@ -125,6 +129,8 @@ namespace Gorgon { namespace CGI {
                     xpoints.back().skip= true;
                     //xpoints.back().wind = 0;
                 }
+                
+                listind++;
             }
             
             std::sort(xpoints.begin(), xpoints.end(), [](auto l, auto r) { return l.second < r.second; });
@@ -142,8 +148,6 @@ namespace Gorgon { namespace CGI {
             //fill
             fn((Float)y, xpoints);
         }
-    
-        
     }
     }
     ///@endcond
