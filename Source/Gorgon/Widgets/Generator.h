@@ -188,8 +188,6 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template Listbox() override;
         
-        UI::Template ListItem();
-        
 
         virtual int GetSpacing() const override {
             return Spacing;
@@ -266,7 +264,7 @@ namespace Gorgon { namespace Widgets {
         
         struct BackgroundInfo {
             Graphics::RGBA Regular  = {Graphics::Color::Ivory, 0.8};
-            Graphics::RGBA Alternate= {Graphics::Color::White, 0.8};
+            Graphics::RGBA Alternate= {Graphics::Color::DarkGrey, 0.2};
             Graphics::RGBA Hover    = {Graphics::Color::Tan, 0.5};
             Graphics::RGBA Down     = {Graphics::Color::Crimson, 0.2};
             Graphics::RGBA Disabled =  Graphics::Color::LightGrey;

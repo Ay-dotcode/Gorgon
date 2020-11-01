@@ -61,35 +61,68 @@ namespace Gorgon { namespace Widgets {
     };
     
     /// @cond internal
-    namespace internal {
-        // blank traits has no data associated with the items.
-        // It is good for very long lists. Should be used with
-        // useisvisible = false.
-        template<class T_, class W_>
-        class LBTR_blank {
-        public:
-            void Apply(W_ &, const T_ &, Geometry::Point, Geometry::Size) { }
-            
-            UI::ComponentTemplate::Tag Tag(const T_ &, Geometry::Point, Geometry::Size) {
-                return UI::ComponentTemplate::ItemTag;
-            }
-        };
-        
+    namespace internal {  
+        /// Contains no extra data and does not assume anything about W_
         template <class T_, class W_, class F_>
         class LBTRF_blank {
-            using TR_ = LBTR_blank<T_, W_>;
         protected:
             LBTRF_blank() { }
             ~LBTRF_blank() { }
             
-            TR_ access(long) {
-                return TR_();
+            void apply(long, W_ &, const T_ &, Geometry::Point p, Geometry::Size) { }
+            
+            UI::ComponentTemplate::Tag tag(long, const T_ &, Geometry::Point, Geometry::Size) {
+                return UI::ComponentTemplate::ItemTag;
             }
             
             void prepare(W_ &) { }
             void insert(long, long) { }
             void move(long, long) { }
             void remove(long, long) { }
+        }; 
+        
+        /// Contains no extra data, W_ must be compatible with ListItem
+        template <class T_, class W_, class F_>
+        class LBTRF_ListItem {
+        public:
+            
+            /// Sets if Odd/even styling should be used. Default is on.
+            void SetOddEven(bool value) {
+                if(oddeven == value)
+                    return;
+                
+                oddeven = value;
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
+            /// Returns wether Odd/even styling is in effect
+            bool GetOddEven() const {
+                return oddeven;
+            }
+            
+        protected:
+            LBTRF_ListItem() { }
+            ~LBTRF_ListItem() { }
+            
+            void apply(long, W_ &w, const T_ &, Geometry::Point p, Geometry::Size) { 
+                if(oddeven) {
+                    w.SetParity(p.Y%2 ? Parity::Odd : Parity::Even);
+                }
+                else {
+                    w.SetParity(Parity::None);
+                }
+            }
+            
+            UI::ComponentTemplate::Tag tag(long, const T_ &, Geometry::Point, Geometry::Size) {
+                return UI::ComponentTemplate::ItemTag;
+            }
+            
+            void prepare(W_ &) { }
+            void insert(long, long) { }
+            void move(long, long) { }
+            void remove(long, long) { }
+            
+            bool oddeven = true;
         };
         
         template<class T_, class W_>
@@ -1465,7 +1498,7 @@ namespace Gorgon { namespace Widgets {
      * WT_ should read the data from W_ and set it to T_.
      */
     template<
-        class T_, class W_, class TR_, class TRF_, 
+        class T_, class W_, class TRF_, 
         class STR_, class SELTR_, 
         bool useisvisible = false,
         void (*TW_)(const T_ &, W_ &) = internal::SetTextUsingFrom<T_, W_>,
@@ -1523,8 +1556,7 @@ namespace Gorgon { namespace Widgets {
                 i = 0;
             while(y < b.Height() && i < elms) {
                 auto &v   = this->getelm(i);
-                auto  tr  = this->access(i);
-                auto  tag = tr.Tag(v, {0, (int)i}, {1, (int)elms});
+                auto  tag = this->tag(i, v, {0, (int)i}, {1, (int)elms});
                 
                 auto w = getwidget(tag, tagcounts[tag]++);
                 
@@ -1534,7 +1566,7 @@ namespace Gorgon { namespace Widgets {
                 TW_(v, *w);
                 
                 contents.Add(*w);
-                tr.Apply(*w, v, {0, (int)i}, {1, (int)elms});
+                this->apply(i, *w, v, {0, (int)i}, {1, (int)elms});
                 this->sel_apply(i, *w, v);
                 
                 if(y == 0) {
@@ -1928,21 +1960,18 @@ namespace Gorgon { namespace Widgets {
     template<class T_>
     class SimpleListbox : 
         public ListboxBase<T_, ListItem, 
-            internal::LBTR_blank <T_, ListItem>,
-            internal::LBTRF_blank<T_, ListItem, SimpleListbox<T_>>,
+            internal::LBTRF_ListItem<T_, ListItem, SimpleListbox<T_>>,
             internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, SimpleListbox<T_>>,
             internal::LBSELTR_Single<T_, ListItem, SimpleListbox<T_>>
         >
     {
         using Base = ListboxBase<T_, ListItem, 
-            internal::LBTR_blank <T_, ListItem>,
-            internal::LBTRF_blank<T_, ListItem, SimpleListbox<T_>>,
+            internal::LBTRF_ListItem<T_, ListItem, SimpleListbox<T_>>,
             internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, SimpleListbox<T_>>,
             internal::LBSELTR_Single<T_, ListItem, SimpleListbox<T_>>
         >;
         
-        friend internal::LBTR_blank <T_, ListItem>;
-        friend internal::LBTRF_blank<T_, ListItem, SimpleListbox<T_>>;
+        friend internal::LBTRF_ListItem<T_, ListItem, SimpleListbox<T_>>;
         friend internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, SimpleListbox<T_>>;
         friend internal::LBSELTR_Single<T_, ListItem, SimpleListbox<T_>>;
         
@@ -1977,21 +2006,18 @@ namespace Gorgon { namespace Widgets {
     template<class T_>
     class MultiListbox : 
         public ListboxBase<T_, ListItem, 
-            internal::LBTR_blank <T_, ListItem>,
-            internal::LBTRF_blank<T_, ListItem, MultiListbox<T_>>,
+            internal::LBTRF_ListItem<T_, ListItem, MultiListbox<T_>>,
             internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, MultiListbox<T_>>,
             internal::LBSELTR_Multi<T_, ListItem, MultiListbox<T_>>
         >
     {
         using Base = ListboxBase<T_, ListItem, 
-            internal::LBTR_blank <T_, ListItem>,
-            internal::LBTRF_blank<T_, ListItem, MultiListbox<T_>>,
+            internal::LBTRF_ListItem<T_, ListItem, MultiListbox<T_>>,
             internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, MultiListbox<T_>>,
             internal::LBSELTR_Multi<T_, ListItem, MultiListbox<T_>>
         >;
         
-        friend internal::LBTR_blank <T_, ListItem>;
-        friend internal::LBTRF_blank<T_, ListItem, MultiListbox<T_>>;
+        friend internal::LBTRF_ListItem<T_, ListItem, MultiListbox<T_>>;
         friend internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, MultiListbox<T_>>;
         friend internal::LBSELTR_Multi<T_, ListItem, MultiListbox<T_>>;
         
@@ -2021,21 +2047,18 @@ namespace Gorgon { namespace Widgets {
     template<class T_>
     class SimpleCollectionbox : 
         public ListboxBase<T_, ListItem, 
-            internal::LBTR_blank <T_, ListItem>,
-            internal::LBTRF_blank<T_, ListItem, SimpleCollectionbox<T_>>,
+            internal::LBTRF_ListItem<T_, ListItem, SimpleCollectionbox<T_>>,
             internal::LBSTR_Collection<T_, ListItem, SimpleCollectionbox<T_>>,
             internal::LBSELTR_Single<T_, ListItem, SimpleCollectionbox<T_>>
         >
     {
         using Base = ListboxBase<T_, ListItem, 
-            internal::LBTR_blank <T_, ListItem>,
-            internal::LBTRF_blank<T_, ListItem, SimpleCollectionbox<T_>>,
+            internal::LBTRF_ListItem<T_, ListItem, SimpleCollectionbox<T_>>,
             internal::LBSTR_Collection<T_, ListItem, SimpleCollectionbox<T_>>,
             internal::LBSELTR_Single<T_, ListItem, SimpleCollectionbox<T_>>
         >;
         
-        friend internal::LBTR_blank <T_, ListItem>;
-        friend internal::LBTRF_blank<T_, ListItem, SimpleCollectionbox<T_>>;
+        friend internal::LBTRF_ListItem<T_, ListItem, SimpleCollectionbox<T_>>;
         friend internal::LBSTR_Collection<T_, ListItem, SimpleCollectionbox<T_>>;
         friend internal::LBSELTR_Single<T_, ListItem, SimpleCollectionbox<T_>>;
         
@@ -2070,21 +2093,18 @@ namespace Gorgon { namespace Widgets {
     template<class T_>
     class MultiCollectionbox : 
         public ListboxBase<T_, ListItem, 
-            internal::LBTR_blank <T_, ListItem>,
-            internal::LBTRF_blank<T_, ListItem, MultiCollectionbox<T_>>,
+            internal::LBTRF_ListItem<T_, ListItem, MultiCollectionbox<T_>>,
             internal::LBSTR_Collection<T_, ListItem, MultiCollectionbox<T_>>,
             internal::LBSELTR_Multi<T_, ListItem, MultiCollectionbox<T_>>
         >
     {
         using Base = ListboxBase<T_, ListItem, 
-            internal::LBTR_blank <T_, ListItem>,
-            internal::LBTRF_blank<T_, ListItem, MultiCollectionbox<T_>>,
+            internal::LBTRF_ListItem<T_, ListItem, MultiCollectionbox<T_>>,
             internal::LBSTR_Collection<T_, ListItem, MultiCollectionbox<T_>>,
             internal::LBSELTR_Multi<T_, ListItem, MultiCollectionbox<T_>>
         >;
         
-        friend internal::LBTR_blank <T_, ListItem>;
-        friend internal::LBTRF_blank<T_, ListItem, MultiCollectionbox<T_>>;
+        friend internal::LBTRF_ListItem<T_, ListItem, MultiCollectionbox<T_>>;
         friend internal::LBSTR_Collection<T_, ListItem, MultiCollectionbox<T_>>;
         friend internal::LBSELTR_Multi<T_, ListItem, MultiCollectionbox<T_>>;
         
