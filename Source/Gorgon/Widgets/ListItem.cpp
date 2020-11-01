@@ -3,6 +3,24 @@
 
 namespace Gorgon { namespace Widgets {
         
+    ListItem::ListItem(const UI::Template& temp) :
+        UI::ComponentStackWidget(temp) 
+    {
+        stack.HandleMouse();
+        stack.SetClickEvent([&](auto tag, auto location, auto) {
+            if(tag == UI::ComponentTemplate::NoTag) {
+                auto ind = stack.ComponentAt(location);
+                if(ind != -1) 
+                    tag = stack.GetTemplate(ind).GetTag();
+            }
+            
+            ClickEvent();
+            
+            if(tag == UI::ComponentTemplate::ToggleTag || stack.IndexOfTag(UI::ComponentTemplate::ToggleTag) == -1)
+                ToggleEvent();
+        });
+    }
+
     void ListItem::SetText(const std::string& value) {
         text = value;
         stack.SetData(UI::ComponentTemplate::Text, value);
@@ -189,5 +207,6 @@ namespace Gorgon { namespace Widgets {
         return true;
     }
     
+
 
 } }

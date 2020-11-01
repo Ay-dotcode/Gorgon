@@ -243,25 +243,34 @@ namespace Gorgon {
 			}
 
 
-			/// Adds the given item to the end of the list
-			void Add(T_* Data) {
-				if(std::find(list.begin(), list.end(), Data)==list.end())
+			/// Adds the given item to the end of the list if it is not
+			/// already in the list
+			bool Add(T_* Data) {
+				if(std::find(list.begin(), list.end(), Data)==list.end()) {
 					list.push_back(Data);
+                    
+                    return true;
+                }
+                
+                return false;
 			}
 
-			/// Adds a the given item to the end of the list
-			void Add(T_& data) {
-				Add(&data);
+			/// Adds a the given item to the end of the list if it is not
+			/// already in the list
+			bool Add(T_& data) {
+				return Add(&data);
 			}
 
-			/// Adds the given item to the end of the list
-			void Push(T_* Data) {
-				Add(Data);
+			/// Adds the given item to the end of the list if it is not
+			/// already in the list
+			bool Push(T_* Data) {
+				return Add(Data);
 			}
 
-			/// Adds a the given item to the end of the list
-			void Push(T_& data) {
-				Add(data);
+			/// Adds a the given item to the end of the list if it is not
+			/// already in the list
+			bool Push(T_& data) {
+				return Add(data);
 			}
 			
 			/// Removes and returns the last item in the collection
@@ -276,18 +285,23 @@ namespace Gorgon {
 				return ret;
 			}
 
-			/// Adds the given item to the end of the list
+			/// Adds the given item to the end of the list, returns the number
+			/// of added elements
 			template<typename... Args_>
-			void Add(T_* Data, Args_ *... args) {
-				Add(Data);
-				Add(args...);
+			int Add(T_* Data, Args_ *... args) {
+				int ret = Add(Data) ? 1 : 0;
+				ret += Add(args...);
+                
+                return ret;
 			}
 
 			/// Adds a the given item to the end of the list
 			template<typename... Args_>
-			void Add(T_& data, Args_ &... args) {
-				Add(&data);
-				Add(args...);
+			int Add(T_& data, Args_ &... args) {
+				int ret = Add(&data) ? 1 : 0;
+				ret += Add(args...);
+                
+                return ret;
 			}
 
 			/// Creates a new item and adds to the end of the collection
@@ -301,15 +315,17 @@ namespace Gorgon {
 
 			/// this method adds the given object in front of the reference. You may use the size of the collection
 			/// for this function to behave like Add.
-			void Insert(T_* data, long before) {
-				if(std::find(list.begin(), list.end(), data)!=list.end()) return;
+			bool Insert(T_* data, long before) {
+				if(std::find(list.begin(), list.end(), data)!=list.end()) return false;
+                
+                if(before==-1)
+                    before=(long)list.size();
 
 				if(before<0 || before>(long)list.size())
 					throw std::out_of_range("Invalid location");
 
 				if(before==list.size()) {
-					Add(data);
-					return;
+					return Add(data);
 				}
 
 				list.resize(list.size()+1);
@@ -318,24 +334,26 @@ namespace Gorgon {
 					list[i]=list[i-1];
 
 				list[before]=data;
+                
+                return true;
 			}
 
 			/// this method adds the given object in front of the reference. You may use the size of the collection
 			/// for this function to behave like Add.
-			void Insert(T_& data, unsigned before) {
-				Insert(&data, before);
+			bool Insert(T_& data, long before) {
+				return Insert(&data, before);
 			}
 
 			/// this method adds the given object in front of the reference. You may use the size of the collection
 			/// for this function to behave like Add.
-			void Insert(T_* data, const T_ &before) {
-				Insert(data, FindLocation(before));
+			bool Insert(T_* data, const T_ &before) {
+				return Insert(data, FindLocation(before));
 			}
 
 			/// this method adds the given object in front of the reference. You may use the size of the collection
 			/// for this function to behave like Add.
-			void Insert(T_& data, const T_ &before) {
-				Insert(&data, FindLocation(before));
+			bool Insert(T_& data, const T_ &before) {
+				return Insert(&data, FindLocation(before));
 			}
 
 			/// Creates a new item and inserts it before the given reference. You may use the size of the collection

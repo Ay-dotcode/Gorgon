@@ -34,15 +34,7 @@ namespace Gorgon { namespace Widgets {
     public:
 
         /// Constructor requires template. ListItem
-        ListItem(const UI::Template &temp) :
-            UI::ComponentStackWidget(temp)
-        {
-            stack.HandleMouse(); 
-            stack.SetClickEvent([&](auto, auto, auto) {
-                ClickEvent();
-                ToggleEvent();
-            });
-        }
+        ListItem(const UI::Template &temp);
 
         /// Changes the text displayed. Depending on the template, text might be
         /// overwritten by icon.

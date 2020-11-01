@@ -1035,12 +1035,14 @@ namespace Gorgon { namespace Widgets {
         public:
             using Storage = S_;
             
+            /// Adds the given item to the listbox
             void Add(T_ val) {
                 storage.push_back(val);
                 
                 dynamic_cast<F_*>(this)->Refresh();
             }
             
+            /// Adds the given items to the listbox
             template<class... A_>
             void Add(T_ val, A_&& ...rest) {
                 storage.push_back(val);
@@ -1048,15 +1050,31 @@ namespace Gorgon { namespace Widgets {
                 Add(std::forward<A_>(rest)...);
             }
             
+            /// Inserts the given item before the given location. You may use
+            /// Find to find the location of a specific item. If location is
+            /// -1, then item is added at the end.
             void Insert(long before, T_ val) {
+                if(before == -1) {
+                    Add(val);
+                    return;
+                }
+                
                 storage.insert(storage.begin()+before, val);
                 
                 dynamic_cast<F_*>(this)->sel_insert(before, 1);
                 dynamic_cast<F_*>(this)->Refresh();
             }
             
+            /// Inserts the given items before the given location. You may use
+            /// Find to find the location of a specific item. If location is
+            /// -1, then items are added at the end.
             template<class... A_>
             void Insert(long before, T_ val, A_&& ...rest) {
+                if(before == -1) {
+                    Add(val, rest...);
+                    return;
+                }
+                
                 //TODO optimize
                 Insert(std::forward<A_>(rest)...);
                 
@@ -1064,6 +1082,7 @@ namespace Gorgon { namespace Widgets {
                 dynamic_cast<F_*>(this)->sel_insert(before, 1);
             }
             
+            /// Removes the item at the given index.
             void Remove(long index) {
                 storage.erase(storage.begin()+index);
                 
@@ -1071,24 +1090,27 @@ namespace Gorgon { namespace Widgets {
                 dynamic_cast<F_*>(this)->Refresh();
             }
             
+            /// Moves the item at the given index before the given location.
+            /// If before is -1 or equal or larger than the number of items, 
+            /// then the item is moved to the end.
             void MoveBefore(long index, long before) {
                 if(index==before)
                     return;
 
-                if(index>before) {
-                    auto t = storage[index];
-                    for(unsigned i=index; i>before; i--)
-                        storage[i] = storage[i-1];
-
-                    storage[before]=t;
-                }
-                else if(before==storage.size()) {
+                if(before >= storage.size() || before == -1) {
                     auto t = storage[index];
 
                     for(unsigned i=index; i<storage.size()-1; i++)
                         storage[i] = storage[i+1];
 
                     storage[storage.size()-1] = t;
+                }
+                else if(index>before) {
+                    auto t = storage[index];
+                    for(unsigned i=index; i>before; i--)
+                        storage[i] = storage[i-1];
+
+                    storage[before]=t;
                 }
                 else {
                     auto t = storage[index];
@@ -1110,6 +1132,11 @@ namespace Gorgon { namespace Widgets {
                     return -1;
                 else
                     return it-storage.begin();
+            }
+            
+            /// Allocates memory for the given amount of items
+            void Reserve(long amount) {
+                storage.reserve(amount);
             }
             
             /**
@@ -1145,6 +1172,186 @@ namespace Gorgon { namespace Widgets {
             
             long getsize() const {
                 return storage.size();
+            }
+            
+            T_ &getelm(long index) {
+                return storage[index];
+            }
+            
+            const T_ &getelm(long index) const {
+                return storage[index];
+            }
+            
+            Storage storage;
+        };
+        
+        template<class T_, class W_, class F_>
+        class LBSTR_Collection {
+        public:
+            using Storage = Containers::Collection<T_>;
+            
+            /// Adds the given item to the list 
+            void Add(T_ &val) {
+                storage.Push(val);
+                
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
+            template<class... A_>
+            T_ &AddNew(A_&& ...args) {
+                auto &t = storage.AddNew(args...);
+                
+                dynamic_cast<F_*>(this)->Refresh();
+                
+                return t;
+            }
+            
+            template<class... A_>
+            void Add(T_ &val, A_& ...rest) {
+                storage.Push(val);
+                
+                Add(std::forward<A_>(rest)...);
+            }
+            
+            void Insert(long before, T_ &val) {
+                if(storage.Insert(before, val)) {
+                    dynamic_cast<F_*>(this)->sel_insert(before, 1);
+                    dynamic_cast<F_*>(this)->Refresh();
+                }
+            }
+            
+            void Insert(const T_ &before, T_ &val) {
+                Insert(FindLocation(before), val);
+            }
+            
+            template<class... A_>
+            T_ &InsertNew(const T_ &before, A_&& ...args) {
+                auto &t = storage.InsertNew(FindLocation(before), args...);
+                
+                dynamic_cast<F_*>(this)->sel_insert(before, 1);
+                dynamic_cast<F_*>(this)->Refresh();
+                
+                return t;
+            }
+            
+            void Remove(long index) {
+                storage.Remove(index);
+                
+                dynamic_cast<F_*>(this)->sel_remove(index, 1);
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
+            void Remove(const T_ &item) {
+                long index = storage.FindLocation(item);
+                if(index == -1)
+                    return;
+                
+                storage.Remove(index);
+                
+                dynamic_cast<F_*>(this)->sel_remove(index, 1);
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
+            /// Deletes an item from the listbox. Deleting both removes the item from the list and 
+            /// free the item itself. If given item does not exists, this function deletes the item
+            /// and does nothing else
+            void Delete(const T_ &item) {
+                long index = storage.FindLocation(item);
+                if(index == -1) {
+                    delete &item;
+                    
+                    return;
+                }
+                
+                storage.Delete(index);
+                
+                dynamic_cast<F_*>(this)->sel_remove(index, 1);
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
+            /// Deletes the item with the given index
+            void Delete(long index) {
+                storage.Delete(index);
+                
+                dynamic_cast<F_*>(this)->sel_remove(index, 1);
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
+            void MoveBefore(long index, long before) {
+                if(index==before)
+                    return;
+                
+                storage.MoveBefore(index, before);
+                
+                dynamic_cast<F_*>(this)->sel_move(index, before);
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
+            /// Return the location of the given item.
+            /// Returns -1 if item not found.
+            long Find(const T_ &item) {
+                return storage.FindLocation(item);
+            }
+            
+            /// Deletes and removes all elements in the listbox
+            void DeleteAll() {
+                auto s = storage.GetSize();
+                
+                storage.DeleteAll();
+                
+                dynamic_cast<F_*>(this)->sel_remove(0, s);
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
+            /// Deletes and removes all elements in the listbox. This function
+            /// also clears the memory associated with the storage.
+            void Destroy() {
+                auto s = storage.GetSize();
+                
+                storage.Destroy();
+                
+                dynamic_cast<F_*>(this)->sel_remove(0, s);
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
+            /// Allocates memory for the given amount of items
+            void Reserve(long amount) {
+                storage.Reserve(amount);
+            }
+            
+            /**
+             * @name Iteration 
+             * 
+             * These functions allow iteration of the listbox. If 
+             * the contents are changed through these functions, 
+             * you must call Refresh manually.
+             * 
+             * @{
+             */
+            auto begin() {
+                return storage.begin();
+            }
+            
+            auto begin() const {
+                return storage.begin();
+            }
+            
+            auto end() {
+                return storage.end();
+            }
+            
+            auto end() const {
+                return storage.end();
+            }
+            
+            /// @}
+        
+        protected:
+            LBSTR_Collection() {}
+            virtual ~LBSTR_Collection() {}
+            
+            long getsize() const {
+                return storage.GetSize();
             }
             
             T_ &getelm(long index) {
@@ -1250,6 +1457,8 @@ namespace Gorgon { namespace Widgets {
      * protected constructor/destructor.
      * reapplyfocus function should apply the focus to the focused element. This
      * function is called after listbox receives focus.
+     * GetFocusIndex and SetFocusIndex functions should exist to handle focus
+     * changes through keyboard keys.
      * 
      * TW_ function should take a T_ and set this to its W_ representation. 
      * 
@@ -1802,6 +2011,99 @@ namespace Gorgon { namespace Widgets {
         
         using Base::ComponentStackWidget::Widget::Remove;
         using internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, MultiListbox<T_>>::Remove;
+    };
+    
+    /**
+     * This is a simple collectionbox. It does not store any additional information
+     * about each item, therefore, can store large amounts of items. Items are
+     * stored in a Containers::Collection. Only one element can be selected at a time.
+     */
+    template<class T_>
+    class SimpleCollectionbox : 
+        public ListboxBase<T_, ListItem, 
+            internal::LBTR_blank <T_, ListItem>,
+            internal::LBTRF_blank<T_, ListItem, SimpleCollectionbox<T_>>,
+            internal::LBSTR_Collection<T_, ListItem, SimpleCollectionbox<T_>>,
+            internal::LBSELTR_Single<T_, ListItem, SimpleCollectionbox<T_>>
+        >
+    {
+        using Base = ListboxBase<T_, ListItem, 
+            internal::LBTR_blank <T_, ListItem>,
+            internal::LBTRF_blank<T_, ListItem, SimpleCollectionbox<T_>>,
+            internal::LBSTR_Collection<T_, ListItem, SimpleCollectionbox<T_>>,
+            internal::LBSELTR_Single<T_, ListItem, SimpleCollectionbox<T_>>
+        >;
+        
+        friend internal::LBTR_blank <T_, ListItem>;
+        friend internal::LBTRF_blank<T_, ListItem, SimpleCollectionbox<T_>>;
+        friend internal::LBSTR_Collection<T_, ListItem, SimpleCollectionbox<T_>>;
+        friend internal::LBSELTR_Single<T_, ListItem, SimpleCollectionbox<T_>>;
+        
+    public:
+        explicit SimpleCollectionbox(Registry::TemplateType temp = Registry::Listbox_Regular) : Base(Registry::Active()[temp]) {
+        }
+        
+        virtual bool Activate() {
+            return false;
+        }
+        
+        SimpleCollectionbox &operator =(const T_ value) {
+            this->SetSelection(value);
+            
+            return *this;
+        }
+        
+        using Base::ComponentStackWidget::Widget::Remove;
+        using internal::LBSTR_Collection<T_, ListItem, SimpleCollectionbox<T_>>::Remove;
+    };
+    
+    /**
+     * This is a simple multi select collectionbox. It does not store any additional 
+     * information about each item, therefore, can store large amounts of items.
+     * However, default event strategy is triggering the event for every selected
+     * and unselected item. This might cause problems if the list is too long. 
+     * When the event method is set to single, only one event will be called for
+     * single action. Items are stored in Containers::Collection. You may use Selection
+     * and SelectedIndices to iterate selected elements. In both members, selection
+     * is always sorted by the position in the collectionbox.
+     */
+    template<class T_>
+    class MultiCollectionbox : 
+        public ListboxBase<T_, ListItem, 
+            internal::LBTR_blank <T_, ListItem>,
+            internal::LBTRF_blank<T_, ListItem, MultiCollectionbox<T_>>,
+            internal::LBSTR_Collection<T_, ListItem, MultiCollectionbox<T_>>,
+            internal::LBSELTR_Multi<T_, ListItem, MultiCollectionbox<T_>>
+        >
+    {
+        using Base = ListboxBase<T_, ListItem, 
+            internal::LBTR_blank <T_, ListItem>,
+            internal::LBTRF_blank<T_, ListItem, MultiCollectionbox<T_>>,
+            internal::LBSTR_Collection<T_, ListItem, MultiCollectionbox<T_>>,
+            internal::LBSELTR_Multi<T_, ListItem, MultiCollectionbox<T_>>
+        >;
+        
+        friend internal::LBTR_blank <T_, ListItem>;
+        friend internal::LBTRF_blank<T_, ListItem, MultiCollectionbox<T_>>;
+        friend internal::LBSTR_Collection<T_, ListItem, MultiCollectionbox<T_>>;
+        friend internal::LBSELTR_Multi<T_, ListItem, MultiCollectionbox<T_>>;
+        
+    public:
+        explicit MultiCollectionbox(Registry::TemplateType temp = Registry::Listbox_Regular) : Base(Registry::Active()[temp]) {
+        }
+        
+        virtual bool Activate() {
+            return false;
+        }
+        
+        MultiCollectionbox &operator =(const T_ value) {
+            this->SetSelection(value);
+            
+            return *this;
+        }
+        
+        using Base::ComponentStackWidget::Widget::Remove;
+        using internal::LBSTR_Collection<T_, ListItem, MultiCollectionbox<T_>>::Remove;
     };
     
 } }
