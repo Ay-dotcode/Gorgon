@@ -1494,15 +1494,12 @@ namespace Gorgon { namespace Widgets {
      * changes through keyboard keys.
      * 
      * TW_ function should take a T_ and set this to its W_ representation. 
-     * 
-     * WT_ should read the data from W_ and set it to T_.
      */
     template<
         class T_, class W_, class TRF_, 
         class STR_, class SELTR_, 
         bool useisvisible = false,
-        void (*TW_)(const T_ &, W_ &) = internal::SetTextUsingFrom<T_, W_>,
-        void (*WT_)(W_ &, T_ &)       = internal::GetTextUsingTo  <T_, W_>
+        void (*TW_)(const T_ &, W_ &) = internal::SetTextUsingFrom<T_, W_>
     >
     class ListboxBase : public UI::ComponentStackWidget, 
                         public ListBase<T_, W_>, 
