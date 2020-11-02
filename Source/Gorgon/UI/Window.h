@@ -17,9 +17,9 @@
 namespace Gorgon { namespace UI {
 
     /**
-     * UI window allows programmers to create an OS window that will accept
-     * widgets and has the ability to run by its own.
-     */
+    * UI window allows programmers to create an OS window that will accept
+    * widgets and has the ability to run by its own.
+    */
     class Window : public Gorgon::Window, public Runner, public WidgetContainer {
     public:
         using Gorgon::Window::Window;
@@ -30,6 +30,7 @@ namespace Gorgon { namespace UI {
         ~Window() {
             KeyEvent.Unregister(inputtoken);
             CharacterEvent.Unregister(chartoken);
+            delete extenderlayer;
         }
         
         Window(Window &&other) : Gorgon::Window(std::move(other)), WidgetContainer(std::move(other)) {
@@ -38,6 +39,11 @@ namespace Gorgon { namespace UI {
             
             inputtoken = keyinit();
             chartoken  = charinit();
+            
+            delete extenderlayer;
+            extenderlayer = other.extenderlayer;
+            Add(extenderlayer);
+            other.extenderlayer = other.layerinit();
         }
         
         Window &operator=(Window &&other) {
@@ -53,6 +59,11 @@ namespace Gorgon { namespace UI {
             
             inputtoken = keyinit();
             chartoken  = charinit();
+            
+            delete extenderlayer;
+            extenderlayer = other.extenderlayer;
+            Add(extenderlayer);
+            other.extenderlayer = other.layerinit();
             
             return *this;
         }
@@ -103,12 +114,12 @@ namespace Gorgon { namespace UI {
             Gorgon::Window::Resize(size);
             
             return GetSize() == size;
-		}
+        }
 
-		decltype(KeyEvent)::Token keyinit() {
-			inputtoken = KeyEvent.Register([this](Input::Key key, float amount) {
+        decltype(KeyEvent)::Token keyinit() {
+            inputtoken = KeyEvent.Register([this](Input::Key key, float amount) {
                 return WidgetContainer::KeyEvent(key, amount);
-			});
+            });
             
             KeyEvent.NewHandler = [this]{
                 RegisterOnce([this] {
@@ -116,13 +127,13 @@ namespace Gorgon { namespace UI {
                 });
             };
 
-			return inputtoken;
-		}
+            return inputtoken;
+        }
 
-		decltype(CharacterEvent)::Token charinit() {
-			chartoken = CharacterEvent.Register([this](Char c) {
-				return WidgetContainer::CharacterEvent(c);
-			});
+        decltype(CharacterEvent)::Token charinit() {
+            chartoken = CharacterEvent.Register([this](Char c) {
+                return WidgetContainer::CharacterEvent(c);
+            });
             
             CharacterEvent.NewHandler = [this]{
                 RegisterOnce([this] {
@@ -130,15 +141,31 @@ namespace Gorgon { namespace UI {
                 });
             };
 
-			return chartoken;
-		}
+            return chartoken;
+        }
+        
+        Graphics::Layer *layerinit() {
+            auto l = new Graphics::Layer;
+            Add(l);
+            return l;
+        }
 
+        void added(Layer &l) override {
+            long ind = children.FindLocation(extenderlayer);
+            if(ind != -1) {
+                children.MoveBefore(ind, children.GetSize());
+            }
+            
+            Gorgon::Window::added(l);
+        }
+        
 
     private:
-		bool quiting = false;
+        bool quiting = false;
+        Graphics::Layer *extenderlayer = layerinit();
 
-		decltype(KeyEvent)::Token inputtoken = keyinit(); //to initialize token after window got constructed
-		decltype(CharacterEvent)::Token chartoken = charinit(); //to initialize token after window got constructed
+        decltype(KeyEvent)::Token inputtoken = keyinit(); //to initialize token after window got constructed
+        decltype(CharacterEvent)::Token chartoken = charinit(); //to initialize token after window got constructed
     };
     
 } }

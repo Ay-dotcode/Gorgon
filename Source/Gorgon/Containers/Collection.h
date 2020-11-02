@@ -369,7 +369,7 @@ namespace Gorgon {
 			/// Creates a new item and inserts it before the given reference. You may use the size of the collection
 			/// for this function to behave like Add.
 			template<typename... Args_>
-			T_ &InsertNew(unsigned before, Args_... args) {
+			T_ &InsertNew(long before, Args_... args) {
 				auto t=new T_(args...);
 				Insert(t, before);
 
@@ -377,7 +377,9 @@ namespace Gorgon {
 			}
 
 			/// this method moves the given object in the collection in front of the reference
-			void MoveBefore(unsigned index, unsigned before) {
+			void MoveBefore(long index, long before) {
+                if(before == -1)
+                    before = list.size();
 				if(index>=list.size())
 					throw std::out_of_range("Invalid location");
 				if(before>list.size())
@@ -388,7 +390,7 @@ namespace Gorgon {
 
 				if(index>before) {
 					T_ *t=list[index];
-					for(unsigned i=index; i>before; i--)
+					for(long i=index; i>before; i--)
 						list[i]=list[i-1];
 
 					list[before]=t;
@@ -396,14 +398,14 @@ namespace Gorgon {
 				else if(before==list.size()) {
 					T_ *t=list[index];
 
-					for(unsigned i=index; i<list.size()-1; i++)
+					for(long i=index; i<list.size()-1; i++)
 						list[i]=list[i+1];
 
 					list[list.size()-1]=t;
 				}
 				else {
 					T_ *t=list[index];
-					for(unsigned i=index; i<before; i++)
+					for(long i=index; i<before; i++)
 						list[i]=list[i+1];
 
 					list[before]=t;
@@ -411,12 +413,12 @@ namespace Gorgon {
 			}
 
 			/// this method moves the given object in the collection in front of the reference
-			void MoveBefore(unsigned index, const T_ &before) {
+			void MoveBefore(long index, const T_ &before) {
 				MoveBefore(index, FindLocation(before));
 			}
 
 			/// this method moves the given object in the collection in front of the reference
-			void MoveBefore(const T_ &index, unsigned before) {
+			void MoveBefore(const T_ &index, long before) {
 				MoveBefore(FindLocation(index), before);
 			}
 

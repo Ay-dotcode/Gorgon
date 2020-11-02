@@ -214,7 +214,9 @@ namespace Gorgon {
 	}
 	
 	void Window::added(Layer &) {
-        children.MoveBefore(*pointerlayer, children.GetSize());
+        long ind = children.FindLocation(pointerlayer);
+        if(ind != -1)
+            children.MoveBefore(ind, children.GetSize());
     }
     
     void Window::SwitchToLocalPointers() {
