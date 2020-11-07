@@ -91,6 +91,8 @@ namespace Gorgon { namespace Graphics {
 		virtual Geometry::Size calculatesize(const SizeController &controller, const Geometry::Size &s) const override {
             return base.CalculateSize(controller, s);
 		}        
+		
+		using Drawable::draw;
 
 		virtual void draw(TextureTarget &target, const Geometry::Pointf &p1, const Geometry::Pointf &p2, 
 						  const Geometry::Pointf &p3, const Geometry::Pointf &p4, 

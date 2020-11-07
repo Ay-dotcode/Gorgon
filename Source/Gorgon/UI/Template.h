@@ -219,6 +219,10 @@ namespace Gorgon {
         /// for the base state.
         Closed,
         
+        /// For widgets that can have reversed state. When dropdown will open
+        /// above, this will be set.
+        Reversed,
+        
         /// In lists denotes the item is in odd position
         Odd,
         
@@ -871,7 +875,8 @@ namespace Gorgon {
             CaretTag,
             ItemTag,
             HeaderTag,
-            SpacerTag
+            SpacerTag,
+            ListTag
         };
         
         /// Some components are repeated along some axis, this property controls how they will be

@@ -46,6 +46,8 @@ namespace Gorgon { namespace Widgets {
             
             Listbox_Regular,
             
+            Dropdown_Regular,
+            
             ///Do not use this value
             Max 
         };

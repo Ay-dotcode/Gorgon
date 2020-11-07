@@ -61,7 +61,7 @@ namespace Gorgon { namespace Widgets {
     };
     
     /// @cond internal
-    namespace internal {  
+    namespace internal { 
         /// Contains no extra data and does not assume anything about W_
         template <class T_, class W_, class F_>
         class LBTRF_blank {
@@ -130,6 +130,11 @@ namespace Gorgon { namespace Widgets {
             w.SetText(String::From(val));
         }
         
+        template<class T_, class W_, class F_, F_ f>
+        void SetTextUsingFn(const T_ &val, W_ &w) {
+            w.SetText(f(val));
+        }
+        
         template<class T_, class W_>
         void GetTextUsingTo(W_ &w, T_ &val) {
             val = String::To<T_>(w.GetText());
@@ -148,11 +153,22 @@ namespace Gorgon { namespace Widgets {
             /// Returns the selected item. If nothing is selected this function
             /// will throw. You may check if there is a selection using 
             /// HasSelectedItem function.
-            T_ GetSelectedItem() const {
+            const T_ &GetSelectedItem() const {
                 if(selectedindex == -1)
                     throw std::runtime_error("Nothing is selected.");
                 
                 return dynamic_cast<const F_&>(*this)[selectedindex];
+            }
+            
+            /// Returns the selected item. If nothing is selected this function
+            /// will throw. You may check if there is a selection using 
+            /// HasSelectedItem function. Changing the returned value will not
+            /// automatically refresh the contents.
+            T_ &GetSelectedItem() {
+                if(selectedindex == -1)
+                    throw std::runtime_error("Nothing is selected.");
+                
+                return dynamic_cast<F_&>(*this)[selectedindex];
             }
             
             /// Returns the index of the selected item. -1 will be returned if 
@@ -851,10 +867,11 @@ namespace Gorgon { namespace Widgets {
                 dynamic_cast<F_*>(this)->Refresh();
             }
             
-            /*
-            Selection -> subclass allows for(auto item : list.Selection)
-            */
+            /// Allows iteration of selected indices
             SelectionIndexHelper SelectedIndices;
+            
+            /// Allows iteration of selected items. If the iterated items is
+            /// changed, list will not be automatically updated.
             SelectionHelper Selection;
             
             Event<LBSELTR_Multi, long, bool> ChangedEvent = Event<LBSELTR_Multi, long, bool>{this};
@@ -1498,18 +1515,23 @@ namespace Gorgon { namespace Widgets {
     template<
         class T_, class W_, class TRF_, 
         class STR_, class SELTR_, 
-        bool useisvisible = false,
-        void (*TW_)(const T_ &, W_ &) = internal::SetTextUsingFrom<T_, W_>
+        bool useisvisible,
+        void (*TW_)(const T_ &, W_ &)
     >
-    class ListboxBase : public UI::ComponentStackWidget, 
-                        public ListBase<T_, W_>, 
-                        public TRF_, 
-                        public SELTR_, public STR_ 
+    class ListboxBase : 
+        public ListBase<T_, W_>, 
+        public TRF_, 
+        public SELTR_, 
+        public STR_ 
     {
     public:
+        using SelectionType = SELTR_;
+        using TypeTraits    = TRF_;
+        using StorageType   = STR_;
         
         /// Returns the item at the given point. This operator will not perform
-        /// bounds checking.
+        /// bounds checking. Changing the returned value will not automatically
+        /// refresh the contents.
         virtual T_ &operator[](long index) override {
             return this->getelm(index);
         }
@@ -1524,6 +1546,24 @@ namespace Gorgon { namespace Widgets {
         virtual long GetCount() const override {
             return this->STR_::getsize();
         }
+
+    protected:
+        ListboxBase()
+        { }
+    };
+    
+    template<
+        class T_, class W_, class TRF_, 
+        class STR_, class SELTR_, 
+        bool useisvisible,
+        void (*TW_)(const T_ &, W_ &)
+    >
+    class ListboxWidgetBase : 
+        public UI::ComponentStackWidget,
+        public ListboxBase<T_, W_, TRF_, STR_, SELTR_, useisvisible, TW_> 
+    {
+    public:
+        using ListBase = ListboxBase<T_, W_, TRF_, STR_, SELTR_, useisvisible, TW_>;
         
         virtual void Refresh() override {
             if(!contents.IsReady())
@@ -1621,7 +1661,7 @@ namespace Gorgon { namespace Widgets {
             }
             else {
                 if(!isscrolling) {
-                    stack.SetFrameEvent(std::bind(&ListboxBase::updatescroll, this));
+                    stack.SetFrameEvent(std::bind(&ListboxWidgetBase::updatescroll, this));
                     isscrolling = true;
                 }
             }
@@ -1752,17 +1792,16 @@ namespace Gorgon { namespace Widgets {
 
             return false;
         }
-        
     protected:
-        ListboxBase(const UI::Template &temp) : 
+        ListboxWidgetBase(const UI::Template &temp) : 
             ComponentStackWidget(temp, { 
                 { UI::ComponentTemplate::ItemTag   , {}},
                 { UI::ComponentTemplate::HeaderTag , {}},
                 { UI::ComponentTemplate::SpacerTag , {}},
                 { UI::ComponentTemplate::VScrollTag, 
-                    std::bind(&ListboxBase::createvscroll, this, std::placeholders::_1)
-                },
-            } )
+                    std::bind(&ListboxWidgetBase::createvscroll, this, std::placeholders::_1)
+                }
+            })
         {
             stack.HandleMouse();
             
@@ -1824,10 +1863,10 @@ namespace Gorgon { namespace Widgets {
                     EnsureVisible(ind);
                 }
 
-            });
+            });            
         }
         
-        ~ListboxBase() {
+        ~ListboxWidgetBase() {
             for(auto &p : widgets) {
                 p.second.Destroy();
             }
@@ -1868,7 +1907,7 @@ namespace Gorgon { namespace Widgets {
             vscroller->Range        = 1;
             *vscroller              = scrolloffset;
             vscroller->SmallChange  = scrolldist;
-            vscroller->ValueChanged.Register(*this, &ListboxBase::ScrollTo);
+            vscroller->ValueChanged.Register(*this, &ListboxWidgetBase::ScrollTo);
             
             return vscroller;
         }
@@ -1948,32 +1987,37 @@ namespace Gorgon { namespace Widgets {
         
         Input::KeyRepeater repeater;
     };
-    
+
     /**
      * This is a simple listbox. It does not store any additional information
      * about each item, therefore, can store large amounts of items. Items are
      * stored in an std::vector. Only one element can be selected at a time.
      */
-    template<class T_>
+    template<class T_, void (*TW_)(const T_ &, ListItem &) = internal::SetTextUsingFrom<T_, ListItem>>
     class SimpleListbox : 
-        public ListboxBase<T_, ListItem, 
-            internal::LBTRF_ListItem<T_, ListItem, SimpleListbox<T_>>,
-            internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, SimpleListbox<T_>>,
-            internal::LBSELTR_Single<T_, ListItem, SimpleListbox<T_>>
+        public ListboxWidgetBase<T_, ListItem, 
+            internal::LBTRF_ListItem<T_, ListItem, SimpleListbox<T_, TW_>>,
+            internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, SimpleListbox<T_, TW_>>,
+            internal::LBSELTR_Single<T_, ListItem, SimpleListbox<T_, TW_>>,
+            false, TW_
         >
     {
-        using Base = ListboxBase<T_, ListItem, 
-            internal::LBTRF_ListItem<T_, ListItem, SimpleListbox<T_>>,
-            internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, SimpleListbox<T_>>,
-            internal::LBSELTR_Single<T_, ListItem, SimpleListbox<T_>>
+        using Base = ListboxWidgetBase<T_, ListItem, 
+            internal::LBTRF_ListItem<T_, ListItem, SimpleListbox<T_, TW_>>,
+            internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, SimpleListbox<T_, TW_>>,
+            internal::LBSELTR_Single<T_, ListItem, SimpleListbox<T_, TW_>>,
+            false, TW_
         >;
         
-        friend internal::LBTRF_ListItem<T_, ListItem, SimpleListbox<T_>>;
-        friend internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, SimpleListbox<T_>>;
-        friend internal::LBSELTR_Single<T_, ListItem, SimpleListbox<T_>>;
+        friend internal::LBTRF_ListItem<T_, ListItem, SimpleListbox<T_, TW_>>;
+        friend internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, SimpleListbox<T_, TW_>>;
+        friend internal::LBSELTR_Single<T_, ListItem, SimpleListbox<T_, TW_>>;
         
     public:
         explicit SimpleListbox(Registry::TemplateType temp = Registry::Listbox_Regular) : Base(Registry::Active()[temp]) {
+        }
+        
+        explicit SimpleListbox(const UI::Template &temp) : Base(temp) {
         }
         
         virtual bool Activate() {
@@ -2000,26 +2044,31 @@ namespace Gorgon { namespace Widgets {
      * and SelectedIndices to iterate selected elements. In both members, selection
      * is always sorted by the position in the listbox.
      */
-    template<class T_>
+    template<class T_, void (*TW_)(const T_ &, ListItem &) = internal::SetTextUsingFrom<T_, ListItem>>
     class MultiListbox : 
-        public ListboxBase<T_, ListItem, 
-            internal::LBTRF_ListItem<T_, ListItem, MultiListbox<T_>>,
-            internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, MultiListbox<T_>>,
-            internal::LBSELTR_Multi<T_, ListItem, MultiListbox<T_>>
+        public ListboxWidgetBase<T_, ListItem, 
+            internal::LBTRF_ListItem<T_, ListItem, MultiListbox<T_, TW_>>,
+            internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, MultiListbox<T_, TW_>>,
+            internal::LBSELTR_Multi<T_, ListItem, MultiListbox<T_, TW_>>,
+            false, TW_
         >
     {
-        using Base = ListboxBase<T_, ListItem, 
-            internal::LBTRF_ListItem<T_, ListItem, MultiListbox<T_>>,
-            internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, MultiListbox<T_>>,
-            internal::LBSELTR_Multi<T_, ListItem, MultiListbox<T_>>
+        using Base = ListboxWidgetBase<T_, ListItem, 
+            internal::LBTRF_ListItem<T_, ListItem, MultiListbox<T_, TW_>>,
+            internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, MultiListbox<T_, TW_>>,
+            internal::LBSELTR_Multi<T_, ListItem, MultiListbox<T_, TW_>>,
+            false, TW_
         >;
         
-        friend internal::LBTRF_ListItem<T_, ListItem, MultiListbox<T_>>;
-        friend internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, MultiListbox<T_>>;
-        friend internal::LBSELTR_Multi<T_, ListItem, MultiListbox<T_>>;
+        friend internal::LBTRF_ListItem<T_, ListItem, MultiListbox<T_, TW_>>;
+        friend internal::LBSTR_STLVector<T_, ListItem, std::vector<T_>, MultiListbox<T_, TW_>>;
+        friend internal::LBSELTR_Multi<T_, ListItem, MultiListbox<T_, TW_>>;
         
     public:
         explicit MultiListbox(Registry::TemplateType temp = Registry::Listbox_Regular) : Base(Registry::Active()[temp]) {
+        }
+        
+        explicit MultiListbox(const UI::Template &temp) : Base(temp) {
         }
         
         virtual bool Activate() {
@@ -2041,26 +2090,31 @@ namespace Gorgon { namespace Widgets {
      * about each item, therefore, can store large amounts of items. Items are
      * stored in a Containers::Collection. Only one element can be selected at a time.
      */
-    template<class T_>
+    template<class T_, void (*TW_)(const T_ &, ListItem &) = internal::SetTextUsingFrom<T_, ListItem>>
     class SimpleCollectionbox : 
-        public ListboxBase<T_, ListItem, 
-            internal::LBTRF_ListItem<T_, ListItem, SimpleCollectionbox<T_>>,
-            internal::LBSTR_Collection<T_, ListItem, SimpleCollectionbox<T_>>,
-            internal::LBSELTR_Single<T_, ListItem, SimpleCollectionbox<T_>>
+        public ListboxWidgetBase<T_, ListItem, 
+            internal::LBTRF_ListItem<T_, ListItem, SimpleCollectionbox<T_, TW_>>,
+            internal::LBSTR_Collection<T_, ListItem, SimpleCollectionbox<T_, TW_>>,
+            internal::LBSELTR_Single<T_, ListItem, SimpleCollectionbox<T_, TW_>>,
+            false, TW_
         >
     {
-        using Base = ListboxBase<T_, ListItem, 
-            internal::LBTRF_ListItem<T_, ListItem, SimpleCollectionbox<T_>>,
-            internal::LBSTR_Collection<T_, ListItem, SimpleCollectionbox<T_>>,
-            internal::LBSELTR_Single<T_, ListItem, SimpleCollectionbox<T_>>
+        using Base = ListboxWidgetBase<T_, ListItem, 
+            internal::LBTRF_ListItem<T_, ListItem, SimpleCollectionbox<T_, TW_>>,
+            internal::LBSTR_Collection<T_, ListItem, SimpleCollectionbox<T_, TW_>>,
+            internal::LBSELTR_Single<T_, ListItem, SimpleCollectionbox<T_, TW_>>,
+            false, TW_
         >;
         
-        friend internal::LBTRF_ListItem<T_, ListItem, SimpleCollectionbox<T_>>;
-        friend internal::LBSTR_Collection<T_, ListItem, SimpleCollectionbox<T_>>;
-        friend internal::LBSELTR_Single<T_, ListItem, SimpleCollectionbox<T_>>;
+        friend internal::LBTRF_ListItem<T_, ListItem, SimpleCollectionbox<T_, TW_>>;
+        friend internal::LBSTR_Collection<T_, ListItem, SimpleCollectionbox<T_, TW_>>;
+        friend internal::LBSELTR_Single<T_, ListItem, SimpleCollectionbox<T_, TW_>>;
         
     public:
         explicit SimpleCollectionbox(Registry::TemplateType temp = Registry::Listbox_Regular) : Base(Registry::Active()[temp]) {
+        }
+        
+        explicit SimpleCollectionbox(const UI::Template &temp) : Base(temp) {
         }
         
         virtual bool Activate() {
@@ -2087,26 +2141,31 @@ namespace Gorgon { namespace Widgets {
      * and SelectedIndices to iterate selected elements. In both members, selection
      * is always sorted by the position in the collectionbox.
      */
-    template<class T_>
+    template<class T_, void (*TW_)(const T_ &, ListItem &) = internal::SetTextUsingFrom<T_, ListItem>>
     class MultiCollectionbox : 
-        public ListboxBase<T_, ListItem, 
-            internal::LBTRF_ListItem<T_, ListItem, MultiCollectionbox<T_>>,
-            internal::LBSTR_Collection<T_, ListItem, MultiCollectionbox<T_>>,
-            internal::LBSELTR_Multi<T_, ListItem, MultiCollectionbox<T_>>
+        public ListboxWidgetBase<T_, ListItem, 
+            internal::LBTRF_ListItem<T_, ListItem, MultiCollectionbox<T_, TW_>>,
+            internal::LBSTR_Collection<T_, ListItem, MultiCollectionbox<T_, TW_>>,
+            internal::LBSELTR_Multi<T_, ListItem, MultiCollectionbox<T_, TW_>>,
+            false, TW_
         >
     {
-        using Base = ListboxBase<T_, ListItem, 
-            internal::LBTRF_ListItem<T_, ListItem, MultiCollectionbox<T_>>,
-            internal::LBSTR_Collection<T_, ListItem, MultiCollectionbox<T_>>,
-            internal::LBSELTR_Multi<T_, ListItem, MultiCollectionbox<T_>>
+        using Base = ListboxWidgetBase<T_, ListItem, 
+            internal::LBTRF_ListItem<T_, ListItem, MultiCollectionbox<T_, TW_>>,
+            internal::LBSTR_Collection<T_, ListItem, MultiCollectionbox<T_, TW_>>,
+            internal::LBSELTR_Multi<T_, ListItem, MultiCollectionbox<T_, TW_>>,
+            false, TW_
         >;
         
-        friend internal::LBTRF_ListItem<T_, ListItem, MultiCollectionbox<T_>>;
-        friend internal::LBSTR_Collection<T_, ListItem, MultiCollectionbox<T_>>;
-        friend internal::LBSELTR_Multi<T_, ListItem, MultiCollectionbox<T_>>;
+        friend internal::LBTRF_ListItem<T_, ListItem, MultiCollectionbox<T_, TW_>>;
+        friend internal::LBSTR_Collection<T_, ListItem, MultiCollectionbox<T_, TW_>>;
+        friend internal::LBSELTR_Multi<T_, ListItem, MultiCollectionbox<T_, TW_>>;
         
     public:
         explicit MultiCollectionbox(Registry::TemplateType temp = Registry::Listbox_Regular) : Base(Registry::Active()[temp]) {
+        }
+        
+        explicit MultiCollectionbox(const UI::Template &temp) : Base(temp) {
         }
         
         virtual bool Activate() {

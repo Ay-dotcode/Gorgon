@@ -30,7 +30,7 @@ namespace Gorgon { namespace Widgets {
     * click will raise it. Even if ToggleTag component is clicked, ClickEvent
     * will be fired first.
     */
-    class ListItem : public UI::ComponentStackWidget {
+    class ListItem : public virtual UI::ComponentStackWidget {
     public:
 
         /// Constructor requires template. ListItem
@@ -47,7 +47,7 @@ namespace Gorgon { namespace Widgets {
 
 
         /// Sets the index of the ListItem in the Listbox
-        void SetIndex(int value);
+        void SetIndex(long value);
 
         /// Returns the index of the Item in the Listbox
         int GetIndex() const {
@@ -162,7 +162,7 @@ namespace Gorgon { namespace Widgets {
     private:
         std::string text;
 
-        int index = 0;
+        long index = 0;
 
         const Graphics::Animation          *icon     = nullptr;
         const Graphics::AnimationProvider  *iconprov = nullptr;

@@ -433,39 +433,39 @@ namespace Gorgon {
 
         
         /// @cond
-        inline std::string From(char value) {
+        inline std::string From(const char &value) {
             return std::to_string(value);
         }
 
-        inline std::string From(unsigned char value) {
+        inline std::string From(const unsigned char &value) {
             return std::to_string(value);
         }
 
-        inline std::string From(int value) {
+        inline std::string From(const int &value) {
             return std::to_string(value);
         }
         
-        inline std::string From(unsigned value) {
+        inline std::string From(const unsigned &value) {
             return std::to_string(value);
         }
 
-        inline std::string From(long value) {
+        inline std::string From(const long &value) {
             return std::to_string(value);
         }
         
-        inline std::string From(unsigned long value) {
+        inline std::string From(const unsigned long &value) {
             return std::to_string(value);
         }
         
-        inline std::string From(long long value) {
+        inline std::string From(const long long &value) {
             return std::to_string(value);
         }
         
-        inline std::string From(unsigned long long value) {
+        inline std::string From(const unsigned long long &value) {
             return std::to_string(value);
         }
         
-        inline std::string From(float value) {
+        inline std::string From(const float &value) {
             std::stringstream ss;
             if(value > 1e7) {
                 ss<<std::fixed<<std::setprecision(0)<<value;
@@ -477,7 +477,7 @@ namespace Gorgon {
             return ss.str();
         }
         
-        inline std::string From(double value) {
+        inline std::string From(const double &value) {
             std::stringstream ss;
             if(value > 1e14) {
                 ss<<std::fixed<<std::setprecision(0)<<value;
@@ -488,7 +488,7 @@ namespace Gorgon {
             return ss.str();
         }
         
-        inline std::string From(long double value) {
+        inline std::string From(const long double &value) {
             std::stringstream ss;
             if(value > 1e28l) {
                 ss<<std::fixed<<std::setprecision(0)<<value;
@@ -499,7 +499,7 @@ namespace Gorgon {
             return ss.str();
         }
         
-        inline std::string From(std::string value) {
+        inline std::string From(const std::string &value) {
             return value;
         }
 
@@ -535,7 +535,7 @@ namespace Gorgon {
             static const bool Value = sizeof( test(*(std::ostream*)nullptr) )==1;
         };
         
-        inline void streamthis(std::stringstream &stream) {			
+        inline void streamthis(std::stringstream &stream) {
         }
         
         template<class T_, class ...P_>

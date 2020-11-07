@@ -9,6 +9,8 @@ SET(Local
 	Composer.h
 	Composer.cpp
 	
+	Dropdown.h
+	
 	Generator.h
 	Generator.cpp
 	

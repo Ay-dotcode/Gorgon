@@ -27,7 +27,7 @@ namespace Gorgon { namespace Widgets {
     }
 
 
-    void ListItem::SetIndex(int value) {
+    void ListItem::SetIndex(long value) {
         index = value;
     }
 

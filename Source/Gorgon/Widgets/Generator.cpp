@@ -1744,4 +1744,160 @@ namespace Gorgon { namespace Widgets {
         
         return temp;
     }
+    
+    UI::Template SimpleGenerator::Dropdown() {
+        Geometry::Size defsize = {BorderedWidgetHeight * 4 + Spacing * 3, BorderedWidgetHeight};
+        
+        UI::Template temp;
+        temp.SetSize(defsize);
+        
+        
+        temp.AddContainer(0, UI::ComponentCondition::Always)
+            .AddIndex(1) //border
+            .AddIndex(2) //boxed content
+            .AddIndex(3) //Button
+            .AddIndex(8) //list
+        ;
+        
+        auto setupborder = [&](auto &anim, UI::ComponentCondition condition) {
+            auto &bg = temp.AddContainer(1, condition);
+            bg.Background.SetAnimation(anim);
+            bg.SetSize(100, 100, UI::Dimension::Percent);
+            bg.SetPositioning(UI::ComponentTemplate::Absolute);
+        };
+
+        setupborder(NormalBorder(), UI::ComponentCondition::Always);
+        setupborder(HoverBorder(), UI::ComponentCondition::Hover);
+        setupborder(DownBorder(), UI::ComponentCondition::Opened);
+        setupborder(DisabledBorder(), UI::ComponentCondition::Disabled);
+        
+        auto &boxed = temp.AddContainer(2, UI::ComponentCondition::Always)
+            .AddIndex(4) //clip
+            .AddIndex(5) //focus
+        ;
+        boxed.SetSize(100, 100, UI::Dimension::Percent);
+        boxed.SetBorderSize(Border.Width);
+        boxed.SetPadding(std::max(Border.Radius / 2, Focus.Spacing));
+        boxed.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        
+        
+        auto arrow = [&](auto color, bool upwards) {
+            auto icon = new Graphics::Bitmap({int(std::round(ObjectHeight*0.9f)), int(std::round(ObjectHeight*0.67f))});
+            
+            icon->Clear();
+            
+            Geometry::PointList<Geometry::Pointf> border;
+            float off = 0;
+            float w = icon->GetWidth();
+            float h = icon->GetHeight()-off;
+            
+            if(upwards) {   
+                border = {
+                    {w/2.f, 0},
+                    {w, h-off},
+                    {0, h-off},
+                };
+            }
+            else {   
+                border = {
+                    {w/2.f, h-off},
+                    {0, 0},
+                    {w, 0},
+                };
+            }
+            
+            CGI::Polyfill(*icon, border, CGI::SolidFill<>(color));
+            icon->Prepare();
+            drawables.Add(icon);
+            
+            return icon;
+        };
+        
+        auto cross = [&](auto color) {
+            auto icon = new Graphics::Bitmap({int(std::round(ObjectHeight*0.7)), int(std::round(ObjectHeight*0.7))});
+            
+            icon->Clear();
+            
+            float off = ObjectBorder/2.f;
+            float s = float(int(std::round(ObjectHeight*0.7)));
+            float mid = s/2.f;
+            
+            Geometry::PointList<Geometry::Pointf> border = {
+                {off, 0},
+                {mid,mid-off},
+                {s-off, 0},
+                {s, off},
+                {mid+off, mid},
+                {s, s-off},
+                {s-off, s},
+                {mid, mid+off},
+                {off, s},
+                {0, s-off},
+                {mid-off, mid},
+                {0, off},
+                {off, 0}
+            };
+            
+            CGI::Polyfill(*icon, border, CGI::SolidFill<>(color));
+            icon->Prepare();
+            drawables.Add(icon);
+            
+            return icon;
+        };
+        
+        auto makebutton = [&](auto color, int icon, UI::ComponentCondition cond) {
+            auto &btn = temp.AddGraphics(3, cond);
+            switch(icon) {
+            case 0:
+                btn.Content.SetAnimation(*arrow(color, false));
+                break;
+            case 1:
+                btn.Content.SetAnimation(*arrow(color, true));
+                break;
+            case 2:
+                btn.Content.SetAnimation(*cross(color));
+                break;
+            }
+            btn.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+            btn.SetMargin(0, icon!=2 ? Spacing/2 : 0, Spacing*2, 0);
+            btn.SetSizing(UI::ComponentTemplate::Automatic);
+        };
+        
+        //TODO expand
+        makebutton(Forecolor.Regular, 0, UI::ComponentCondition::Always);
+        makebutton(Forecolor.Regular, 1, UI::ComponentCondition::Reversed);
+        makebutton(Forecolor.Regular, 2, UI::ComponentCondition::Opened);
+        
+        setupfocus(temp.AddGraphics(5, UI::ComponentCondition::Focused));
+        
+        auto &clip = temp.AddContainer(4, UI::ComponentCondition::Always)
+            .AddIndex(6) //text
+            .AddIndex(7) //icon
+        ;
+        clip.SetClip(true);
+        
+        auto maketext = [&](auto color, UI::ComponentCondition cond) {
+            auto &tt = temp.AddTextholder(6, cond);
+            tt.SetRenderer(RegularFont);
+            tt.SetColor(color);
+            tt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+            tt.SetDataEffect(UI::ComponentTemplate::Text);
+            tt.SetSize(100, 100, UI::Dimension::Percent);
+            tt.SetSizing(UI::ComponentTemplate::Fixed, UI::ComponentTemplate::Automatic);
+        };
+        
+        maketext(Forecolor.Regular, UI::ComponentCondition::Always);
+        maketext(Forecolor.Regular.BlendWith(Forecolor.Hover), UI::ComponentCondition::Hover);
+        maketext(Forecolor.Regular.BlendWith(Forecolor.Down), UI::ComponentCondition::Down);
+        maketext(Forecolor.Regular.BlendWith(Forecolor.Disabled), UI::ComponentCondition::Disabled);
+        
+        //TODO setup size
+        auto &list = temp.AddPlaceholder(8, UI::ComponentCondition::Always);
+        list.SetTemplate((*this)[Listbox_Regular]);
+        list.SetTag(UI::ComponentTemplate::ListTag);
+        list.SetPositioning(UI::ComponentTemplate::Absolute);
+        
+        return temp;
+        
+    }
 }}

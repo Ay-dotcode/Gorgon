@@ -20,6 +20,7 @@
 #include <Gorgon/UI/Organizers/List.h>
 #include <Gorgon/Graphics/BlankImage.h>
 #include <Gorgon/Graphics/TintedObject.h>
+#include <Gorgon/Widgets/Dropdown.h>
 
 
 std::string helptext =
@@ -57,7 +58,7 @@ int main() {
     generator.Init(9);
     generator.UpdateBorders();
     generator.Border.Width = 2;
-    generator.Border.Radius = 8;
+    generator.Border.Radius = 4;
     generator.Border.Divisions = 0;
     generator.UpdateDimensions();
     generator.Activate();*/
@@ -165,35 +166,47 @@ int main() {
         std::cout << "size f changed " << sizef.GetText();
     });
     
-    Widgets::MultiCollectionbox<std::string> list;
+    Widgets::MultiListbox<std::string> list;
     //list.SetSelectionMethod(list.UseCtrl);
     list.SetEventMethod(list.Once);
     //list.SetSelectionFollowsFocus(false);
-    list.AddNew("5");
-    list.AddNew("Âj");
-    list.AddNew("9");
-    list.AddNew("Hello");
-    auto &item = *new std::string("World");
-    list.Add(item);
-    //list.AddToSelection(3);
-    //list.AddToSelection(1, 4);
-    //list.InvertSelection();
+    list.Add("5");
+    list.Add("Âj");
+    list.Add("9");
+    list.Add("Hello");
+    list.Add("World");
+    list.AddToSelection(3);
+    list.AddToSelection(1, 4);
+    list.InvertSelection();
     list.ChangedEvent.Register([&](long index, bool status) {
+        std::cout << "Selected items: ";
+        for(auto &s : list.Selection) {
+            std::cout << s << "\t";
+        }
+        
+        std::cout << std::endl;
+        
         if(index == -1)
             return;
         
         std::cout << list[index] << ": " << status << std::endl;
-        std::cout << "Eq : " << (&item == &list[index]) << std::endl;
-/*        if(index >= 1)
-            list.Delete(index - 1);*/
+        
+        if(index >= 1)
+            list.Remove(index - 1);
     });
     list.EnsureVisible(11);
     list.EnsureVisible(1);
+    
+    Widgets::DropdownList<std::string> dlist;
+    dlist.List.Add("Hello");
+    dlist.List.Add("World");
+    dlist.List.SetSelectedIndex(1);
     
     app.wind.Add(blank);
     addme(blank, btn);
     addme(blank, icnbtn);
     addme(blank, icnbtn2);
+    addme(blank, dlist);
     addme(blank, list);
     addme(blank, icnbtn3);
     addme(blank, l);
