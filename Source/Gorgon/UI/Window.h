@@ -100,6 +100,10 @@ namespace Gorgon { namespace UI {
             return true;
         }
         
+        virtual ExtenderRequestResponse RequestExtender(const Gorgon::Layer &self) override {
+            return {true, &adapter, self.TranslateToTopLevel()};
+        }
+        
         using WidgetContainer::Add;
         using Gorgon::Window::Add;
         using Gorgon::Window::KeyEvent;
@@ -147,6 +151,7 @@ namespace Gorgon { namespace UI {
         Graphics::Layer *layerinit() {
             auto l = new Graphics::Layer;
             Add(l);
+            adapter.SetLayer(*l);
             return l;
         }
 
@@ -158,10 +163,10 @@ namespace Gorgon { namespace UI {
             
             Gorgon::Window::added(l);
         }
-        
 
     private:
         bool quiting = false;
+        LayerAdapter adapter;
         Graphics::Layer *extenderlayer = layerinit();
 
         decltype(KeyEvent)::Token inputtoken = keyinit(); //to initialize token after window got constructed

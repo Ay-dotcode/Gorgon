@@ -170,6 +170,8 @@ namespace Gorgon { namespace Widgets {
             return ComponentStackWidget::IsEnabled();
         }
         
+        virtual UI::ExtenderRequestResponse RequestExtender(const Gorgon::Layer &self) override;
+        
     protected:
         virtual bool allowfocus() const override;
         
@@ -233,3 +235,4 @@ namespace Gorgon { namespace Widgets {
     };
     
 } }
+

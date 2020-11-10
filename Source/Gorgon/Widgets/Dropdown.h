@@ -130,6 +130,7 @@ namespace Gorgon { namespace Widgets {
             this->list.ChangedEvent.Register([this]() {
                 if(this->list.HasSelectedItem()) {
                     TW_(this->list.GetSelectedItem(), *this);
+                    this->Close();
                 }
                 else {
                     this->SetText("");
@@ -141,7 +142,7 @@ namespace Gorgon { namespace Widgets {
         template <class ...A_>
         explicit SingleSelectionDropdown(const UI::Template &temp, A_&& ... elms) : SingleSelectionDropdown(temp)
         {
-            this->ist.Add(std::forward<A_>(elms)...);
+            this->list.Add(std::forward<A_>(elms)...);
         }
         
         virtual void Refresh() override {

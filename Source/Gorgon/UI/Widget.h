@@ -39,8 +39,6 @@ namespace Gorgon { namespace UI {
         
         Widget(Widget &&) = default;
         
-        Widget& operator =(Widget &&) = default;
-        
         virtual ~Widget() { }
         
         /// Moves this widget to the given position.
@@ -144,6 +142,21 @@ namespace Gorgon { namespace UI {
         /// Returns the parent of this widget, throws if it does not have
         /// a parent.
         WidgetContainer &GetParent() const;
+        
+        /// Sets floating status of this widget. Floating widgets will not
+        /// be moved or resized by organizers.
+        virtual void SetIsFloating(bool value) {
+            if(floating != value)
+                boundschanged();
+                
+            floating = value;
+        }
+        
+        /// Returns floating status of this widget. Floating widgets will not
+        /// be moved or resized by organizers.
+        bool IsFloating() const {
+            return floating;
+        }
 
         /// This function should be called whenever a key is pressed or released.
         virtual bool KeyEvent(Input::Key, float) { return false; }
@@ -230,6 +243,7 @@ namespace Gorgon { namespace UI {
         bool visible = true;
         bool enabled = true;
         bool focus   = false;
+        bool floating= false;
         
         /// Never call this function
         virtual void hide() = 0;

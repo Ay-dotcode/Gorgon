@@ -229,11 +229,24 @@ namespace Gorgon {
 			return *parent;
 		}
 
-		const Layer &GetTopLevel() const {
-			if(!parent) return *this;
+		/// Returns the top level layer that contains this layer.
+		Layer &GetTopLevel() const {
+			if(!parent) 
+                return const_cast<Layer &>(*this);
 
 			return parent->GetTopLevel();
 		}
+		
+		/// Translates the given location to the top level
+		virtual Geometry::Point TranslateToTopLevel(Geometry::Point location = {0, 0}) const {
+            const Layer *cur = this;
+            while(cur->HasParent()) {
+                location += cur->GetLocation();
+                cur = &cur->GetParent();
+            }
+            
+            return location;
+        }
 
 		Layer &GetTopLevel() {
 			if(!parent) return *this;

@@ -1546,6 +1546,8 @@ namespace Gorgon { namespace Widgets {
         virtual long GetCount() const override {
             return this->STR_::getsize();
         }
+        
+        
 
     protected:
         ListboxBase()
@@ -1783,15 +1785,20 @@ namespace Gorgon { namespace Widgets {
             if(repeater.KeyEvent(key, state))
                 return true;
             
-            if(key == Keycodes::Space && contents.HasFocusedWidget() && state != 0) {
-                auto w = dynamic_cast<W_*>(&contents.GetFocus());
-                if(w) {
-                    this->sel_toggled(indexes.count(w) ? indexes[w] : -1, *w);
+            if(key == Keycodes::Space) {
+                if(contents.HasFocusedWidget() && state != 0) {
+                    auto w = dynamic_cast<W_*>(&contents.GetFocus());
+                    if(w) {
+                        this->sel_toggled(indexes.count(w) ? indexes[w] : -1, *w);
+                    }
                 }
+                
+                return true;
             }
 
             return false;
         }
+        
     protected:
         ListboxWidgetBase(const UI::Template &temp) : 
             ComponentStackWidget(temp, { 

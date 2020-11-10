@@ -17,7 +17,7 @@ namespace Gorgon { namespace Widgets {
      * widget might cause unexpected behavior. All other container functionality should work as intended.
      */
     template<class T_, class W_ = Checkbox>
-    class RadioButtons : public UI::Widget, protected UI::RadioControl<T_, W_>, public UI::WidgetContainer {
+    class RadioButtons : public UI::Widget, protected UI::RadioControl<T_, W_>, protected UI::WidgetContainer {
         friend class UI::WidgetContainer;
     public:
         explicit RadioButtons(const UI::Template &temp) : temp(temp) { 
@@ -309,6 +309,22 @@ namespace Gorgon { namespace Widgets {
             contents.SetHeight(total);
             
             this->PlaceIn((UI::WidgetContainer&)*this, {0, 0}, spacing);
+        }
+
+        UI::ExtenderRequestResponse RequestExtender(const Layer &self) override {
+            if(HasParent()) {
+                auto ans = GetParent().RequestExtender(self);
+
+                if(ans.Extender) {
+                    if(!ans.Transformed) {
+                        ans.CoordinatesInExtender += GetLocation();
+                    }
+
+                    return ans;
+                }
+            }
+            
+            return {false, this, self.GetLocation()};
         }
 
         Geometry::Point location = {0, 0};

@@ -487,6 +487,26 @@ namespace Gorgon { namespace Widgets {
         
         return hscroller;
     }
-    
+
+
+    UI::ExtenderRequestResponse Panel::RequestExtender(const Layer &self) {
+        if(HasParent()) {
+            auto ans = GetParent().RequestExtender(self);
+
+            if(ans.Extender) {
+                if(!ans.Transformed) {
+                    Geometry::Point offset = stack.TagBounds(UI::ComponentTemplate::ContentsTag).TopLeft();
+                    
+                    ans.CoordinatesInExtender += GetLocation() + offset;
+                }
+
+                return ans;
+            }
+        }
+
+        return {false, this, self.GetLocation()};
+    }
+
+
 } }
 

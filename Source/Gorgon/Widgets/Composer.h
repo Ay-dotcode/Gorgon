@@ -84,6 +84,9 @@ namespace Gorgon { namespace Widgets {
         /// This function should be called whenever a character is received from
         /// operating system.
         virtual bool CharacterEvent(Char c) override { return distributecharevent(c); }
+        
+        
+        virtual UI::ExtenderRequestResponse RequestExtender(const Gorgon::Layer &self) override;
 
     protected:
         //ensure this object is derived

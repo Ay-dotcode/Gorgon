@@ -52,6 +52,8 @@ namespace Gorgon { namespace UI {
             return *base;
         }
         
+        virtual ExtenderRequestResponse RequestExtender(const Gorgon::Layer &self) override;
+        
     protected:
         virtual Gorgon::Layer &getlayer() override {
             return *base;

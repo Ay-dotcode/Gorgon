@@ -67,4 +67,22 @@ namespace Gorgon { namespace Widgets {
             boundschanged();
     }
 
+
+        UI::ExtenderRequestResponse Composer::RequestExtender(const Layer &self) {
+            if(HasParent()) {
+                auto
+                ans = GetParent().RequestExtender(self);
+
+                if(ans.Extender) {
+                    if(!ans.Transformed)
+                        ans.CoordinatesInExtender += GetLocation();
+
+                    return ans;
+                }
+            }
+
+            return {
+                false, this, self.GetLocation()};
+        }
+
 } }

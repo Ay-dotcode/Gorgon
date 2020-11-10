@@ -9,6 +9,21 @@
 
 namespace Gorgon { namespace UI {
     
+    class WidgetContainer;
+    
+    /// This structure is used to transfer extender request response
+    struct ExtenderRequestResponse {
+        /// If the coordinates are properly translated. This is internally
+        /// used to perform step by step transformation
+        bool Transformed = false;
+        
+        /// If the extender is provided by the request
+        WidgetContainer *Extender = nullptr;
+        
+        /// Coordinates of the given point in the extender container
+        Geometry::Point CoordinatesInExtender = {0, 0};
+    };
+    
     /**
     * This class is the base class for all widget containers.
     * All widgets require a layer to be placed on, to allow
@@ -366,6 +381,8 @@ namespace Gorgon { namespace UI {
         /// operating system.
         virtual bool CharacterEvent(Char c) { return distributecharevent(c); }
         
+        /// This function will return a container that will act as an extender.
+        virtual ExtenderRequestResponse RequestExtender(const Gorgon::Layer &self) = 0;
 
     protected:
         /// This container is sorted by the focus order

@@ -6,6 +6,7 @@ SET(Local
 	Dimension.h
 	Helpers.h
 	LayerAdapter.h
+	LayerAdapter.cpp
 	Organizers
 	RadioControl.h
 	Template.h
