@@ -8,6 +8,7 @@
 #include "../Input/Keyboard.h"
 #include "../Graphics/Layer.h"
 #include "../Window.h"
+#include "LayerAdapter.h"
 
 #include "WidgetContainer.h"
 
