@@ -64,6 +64,7 @@ int main() {
     generator.Activate();*/
 
     Widgets::Panel blank/*(Gorgon::Widgets::Registry::Panel_Blank)*/;
+    blank.Move(5, 10);
     blank.SetHeight(300);
     Gorgon::Widgets::Button btn("Save Âj",Gorgon::Widgets::Registry::Button_Regular);
     Gorgon::Widgets::Button icnbtn("+", Gorgon::Widgets::Registry::Button_Icon);
@@ -175,6 +176,7 @@ int main() {
     list.Add("9");
     list.Add("Hello");
     list.Add("World");
+    list.Add("Welcome", "to", "the", "wonderful", "Gorgon", "Library", "!");
     list.AddToSelection(3);
     list.AddToSelection(1, 4);
     list.InvertSelection();
@@ -199,8 +201,11 @@ int main() {
     
     Widgets::DropdownList<std::string> dlist;
     dlist.List.Add("Hello");
-    dlist.List.Add("World");
+    dlist.List.Add("Welcome", "to", "the", "wonderful", "Gorgon", "Library", "!");
     dlist.List.SetSelectedIndex(1);
+    dlist.SelectionChanged.Register([](long index) {
+        std::cout << "Dropdown index: " << index << std::endl;
+    });
     
     app.wind.Add(blank);
     addme(blank, btn);

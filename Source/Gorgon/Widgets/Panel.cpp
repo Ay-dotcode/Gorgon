@@ -504,7 +504,8 @@ namespace Gorgon { namespace Widgets {
             }
         }
 
-        return {false, this, self.GetLocation()};
+        auto size = GetInteriorSize();
+        return {false, this, self.GetLocation(), {hscroll ? -1 : size.Width, vscroll ? -1 : size.Height}};
     }
 
 

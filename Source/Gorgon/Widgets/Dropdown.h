@@ -39,7 +39,12 @@ namespace Gorgon { namespace Widgets {
                  Registry::Active()[Registry::Listbox_Regular]
             ),
             List(list)
-        { }
+        { 
+            stack.SetClickEvent([this](auto, auto, auto) {
+                Toggle();
+            });
+            list.SetOverscroll(0.5);
+        }
         
         template <class ...A_>
         explicit DropdownBase(const UI::Template &temp, A_&& ... elms) : DropdownBase(temp)
@@ -66,8 +71,25 @@ namespace Gorgon { namespace Widgets {
                 refresh = true;
         }
         
+        /// Opens the list
         void Open() {
-            //TODO
+            if(!HasParent())
+                return;
+            
+            auto res = GetParent().RequestExtender(stack);
+            
+            if(!res.Extender)
+                return;
+            
+            opened = true;
+            
+            list.Move(res.CoordinatesInExtender.X, res.CoordinatesInExtender.Y + GetHeight());
+            list.SetWidth(GetWidth());
+            list.FitHeight(res.TotalSize.Height-list.GetLocation().Y); 
+            res.Extender->Add(list);
+            
+            stack.AddCondition(UI::ComponentCondition::Opened);
+            
             
             if(refresh) {
                 refresh = false;
@@ -75,8 +97,11 @@ namespace Gorgon { namespace Widgets {
             }
         }
         
+        /// Closes the list
         void Close() {
-            
+            opened = false;
+            stack.RemoveCondition(UI::ComponentCondition::Opened);
+            list.Remove();
         }
         
         /// Toggles open/close state of the dropdown
@@ -131,10 +156,12 @@ namespace Gorgon { namespace Widgets {
                 if(this->list.HasSelectedItem()) {
                     TW_(this->list.GetSelectedItem(), *this);
                     this->Close();
+                    SelectionChanged(this->list.GetSelectedIndex());
                 }
                 else {
                     this->SetText("");
                     this->RemoveIcon();
+                    SelectionChanged(-1);
                 }
             });
         }

@@ -7,7 +7,7 @@ namespace Gorgon { namespace Widgets {
         UI::ComponentStackWidget(temp) 
     {
         stack.HandleMouse();
-        stack.SetClickEvent([&](auto tag, auto location, auto) {
+        stack.SetClickEvent([this](auto tag, auto location, auto) {
             if(tag == UI::ComponentTemplate::NoTag) {
                 auto ind = stack.ComponentAt(location);
                 if(ind != -1) 

@@ -4,6 +4,7 @@
 #include "Common.h"
 #include "../UI/ComponentStackWidget.h"
 #include "../Property.h"
+#include "../Input/KeyRepeater.h"
 #include "Registry.h"
 #include "ListItem.h"
 #include <vector>
@@ -1625,18 +1626,27 @@ namespace Gorgon { namespace Widgets {
                 i++;
                 c++;
             }
+                
+            if(totalh == 0)
+                maxdisplay = 0;
+            else
+                maxdisplay = b.Height() / (float(totalh) / c);
+            
+            if(maxdisplay < elms+overscroll && !stack.HasCondition(UI::ComponentCondition::VScroll)) {
+                stack.AddCondition(UI::ComponentCondition::VScroll);
+                stack.Update(true);
+            }
             
             auto scroller = dynamic_cast<VScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
             if(scroller) {
                 scroller->SetMaximum(elms + overscroll);
                 
-                if(totalh == 0)
-                    maxdisplay = 0;
-                else
-                    maxdisplay = b.Height() / (float(totalh) / c);
-                
                 scroller->Range = maxdisplay;
                 scroller->LargeChange = maxdisplay * 0.8f;
+                
+                if(scroller->Range >= scroller->Maximum) {
+                    stack.RemoveCondition(UI::ComponentCondition::VScroll);
+                }
             }
         }
         
@@ -1688,7 +1698,7 @@ namespace Gorgon { namespace Widgets {
         /// Sets the amount of extra scrolling distance after the bottom-most
         /// widget is completely visible in pixels. Default is 0. Does not
         /// apply if everything is visible.
-        void SetOverscroll(int value) {
+        void SetOverscroll(float value) {
             if(overscroll == value)
                 return;
             
@@ -1701,7 +1711,7 @@ namespace Gorgon { namespace Widgets {
         
         /// Returns the amount of extra scrolling distance after the bottom-most
         /// widget is completely visible in pixels.
-        int GetOverscroll() const {
+        float GetOverscroll() const {
             return overscroll;
         }
         
@@ -1745,6 +1755,66 @@ namespace Gorgon { namespace Widgets {
         /// Returns if the smooth scroll is enabled.
         bool IsSmoothScrollEnabled() const {
             return scrollspeed != 0;
+        }
+        
+        /// This may not be a perfect number
+        float GetMaximumDisplayedElements() const {
+            return maxdisplay;
+        }
+        
+        /// This function will try to set the height of the listbox to contain
+        /// all its elements. If the size necessary to do so is larger than
+        /// maxpixels, then maxpixels will be used and this function will return
+        /// false. This function may give up before fully exceeding maxpixels if
+        /// elements have different heights. But it will never surpass maxpixels.
+        bool FitHeight(int maxpixels) {
+            int curh = GetInteriorSize().Height;
+            int overhead = GetHeight() - curh;
+            int expected = int( std::ceil( (this->GetCount()+overscroll) * (curh/maxdisplay) ) ) + overhead;
+            bool smalldone = false;
+            
+            //will possibly fit
+            if(expected < maxpixels) {
+                
+                do {
+                    SetHeight(expected);
+                    stack.Update(true);
+                    Refresh();
+                    
+                    auto diff = maxdisplay - (this->GetCount()+overscroll);
+                    
+                    //it fits everything, might not be tightest but that's ok. We can also eat up a bit of overscroll
+                    if(diff < 1 && diff >= -overscroll/2)
+                        return true;
+                    
+                    curh = GetInteriorSize().Height;
+                    overhead = GetHeight() - curh;
+                    int curexpected = int( std::ceil( (this->GetCount()+overscroll) * (curh/maxdisplay) ) ) + overhead;
+                    
+                    if(abs(expected - curexpected) == 0) { //no progress, exit
+                        break;
+                    }
+                    else if(abs(expected - curexpected) < 0.1 && smalldone) { //we will allow one small progress, no more
+                        break;
+                    }
+                    else if(abs(expected - curexpected) < 0.1) {
+                        smalldone = true;
+                    }
+                    expected = curexpected;
+                } while(expected < maxpixels);
+                
+            }
+            
+            SetHeight(maxpixels);
+            return false;
+        }
+        
+        Geometry::Size GetInteriorSize() const {
+            auto b = stack.TagBounds(UI::ComponentTemplate::ViewPortTag);
+            if(b.Width() == 0 || b.Height() == 0)
+                b = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
+            
+            return b.GetSize();
         }
         
         using UI::Widget::EnsureVisible;
@@ -1817,7 +1887,7 @@ namespace Gorgon { namespace Widgets {
             });
             
             stack.SetOtherMouseEvent([this](UI::ComponentTemplate::Tag tag, Input::Mouse::EventType type, Geometry::Point, float amount) {
-                if(type == Input::Mouse::EventType::Scroll_Vert) {
+                if(type == Input::Mouse::EventType::Scroll_Vert && stack.HasCondition(UI::ComponentCondition::VScroll)) {
                     ScrollBy(-amount*scrolldist);
                     
                     return true;
@@ -1980,13 +2050,17 @@ namespace Gorgon { namespace Widgets {
             return indexes.count(&widget) ? indexes[&widget] : -1;
         }
         
+        virtual void boundschanged() override {
+            Refresh();
+        }
+        
         std::map<UI::ComponentTemplate::Tag, Containers::Collection<W_>> widgets;
         std::map<const W_*, long> indexes;
         std::map<long, W_*> widgetlist;
         UI::LayerAdapter contents;
         float scrolloffset = 0.f;
         float target = 0.f;
-        int overscroll = 1;
+        float overscroll = 1;
         int scrollspeed = 20;
         int scrolldist  = 5;
         bool isscrolling = false;

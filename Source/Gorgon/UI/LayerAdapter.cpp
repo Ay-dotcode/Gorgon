@@ -10,7 +10,7 @@ namespace Gorgon { namespace UI {
         if(toplevel)
             return toplevel->RequestExtender(self);
         else
-            return {false, this, self.GetLocation()};
+            return {false, this, self.GetLocation(), GetInteriorSize()};
     }
 
 } }

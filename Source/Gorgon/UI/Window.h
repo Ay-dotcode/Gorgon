@@ -64,7 +64,10 @@ namespace Gorgon { namespace UI {
             delete extenderlayer;
             extenderlayer = other.extenderlayer;
             Add(extenderlayer);
+            adapter.SetLayer(*extenderlayer);
             other.extenderlayer = other.layerinit();
+            other.Add(other.extenderlayer);
+            other.adapter.SetLayer(*other.extenderlayer);
             
             return *this;
         }
@@ -102,7 +105,7 @@ namespace Gorgon { namespace UI {
         }
         
         virtual ExtenderRequestResponse RequestExtender(const Gorgon::Layer &self) override {
-            return {true, &adapter, self.TranslateToTopLevel()};
+            return {true, &adapter, self.TranslateToTopLevel(), GetSize()};
         }
         
         using WidgetContainer::Add;

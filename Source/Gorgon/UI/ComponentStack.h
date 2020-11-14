@@ -56,6 +56,11 @@ namespace Gorgon { namespace UI {
             ReplaceCondition(condition, ComponentCondition::Always, transition); 
         }
 
+        /// Returns if the given condition is in effect.
+        bool HasCondition(ComponentCondition condition) { 
+            return conditions.count(condition);
+        }
+        
         /// Finalizes on-going transitions immediately
         void FinalizeTransitions();
 

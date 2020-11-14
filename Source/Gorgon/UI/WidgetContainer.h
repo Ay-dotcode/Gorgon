@@ -22,6 +22,9 @@ namespace Gorgon { namespace UI {
         
         /// Coordinates of the given point in the extender container
         Geometry::Point CoordinatesInExtender = {0, 0};
+        
+        /// Total size of the container. -1 means infinite
+        Geometry::Size TotalSize = {0, 0};
     };
     
     /**
