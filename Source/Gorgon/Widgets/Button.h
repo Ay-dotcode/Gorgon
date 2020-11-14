@@ -62,8 +62,6 @@ namespace Gorgon { namespace Widgets {
         template<class F_>
         Button(const UI::Template &temp, const char *text, F_ clickfn) : Button(temp, std::string(text), clickfn) { }
         
-        Button &operator =(Button &&) = default;
-
         virtual ~Button();
         
         /// Changes the text displayed on the button

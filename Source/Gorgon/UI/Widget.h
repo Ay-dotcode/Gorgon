@@ -235,6 +235,11 @@ namespace Gorgon { namespace UI {
         
         /// Call this function when the widget bounds is changed
         virtual void boundschanged();
+        
+        /// Call this function when the widget container causes it to be 
+        /// displaced. This function will not be called when the widget is
+        /// moved on parent.
+        virtual void displaced() { }
 
         /// This function is called when the parent's enabled state changes.
         virtual void parentenabledchanged(bool state) { }

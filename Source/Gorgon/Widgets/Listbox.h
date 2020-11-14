@@ -1648,6 +1648,8 @@ namespace Gorgon { namespace Widgets {
                     stack.RemoveCondition(UI::ComponentCondition::VScroll);
                 }
             }
+            
+            contents.Displaced();
         }
         
         /// Scrolls the contents of the listbox so that the it will start displaying

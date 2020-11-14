@@ -376,6 +376,9 @@ namespace Gorgon { namespace UI {
             
             return *organizer;
         }
+        
+        /// Call this function if the container or widgets in it is moved without move function is called.
+        void Displaced();
 
         /// This function should be called whenever a key is pressed or released.
         virtual bool KeyEvent(Input::Key key, float state) { return distributekeyevent(key, state, true); }

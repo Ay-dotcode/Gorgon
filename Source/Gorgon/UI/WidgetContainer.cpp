@@ -467,4 +467,11 @@ namespace Gorgon { namespace UI {
         if(ownorganizer)
             delete organizer;
     }
+
+    void WidgetContainer::Displaced() {
+        for(auto &w : widgets) {
+            w.displaced();
+        }
+    }
+
 } }

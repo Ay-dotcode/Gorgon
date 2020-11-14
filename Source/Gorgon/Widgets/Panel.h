@@ -26,6 +26,10 @@ namespace Gorgon { namespace Widgets {
         
         virtual void Resize(const Geometry::Size &size) override;
         
+        using Widget::Move;
+        
+        virtual void Move(const Geometry::Point &location) override;
+        
 
         virtual bool Activate() override;
 

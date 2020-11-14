@@ -161,6 +161,12 @@ namespace Gorgon { namespace Widgets {
         childboundschanged(nullptr);
     }
     
+    void Panel::Move(const Geometry::Point &location) { 
+        ComponentStackWidget::Move(location);
+        
+        Displaced();
+    }
+    
     bool Panel::allowfocus() const {
         if(CurrentFocusStrategy() == Deny)
             return false;
@@ -277,6 +283,7 @@ namespace Gorgon { namespace Widgets {
         stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, -cur);
         
         updatebars();
+        Displaced();
         
         if(done == 2) {
             isscrolling = false;

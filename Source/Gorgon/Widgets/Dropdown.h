@@ -41,6 +41,7 @@ namespace Gorgon { namespace Widgets {
             List(list)
         { 
             stack.SetClickEvent([this](auto, auto, auto) {
+                Focus();
                 Toggle();
             });
             list.SetOverscroll(0.5);
@@ -75,6 +76,8 @@ namespace Gorgon { namespace Widgets {
         void Open() {
             if(!HasParent())
                 return;
+            if(opened)
+                return;
             
             auto res = GetParent().RequestExtender(stack);
             
@@ -89,7 +92,7 @@ namespace Gorgon { namespace Widgets {
             res.Extender->Add(list);
             
             stack.AddCondition(UI::ComponentCondition::Opened);
-            
+            stack.SetFrameEvent(std::bind(&DropdownBase::checkfocus, this));
             
             if(refresh) {
                 refresh = false;
@@ -99,8 +102,12 @@ namespace Gorgon { namespace Widgets {
         
         /// Closes the list
         void Close() {
+            if(!opened)
+                return;
+            
             opened = false;
             stack.RemoveCondition(UI::ComponentCondition::Opened);
+            stack.RemoveFrameEvent();
             list.Remove();
         }
         
@@ -121,6 +128,20 @@ namespace Gorgon { namespace Widgets {
         /// below. This can happen if there is not enough space below.
         bool IsReversed() const {
             Utils::NotImplemented();
+        }
+        
+    protected:
+        virtual void boundschanged() override {
+            Close();
+        }
+        
+        virtual void displaced() override {
+            Close();
+        }
+        
+        void checkfocus() {
+            if(!this->IsFocused())
+                Close();
         }
     };
     

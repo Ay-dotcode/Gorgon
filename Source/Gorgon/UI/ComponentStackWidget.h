@@ -16,8 +16,6 @@ namespace Gorgon { namespace UI {
         ComponentStackWidget(const Template &temp, std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> generators = {}) : stack(*new ComponentStack(temp, temp.GetSize(), generators)) { }
         
         ComponentStackWidget(ComponentStackWidget &&) = default;
-        
-        ComponentStackWidget &operator =(ComponentStackWidget &&) = default;
 
         virtual ~ComponentStackWidget() {
             delete &stack;
