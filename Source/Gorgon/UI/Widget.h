@@ -145,7 +145,7 @@ namespace Gorgon { namespace UI {
         
         /// Sets floating status of this widget. Floating widgets will not
         /// be moved or resized by organizers.
-        virtual void SetIsFloating(bool value) {
+        virtual void SetFloating(bool value) {
             if(floating != value)
                 boundschanged();
                 

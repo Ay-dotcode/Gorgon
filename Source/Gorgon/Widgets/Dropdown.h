@@ -29,6 +29,15 @@ namespace Gorgon { namespace Widgets {
             DropdownBase(Registry::Active()[type])
         { }
         
+        template <class I_>
+        DropdownBase(const I_ &begin, const I_ &end, Registry::TemplateType type = Registry::Dropdown_Regular) :
+            DropdownBase(Registry::Active()[type])
+        {
+            for(auto it = begin; it != end; ++it) {
+                this->list.Add(*it);
+            }
+        }
+        
         explicit DropdownBase(const UI::Template &temp) :
             ComponentStackWidget(temp, {
                 {UI::ComponentTemplate::ListTag, {}}
@@ -45,6 +54,7 @@ namespace Gorgon { namespace Widgets {
                 Toggle();
             });
             list.SetOverscroll(0.5);
+            defaultheight = list.GetHeight();
         }
         
         template <class ...A_>
@@ -86,9 +96,27 @@ namespace Gorgon { namespace Widgets {
             
             opened = true;
             
-            list.Move(res.CoordinatesInExtender.X, res.CoordinatesInExtender.Y + GetHeight());
+            int below = res.TotalSize.Height-res.CoordinatesInExtender.Y-GetHeight();
+            int above = res.CoordinatesInExtender.Y;
+            reversed  = false;
+            
+            if(below < defaultheight && above > below) {
+                bool fit = list.FitHeight(below);
+                if(!fit) {
+                    list.FitHeight(above);
+                    reversed = true;
+                }
+            }
+            
+            if(reversed) {
+                list.Move(res.CoordinatesInExtender.X, res.CoordinatesInExtender.Y - list.GetHeight());
+            }
+            else {
+                list.Move(res.CoordinatesInExtender.X, res.CoordinatesInExtender.Y + GetHeight());
+            }
+            
             list.SetWidth(GetWidth());
-            list.FitHeight(res.TotalSize.Height-list.GetLocation().Y); 
+            list.SetFloating(true);
             res.Extender->Add(list);
             
             stack.AddCondition(UI::ComponentCondition::Opened);
@@ -125,9 +153,10 @@ namespace Gorgon { namespace Widgets {
         }
         
         /// Retuns if the list will be opened above the dropdown instead of
-        /// below. This can happen if there is not enough space below.
+        /// below. This can happen if there is not enough space below. Currently
+        /// this function will return false if the dropdown is not open.
         bool IsReversed() const {
-            Utils::NotImplemented();
+            return opened && reversed;
         }
         
     protected:
@@ -143,6 +172,9 @@ namespace Gorgon { namespace Widgets {
             if(!this->IsFocused())
                 Close();
         }
+        
+        bool reversed = false;
+        int defaultheight;
     };
     
     /**
@@ -185,6 +217,15 @@ namespace Gorgon { namespace Widgets {
                     SelectionChanged(-1);
                 }
             });
+        }
+        
+        template <class I_>
+        SingleSelectionDropdown(const I_ &begin, const I_ &end, Registry::TemplateType type = Registry::Dropdown_Regular) :
+            SingleSelectionDropdown(Registry::Active()[type])
+        {
+            for(auto it = begin; it != end; ++it) {
+                this->list.Add(*it);
+            }
         }
         
         template <class ...A_>

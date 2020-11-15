@@ -22,6 +22,26 @@
 #include <Gorgon/Graphics/TintedObject.h>
 #include <Gorgon/Widgets/Dropdown.h>
 
+enum DaysOfWeek {
+    Monday,
+    Tuesday,
+    Wednesday,
+    Thursday,
+    Friday,
+    Saturday,
+    Sunday
+};
+
+DefineEnumStrings(DaysOfWeek, {
+    {Monday, "Monday"},
+    {Tuesday, "Tuesday"},
+    {Wednesday, "Wednesday"},
+    {Thursday, "Thursday"},
+    {Friday, "Friday"},
+    {Saturday, "Saturday"},
+    {Sunday, "Sunday"}
+});
+
 
 std::string helptext =
     "Key list:\n"
@@ -64,7 +84,7 @@ int main() {
     generator.Activate();*/
 
     Widgets::Panel blank/*(Gorgon::Widgets::Registry::Panel_Blank)*/;
-    blank.Move(5, 10);
+    blank.Move(5, 200);
     blank.SetHeight(300);
     Gorgon::Widgets::Button btn("Save Âj",Gorgon::Widgets::Registry::Button_Regular);
     Gorgon::Widgets::Button icnbtn("+", Gorgon::Widgets::Registry::Button_Icon);
@@ -199,9 +219,7 @@ int main() {
     list.EnsureVisible(11);
     list.EnsureVisible(1);
     
-    Widgets::DropdownList<std::string> dlist;
-    dlist.List.Add("Hello");
-    dlist.List.Add("Welcome", "to", "the", "wonderful", "Gorgon", "Library", "!");
+    Widgets::DropdownList<DaysOfWeek> dlist(begin(Enumerate<DaysOfWeek>()), end(Enumerate<DaysOfWeek>()));
     dlist.List.SetSelectedIndex(1);
     dlist.SelectionChanged.Register([](long index) {
         std::cout << "Dropdown index: " << index << std::endl;
@@ -211,8 +229,8 @@ int main() {
     addme(blank, btn);
     addme(blank, icnbtn);
     addme(blank, icnbtn2);
-    addme(blank, dlist);
     addme(blank, list);
+    addme(blank, dlist);
     addme(blank, icnbtn3);
     addme(blank, l);
     addme(blank, radio);
