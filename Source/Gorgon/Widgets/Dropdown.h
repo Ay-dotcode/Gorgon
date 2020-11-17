@@ -11,6 +11,32 @@ namespace Gorgon { namespace Widgets {
     /**
      * This is the dropdown base for all dropdown lists, including ones that are
      * not for item selection (e.g., DropdownChecklist).
+     *
+     * **Example**
+     * @code
+     * // Do not forget to define enum and Enum Strings before the create your DropDown with the enum
+     * enum CoffeType {
+            Americano, Latte, Cappuccino, Espresso
+     * };
+     * DefineEnumStrings(CoffeType, {
+     *      {Americano,"Americano"},
+     *      {Latte,"Latte"},
+     *      {Cappuccino,"Cappuccino"},
+     *      {Espresso,"Espresso"}
+     *      //...
+     * });
+     * //...
+     * // Define your DropDown with : 
+     * Widgets::DropdownList<CoffeType> Coffes(begin(Enumerate<CoffeType>()), end(Enumerate<CoffeType>()));
+     * // Select Default value with SetSelectedIndex 
+     * Coffes.List.SetSelectedIndex(1);
+     * // Use SelectionChanged.Register  to handle selection event
+     * Coffes.SelectionChanged.Register([&](long index){
+     *      std::cout << "Your Coffe is "<<CoffeType(index)<< std::endl;   
+     * });
+     * //...
+     *
+     *@encode
      */
     template <class T_, void (*TW_)(const T_ &, ListItem &), class L_>
     class DropdownBase : public virtual UI::ComponentStackWidget, protected ListItem

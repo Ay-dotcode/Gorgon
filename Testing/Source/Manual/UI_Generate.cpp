@@ -32,6 +32,7 @@ enum DaysOfWeek {
     Sunday
 };
 
+
 DefineEnumStrings(DaysOfWeek, {
     {Monday, "Monday"},
     {Tuesday, "Tuesday"},
