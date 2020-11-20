@@ -89,6 +89,14 @@ namespace Gorgon { namespace Widgets {
         UpdateBorders();
         UpdateDimensions();
     }
+    
+    UI::Template SimpleGenerator::maketemplate() {
+        UI::Template temp;
+        temp.SetSpacing(Spacing);
+        temp.SetUnitWidth(BorderedWidgetHeight); //BorderedHeight = UnitWidth
+        
+        return temp;
+    }
 
     SimpleGenerator::~SimpleGenerator() {
         if(regularrenderer)
@@ -557,8 +565,7 @@ namespace Gorgon { namespace Widgets {
     UI::Template SimpleGenerator::Button() {
         Geometry::Size defsize = {WidgetWidth, BorderedWidgetHeight};
         
-        UI::Template temp;
-        temp.SetSpacing(Spacing);
+        UI::Template temp = maketemplate();
         temp.SetSize(defsize);
         
         
@@ -665,7 +672,7 @@ namespace Gorgon { namespace Widgets {
         
         iconsize += Geometry::Size(externalspacing) * 2;
         
-        UI::Template temp;
+        UI::Template temp = maketemplate();
         temp.SetSpacing(Spacing);
         
         temp.SetSize(iconsize);
@@ -754,7 +761,7 @@ namespace Gorgon { namespace Widgets {
     UI::Template SimpleGenerator::Checkbox() {
         Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight};
         
-        UI::Template temp;
+        UI::Template temp = maketemplate();
         temp.SetSpacing(Spacing);
         temp.SetSize(defsize);
         
@@ -871,7 +878,7 @@ namespace Gorgon { namespace Widgets {
     
     UI::Template SimpleGenerator::CheckboxButton() {
         
-        UI::Template temp;
+        UI::Template temp = maketemplate();
         temp.SetSpacing(Spacing);
         temp.SetSize(BorderedWidgetHeight, BorderedWidgetHeight);
         
@@ -968,7 +975,7 @@ namespace Gorgon { namespace Widgets {
     UI::Template SimpleGenerator::RadioButton() {
         Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight};
         
-        UI::Template temp;
+        UI::Template temp = maketemplate();
         temp.SetSpacing(Spacing);
         temp.SetSize(defsize);
         
@@ -1064,7 +1071,7 @@ namespace Gorgon { namespace Widgets {
     UI::Template SimpleGenerator::Label() {
         Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight};
         
-        UI::Template temp;
+        UI::Template temp = maketemplate();
         temp.SetSpacing(Spacing);
         temp.SetSize(defsize);
         
@@ -1098,7 +1105,7 @@ namespace Gorgon { namespace Widgets {
     UI::Template SimpleGenerator::ErrorLabel() {
         Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight};
         
-        UI::Template temp;
+        UI::Template temp = maketemplate();
         temp.SetSpacing(Spacing);
         temp.SetSize(defsize);
         
@@ -1134,7 +1141,7 @@ namespace Gorgon { namespace Widgets {
             WidgetWidth * 2 + Spacing, 
             BorderedWidgetHeight * 10 + Spacing * 9};
         
-        UI::Template temp;
+        UI::Template temp = maketemplate();
         temp.SetSpacing(Spacing);
         temp.SetSize(defsize);
         
@@ -1322,7 +1329,7 @@ namespace Gorgon { namespace Widgets {
     UI::Template SimpleGenerator::Inputbox() {
         Geometry::Size defsize = {WidgetWidth, BorderedWidgetHeight};
         
-        UI::Template temp;
+        UI::Template temp = maketemplate();
         temp.SetSpacing(Spacing);
         temp.SetSize(defsize);
         
@@ -1443,7 +1450,7 @@ namespace Gorgon { namespace Widgets {
         int h = std::max(Border.Radius * 2 + Border.Width * 2 + 4, Spacing * 3);
         Geometry::Size defsize = {WidgetWidth * 2 + Spacing, h};
         
-        UI::Template temp;
+        UI::Template temp = maketemplate();
         temp.SetSpacing(Spacing);
         temp.SetSize(defsize);
         
@@ -1476,7 +1483,7 @@ namespace Gorgon { namespace Widgets {
     UI::Template SimpleGenerator::BlankLayerbox() {
         Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 3, WidgetHeight * 4 + Spacing * 3};
         
-        UI::Template temp;
+        UI::Template temp = maketemplate();
         temp.SetSize(defsize);
         
         
@@ -1498,7 +1505,7 @@ namespace Gorgon { namespace Widgets {
     UI::Template SimpleGenerator::Layerbox() {
         Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 3, WidgetHeight * 4 + Spacing * 3};
         
-        UI::Template temp;
+        UI::Template temp = maketemplate();
         temp.SetSize(defsize);
         
         
@@ -1526,7 +1533,7 @@ namespace Gorgon { namespace Widgets {
         
         Geometry::Size defsize = {w, BorderedWidgetHeight * 3 - Border.Width * 2};
         
-        UI::Template temp;
+        UI::Template temp = maketemplate();
         temp.SetSize(defsize);
         
         auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always)
@@ -1564,7 +1571,7 @@ namespace Gorgon { namespace Widgets {
         
         Geometry::Size defsize = {WidgetWidth * 2 + Spacing, h};
         
-        UI::Template temp;
+        UI::Template temp = maketemplate();
         temp.SetSize(defsize);
         
         auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always)
@@ -1598,7 +1605,7 @@ namespace Gorgon { namespace Widgets {
     UI::Template SimpleGenerator::Listbox() {
         Geometry::Size defsize = {WidgetWidth*2+Spacing, BorderedWidgetHeight*8};
         
-        UI::Template temp;
+        UI::Template temp = maketemplate();
         
         temp.SetSpacing(Spacing);
         temp.SetSize(defsize);
@@ -1748,7 +1755,7 @@ namespace Gorgon { namespace Widgets {
     UI::Template SimpleGenerator::Dropdown() {
         Geometry::Size defsize = {BorderedWidgetHeight * 4 + Spacing * 3, BorderedWidgetHeight};
         
-        UI::Template temp;
+        UI::Template temp = maketemplate();
         temp.SetSize(defsize);
         
         
@@ -1900,4 +1907,5 @@ namespace Gorgon { namespace Widgets {
         return temp;
         
     }
+    
 }}

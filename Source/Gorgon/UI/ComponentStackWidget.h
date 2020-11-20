@@ -46,6 +46,13 @@ namespace Gorgon { namespace UI {
 		virtual Geometry::Size GetSize() const override {
 			return stack.GetSize();
 		}
+		
+		/// Sets the width of the widget in unit widths.
+		void SetWidthInUnits(int n) {
+            int w = stack.GetTemplate().GetUnitWidth();
+            int s = stack.GetTemplate().GetSpacing();
+            SetWidth(w * n + s * (n-1));
+        }
 
         virtual void SetEnabled(bool value) override {
             if(enabled == value)

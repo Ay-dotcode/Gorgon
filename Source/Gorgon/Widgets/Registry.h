@@ -85,13 +85,27 @@ namespace Gorgon { namespace Widgets {
             return *templates[type];
         }
     
-        virtual int GetSpacing()const = 0;
+        /// The spacing should be left between widgets
+        virtual int GetSpacing() const = 0;
 
-        virtual int GetEmSize()const = 0;
+        /// The size of EM space. Roughly the same size as the height of a character.
+        virtual int GetEmSize() const = 0;
+        
+        /// Returns the unit width for a widget. This size is enough to
+        /// have a bordered icon. Widgets should be sized according to unit
+        /// width and spacing. A single unit width would be too small for
+        /// most widgets. Multiple units can be obtained by GetUnitWidth(n)
+        virtual int GetUnitWidth() const = 0;
+        
+        /// Returns the width for a n-sized widget. Generally, 1 is for icons,
+        /// 2 is for numberbox, 3 can be used for buttons, labels, short textboxes
+        /// 4 for textboxes, 6 is for checkboxes. Standard panels can contain
+        /// 6 units and they are less than 7 units wide.
+        int GetUnitWidth(int n) const {
+            return n * GetUnitWidth() + (n-1) * GetSpacing();
+        }
 
     protected:
-
-
         /// This function should return a template for the given type. Due to 
         /// being used in constructors you are not allowed to reject template type.
         /// If the generator is capable of generating a similar template, simply

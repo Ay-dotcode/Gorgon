@@ -8,7 +8,7 @@ namespace Gorgon { namespace UI { namespace Organizers {
         int w = GetAttached().GetInteriorSize().Width;
         
         for(auto &widget : GetAttached()) {
-            if(widget.IsVisible()) {
+            if(widget.IsVisible() && !widget.IsFloating()) {
                 widget.Move(0, y);
                 widget.SetWidth(w);
                 

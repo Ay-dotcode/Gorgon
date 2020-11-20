@@ -580,6 +580,23 @@ namespace Gorgon {
         }
 
 
+        /// Sets the unit width for a widget. This size should be enough to
+        /// have a bordered icon. 
+        void SetUnitWidth(int value) {
+            unitwidth = value;
+            ChangedEvent();
+        }
+        
+        /// Returns the unit width for a widget. This size is enough to
+        /// have a bordered icon. Widgets should be sized according to unit
+        /// width and spacing. A single unit width would be too small for
+        /// most widgets. Multiple units can be calculated by following
+        /// formula: W(n) = n * W(1) + (n-1) * Spacing
+        int GetUnitWidth() const {
+            return unitwidth;
+        }
+
+
         /// This event is fired whenever template or its components are changed.
         Event<Template> ChangedEvent = Event<Template>{*this};
         
@@ -594,6 +611,7 @@ namespace Gorgon {
         Geometry::Size size;
         Geometry::Size additional = {0, 0};
         int spacing = 4;
+        int unitwidth = 25;
     };
 
     /// Defines an object according to the Box Model.

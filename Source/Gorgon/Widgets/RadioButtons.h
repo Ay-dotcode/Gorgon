@@ -50,6 +50,13 @@ namespace Gorgon { namespace Widgets {
             
             rearrange();
         }
+        
+        /// Sets the width of the widget in unit widths.
+        void SetWidthInUnits(int n) {
+            int w = temp.GetUnitWidth();
+            int s = temp.GetSpacing();
+            SetWidth(w * n + s * (n-1));
+        }
 
         void Add(const T_ value) {
             Add(value, String::From(value));

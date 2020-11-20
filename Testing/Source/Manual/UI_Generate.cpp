@@ -201,6 +201,7 @@ int main() {
     list.AddToSelection(3);
     list.AddToSelection(1, 4);
     list.InvertSelection();
+    list.SetWidthInUnits(5);
     list.ChangedEvent.Register([&](long index, bool status) {
         std::cout << "Selected items: ";
         for(auto &s : list.Selection) {
@@ -225,7 +226,7 @@ int main() {
     dlist.SelectionChanged.Register([](long index) {
         std::cout << "Dropdown index: " << index << std::endl;
     });
-    
+   
     app.wind.Add(blank);
     addme(blank, btn);
     addme(blank, icnbtn);

@@ -202,6 +202,10 @@ namespace Gorgon { namespace Widgets {
         virtual int GetEmSize() const override {
             return lettervsize.first + lettervsize.second;
         }
+        
+        virtual int GetUnitWidth() const override {
+            return BorderedWidgetHeight; //UnitWidth = Bordered height
+        }
 
         Graphics::BitmapRectangleProvider &NormalBorder();
         Graphics::BitmapRectangleProvider &HoverBorder();
@@ -311,6 +315,8 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider *makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingedge = 0, int borderwidth = -1, int borderradius = -1);
         Graphics::RectangleProvider *makefocusborder();
         UI::Template makepanel(int missingedge, bool scrollers);
+        
+        UI::Template maketemplate();
         
         void setupfocus(UI::GraphicsTemplate &focus);
         
