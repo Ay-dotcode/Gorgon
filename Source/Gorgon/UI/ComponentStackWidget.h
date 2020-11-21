@@ -48,7 +48,7 @@ namespace Gorgon { namespace UI {
 		}
 		
 		/// Sets the width of the widget in unit widths.
-		void SetWidthInUnits(int n) {
+		virtual void SetWidthInUnits(int n) override {
             int w, s;
             if(HasParent()) {
                 w = GetParent().GetUnitWidth();

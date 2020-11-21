@@ -1219,8 +1219,7 @@ namespace Gorgon { namespace Widgets {
             defsize.Width = WidgetWidth * 2 + Spacing + Border.Width + Spacing * 2;
         }
         
-        UI::Template temp;
-        temp.SetSpacing(Spacing);
+        UI::Template temp = maketemplate();
         temp.SetSize(defsize);
         
         

@@ -71,6 +71,9 @@ namespace Gorgon { namespace UI {
         /// Sets the width of the widget
         void SetWidth(int width) { Resize(width, GetHeight()); }
         
+        /// Sets the width of the widget in unit widths.
+        virtual void SetWidthInUnits(int n) = 0;
+        
         /// Sets the height of the widget
         void SetHeight(int height) { Resize(GetWidth(), height); }
         

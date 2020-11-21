@@ -379,6 +379,16 @@ namespace Gorgon { namespace UI {
         
         /// Call this function if the container or widgets in it is moved without move function is called.
         void Displaced();
+        
+        /// This container will own the given widget.
+        void Own(const Widget &widget) {
+            owned.Add(widget);
+        }
+        
+        /// Removes the ownership of the given widget, if it is not owned nothing happens.
+        void Disown(const Widget &widget) {
+            owned.Remove(widget);
+        }
 
         /// This function should be called whenever a key is pressed or released.
         virtual bool KeyEvent(Input::Key key, float state) { return distributekeyevent(key, state, true); }
@@ -455,6 +465,7 @@ namespace Gorgon { namespace UI {
         int focusindex	            = -1;
         Organizers::Base *organizer = nullptr;
         bool ownorganizer           = false;
+        Containers::Collection<const Widget> owned;
 
         FocusStrategy focusmode = Inherit;
     };

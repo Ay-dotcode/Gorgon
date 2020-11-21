@@ -53,7 +53,7 @@ namespace Gorgon { namespace Widgets {
         }
         
         /// Sets the width of the widget in unit widths.
-        void SetWidthInUnits(int n) {
+        void SetWidthInUnits(int n) override {
             int w, s;
             if(HasParent()) {
                 w = GetParent().GetUnitWidth();

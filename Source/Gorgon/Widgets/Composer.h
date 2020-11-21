@@ -73,7 +73,7 @@ namespace Gorgon { namespace Widgets {
         }
 
 		/// Sets the width of the widget in unit widths.
-		void SetWidthInUnits(int n);
+		void SetWidthInUnits(int n) override;
         
         /// This function should be called whenever a key is pressed or released.
         virtual bool KeyEvent(Input::Key key, float state) override { return distributekeyevent(key, state, true); }

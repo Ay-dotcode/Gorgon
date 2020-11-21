@@ -279,31 +279,20 @@ int main() {
     }
     
     app.wind.Add(blank);
-    addme(blank, Coffee);
-    addme(blank, btn);
-    addme(blank, list);
-    addme(blank, icnbtn);
-    addme(blank, icnbtn2);
-    addme(blank, dlist);
-    addme(blank, icnbtn3);
-    addme(blank, l);
-    addme(blank, radio);
-    addme(blank, l2);
-    addme(blank, input);
-    addme(blank, chk);
-    addme(blank, chk2);
-    addme(blank, chkbutton);
-    addme(blank, bar);
-    addme(blank, scroll1);
-    addme(blank, scroll2);
-    addme(blank, sizef);
+    
     auto &org = blank.CreateOrganizer<UI::Organizers::Flow>();
-    org.InsertBreak(-1);
-    org.InsertBreak(list);
-    org.InsertBreak(list);
     
-    
-    
+    org << std::endl << 2 << "Label" << Coffee
+        << btn
+        << list << org.Break << UI::Organizers::Flow::Break
+        << icnbtn << icnbtn2 << dlist
+        << icnbtn3 << l << radio << l2
+        << input
+        << chk << chk2 << chkbutton
+        << bar
+        << scroll1 << scroll2
+        << sizef
+    ;
 
     /*Widgets::Progressor<std::string, StringDiv, StringVal, Gorgon::TextualProperty> bar2;
     bar2.Maximum = "Hello world";

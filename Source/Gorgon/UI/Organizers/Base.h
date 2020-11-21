@@ -6,6 +6,8 @@
 namespace Gorgon { namespace UI {
     
     class WidgetContainer;
+
+    class Widget;
     
     /**
      * This namespace contains organizers that manage the location of the widgets
@@ -45,6 +47,12 @@ namespace Gorgon { namespace UI {
             /// Reorganizes the widgets that are organized by this organizer
             void Reorganize();
             
+            /// Adds the given widget to the attached container.
+            virtual Base &operator << (Widget &widget);
+            
+            /// Adds the given text as a label to the attached container
+            virtual Base &operator << (const std::string &title);
+        
         protected:
             /// Called when the attachment of the organizer is changed
             virtual void attachmentchanged() { }

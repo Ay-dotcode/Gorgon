@@ -1,5 +1,6 @@
 #include "Base.h"
 #include "../WidgetContainer.h"
+#include "../../Widgets/Label.h"
 
 namespace Gorgon { namespace UI { namespace Organizers {
     
@@ -39,4 +40,27 @@ namespace Gorgon { namespace UI { namespace Organizers {
             organizing = false;
         }
     }
+    
+    
+
+    Base &Base::operator<< (Widget &widget) {
+        GetAttached().Add(widget);
+
+        return *this;
+    }
+
+    Base &Base::operator<< (const std::string &title) {
+        if(!IsAttached()) {
+            throw std::runtime_error("This organizer is not attached to a container");
+        }
+        
+        auto &l = *new Widgets::Label(title);
+        
+        operator <<(l);
+        GetAttached().Own(l);
+
+        return *this;
+    }
+    
+    
 } } }

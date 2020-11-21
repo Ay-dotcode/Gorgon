@@ -2,6 +2,7 @@
 
 #include "Base.h"
 
+#include <iosfwd>
 #include <unordered_set>
 
 namespace Gorgon { namespace UI { 
@@ -24,6 +25,9 @@ namespace Organizers {
      */
     class Flow : public Base {
     public:
+        class BreakTag {
+        };
+        
         /// Constructs a new flow organizer specifying spacing between widgets
         explicit Flow(int spacing) : usedefaultspacing(false), spacing(spacing) {
         }
@@ -108,12 +112,43 @@ namespace Organizers {
             Reorganize();
         }
         
+        /// Adds the given widget to the attached container.
+        virtual Flow &operator << (Widget &widget) override;
+        
+        /// Adds the given text as a label to the attached container
+        virtual Flow &operator << (const std::string &title) override {
+            Base::operator <<(title);
+            
+            return *this;
+        }
+        
+        /// When supplied with std::endl, inserts a line break.
+        Flow &operator << (std::ostream &(*fn)(std::ostream &));
+        
+        /// When supplied with std::endl, inserts a line break.
+        Flow &operator << (BreakTag) {
+            InsertBreak();
+            
+            return *this;
+        }
+        
+        /// Sets the size of the next widget in unit sizes
+        Flow &operator << (int unitsize) {
+            nextsize = unitsize;
+            
+            return *this;
+        }
+        
+        
+        static BreakTag Break;
+        
     protected:
         virtual void reorganize() override;
         
         bool usedefaultspacing = true;
         int spacing = 0;
         bool tight = false;
+        int nextsize = -1;
         std::unordered_multiset<int> breaks;
     };
     

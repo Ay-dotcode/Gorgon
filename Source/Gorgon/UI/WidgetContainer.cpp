@@ -466,6 +466,7 @@ namespace Gorgon { namespace UI {
     WidgetContainer::~WidgetContainer() { 
         if(ownorganizer)
             delete organizer;
+        owned.Destroy();
     }
 
     void WidgetContainer::Displaced() {

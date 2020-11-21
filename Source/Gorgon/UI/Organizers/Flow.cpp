@@ -2,6 +2,8 @@
 #include "../WidgetContainer.h"
 #include "../../Widgets/Registry.h"
 
+#include <iostream>
+
 namespace Gorgon { namespace UI { namespace Organizers {
     
     void Flow::reorganize() {
@@ -21,6 +23,9 @@ namespace Gorgon { namespace UI { namespace Organizers {
             int ind = -1;
             int breaks = BreakCount(-1);
             
+            //to valign
+            Containers::Collection<Widget> row;
+            
             for(auto &widget : att)  {
                 ind++;
                 
@@ -31,7 +36,8 @@ namespace Gorgon { namespace UI { namespace Organizers {
                 
                 int w = widget.GetWidth();
                 
-                breaks += (x + w > width && rowc > 0) ? 1 : 0;
+                if((x + w > width && rowc > 0) && breaks == 0)
+                    breaks = 1;
                 
                 if(breaks) {
                     if(maxy == 0)
@@ -42,9 +48,15 @@ namespace Gorgon { namespace UI { namespace Organizers {
                     if(breaks > 0)
                         y += (breaks-1) * (uw + s);
                     
+                    for(auto &cell : row) {
+                        if(maxy - cell.GetHeight() > 0)
+                            cell.Move(cell.GetLocation() + Geometry::Point{0, (maxy - cell.GetHeight())/2});
+                    }
+                    
                     x = 0;
                     rowc = 0;
                     maxy = 0;
+                    row.Clear();
                 }
                 
                 int h = widget.GetHeight();
@@ -56,6 +68,7 @@ namespace Gorgon { namespace UI { namespace Organizers {
                 x += w + s;
                 rowc++;
                 breaks = BreakCount(ind);
+                row.Push(widget);
             }
         }
     }
@@ -94,5 +107,30 @@ namespace Gorgon { namespace UI { namespace Organizers {
         if(order != -1)
             InsertBreak(order);
     }
+    
+    Flow &Flow::operator<< (std::ostream &(*fn)(std::ostream &)) {
+        if(fn == &std::endl<char, std::char_traits<char>>) {
+            InsertBreak();
+        }
+        else {
+            throw std::runtime_error("Unsupported manipulator, only std::endl is supported");
+        }
+        
+        return *this;
+    }
+
+    Organizers::Flow &Flow::operator<< (Widget &widget) {
+        Base::operator << (widget);
+
+        if(nextsize != -1) {
+            widget.SetWidthInUnits(nextsize);
+            nextsize = -1;
+        }
+
+        return *this;
+    }
+    
+    Flow::BreakTag Flow::Break;
+
 
 } } }
