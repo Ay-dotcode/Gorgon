@@ -29,6 +29,7 @@ namespace Gorgon { namespace UI { namespace Organizers {
     
 
     void Base::Reorganize(){
+        //TODO queue organizing
         if(organizing)
             return;
         

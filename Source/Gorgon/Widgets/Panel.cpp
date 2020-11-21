@@ -514,7 +514,23 @@ namespace Gorgon { namespace Widgets {
         auto size = GetInteriorSize();
         return {false, this, self.GetLocation(), {hscroll ? -1 : size.Width, vscroll ? -1 : size.Height}};
     }
+    
+    int Panel::GetSpacing() const {
+        if(issizesset) {
+            return spacing;
+        }
+        else {
+            return stack.GetTemplate().GetSpacing();
+        }
+    }
 
-
+    int Panel::GetUnitWidth() const {
+        if(issizesset) {
+            return unitwidth;
+        }
+        else {
+            return stack.GetTemplate().GetUnitWidth();
+        }
+    }
 } }
 

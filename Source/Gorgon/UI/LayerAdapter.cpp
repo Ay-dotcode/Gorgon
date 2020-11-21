@@ -1,5 +1,6 @@
 #include "LayerAdapter.h"
 #include "Window.h"
+#include "../Widgets/Registry.h"
 
 
 namespace Gorgon { namespace UI {
@@ -11,6 +12,24 @@ namespace Gorgon { namespace UI {
             return toplevel->RequestExtender(self);
         else
             return {false, this, self.GetLocation(), GetInteriorSize()};
+    }
+    
+    int LayerAdapter::GetSpacing() const {
+        if(issizesset) {
+            return spacing;
+        }
+        else {
+            return Widgets::Registry::Active().GetSpacing();
+        }
+    }
+
+    int LayerAdapter::GetUnitWidth() const {
+        if(issizesset) {
+            return unitwidth;
+        }
+        else {
+            return Widgets::Registry::Active().GetUnitWidth();
+        }
     }
 
 } }

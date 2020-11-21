@@ -20,4 +20,5 @@ SET(Local
 	WidgetContainer.h
 	WidgetContainer.cpp
 	Window.h
+	Window.cpp
 )

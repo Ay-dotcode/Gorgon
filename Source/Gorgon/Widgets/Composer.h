@@ -35,9 +35,6 @@ namespace Gorgon { namespace Widgets {
             return base.IsVisible();
         }
 
-        virtual Geometry::Size GetInteriorSize() const override {
-            return base.GetSize();
-        }
         
         virtual Geometry::Size GetSize() const override {
             return base.GetSize();
@@ -59,9 +56,6 @@ namespace Gorgon { namespace Widgets {
 
         using Widget::EnsureVisible;
         
-        bool EnsureVisible(const UI::Widget &widget) override {
-            return true;
-        }
 
         using Widget::Enable;
         using Widget::Disable;
@@ -78,6 +72,9 @@ namespace Gorgon { namespace Widgets {
             return enabled;
         }
 
+		/// Sets the width of the widget in unit widths.
+		void SetWidthInUnits(int n);
+        
         /// This function should be called whenever a key is pressed or released.
         virtual bool KeyEvent(Input::Key key, float state) override { return distributekeyevent(key, state, true); }
 
@@ -86,8 +83,6 @@ namespace Gorgon { namespace Widgets {
         virtual bool CharacterEvent(Char c) override { return distributecharevent(c); }
         
         
-        virtual UI::ExtenderRequestResponse RequestExtender(const Gorgon::Layer &self) override;
-
     protected:
         //ensure this object is derived
         Composer() {
@@ -117,6 +112,47 @@ namespace Gorgon { namespace Widgets {
             base.PlaceBefore(order);
         }
         
+        /// The spacing should be left between widgets
+        virtual int GetSpacing() const override;
+        
+        /// Returns the unit width for a widget. This size is enough to
+        /// have a bordered icon. Widgets should be sized according to unit
+        /// width and spacing. A single unit width would be too small for
+        /// most widgets.
+        virtual int GetUnitWidth() const override;
+        
+        /// Overrides default spacing and unitwidth
+        void SetSizes(int spacing, int unitwidth) {
+            this->spacing = spacing;
+            this->unitwidth = unitwidth;
+            issizesset = true;
+        }
+        
+        /// Sets the unit size automatically. Full width will be at least
+        /// given units wide. Returns remaining size.
+        int AutomaticUnitSize(int spacing, int units = 6) {
+            this->spacing   = spacing;
+            this->unitwidth = ( GetInteriorSize().Width - spacing * (units-1) ) / units;
+            
+            return GetInteriorSize().Width - (this->unitwidth * units + this->spacing * (units-1));
+        }
+        
+        /// Return to use default sizes
+        void UseDefaultSizes() {
+            issizesset = false;
+        }
+        
+        virtual UI::ExtenderRequestResponse RequestExtender(const Gorgon::Layer &self) override;
+        
+        bool EnsureVisible(const UI::Widget &) override {
+            return true;
+        }
+        
+        virtual Geometry::Size GetInteriorSize() const override {
+            return base.GetSize();
+        }
+        
+        
     private:
         bool enabled = true;
         
@@ -125,6 +161,10 @@ namespace Gorgon { namespace Widgets {
         virtual void show() override;
         
         Layer base;
+        
+        int spacing   = 0;
+        int unitwidth = 0;
+        bool issizesset = false;
     };
     
 } }

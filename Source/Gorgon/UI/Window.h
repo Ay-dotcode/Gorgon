@@ -108,6 +108,36 @@ namespace Gorgon { namespace UI {
             return {true, &adapter, self.TranslateToTopLevel(), GetSize()};
         }
         
+        /// The spacing should be left between widgets
+        virtual int GetSpacing() const override;
+        
+        /// Returns the unit width for a widget. This size is enough to
+        /// have a bordered icon. Widgets should be sized according to unit
+        /// width and spacing. A single unit width would be too small for
+        /// most widgets.
+        virtual int GetUnitWidth() const override;
+        
+        /// Overrides default spacing and unitwidth
+        void SetSizes(int spacing, int unitwidth) {
+            this->spacing = spacing;
+            this->unitwidth = unitwidth;
+            issizesset = true;
+        }
+        
+        /// Sets the unit size automatically. Full width will be at least
+        /// given units wide. Returns remaining size.
+        int AutomaticUnitSize(int spacing, int units = 6) {
+            this->spacing   = spacing;
+            this->unitwidth = ( GetInteriorSize().Width - spacing * (units-1) ) / units;
+            
+            return GetInteriorSize().Width - (this->unitwidth * units + this->spacing * (units-1));
+        }
+        
+        /// Return to use default sizes
+        void UseDefaultSizes() {
+            issizesset = false;
+        }
+        
         using WidgetContainer::Add;
         using Gorgon::Window::Add;
         using Gorgon::Window::KeyEvent;
@@ -175,6 +205,10 @@ namespace Gorgon { namespace UI {
 
         decltype(KeyEvent)::Token inputtoken = keyinit(); //to initialize token after window got constructed
         decltype(CharacterEvent)::Token chartoken = charinit(); //to initialize token after window got constructed
+        
+        int spacing   = 0;
+        int unitwidth = 0;
+        bool issizesset = false;
     };
     
 } }

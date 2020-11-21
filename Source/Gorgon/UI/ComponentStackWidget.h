@@ -49,8 +49,15 @@ namespace Gorgon { namespace UI {
 		
 		/// Sets the width of the widget in unit widths.
 		void SetWidthInUnits(int n) {
-            int w = stack.GetTemplate().GetUnitWidth();
-            int s = stack.GetTemplate().GetSpacing();
+            int w, s;
+            if(HasParent()) {
+                w = GetParent().GetUnitWidth();
+                s = GetParent().GetSpacing();
+            }
+            else {
+                w = stack.GetTemplate().GetUnitWidth();
+                s = stack.GetTemplate().GetSpacing();
+            }
             SetWidth(w * n + s * (n-1));
         }
 

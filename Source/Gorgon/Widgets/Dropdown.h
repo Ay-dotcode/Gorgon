@@ -281,7 +281,8 @@ namespace Gorgon { namespace Widgets {
     }
     
     /**
-     * This is a single selection drop down list. It can be used 
+     * This is a single selection drop down list. It should be used for regular types. It can also be
+     * used for enumerations.
      * 
      * **Example**
      * @code
@@ -346,6 +347,9 @@ namespace Gorgon { namespace Widgets {
     template <class T_, void (*TW_)(const T_ &, ListItem &) = internal::SetTextUsingFrom<T_, ListItem>>
     using DropdownList = SingleSelectionDropdown<T_, TW_, SimpleListbox<T_, TW_>>;
     
+    /**
+     * This dropdown is for reference objects.
+     */
     template <class T_, void (*TW_)(const T_ &, ListItem &) = internal::SetTextUsingFrom<T_, ListItem>>
     using DropdownCollection = SingleSelectionDropdown<T_, TW_, SimpleCollectionbox<T_, TW_>>;
     

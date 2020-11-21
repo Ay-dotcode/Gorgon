@@ -8,6 +8,7 @@
 #include "Checkbox.h"
 #include "../UI/WidgetContainer.h"
 #include "Registry.h"
+#include "Composer.h"
 
 namespace Gorgon { namespace Widgets {
     
@@ -17,7 +18,7 @@ namespace Gorgon { namespace Widgets {
      * widget might cause unexpected behavior. All other container functionality should work as intended.
      */
     template<class T_, class W_ = Checkbox>
-    class RadioButtons : public UI::Widget, protected UI::RadioControl<T_, W_>, protected UI::WidgetContainer {
+    class RadioButtons : public Composer, protected UI::RadioControl<T_, W_> {
         friend class UI::WidgetContainer;
     public:
         explicit RadioButtons(const UI::Template &temp) : temp(temp) { 
@@ -53,8 +54,15 @@ namespace Gorgon { namespace Widgets {
         
         /// Sets the width of the widget in unit widths.
         void SetWidthInUnits(int n) {
-            int w = temp.GetUnitWidth();
-            int s = temp.GetSpacing();
+            int w, s;
+            if(HasParent()) {
+                w = GetParent().GetUnitWidth();
+                s = GetParent().GetSpacing();
+            }
+            else {
+                w = temp.GetUnitWidth();
+                s = temp.GetSpacing();
+            }
             SetWidth(w * n + s * (n-1));
         }
 

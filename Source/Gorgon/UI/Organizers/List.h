@@ -11,25 +11,45 @@ namespace Gorgon { namespace UI { namespace Organizers {
      */
     class List : public Base {
     public:
-        /// Constructs a new list organizer, spacing between lines can be
-        /// specified.
-        explicit List(int spacing = 5) : spacing(spacing) {
+        /// Constructs a new list organizer specifying spacing between lines
+        explicit List(int spacing) : usedefaultspacing(false), spacing(spacing) {
         }
+        
+        /// Constructs a new list organizer, spaces between lines are obtained
+        /// from the active parent 
+        List() = default;
         
         /// Sets the spacing between the lines
         void SetSpacing(int value) {
+            if(value == spacing && !usedefaultspacing)
+                return;
+            
+            usedefaultspacing = false;
             spacing = value;
+            
+            if(IsAttached())
+                reorganize();
+        }
+        
+        /// Starts using default spacing.
+        void UseDefaultSpacing() {
+            if(usedefaultspacing)
+                return;
+            
+            usedefaultspacing = true;
+            
+            if(IsAttached())
+                reorganize();
         }
         
         /// Returns the spacing between the lines
-        int GetSpacing() const {
-            return spacing;
-        }
+        int GetSpacing() const;
         
     protected:
         virtual void reorganize() override;
         
-        int spacing;
+        bool usedefaultspacing = true;
+        int spacing = 0;
     };
     
 } } }

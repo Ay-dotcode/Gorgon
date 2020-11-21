@@ -1,4 +1,5 @@
 #include "Composer.h"
+#include "Registry.h"
 
 
 namespace Gorgon { namespace Widgets {
@@ -68,21 +69,55 @@ namespace Gorgon { namespace Widgets {
     }
 
 
-        UI::ExtenderRequestResponse Composer::RequestExtender(const Layer &self) {
-            if(HasParent()) {
-                auto
-                ans = GetParent().RequestExtender(self);
+    UI::ExtenderRequestResponse Composer::RequestExtender(const Layer &self) {
+        if(HasParent()) {
+            auto
+            ans = GetParent().RequestExtender(self);
 
-                if(ans.Extender) {
-                    if(!ans.Transformed)
-                        ans.CoordinatesInExtender += GetLocation();
+            if(ans.Extender) {
+                if(!ans.Transformed)
+                    ans.CoordinatesInExtender += GetLocation();
 
-                    return ans;
-                }
+                return ans;
             }
-
-            return {
-                false, this, self.GetLocation()};
         }
+
+        return {
+            false, this, self.GetLocation()};
+    }
+
+    int Composer::GetSpacing() const {
+        if(issizesset) {
+            return spacing;
+        }
+        else {
+            return Widgets::Registry::Active().GetSpacing();
+        }
+    }
+
+    int Composer::GetUnitWidth() const {
+        if(issizesset) {
+            return unitwidth;
+        }
+        else {
+            return Widgets::Registry::Active().GetUnitWidth();
+        }
+    }
+    
+
+    void Composer::SetWidthInUnits(int n) {
+        int w, s;
+
+        if(HasParent()) {
+            w = GetParent().GetUnitWidth();
+            s = GetParent().GetSpacing();
+        }
+        else {
+            w = Registry::Active().GetUnitWidth();
+            s = Registry::Active().GetSpacing();
+        }
+
+        SetWidth(w * n + s * (n - 1));
+    }
 
 } }

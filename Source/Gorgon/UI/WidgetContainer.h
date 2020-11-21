@@ -389,6 +389,15 @@ namespace Gorgon { namespace UI {
         
         /// This function will return a container that will act as an extender.
         virtual ExtenderRequestResponse RequestExtender(const Gorgon::Layer &self) = 0;
+    
+        /// The spacing should be left between widgets
+        virtual int GetSpacing() const = 0;
+        
+        /// Returns the unit width for a widget. This size is enough to
+        /// have a bordered icon. Widgets should be sized according to unit
+        /// width and spacing. A single unit width would be too small for
+        /// most widgets. Multiple units can be obtained by GetUnitWidth(n)
+        virtual int GetUnitWidth() const = 0;
 
     protected:
         /// This container is sorted by the focus order

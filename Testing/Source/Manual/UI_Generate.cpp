@@ -18,6 +18,7 @@
 #include <Gorgon/Widgets/ListItem.h>
 #include <Gorgon/UI/RadioControl.h>
 #include <Gorgon/UI/Organizers/List.h>
+#include <Gorgon/UI/Organizers/Flow.h>
 #include <Gorgon/Graphics/BlankImage.h>
 #include <Gorgon/Graphics/TintedObject.h>
 #include <Gorgon/Widgets/Dropdown.h>
@@ -165,7 +166,7 @@ int main() {
     //blank.CreateOrganizer<Gorgon::UI::Organizers::List>().SetSpacing(Gorgon::Widgets::Registry::Active().GetSpacing());
 
     auto addme = [&](auto &pnl, UI::Widget &w) {
-        Geometry::Point offsetx = {Widgets::Registry::Active().GetSpacing(), 0};
+        /*Geometry::Point offsetx = {Widgets::Registry::Active().GetSpacing(), 0};
         if(pnl.UI::WidgetContainer::begin() != pnl.UI::WidgetContainer::end()) {
             auto &last = *(pnl.UI::WidgetContainer::end() - 1);
             auto lastb = last.GetBounds();
@@ -173,7 +174,7 @@ int main() {
                 w.Move(last.GetBounds().TopRight() + offsetx);
             else
                 w.Move(0, last.GetBounds().Bottom + Widgets::Registry::Active().GetSpacing());
-        }
+        }*/
 
         pnl.Add(w);
     };
@@ -280,9 +281,9 @@ int main() {
     app.wind.Add(blank);
     addme(blank, Coffee);
     addme(blank, btn);
+    addme(blank, list);
     addme(blank, icnbtn);
     addme(blank, icnbtn2);
-    addme(blank, list);
     addme(blank, dlist);
     addme(blank, icnbtn3);
     addme(blank, l);
@@ -296,6 +297,11 @@ int main() {
     addme(blank, scroll1);
     addme(blank, scroll2);
     addme(blank, sizef);
+    auto &org = blank.CreateOrganizer<UI::Organizers::Flow>();
+    org.InsertBreak(-1);
+    org.InsertBreak(list);
+    org.InsertBreak(list);
+    
     
     
 
