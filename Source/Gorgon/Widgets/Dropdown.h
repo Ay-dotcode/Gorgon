@@ -11,32 +11,6 @@ namespace Gorgon { namespace Widgets {
     /**
      * This is the dropdown base for all dropdown lists, including ones that are
      * not for item selection (e.g., DropdownChecklist).
-     *
-     * **Example**
-     * @code
-     * // Do not forget to define enum and Enum Strings before the create your DropDown with the enum
-     * enum CoffeType {
-            Americano, Latte, Cappuccino, Espresso
-     * };
-     * DefineEnumStrings(CoffeType, {
-     *      {Americano,"Americano"},
-     *      {Latte,"Latte"},
-     *      {Cappuccino,"Cappuccino"},
-     *      {Espresso,"Espresso"}
-     *      //...
-     * });
-     * //...
-     * // Define your DropDown with : 
-     * Widgets::DropdownList<CoffeType> Coffes(begin(Enumerate<CoffeType>()), end(Enumerate<CoffeType>()));
-     * // Select Default value with SetSelectedIndex 
-     * Coffes.List.SetSelectedIndex(1);
-     * // Use SelectionChanged.Register  to handle selection event
-     * Coffes.SelectionChanged.Register([&](long index){
-     *      std::cout << "Your Coffe is "<<CoffeType(index)<< std::endl;   
-     * });
-     * //...
-     *
-     *@encode
      */
     template <class T_, void (*TW_)(const T_ &, ListItem &), class L_>
     class DropdownBase : public virtual UI::ComponentStackWidget, protected ListItem
@@ -275,7 +249,7 @@ namespace Gorgon { namespace Widgets {
         /// Changes selection to the given item. If it is not found this function
         /// will throw.
         SingleSelectionDropdown &operator =(const T_ &value) {
-            this->list.SetSelectedItem(value);
+            this->list.SetSelection(value);
             
             return *this;
         }
@@ -299,7 +273,76 @@ namespace Gorgon { namespace Widgets {
         Event<SingleSelectionDropdown, long> SelectionChanged = Event<SingleSelectionDropdown, long>{this};
     };
     
+    template <class T_, void (*TW_)(const T_ &, ListItem &), class L_>
+    std::ostream &operator <<(std::ostream &out, const SingleSelectionDropdown<T_, TW_, L_> &dd) {
+        out << static_cast<T_>(dd);
+        
+        return out;
+    }
     
+    /**
+     * This is a single selection drop down list. It can be used 
+     * 
+     * **Example**
+     * @code
+     * 
+     * // Do not forget to define enum and Enum Strings before the create your DropDown with the enum.
+     * enum CoffeeType {
+     *     Americano, 
+     *     Latte, 
+     *     Cappuccino, 
+     *     Espresso
+     * };
+     * 
+     * // You cannot defined EnumStrings in a function.
+     * DefineEnumStrings(CoffeeType, {
+     *     {Americano,"Americano"},
+     *     {Latte,"Latte"},
+     *     {Cappuccino,"Cappuccino"},
+     *     {Espresso,"Espresso"}
+     * });
+     * 
+     * //.......
+     * 
+     * // Define your DropDown with : 
+     * Widgets::DropdownList<CoffeeType> Coffee(begin(Enumerate<CoffeeType>()), end(Enumerate<CoffeeType>()));
+     * 
+     * // Select Default value
+     * Coffee = Latte;
+     * // or index
+     * Coffee.List.SetSelectedIndex(1);
+     * 
+     * // Use SelectionChanged.Register to handle selection event
+     * Coffee.SelectionChanged.Register([&](long index){
+     *     //this can only happen if you remove the selected item from the list.
+     *     if(index == -1) {
+     *         std::cout << "Nothing is selected" << std::endl;
+     *     }
+     *     //Reading selection can throw if nothing is selected, index should be > -1.
+     *     else {
+     *         std::cout << "Your coffee is " << Coffee << std::endl;
+     *     }
+     * });
+     * 
+     * //............
+     * 
+     * //Compare using if...
+     * if(Coffee == Latte) {
+     *     std::cout << "Working ";
+     * }
+     * //...or switch
+     * switch(Coffee) {
+     * case Latte:
+     *     std::cout << "for sure" << std::endl;
+     *     break;
+     * default:
+     *     std::cout << "not really" << std::endl;
+     *     break;
+     * }
+     * 
+     *
+     *@endcode
+     */
     template <class T_, void (*TW_)(const T_ &, ListItem &) = internal::SetTextUsingFrom<T_, ListItem>>
     using DropdownList = SingleSelectionDropdown<T_, TW_, SimpleListbox<T_, TW_>>;
     

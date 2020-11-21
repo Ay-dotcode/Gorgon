@@ -268,7 +268,7 @@ namespace Gorgon { namespace Widgets {
             void SetSelection(T_ item) {
                 auto &me = dynamic_cast<F_&>(*this);
                 
-                for(long i=0; i<me.GetSize(); i++) {
+                for(long i=0; i<me.GetCount(); i++) {
                     if(me[i] == item) {
                         SetSelectedIndex(i);
                         return;
@@ -2264,6 +2264,13 @@ namespace Gorgon { namespace Widgets {
         using Base::ComponentStackWidget::Widget::Remove;
         using internal::LBSTR_Collection<T_, ListItem, MultiCollectionbox<T_>>::Remove;
     };
+    
+    template<class T_, class W_, class F_>
+    std::ostream &operator <<(std::ostream &out, const internal::LBSELTR_Single<T_, W_, F_> &list) {
+        out << static_cast<T_>(list);
+        
+        return out;
+    }
     
 } }
 

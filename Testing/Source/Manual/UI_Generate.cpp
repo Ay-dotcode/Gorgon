@@ -70,6 +70,21 @@ std::string StringVal(float value, std::string min, std::string max) {
     return max.substr(0, (max.length() - min.length()) * value + min.length());
 }
 
+// Do not forget to define enum and Enum Strings before the create your DropDown with the enum
+enum CoffeeType {
+    Americano, 
+    Latte, 
+    Cappuccino, 
+    Espresso
+};
+
+DefineEnumStrings(CoffeeType, {
+    {Americano,"Americano"},
+    {Latte,"Latte"},
+    {Cappuccino,"Cappuccino"},
+    {Espresso,"Espresso"}
+});
+
 int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
 
@@ -227,7 +242,43 @@ int main() {
         std::cout << "Dropdown index: " << index << std::endl;
     });
    
+    //...
+    // Define your DropDown with : 
+    Widgets::DropdownList<CoffeeType> Coffee(begin(Enumerate<CoffeeType>()), end(Enumerate<CoffeeType>()));
+    
+    // Select Default value
+    Coffee = Latte;
+    // or index
+    Coffee.List.SetSelectedIndex(1);
+    
+    // Use SelectionChanged.Register to handle selection event
+    Coffee.SelectionChanged.Register([&](long index){
+        //this can throw if nothing is selected, check index, it should be > -1
+        //this can only happen if you remove the selected item from the list.
+        if(index == -1) {
+            std::cout << "Nothing is selected" << std::endl;
+        }
+        else {
+            std::cout << "Your coffee is " << Coffee << std::endl;
+        }
+    });
+    
+    //Compare using if...
+    if(Coffee == Latte) {
+        std::cout << "Working ";
+    }
+    //...or switch
+    switch(Coffee) {
+    case Latte:
+        std::cout << "for sure" << std::endl;
+        break;
+    default:
+        std::cout << "not really" << std::endl;
+        break;
+    }
+    
     app.wind.Add(blank);
+    addme(blank, Coffee);
     addme(blank, btn);
     addme(blank, icnbtn);
     addme(blank, icnbtn2);
