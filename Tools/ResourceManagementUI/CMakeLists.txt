@@ -14,7 +14,7 @@ find_package(Gorgon REQUIRED)
 
 add_compile_options(-std=c++14)
 
-include(Scripts/Macros.cmake)
+include(/home/$ENV{USER}/Gorgon/Scripts/Macros.cmake)
 
 set(DebugLibs "")
 set(OptimizedLibs "")

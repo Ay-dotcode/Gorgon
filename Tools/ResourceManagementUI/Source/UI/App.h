@@ -62,7 +62,7 @@ namespace UI{
         
         //Structure for font of UI
         struct initUIfont{
-            initUIfont(std::string font, int fh);
+            initUIfont(std::string font, int fs);
             
             Gorgon::Widgets::SimpleGenerator uiGen;
         };

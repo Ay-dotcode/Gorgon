@@ -15,12 +15,13 @@ namespace UI{
         window.SetIcon(icon);
         
         
-        Gorgon::NextFrame();
+        //Creates the background for the application and adds it to the window.
         window.Add(backgroundLayer);
         backgroundLayer.Draw(0xff567f9e);
         applicationBG.SetColor(0.22f);
         applicationBG.DrawIn(backgroundLayer);
         
+        //Allows the program to be terminated of the window is closed.
         window.DestroyedEvent.Register([&]() {
             exit(0);
         });
@@ -30,10 +31,10 @@ namespace UI{
     
     //construction of UI font, color of text, hover effect, 
     //background color of texts,ect
-    App::initUIfont::initUIfont ( std::string font, int fh ){
+    App::initUIfont::initUIfont ( std::string font, int fs ){
         Gorgon::Graphics::Initialize();
         
-        uiGen.Init(fh, font);
+        uiGen.Init(fs, font);
         uiGen.Activate();
     }
 
