@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 
+cmake_policy(SET CMP0054 NEW)
+
 set(PROJECT_NAME "ResourceManagementUI")
 
 project(${PROJECT_NAME})
@@ -12,8 +14,15 @@ find_package(Gorgon REQUIRED)
 
 add_compile_options(-std=c++14)
 
+include(Scripts/Macros.cmake)
+
+set(DebugLibs "")
+set(OptimizedLibs "")
+
+StartSource(Source)
+
 add_executable(${PROJECT_NAME} WIN32
-    Source/Main.cpp
+    ${All}
 )
 
 linkgorgon(${PROJECT_NAME})
