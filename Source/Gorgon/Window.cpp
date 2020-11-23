@@ -230,4 +230,8 @@ namespace Gorgon {
         iswmpointer = true;
         ShowPointer();
     }
+    
+    void Window::init() {
+        Graphics::Initialize();
+    }
 }

@@ -132,7 +132,7 @@ namespace Gorgon {
         }
             
 		/// Destroys this window
-		~Window() { Destroy(); }
+		virtual ~Window() { Destroy(); }
         
         /// Destroys this window
         void Destroy();
@@ -411,6 +411,8 @@ namespace Gorgon {
 
         /// These functions are used internally
         void mouse_location();
+        
+        virtual void init();
 
 	protected:
 		Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool allowresize, bool visible);
