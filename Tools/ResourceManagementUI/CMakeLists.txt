@@ -30,4 +30,4 @@ linkgorgon(${PROJECT_NAME})
 install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Resource/Icon.png ${CMAKE_CURRENT_SOURCE_DIR}/Bin/Icon.png COPYONLY)
-
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Resource/Font/Goldman-Regular.ttf ${CMAKE_CURRENT_SOURCE_DIR}/Bin/Goldman-Regular.ttf COPYONLY)
