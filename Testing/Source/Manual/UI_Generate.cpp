@@ -22,6 +22,7 @@
 #include <Gorgon/Graphics/BlankImage.h>
 #include <Gorgon/Graphics/TintedObject.h>
 #include <Gorgon/Widgets/Dropdown.h>
+#include <Gorgon/Widgets/Window.h>
 
 enum DaysOfWeek {
     Monday,
@@ -101,7 +102,7 @@ int main() {
     generator.Activate();*/
 
     Widgets::Panel blank/*(Gorgon::Widgets::Registry::Panel_Blank)*/;
-    blank.Move(5, 200);
+    blank.Move(5, 210);
     blank.SetHeight(300);
     Gorgon::Widgets::Button btn("Save Âj",Gorgon::Widgets::Registry::Button_Regular);
     Gorgon::Widgets::Button icnbtn("+", Gorgon::Widgets::Registry::Button_Icon);
@@ -293,6 +294,9 @@ int main() {
         << scroll1 << scroll2
         << sizef
     ;
+    
+    Widgets::Window wind;
+    app.wind.Add(wind);
 
     /*Widgets::Progressor<std::string, StringDiv, StringVal, Gorgon::TextualProperty> bar2;
     bar2.Maximum = "Hello world";

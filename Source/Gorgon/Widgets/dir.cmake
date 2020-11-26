@@ -42,4 +42,6 @@ SET(Local
 	Slider.h
 	Scrollbar.h
 	
+	Window.h
+	Window.cpp
 )

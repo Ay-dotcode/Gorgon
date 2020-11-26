@@ -36,6 +36,9 @@ namespace Gorgon { namespace Widgets {
             Panel_Bottom,
             Panel_Right,
             
+            
+            Window_Regular,
+            
             Progress_Regular,
             
             Layerbox_Regular,

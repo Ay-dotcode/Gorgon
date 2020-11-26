@@ -1907,4 +1907,10 @@ namespace Gorgon { namespace Widgets {
         
     }
     
+    
+    UI::Template SimpleGenerator::Window() {
+        auto tmp = makepanel(0, true);
+        tmp.SetSize({300, 200});
+        return tmp;
+    }
 }}

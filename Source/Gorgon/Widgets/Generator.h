@@ -70,6 +70,8 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template Dropdown() = 0;
         
+        virtual UI::Template Window() = 0;
+        
     protected:
         
         virtual UI::Template &generate(Gorgon::Widgets::Registry::TemplateType type) override {
@@ -116,6 +118,8 @@ namespace Gorgon { namespace Widgets {
                 return *new UI::Template(Listbox());
             case Dropdown_Regular:
                 return *new UI::Template(Dropdown());
+            case Window_Regular:
+                return *new UI::Template(Window());
             default:
                 return *new UI::Template();
             }
@@ -193,6 +197,8 @@ namespace Gorgon { namespace Widgets {
         virtual UI::Template Listbox() override;
         
         virtual UI::Template Dropdown() override;
+        
+        virtual UI::Template Window() override;
         
 
         virtual int GetSpacing() const override {
