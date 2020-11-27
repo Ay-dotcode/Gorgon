@@ -32,8 +32,9 @@ namespace Gorgon { namespace Geometry {
 		basic_Margin(T_ all) : Left(all), Top(all), Right(all), Bottom(all) { }
 		
 		/// Sets horizontal and vertical Margin separately
-		basic_Margin(T_ horizontal, T_ vertical) : Left(horizontal), Right(horizontal), 
-		Top(vertical), Bottom(vertical) { }
+		basic_Margin(T_ horizontal, T_ vertical) : Left(horizontal), Top(vertical), 
+		Right(horizontal), Bottom(vertical) 
+		{ }
 		
 		/// Sets all Margin separately
 		basic_Margin(T_ left, T_ top, T_ right, T_ bottom) : 

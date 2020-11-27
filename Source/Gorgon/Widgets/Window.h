@@ -9,6 +9,8 @@ namespace Gorgon { namespace Widgets {
      * including panels. Once created, window will automatically place itself
      * into the active OS window. It supports title, if enabled, self movement 
      * and resizing.
+     * 
+     * When enabled, windows autohide their scrollbar as necessary.
      */
     class Window : public Panel {
     public:
@@ -32,8 +34,15 @@ namespace Gorgon { namespace Widgets {
             return title;
         }
         
+        virtual void EnableScroll(bool vertical, bool horizontal) override;
+        
         TextualProperty<Window, std::string, &Window::GetTitle, &Window::SetTitle> Title;
 
+    protected:
+        virtual void updatescroll() override;
+        virtual void updatecontent() override;
+        void updatescrollvisibility();
+        
     private:
         std::string title;
     };

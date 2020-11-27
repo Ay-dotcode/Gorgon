@@ -296,7 +296,10 @@ int main() {
     ;
     
     Widgets::Window wind;
+    wind.SetTitle("My window");
     app.wind.Add(wind);
+    wind.Add(btn);
+    btn.Move(0,0);
 
     /*Widgets::Progressor<std::string, StringDiv, StringVal, Gorgon::TextualProperty> bar2;
     bar2.Maximum = "Hello world";

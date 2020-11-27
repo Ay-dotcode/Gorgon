@@ -182,12 +182,12 @@ namespace Gorgon { namespace Widgets {
     void Panel::focused() {
         if(!HasFocusedWidget())
             FocusFirst();
-        Widget::focused();
+        ComponentStackWidget::focused();
     }
     
     void Panel::focuslost() {
         RemoveFocus();
-        Widget::focuslost();
+        ComponentStackWidget::focuslost();
     }
     
     Gorgon::Layer &Panel::getlayer() {

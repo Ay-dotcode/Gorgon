@@ -629,6 +629,7 @@ namespace Gorgon { namespace Graphics {
 		constexpr RGBA Yellow	= 0xff14ffff;
 		constexpr RGBA SkyBlue	= 0xfffdbb75;
 		constexpr RGBA Grey	= 0xff919592;
+		constexpr RGBA SemiDarkGrey	= 0xff656565;
 		constexpr RGBA LimeGreen	= 0xff05fe89;
 		constexpr RGBA LightPurple	= 0xfff677bf;
 		constexpr RGBA Violet	= 0xffea0e9a;
@@ -916,6 +917,7 @@ namespace Gorgon { namespace Graphics {
                 {"Yellow", Yellow},
                 {"Sky Blue", SkyBlue},
                 {"Grey", Grey},
+                {"SemiDarkGrey", SemiDarkGrey},
                 {"Lime Green", LimeGreen},
                 {"Light Purple", LightPurple},
                 {"Violet", Violet},

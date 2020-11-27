@@ -903,6 +903,33 @@ TestData test_relanchvert(Layer &layer) {
     return {"Relative anchoring vertical", "Size 20x20 and 20x20 objects on a 60x60 white background, first one should be aligned to top left, second should be under the first one. Objects are green and red and should be touching.", stack};
 }
 
+TestData test_relanchvertrelsize(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 80);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.SetOrientation(Gorgon::Graphics::Orientation::Vertical);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+    cont2.SetMargin(0,0,0,10);
+
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetSize(20, {100, Gorgon::UI::Dimension::Percent});
+    cont3.SetAnchor(Gorgon::UI::Anchor::BottomLeft, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    return {"Relative anchoring vertical relative sizing", "Size 20x20 and 20x50 objects on a 60x80 white background, first one should be aligned to top left, second should be under the first one after 10px of space. Objects are green and red.", stack};
+}
+
 TestData test_relanch2(Layer &layer) {
     auto &temp = *new Template;
     temp.SetSize(60, 60);
@@ -1792,11 +1819,14 @@ TestData test_data_settexttitle(Layer &layer) {
     cont2.SetDataEffect(Gorgon::UI::ComponentTemplate::Title);
     cont2.SetColor(Color::Brown);
     cont2.SetRenderer(app.fntlarge);
+    cont2.SetSize(100,100,Gorgon::UI::Dimension::Percent);
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Automatic);
     
     auto &cont3 = temp.AddTextholder(2, Gorgon::UI::ComponentCondition::Always);
     cont3.SetDataEffect(Gorgon::UI::ComponentTemplate::Text);
     cont3.SetColor(Color::DarkGreen);
     cont3.SetRenderer(app.fnt);
+    cont3.SetSizing(Gorgon::UI::ComponentTemplate::Automatic);
     
     auto &stack = *new ComponentStack(temp);
     
@@ -2855,6 +2885,7 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_relanch,
     &test_relanch2,
     &test_relanchvert,
+    &test_relanchvertrelsize,
     
     &test_anchbaseline,
     &test_anchsetbaseline,
@@ -2944,7 +2975,8 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     //END
     
     &test_anchacc,
-    &test_ignored
+    &test_ignored,
+    
 };
 
 //END tests

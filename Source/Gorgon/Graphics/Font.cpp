@@ -700,6 +700,7 @@ namespace Gorgon { namespace Graphics {
             renderer->Prepare(text);
         
         auto y   = 0;
+        int maxx = 0;
         auto tot = w;
 
         internal::boundedprint(
@@ -707,6 +708,8 @@ namespace Gorgon { namespace Graphics {
 
             [&](Glyph, internal::markvecit begin, internal::markvecit end, int w) {
                 y += (int)renderer->GetLineGap();
+                if(maxx < w)
+                    maxx = w;
             },
 
             [&](Glyph prev, Glyph next) { return (int)renderer->KerningDistance(prev, next).X; },
@@ -714,7 +717,7 @@ namespace Gorgon { namespace Graphics {
             std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetMaxWidth() * 8)
         );
 
-        return {w, y};
+        return {maxx, y};
     }
     
     int BasicFont::GetCharacterIndex(const std::string &text, Geometry::Point location) const{ 
@@ -1072,8 +1075,8 @@ namespace Gorgon { namespace Graphics {
                     maxx = width;
 
                 if(justify && eol == 0) {
-                    if(maxx < width)
-                        maxx = width;
+                    if(maxx < tot)
+                        maxx = tot;
                 }
             },
             [&](Glyph prev, Glyph next) { return int(hspace + renderer->KerningDistance(prev, next).X); },

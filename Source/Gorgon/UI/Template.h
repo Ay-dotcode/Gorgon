@@ -1709,11 +1709,11 @@ namespace Gorgon {
 
         /// Changes the border size of the component. Border size stays within the object area, but excluded
         /// from the interior area.
-        void SetBorderSize(int value) { bordersize ={value}; ChangedEvent(); }
+        void SetBorderSize(int value) { bordersize = {value}; ChangedEvent(); }
 
         /// Changes the border size of the component. Border size stays within the object area, but excluded
         /// from the interior area.
-        void SetBorderSize(int hor, int ver) { bordersize ={hor, ver}; ChangedEvent(); }
+        void SetBorderSize(int hor, int ver) { bordersize = {hor, ver}; ChangedEvent(); }
 
         /// Changes the border size of the component. Border size stays within the object area, but excluded
         /// from the interior area.

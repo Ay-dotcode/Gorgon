@@ -54,7 +54,7 @@ namespace Gorgon { namespace Widgets {
         /// will also display a scrollbar. Depending on the theme it might not be
         /// visible until there is something to scroll. Disabling scrolling will
         /// not take the scroll position to top. 
-        void EnableScroll(bool vertical, bool horizontal);
+        virtual void EnableScroll(bool vertical, bool horizontal);
         
         /// Whether vertical scrolling is enabled
         bool IsVerticalScrollEnabled() const {
@@ -219,11 +219,11 @@ namespace Gorgon { namespace Widgets {
         
         virtual void childboundschanged(Widget *source) override;
         
-        void updatecontent();
+        virtual void updatecontent();
         
-        void updatescroll();
+        virtual void updatescroll();
         
-        void updatebars();
+        virtual void updatebars();
         
         bool updaterequired = false;
         

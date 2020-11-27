@@ -2660,6 +2660,7 @@ realign:
                                 else
                                     comp.size = th.GetRenderer().GetSize(text, width);
                             }
+                            //else comp.size is already 0x0
                         }
                     }
                 }
@@ -3178,6 +3179,10 @@ realign:
                     //add indent
                     lastspacing = calculatemargin(s, e) + endmost->GetTemplate().GetIndent().Left(parent.innersize.Width, getemsize(*endmost));
                 }
+                
+                //calculate remaining space for percent based components
+                spaceleft     = parent.innersize.Width - startused - endused - lastspacing;
+                textspaceleft = textwidth - startused - endused - lastspacing;
             }
             else { //vertical
                 if(startmost) {
@@ -3215,12 +3220,13 @@ realign:
                     //add indent
                     lastspacing = calculatemargin(s, e) + endmost->GetTemplate().GetIndent().Top(0, getemsize(*endmost));
                 }
+                
+                //calculate remaining space for percent based components
+                spaceleft     = parent.innersize.Height - startused - endused - lastspacing;
+                textspaceleft = textwidth;
+
             }
             
-            //calculate remaining space for percent based components
-            spaceleft     = parent.innersize.Width - startused - endused - lastspacing;
-            textspaceleft = textwidth - startused - endused - lastspacing;
-
             if(middlepass && stage != middle)
                 stage = middle;
             else

@@ -217,6 +217,9 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider &HoverBorder();
         Graphics::BitmapRectangleProvider &DownBorder();
         Graphics::BitmapRectangleProvider &DisabledBorder();
+
+        Graphics::BitmapRectangleProvider &ActiveWindowBorder();
+        Graphics::BitmapRectangleProvider &PassiveWindowBorder();
         
         Graphics::BitmapRectangleProvider &PanelBorder(int missingedge = 0);
         
@@ -271,11 +274,13 @@ namespace Gorgon { namespace Widgets {
         } Focus;
         
         struct BorderInfo {
-            int Width               = 2;
-            int Radius              = 0;
-            int Divisions           = 1;
-            Graphics::RGBA Color    = Graphics::Color::Charcoal;
-            Graphics::RGBA Disabled = {Graphics::Color::Charcoal, 0.5};
+            int Width                    = 2;
+            int Radius                   = 0;
+            int Divisions                = 1;
+            Graphics::RGBA Color         = Graphics::Color::Charcoal;
+            Graphics::RGBA Disabled      = {Graphics::Color::Charcoal, 0.5};
+            Graphics::RGBA PassiveWindow = {Graphics::Color::SemiDarkGrey, 0.85};
+            Graphics::RGBA ActiveWindow  = {Graphics::Color::Charcoal, 0.85};
         } Border;
         
         struct BackgroundInfo {
@@ -334,6 +339,8 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider *hoverborder = nullptr;
         Graphics::BitmapRectangleProvider *downborder = nullptr;
         Graphics::BitmapRectangleProvider *disabledborder = nullptr;
+        Graphics::BitmapRectangleProvider *passivewindowborder = nullptr;
+        Graphics::BitmapRectangleProvider *activewindowborder = nullptr;
         
         Graphics::BitmapRectangleProvider *panelborders[5] = {};
         

@@ -109,6 +109,8 @@ namespace Gorgon { namespace Widgets {
         delete hoverborder;
         delete downborder;
         delete disabledborder;
+        delete passivewindowborder;
+        delete activewindowborder;
         delete grooveborder;
         delete normaleditborder;
         delete hovereditborder;
@@ -213,6 +215,21 @@ namespace Gorgon { namespace Widgets {
 
         return *disabledborder;
     }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::ActiveWindowBorder() {
+        if(!activewindowborder)
+            activewindowborder = makeborder(0x0, Border.ActiveWindow, 0, 0, Border.Radius ? Border.Radius+Border.Width*2 : 0);
+        
+        return *activewindowborder;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::PassiveWindowBorder() {
+        if(!passivewindowborder)
+            passivewindowborder = makeborder(0x0, Border.PassiveWindow, 0, 0, Border.Radius ? Border.Radius+Border.Width*2 : 0);
+        
+        return *passivewindowborder;
+    }
+    
     
     Graphics::BitmapRectangleProvider &SimpleGenerator::PanelBorder(int missingedge) {
         if(!panelborders[missingedge])
@@ -1136,86 +1153,17 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
-    UI::Template SimpleGenerator::BlankPanel() {
-        Geometry::Size defsize = {
-            WidgetWidth * 2 + Spacing, 
-            BorderedWidgetHeight * 10 + Spacing * 9};
-        
-        UI::Template temp = maketemplate();
-        temp.SetSpacing(Spacing);
-        temp.SetSize(defsize);
-        
-        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always)
-            .AddIndex(1)
-        ;
-        bg.SetClip(true);
-        
-        auto &vp = temp.AddContainer(1, UI::ComponentCondition::Always)
-            .AddIndex(2)
-        ;
-        vp.SetTag(UI::ComponentTemplate::ViewPortTag);
-        vp.SetSize(100, 100, UI::Dimension::Percent);
-        vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
-        vp.SetClip(true);
-        
-        auto &cont = temp.AddContainer(2, UI::ComponentCondition::Always);
-        cont.SetTag(UI::ComponentTemplate::ContentsTag);
-        cont.SetSize(0, 0, UI::Dimension::Percent);
-        cont.SetSizing(UI::ComponentTemplate::Fixed);
-        cont.SetPositioning(cont.Absolute);
-        cont.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
-        
-        auto &vst = operator[](Scrollbar_Vertical);
-        auto &hst = operator[](Scrollbar_Horizontal);
-        
-        temp.SetSize(temp.GetWidth()+vst.GetWidth()+Spacing, temp.GetHeight());
-        
-        bg
-            .AddIndex(3) //VScroll
-            .AddIndex(4) //HScroll
-        ;
-        
-        auto &vs = temp.AddPlaceholder(3, UI::ComponentCondition::VScroll);
-        vs.SetTemplate(vst);
-        vs.SetTag(UI::ComponentTemplate::VScrollTag);
-        vs.SetSize(vst.GetWidth(), {100, UI::Dimension::Percent});
-        vs.SetSizing(UI::ComponentTemplate::Fixed);
-        vs.SetAnchor(UI::Anchor::TopRight, UI::Anchor::TopRight, UI::Anchor::TopLeft);
-        vs.SetMargin(Spacing, 0, 0, 0);
-        
-        auto &hs = temp.AddPlaceholder(4, UI::ComponentCondition::HScroll);
-        hs.SetPositioning(UI::ComponentTemplate::Absolute);
-        hs.SetTemplate(hst);
-        hs.SetTag(UI::ComponentTemplate::HScrollTag);
-        hs.SetSize({100, UI::Dimension::Percent}, hst.GetHeight());
-        hs.SetSizing(UI::ComponentTemplate::Fixed);
-        hs.SetAnchor(UI::Anchor::None, UI::Anchor::BottomCenter, UI::Anchor::BottomCenter);
-        hs.SetMargin(0, Spacing, vst.GetWidth()+Spacing, 0);
-        
-        {
-            auto &vp = temp.AddContainer(1, UI::ComponentCondition::HScroll)
-                .AddIndex(2)
-            ;
-            vp.SetTag(UI::ComponentTemplate::ViewPortTag);
-            vp.SetSize(100, 100, UI::Dimension::Percent);
-            vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
-            vp.SetClip(true);
-            vp.SetIndent(0, 0, 0, hst.GetHeight()+Spacing);
-        }
-        return temp;
-    }
-    
     UI::Template SimpleGenerator::makepanel(int missingedge, bool scrollers) {
         Geometry::Size defsize = {
             WidgetWidth * 2 + Spacing + Border.Width * 2 + Spacing * 2, 
             BorderedWidgetHeight * 10 + Spacing * 9 + Border.Width * 2 + Spacing * 2
         };
         
-        if(missingedge == 1 || missingedge == 3) {
+        if(missingedge == 1 || missingedge == 3 || missingedge == -1) {
             defsize.Height = BorderedWidgetHeight + Border.Width + Spacing * 2;
         }
         
-        if(missingedge == 2 || missingedge == 4) {
+        if(missingedge == 2 || missingedge == 4 || missingedge == -1) {
             defsize.Width = WidgetWidth * 2 + Spacing + Border.Width + Spacing * 2;
         }
         
@@ -1226,7 +1174,9 @@ namespace Gorgon { namespace Widgets {
         auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always)
             .AddIndex(1)
         ;
-        bg.Background.SetAnimation(PanelBorder(missingedge));
+        
+        if(missingedge != -1)
+            bg.Background.SetAnimation(PanelBorder(missingedge));
         
         
         Geometry::Margin padding(Border.Width + Spacing);
@@ -1242,6 +1192,9 @@ namespace Gorgon { namespace Widgets {
             break;
         case 4:
             padding.Right = Spacing;
+            break;
+        case -1:
+            padding = Spacing;
             break;
         }
         
@@ -1301,6 +1254,12 @@ namespace Gorgon { namespace Widgets {
         }
         
         return temp;
+    }
+    
+    UI::Template SimpleGenerator::BlankPanel() {
+        auto tmp = makepanel(-1, true);
+        
+        return tmp;
     }
     
     UI::Template SimpleGenerator::Panel() {
@@ -1907,10 +1866,37 @@ namespace Gorgon { namespace Widgets {
         
     }
     
-    
     UI::Template SimpleGenerator::Window() {
-        auto tmp = makepanel(0, true);
+        auto tmp = makepanel(-1, true);
         tmp.SetSize({300, 200});
+        
+        auto &cbg = dynamic_cast<UI::ContainerTemplate&>(tmp[0]);
+        cbg.Background.SetAnimation(NormalBG());
+        cbg.SetIndex(6);
+        cbg.SetSize(100, 100, UI::Dimension::Percent);
+        cbg.SetPositioning(UI::ComponentTemplate::Relative);
+        cbg.SetAnchor(UI::Anchor::BottomCenter, UI::Anchor::TopCenter, UI::Anchor::TopCenter);
+            
+        auto addborder = [&](auto condition, auto &image) {
+            auto &bg = tmp.AddContainer(0, condition)
+                .AddIndex(5) //title
+                .AddIndex(6) //panel
+            ;
+            bg.Background.SetAnimation(image);
+            bg.SetPadding(Border.Width*2, Border.Width*2, Border.Width*2, Border.Width*2);
+            bg.SetOrientation(Graphics::Orientation::Vertical);
+        };
+        
+        addborder(UI::ComponentCondition::Always, PassiveWindowBorder());
+        addborder(UI::ComponentCondition::Focused, ActiveWindowBorder());
+        
+        auto &text = tmp.AddTextholder(5, UI::ComponentCondition::Always);
+        text.SetRenderer(CenteredFont);
+        text.SetSize({100, UI::Dimension::Percent}, WidgetHeight);
+        text.SetMargin(0, 0, 0, Border.Width);
+        text.SetDataEffect(UI::ComponentTemplate::Title);
+        text.SetSizing(UI::ComponentTemplate::Fixed);
+        
         return tmp;
     }
 }}
