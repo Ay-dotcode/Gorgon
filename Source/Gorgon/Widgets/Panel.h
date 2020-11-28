@@ -206,6 +206,11 @@ namespace Gorgon { namespace Widgets {
             issizesset = false;
         }
         
+        /// Report mouse scroll. This function will be called automatically
+        /// for regular mouse events. This function will return false if the
+        /// given mouse event is not consumed.
+        bool MouseScroll(Input::Mouse::EventType type, Geometry::Point location, float amount);
+        
     protected:
         virtual bool allowfocus() const override;
         

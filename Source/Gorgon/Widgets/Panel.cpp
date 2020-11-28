@@ -12,38 +12,8 @@ namespace Gorgon { namespace Widgets {
         },
     }) 
     {
-        stack.SetOtherMouseEvent([this](UI::ComponentTemplate::Tag tag, Input::Mouse::EventType type, Geometry::Point, float amount) {
-            //if only horizontal scroll is enabled, use regular scroll to scroll that direction
-            if(!vscroll && hscroll && type == Input::Mouse::EventType::Scroll_Vert) {
-                type = Input::Mouse::EventType::Scroll_Hor;
-            }
-            else if(hscroll && type == Input::Mouse::EventType::Scroll_Vert && (Input::Keyboard::CurrentModifier & Input::Keyboard::Modifier::Shift)) {
-                type = Input::Mouse::EventType::Scroll_Hor;
-            }
-            
-            if(type == Input::Mouse::EventType::Scroll_Vert && vscroll) {
-                if(amount<0 && ScrollOffset().Y >= MaxScrollOffset().Y)
-                    return false;
-                
-                if(amount>0 && ScrollOffset().Y <= 0)
-                    return false;
-                
-                ScrollBy(-(int)amount*scrolldist.Y);
-                return true;
-            }
-            
-            if(type == Input::Mouse::EventType::Scroll_Hor && hscroll) {
-                if(amount<0 && ScrollOffset().X >= MaxScrollOffset().X)
-                    return false;
-                
-                if(amount>0 && ScrollOffset().X <= 0)
-                    return false;
-                
-                ScrollBy(-(int)amount*scrolldist.X, 0);
-                return true;
-            }
-            
-            return false;
+        stack.SetOtherMouseEvent([this](UI::ComponentTemplate::Tag, Input::Mouse::EventType type, Geometry::Point location, float amount) {
+            return MouseScroll(type, location, amount);
         });
         
         
@@ -532,5 +502,40 @@ namespace Gorgon { namespace Widgets {
             return stack.GetTemplate().GetUnitWidth();
         }
     }
+
+    bool Panel::MouseScroll(Input::Mouse::EventType type, Geometry::Point, float amount) {
+        //if only horizontal scroll is enabled, use regular scroll to scroll that direction
+        if(!vscroll && hscroll && type == Input::Mouse::EventType::Scroll_Vert) {
+            type = Input::Mouse::EventType::Scroll_Hor;
+        }
+        else if(hscroll && type == Input::Mouse::EventType::Scroll_Vert && (Input::Keyboard::CurrentModifier & Input::Keyboard::Modifier::Shift)) {
+            type = Input::Mouse::EventType::Scroll_Hor;
+        }
+        
+        if(type == Input::Mouse::EventType::Scroll_Vert && vscroll) {
+            if(amount<0 && ScrollOffset().Y >= MaxScrollOffset().Y)
+                return false;
+            
+            if(amount>0 && ScrollOffset().Y <= 0)
+                return false;
+            
+            ScrollBy(-(int)amount*scrolldist.Y);
+            return true;
+        }
+        
+        if(type == Input::Mouse::EventType::Scroll_Hor && hscroll) {
+            if(amount<0 && ScrollOffset().X >= MaxScrollOffset().X)
+                return false;
+            
+            if(amount>0 && ScrollOffset().X <= 0)
+                return false;
+            
+            ScrollBy(-(int)amount*scrolldist.X, 0);
+            return true;
+        }
+        
+        return false;
+    }
+
 } }
 

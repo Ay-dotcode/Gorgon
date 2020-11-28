@@ -1885,6 +1885,7 @@ namespace Gorgon { namespace Widgets {
             bg.Background.SetAnimation(image);
             bg.SetPadding(Border.Width*2, Border.Width*2, Border.Width*2, Border.Width*2);
             bg.SetOrientation(Graphics::Orientation::Vertical);
+            bg.SetTag(UI::ComponentTemplate::DragTag);            
         };
         
         addborder(UI::ComponentCondition::Always, PassiveWindowBorder());
@@ -1896,6 +1897,7 @@ namespace Gorgon { namespace Widgets {
         text.SetMargin(0, 0, 0, Border.Width);
         text.SetDataEffect(UI::ComponentTemplate::Title);
         text.SetSizing(UI::ComponentTemplate::Fixed);
+        text.SetTag(UI::ComponentTemplate::DragTag);
         
         return tmp;
     }

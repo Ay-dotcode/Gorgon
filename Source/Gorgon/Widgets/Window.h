@@ -34,17 +34,41 @@ namespace Gorgon { namespace Widgets {
             return title;
         }
         
+        /// Locks the movement of the window.
+        void LockMovement() {
+            AllowMovement(false);
+        }
+        
+        /// Allows movement of the window.
+        void AllowMovement(bool allow = true);
+        
+        /// Returns whether the window can be moved.
+        bool CanBeMoved() const {
+            return allowmove;
+        }
+        
         virtual void EnableScroll(bool vertical, bool horizontal) override;
         
         TextualProperty<Window, std::string, &Window::GetTitle, &Window::SetTitle> Title;
 
     protected:
         virtual void updatescroll() override;
+        
         virtual void updatecontent() override;
+        
         void updatescrollvisibility();
+        
+        void mouse_down(UI::ComponentTemplate::Tag tag, Geometry::Point location, Input::Mouse::Button button);
+        
+        void mouse_up(UI::ComponentTemplate::Tag tag, Geometry::Point location, Input::Mouse::Button button);
+        
+        void mouse_move(UI::ComponentTemplate::Tag tag, Geometry::Point location);
         
     private:
         std::string title;
+        bool allowmove = true;
+        bool moving = false;
+        Geometry::Point dragoffset;
     };
     
 } }
