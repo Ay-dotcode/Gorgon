@@ -12,6 +12,7 @@ namespace Gorgon { namespace Widgets {
         },
     }) 
     {
+        stack.HandleMouse();
         stack.SetOtherMouseEvent([this](UI::ComponentTemplate::Tag, Input::Mouse::EventType type, Geometry::Point location, float amount) {
             return MouseScroll(type, location, amount);
         });

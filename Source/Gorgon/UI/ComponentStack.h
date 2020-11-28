@@ -295,7 +295,11 @@ namespace Gorgon { namespace UI {
         /// Returns whether the component marked with the tag has a substack. If multiple components
         /// are marked to have substack, only the first one is considered. If the tag does not exist
         /// this function will return false.
-        bool TagHasSubStack(ComponentTemplate::Tag tag) const;
+        bool TagHasSubstack(ComponentTemplate::Tag tag) const;
+        
+        /// Returns the substack that the component with the given tag has. If it does not exit, this
+        /// function will throw. Use TagHasSubStack to ensure the tag has a substack.
+        ComponentStack &GetTagSubstack(ComponentTemplate::Tag tag) const;
         
         /// Translates the given coordinates back to values using value scaling and channel mapping.
         /// Only works if the value affects the component location or size. If component with the
@@ -549,6 +553,7 @@ namespace Gorgon { namespace UI {
         
         /// @}
 
+        
         Event<ComponentStack> ConditionChanged;
         
         

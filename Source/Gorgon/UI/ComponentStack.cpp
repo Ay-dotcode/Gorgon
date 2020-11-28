@@ -1030,13 +1030,22 @@ namespace Gorgon { namespace UI {
         handlingmouse = true;
     }
 
-    bool ComponentStack::TagHasSubStack(ComponentTemplate::Tag tag) const {
+    bool ComponentStack::TagHasSubstack(ComponentTemplate::Tag tag) const {
         auto comp = gettag(tag);
         
         if(!comp)
             return false;
         else
             return substacks.Exists(&comp->GetTemplate());
+    }
+
+    ComponentStack &ComponentStack::GetTagSubstack(ComponentTemplate::Tag tag) const {
+        auto comp = gettag(tag);
+        
+        if(!comp)
+            throw std::runtime_error("Tag does not exist");
+        else
+            return substacks[&comp->GetTemplate()];
     }
 
     std::array<float, 4> ComponentStack::CoordinateToValue(ComponentTemplate::Tag tag, Geometry::Point location, bool relative) {

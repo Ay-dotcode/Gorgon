@@ -101,7 +101,7 @@ namespace Gorgon { namespace UI {
         bool IsFocused() const { return focus; }
         
         /// Shows this widget, widgets are visible by default.
-        void Show() { SetVisible(true); }
+        virtual void Show() { SetVisible(true); }
         
         /// Hides this widget, when hidden, widgets cannot gain focus
         void Hide() { SetVisible(false); }

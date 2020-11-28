@@ -299,7 +299,18 @@ int main() {
     wind.SetTitle("My window");
     app.wind.Add(wind);
     wind.Add(btn);
+    wind.OwnIcon(icon.CreateAnimation());
+    int closetrycount = 0;
+    wind.ClosingEvent.Register([&](bool &allow) {
+        allow = closetrycount++;
+        if(!allow)
+            std::cout << "Click once more to close." << std::endl;
+    });
     btn.Move(0,0);
+    Widgets::Checkbox enableclosebtn("Enable close button", true);
+    enableclosebtn.ChangedEvent.Register([&] { wind.SetCloseButtonEnabled(enableclosebtn); });
+    wind.Add(enableclosebtn);
+    wind.CreateOrganizer<UI::Organizers::List>();
 
     /*Widgets::Progressor<std::string, StringDiv, StringVal, Gorgon::TextualProperty> bar2;
     bar2.Maximum = "Hello world";

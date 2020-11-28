@@ -307,6 +307,9 @@ namespace Gorgon {
         /// This widget is the cancel widget of its container
         Cancel,
         
+        /// This widget is hidden
+        Hidden,
+        
         
         
         /// Do not use this value
@@ -894,7 +897,8 @@ namespace Gorgon {
             ItemTag,
             HeaderTag,
             SpacerTag,
-            ListTag
+            ListTag,
+            CloseTag,
         };
         
         /// Some components are repeated along some axis, this property controls how they will be
@@ -1392,7 +1396,12 @@ namespace Gorgon {
             sizingw = Automatic;
             sizingh = Automatic;
         }
-
+        
+        virtual ~PlaceholderTemplate() {
+            if(owned)
+                delete temp;
+        }
+        
         /// Returns the type of the component.
         virtual ComponentType GetType() const noexcept override {
             return ComponentType::Placeholder;
@@ -1400,7 +1409,20 @@ namespace Gorgon {
         
         /// Sets the sub template for this placeholder.
         void SetTemplate(const Template &value) {
+            if(&value == temp)
+                return;
+            
+            if(owned)
+                delete temp;
+            
             temp = &value;
+            ChangedEvent();
+        }
+        
+        /// Sets the sub template for this placeholder.
+        void OwnTemplate(const Template &value) {
+            temp = &value;
+            owned = true;
             ChangedEvent();
         }
         
@@ -1419,6 +1441,7 @@ namespace Gorgon {
         
     private:
         const Template *temp = nullptr;
+        bool owned = false;
     };
     
     /// This component type will be ignored by ComponentStack, effectively erasing

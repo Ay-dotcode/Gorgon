@@ -1876,7 +1876,7 @@ namespace Gorgon { namespace Widgets {
         cbg.SetSize(100, 100, UI::Dimension::Percent);
         cbg.SetPositioning(UI::ComponentTemplate::Relative);
         cbg.SetAnchor(UI::Anchor::BottomCenter, UI::Anchor::TopCenter, UI::Anchor::TopCenter);
-            
+        
         auto addborder = [&](auto condition, auto &image) {
             auto &bg = tmp.AddContainer(0, condition)
                 .AddIndex(5) //title
@@ -1891,13 +1891,107 @@ namespace Gorgon { namespace Widgets {
         addborder(UI::ComponentCondition::Always, PassiveWindowBorder());
         addborder(UI::ComponentCondition::Focused, ActiveWindowBorder());
         
-        auto &text = tmp.AddTextholder(5, UI::ComponentCondition::Always);
+        auto &titlebar = tmp.AddContainer(5, UI::ComponentCondition::Always)
+            .AddIndex(7) //icon
+            .AddIndex(8) //text
+            .AddIndex(9) //close button
+        ;
+        titlebar.SetTag(UI::ComponentTemplate::DragTag);
+        titlebar.SetSize({100, UI::Dimension::Percent}, WidgetHeight);
+        //titlebar.Background.SetAnimation(NormalBG());
+        titlebar.SetMargin(0, 0, 0, Border.Width);
+        
+        auto &icon = tmp.AddGraphics(7, UI::ComponentCondition::Always);
+        icon.SetDataEffect(UI::ComponentTemplate::Icon);
+        icon.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        
+        auto &text = tmp.AddTextholder(8, UI::ComponentCondition::Always);
         text.SetRenderer(CenteredFont);
-        text.SetSize({100, UI::Dimension::Percent}, WidgetHeight);
-        text.SetMargin(0, 0, 0, Border.Width);
+        text.SetSize(100, 100, UI::Dimension::Percent);
         text.SetDataEffect(UI::ComponentTemplate::Title);
         text.SetSizing(UI::ComponentTemplate::Fixed);
         text.SetTag(UI::ComponentTemplate::DragTag);
+        text.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        
+        auto &cb = tmp.AddPlaceholder(9, UI::ComponentCondition::Always);
+        cb.SetSize(ObjectHeight, ObjectHeight);
+        cb.SetSizing(UI::ComponentTemplate::Fixed);
+        cb.SetTag(UI::ComponentTemplate::CloseTag);
+        cb.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        
+        UI::Template &closebtn = *new UI::Template;
+        closebtn.SetSize(ObjectHeight, ObjectHeight);
+        closebtn.SetSpacing(Spacing);
+        closebtn.SetUnitWidth(BorderedWidgetHeight);
+        closebtn.AddContainer(0, UI::ComponentCondition::Always)
+            .AddIndex(1)
+            .Background.SetAnimation(NormalBorder())
+        ;
+        closebtn.AddContainer(0, UI::ComponentCondition::Hover)
+            .AddIndex(1)
+            .Background.SetAnimation(HoverBorder())
+        ;
+        closebtn.AddContainer(0, UI::ComponentCondition::Down)
+            .AddIndex(1)
+            .Background.SetAnimation(DownBorder())
+        ;
+        closebtn.AddContainer(0, UI::ComponentCondition::Disabled)
+            .AddIndex(1)
+            .Background.SetAnimation(DisabledBorder())
+        ;
+        closebtn.AddContainer(0, UI::ComponentCondition::Hidden);
+        
+        auto cross = [&](auto color) {
+            int bs = int(std::round(ObjectHeight*0.6));
+            if(bs%2 != ObjectHeight%2)
+                bs++;
+            
+            auto icon = new Graphics::Bitmap({bs, bs});
+            
+            icon->Clear();
+            
+            float off = ObjectBorder;
+            float s = float(bs);
+            float mid = s/2.f;
+            
+            Geometry::PointList<Geometry::Pointf> border = {
+                {off, 0},
+                {mid,mid-off},
+                {s-off, 0},
+                {s, off},
+                {mid+off, mid},
+                {s, s-off},
+                {s-off, s},
+                {mid, mid+off},
+                {off, s},
+                {0, s-off},
+                {mid-off, mid},
+                {0, off},
+                {off, 0}
+            };
+            
+            CGI::Polyfill(*icon, border, CGI::SolidFill<>(color));
+            icon->Prepare();
+            drawables.Add(icon);
+            
+            return icon;
+        };
+        
+        {
+        auto &sym = closebtn.AddGraphics(1, UI::ComponentCondition::Always);
+        sym.Content.SetAnimation(*cross(Forecolor.Regular));
+        sym.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+        }
+        
+        {
+        auto &sym = closebtn.AddGraphics(1, UI::ComponentCondition::Disabled);
+        sym.Content.SetAnimation(*cross(Forecolor.Regular));
+        sym.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+        sym.SetColor({1.0f, 0.5f});
+        }
+        
+        cb.OwnTemplate(closebtn);
+        
         
         return tmp;
     }
