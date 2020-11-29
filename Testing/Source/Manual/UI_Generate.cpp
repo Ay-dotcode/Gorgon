@@ -295,9 +295,7 @@ int main() {
         << sizef
     ;
     
-    Widgets::Window wind;
-    wind.SetTitle("My window");
-    app.wind.Add(wind);
+    Widgets::Window wind("My window", {200, 300});
     wind.Add(btn);
     wind.OwnIcon(icon.CreateAnimation());
     int closetrycount = 0;

@@ -1,10 +1,11 @@
 #include "Window.h"
 
+#include "../Window.h"
 #include "../Graphics/Bitmap.h"
 
 namespace Gorgon { namespace Widgets {
    
-    Window::Window(const UI::Template &temp, const std::string &title) : 
+    Window::Window(const UI::Template &temp, const std::string &title, bool autoplace) : 
         Panel(temp),
         Title(this),
         Icon(this),
@@ -18,6 +19,27 @@ namespace Gorgon { namespace Widgets {
         stack.SetClickEvent([this](auto tag, auto location, auto button) { mouse_click(tag, location, button); });
         
         updatescrollvisibility();
+        if(autoplace) {
+            for(auto &w : Gorgon::Window::Windows) {
+                auto cont = dynamic_cast<UI::WidgetContainer *>(&w);
+                if(cont && w.IsVisible() && !w.IsClosed()) {
+                    cont->Add(*this);
+                    break;
+                }
+            }
+            
+            Center();
+        }
+    }
+    
+    Window::Window(const UI::Template &temp, const std::string &title, const Geometry::Size size, bool autoplace) : 
+        Window(temp, title, autoplace)
+    {
+        Resize(size);
+        updatescrollvisibility();
+        
+        if(autoplace)
+            Center();
     }
     
     void Window::SetTitle(const std::string &value) {
@@ -213,5 +235,9 @@ namespace Gorgon { namespace Widgets {
         }
     }
 
+    void Window::Center() {
+        if(HasParent())
+            Move(Geometry::Point((GetParent().GetInteriorSize() - GetSize())/2));
+    }
 
 } }

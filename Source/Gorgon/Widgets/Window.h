@@ -19,11 +19,33 @@ namespace Gorgon { namespace Widgets {
         
         Window(const Panel &) = delete;
         
-        explicit Window(const UI::Template &temp, const std::string &title = "");
+        explicit Window(const UI::Template &temp, const std::string &title = "", bool autoplace = true);
         
-        explicit Window(Registry::TemplateType type) : Window(Registry::Active()[type], "") { }
+                 Window(const UI::Template &temp, const std::string &title, const Geometry::Size size, bool autoplace = true);
+        
+                 Window(const UI::Template &temp, const Geometry::Size size, bool autoplace = true) : Window(temp, "", size, autoplace) { }
+        
+        explicit Window(Registry::TemplateType type, bool autoplace = true) : Window(Registry::Active()[type], "", autoplace) { }
 
-        explicit Window(const std::string &title = "", Registry::TemplateType type = Registry::Window_Regular) : Window(Registry::Active()[type], title) { }
+        explicit Window(const std::string &title = "", bool autoplace = true, Registry::TemplateType type = Registry::Window_Regular) : Window(Registry::Active()[type], title, autoplace) { }
+
+        explicit Window(const std::string &title, Registry::TemplateType type) : Window(Registry::Active()[type], title) { }
+
+                 Window(const std::string &title, const Geometry::Size size, bool autoplace = true, Registry::TemplateType type = Registry::Window_Regular) : 
+                    Window(Registry::Active()[type], title, size, autoplace) 
+                 { }
+
+                 Window(const std::string &title, const Geometry::Size size, Registry::TemplateType type) : 
+                    Window(Registry::Active()[type], title, size) 
+                 { }
+
+                 Window(const Geometry::Size size, bool autoplace = true, Registry::TemplateType type = Registry::Window_Regular) : 
+                    Window(Registry::Active()[type], "", size, autoplace) 
+                 { }
+        
+                 Window(const Geometry::Size size, Registry::TemplateType type) : 
+                    Window(Registry::Active()[type], "", size) 
+                 { }
         
         
         /// Sets the window title to the given string. Title placement is controlled by
@@ -142,6 +164,11 @@ namespace Gorgon { namespace Widgets {
             UI::ComponentStackWidget::Show();
             Focus();
         }
+        
+        /// Centers the window to its container. After resizing the window or 
+        /// changing its parent you need to recenter it. All windows open 
+        /// centered to the first UI::Window that is opened.
+        void Center();
         
         virtual void EnableScroll(bool vertical, bool horizontal) override;
         

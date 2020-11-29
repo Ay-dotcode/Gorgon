@@ -899,6 +899,11 @@ namespace Gorgon {
             SpacerTag,
             ListTag,
             CloseTag,
+            ResizeTag,
+            RollTag,
+            MinimizeTag,
+            MaximizeTag,
+            HelpTag,
         };
         
         /// Some components are repeated along some axis, this property controls how they will be

@@ -1913,12 +1913,15 @@ namespace Gorgon { namespace Widgets {
         text.SetTag(UI::ComponentTemplate::DragTag);
         text.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         
+        //close button
         auto &cb = tmp.AddPlaceholder(9, UI::ComponentCondition::Always);
         cb.SetSize(ObjectHeight, ObjectHeight);
         cb.SetSizing(UI::ComponentTemplate::Fixed);
         cb.SetTag(UI::ComponentTemplate::CloseTag);
         cb.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         
+        
+        //close button template
         UI::Template &closebtn = *new UI::Template;
         closebtn.SetSize(ObjectHeight, ObjectHeight);
         closebtn.SetSpacing(Spacing);
