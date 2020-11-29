@@ -30,6 +30,8 @@ namespace Gorgon { namespace Widgets {
             
             Center();
         }
+        
+        minsize = GetSize() - GetInteriorSize() + Geometry::Size(stack.GetTemplate().GetUnitWidth()*2, stack.GetTemplate().GetUnitWidth());
     }
     
     Window::Window(const UI::Template &temp, const std::string &title, const Geometry::Size size, bool autoplace) : 
@@ -47,7 +49,7 @@ namespace Gorgon { namespace Widgets {
         stack.SetData(UI::ComponentTemplate::Title, title);
     }
     
-	void Window::SetIcon(const Graphics::Animation &value) {
+    void Window::SetIcon(const Graphics::Animation &value) {
         if(ownicon) {
             icon->DeleteAnimation();;
         }
@@ -60,11 +62,9 @@ namespace Gorgon { namespace Widgets {
         ownicon = false;
     }
     
-    
     void Window::SetIcon(const Graphics::Bitmap& value){
         SetIcon(dynamic_cast<const Graphics::Animation&>(value));
     }
-    
     
     void Window::SetIconProvider(const Graphics::AnimationProvider &value) {
         auto &anim = value.CreateAnimation(true);
@@ -90,11 +90,9 @@ namespace Gorgon { namespace Widgets {
         stack.RemoveData(UI::ComponentTemplate::Icon);
     }
     
-    
     void Window::OwnIcon() {
         ownicon = true;
     }
-    
     
     void Window::OwnIcon(const Graphics::Animation &value) {
         SetIcon(value);
@@ -151,9 +149,44 @@ namespace Gorgon { namespace Widgets {
             }
         }
         
-        if(button == Input::Mouse::Button::Left && allowmove && tag == UI::ComponentTemplate::DragTag) {
-            moving = true;
-            dragoffset = location;
+        if(button == Input::Mouse::Button::Left) {
+            if(allowmove && tag == UI::ComponentTemplate::DragTag) {
+                moving = true;
+                dragoffset = location;
+            }
+            else if(allowresize && tag == UI::ComponentTemplate::ResizeTag) {
+                auto size = GetSize();
+                int maxdist = stack.GetTemplate().GetResizeHandleSize();
+                
+                int leftdist = location.X, rightdist  = size.Width  - location.X;
+                int topdist  = location.Y, bottomdist = size.Height - location.Y;
+                
+                resizing = none; //just to make sure
+                
+                if(leftdist < rightdist) {
+                    if(leftdist <= maxdist) {
+                        resizing = resizedir(resizing | left);
+                    }
+                }
+                else {
+                    if(rightdist <= maxdist) {
+                        resizing = resizedir(resizing | right);
+                    }
+                }
+                
+                if(topdist < bottomdist) {
+                    if(topdist <= maxdist) {
+                        resizing = resizedir(resizing | top);
+                    }
+                }
+                else {
+                    if(bottomdist <= maxdist) {
+                        resizing = resizedir(resizing | bottom);
+                    }
+                }
+                
+                dragoffset = location;
+            }
         }
         
         Focus();
@@ -162,12 +195,82 @@ namespace Gorgon { namespace Widgets {
     void Window::mouse_up(UI::ComponentTemplate::Tag, Geometry::Point, Input::Mouse::Button button) {
         if(button == Input::Mouse::Button::Left) {
             moving = false;
+            resizing = none;
         }
     }
     
     void Window::mouse_move(UI::ComponentTemplate::Tag, Geometry::Point location) {
-        if(moving && location != dragoffset) {
+        if(location == dragoffset) 
+            return;
+        
+        if(moving) {
             Move(GetLocation() + location-dragoffset);
+        }
+        
+        switch(resizing) {
+        case bottomleft:
+        case bottomright:
+        case bottom: {
+            int ch = GetHeight();
+            int h = ch + location.Y - dragoffset.Y;
+            if(h < minsize.Height)
+                h = minsize.Height;
+            
+            SetHeight(h);
+            dragoffset.Y = location.Y;
+            break;
+        }    
+        case topleft:
+        case topright:
+        case top: {
+            int ch = GetHeight();
+            int h = ch - location.Y + dragoffset.Y;
+            
+            if(h < minsize.Height)
+                h = minsize.Height;
+            
+            SetHeight(h);
+            
+            Move(GetLocation() + Geometry::Point(0, ch-h));
+            
+            break;
+        }
+        default:
+            //nothing
+            break;
+        }
+        
+        switch(resizing) {
+        case topright:
+        case bottomright:
+        case right: {
+            int cw = GetWidth();
+            int w = cw + location.X - dragoffset.X;
+            if(w < minsize.Width)
+                w = minsize.Width;
+            
+            SetWidth(w);
+            dragoffset.X = location.X;
+            break;
+        }
+        case topleft:
+        case bottomleft:
+        case left: {
+            int cw = GetWidth();
+            int w = cw - location.X + dragoffset.X;
+            
+            if(w < minsize.Width)
+                w = minsize.Width;
+            
+            SetWidth(w);
+            
+            Move(GetLocation() + Geometry::Point(cw-w, 0));
+            
+            break;
+        }
+        default:
+            //nothing
+            break;
         }
     }
     
@@ -194,6 +297,15 @@ namespace Gorgon { namespace Widgets {
         
         allowmove = allow;
         if(moving)
+            mouse_up(UI::ComponentTemplate::NoTag, {0, 0}, Input::Mouse::Button::Left);
+    }
+    
+    void Window::AllowResize(bool allow) {
+        if(allowresize == allow) 
+            return;
+        
+        allowresize = allow;
+        if(resizing != none)
             mouse_up(UI::ComponentTemplate::NoTag, {0, 0}, Input::Mouse::Button::Left);
     }
     

@@ -1885,7 +1885,7 @@ namespace Gorgon { namespace Widgets {
             bg.Background.SetAnimation(image);
             bg.SetPadding(Border.Width*2, Border.Width*2, Border.Width*2, Border.Width*2);
             bg.SetOrientation(Graphics::Orientation::Vertical);
-            bg.SetTag(UI::ComponentTemplate::DragTag);            
+            bg.SetTag(UI::ComponentTemplate::ResizeTag);            
         };
         
         addborder(UI::ComponentCondition::Always, PassiveWindowBorder());

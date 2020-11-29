@@ -113,6 +113,21 @@ namespace Gorgon { namespace Widgets {
             return allowmove;
         }
         
+        /// Prevents user from resizing the window. Windows are not resizable
+        /// by default.
+        void LockSize() {
+            AllowResize(false);
+        }
+        
+        /// Allows user to resize the window. Windows are not resizable
+        /// by default.
+        void AllowResize(bool allow = true);
+        
+        /// Returns whether the window can be resized by the user.
+        bool CanBeResized() const {
+            return allowresize;
+        }
+        
         /// Hides the close button. Close button is visible by default.
         void HideCloseButton() {
             SetCloseButtonVisibility(false);
@@ -204,6 +219,18 @@ namespace Gorgon { namespace Widgets {
         void mouse_click(UI::ComponentTemplate::Tag tag, Geometry::Point location, Input::Mouse::Button button);
         
     private:
+        enum resizedir {
+            none,
+            top         = 1,
+            left        = 2,
+            right       = 4,
+            bottom      = 8,
+            topleft     = top | left,
+            topright    = top | right,
+            bottomleft  = bottom | left,
+            bottomright = bottom | right,
+        };
+        
         std::string title;
         const Graphics::Animation          *icon     = nullptr;
         const Graphics::AnimationProvider  *iconprov = nullptr;
@@ -214,6 +241,9 @@ namespace Gorgon { namespace Widgets {
         bool allowmove = true;
         bool moving = false;
         Geometry::Point dragoffset;
+        resizedir resizing = none;
+        bool allowresize = false;
+        Geometry::Size minsize;
     };
     
 } }

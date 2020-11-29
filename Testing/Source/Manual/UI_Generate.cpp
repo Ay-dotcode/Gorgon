@@ -308,7 +308,11 @@ int main() {
     Widgets::Checkbox enableclosebtn("Enable close button", true);
     enableclosebtn.ChangedEvent.Register([&] { wind.SetCloseButtonEnabled(enableclosebtn); });
     wind.Add(enableclosebtn);
-    wind.CreateOrganizer<UI::Organizers::List>();
+    wind.CreateOrganizer<UI::Organizers::List>() 
+        << "Try resize"
+        << "Click close twice"
+    ;
+    wind.AllowResize();
 
     /*Widgets::Progressor<std::string, StringDiv, StringVal, Gorgon::TextualProperty> bar2;
     bar2.Maximum = "Hello world";

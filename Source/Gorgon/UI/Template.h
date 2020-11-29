@@ -600,6 +600,22 @@ namespace Gorgon {
         }
 
 
+        /// Sets the size for resize handles. -1 sets it automatic which will
+        /// return unit width. Default is -1.
+        void SetResizeHandleSize(int value) {
+            resizehandlesize = value;
+            ChangedEvent();
+        }
+        
+        /// Returns the size for resize handles. Default is unitwidth.
+        int GetResizeHandleSize() const {
+            if(resizehandlesize == -1)
+                return unitwidth;
+            else
+                return resizehandlesize;
+        }
+
+
         /// This event is fired whenever template or its components are changed.
         Event<Template> ChangedEvent = Event<Template>{*this};
         
@@ -615,6 +631,7 @@ namespace Gorgon {
         Geometry::Size additional = {0, 0};
         int spacing = 4;
         int unitwidth = 25;
+        int resizehandlesize = -1;
     };
 
     /// Defines an object according to the Box Model.
