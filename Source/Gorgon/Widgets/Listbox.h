@@ -520,7 +520,7 @@ namespace Gorgon { namespace Widgets {
 
                 auto end() {
                     auto &me = dynamic_cast<F_ &>(l);
-                    return ItemIterator(me, l.selected, l.selected.size());
+                    return ItemIterator(me, l.selected, (long)l.selected.size());
                 }
 
                 auto begin() const {
@@ -530,7 +530,7 @@ namespace Gorgon { namespace Widgets {
 
                 auto end() const {
                     auto &me = dynamic_cast<F_ &>(l);
-                    return ConstItemIterator(me, l.selected, l.selected.size());
+                    return ConstItemIterator(me, l.selected, (long)l.selected.size());
                 }
 
             private:
@@ -1222,7 +1222,7 @@ namespace Gorgon { namespace Widgets {
             virtual ~LBSTR_STLVector() {}
             
             long getsize() const {
-                return storage.size();
+                return (long)storage.size();
             }
             
             T_ &getelm(long index) {

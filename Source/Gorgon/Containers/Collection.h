@@ -379,7 +379,7 @@ namespace Gorgon {
 			/// this method moves the given object in the collection in front of the reference
 			void MoveBefore(long index, long before) {
                 if(before == -1)
-                    before = list.size();
+                    before = (long)list.size();
 				if(index>=list.size())
 					throw std::out_of_range("Invalid location");
 				if(before>list.size())

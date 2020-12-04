@@ -354,13 +354,13 @@ namespace Gorgon {
 		}
 
 		/// Sets the boundaries of this layer.
-		void SetBounds(const Geometry::Bounds &bounds) {
+		virtual void SetBounds(const Geometry::Bounds &bounds) {
 			this->bounds=bounds;
 		}
 		
 		/// Returns the size of the layer
 		Geometry::Size GetSize() const {
-            return bounds.GetSize();
+            return GetBounds().GetSize();
         }
         
         /// Returns the size of the layer. If any dimension size is
@@ -391,31 +391,31 @@ namespace Gorgon {
         
 		/// Returns the width of the layer
 		int GetWidth() const {
-			return bounds.Width();
+			return GetBounds().Width();
 		}
 
 		/// Returns the height of the layer
 		int GetHeight() const {
-			return bounds.Height();
+			return GetBounds().Height();
 		}
 
 		/// Returns the current location of the layer
 		Geometry::Point GetLocation() const {
-			return bounds.TopLeft();
+			return GetBounds().TopLeft();
 		}
 
 		/// Returns the current location of the layer
 		int GetLeft() const {
-			return bounds.Left;
+			return GetBounds().Left;
 		}
 
 		/// Returns the current location of the layer
 		int GetTop() const {
-			return bounds.Top;
+			return GetBounds().Top;
 		}
 		
 		/// Returns the boundaries of the layer
-		Geometry::Bounds GetBounds() const {
+		virtual Geometry::Bounds GetBounds() const {
 			return bounds;
 		}
 

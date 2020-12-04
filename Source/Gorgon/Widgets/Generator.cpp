@@ -163,12 +163,17 @@ namespace Gorgon { namespace Widgets {
     
     void SimpleGenerator::UpdateBorders(bool smooth) {
         Border.Width  = (int)std::max(std::round(regularrenderer->GetLineThickness()*2.6f), 1.f);
-        ShapeBorder   = std::max(regularrenderer->GetLineThickness()*2.6f, 1.f);
+        ShapeBorder   = std::max((regularrenderer->GetLineThickness()+ObjectHeight/18.f)*1.3f, 1.f);
 
         //limit the thickness after 2.
         if(Border.Width > 2) {
             Border.Width = (int)std::max(std::round(regularrenderer->GetLineThickness()*2.4f), 1.f);
-            ShapeBorder  = std::max(regularrenderer->GetLineThickness()*2.4f, 1.f);
+        }
+        if(ShapeBorder > 2.f) {
+            ShapeBorder = std::max((regularrenderer->GetLineThickness()+ObjectHeight/18.f)*1.2f, 1.f);
+
+            if(ShapeBorder < 2.f)
+                ShapeBorder = 2.f;
         }
 
         ObjectBorder  = Border.Width;
@@ -594,7 +599,6 @@ namespace Gorgon { namespace Widgets {
         auto setupborder = [&](auto &anim, UI::ComponentCondition condition) {
             auto &bg = temp.AddContainer(1, condition);
             bg.Background.SetAnimation(anim);
-            bg.SetSize(100, 100, UI::Dimension::Percent);
             bg.SetPositioning(UI::ComponentTemplate::Absolute);
         };
 
@@ -607,7 +611,6 @@ namespace Gorgon { namespace Widgets {
             .AddIndex(3) //clip
             .AddIndex(4) //focus
         ;
-        boxed.SetSize(100, 100, UI::Dimension::Percent);
         boxed.SetBorderSize(Border.Width);
         boxed.SetPadding(std::max(Border.Radius / 2, Focus.Spacing));
         boxed.SetPositioning(UI::ComponentTemplate::Absolute);
@@ -617,18 +620,15 @@ namespace Gorgon { namespace Widgets {
         ;
         clip.SetClip(true);
         clip.SetPadding(Focus.Spacing + Focus.Width);
-        clip.SetSize(100, 100, UI::Dimension::Percent);
         
         //Contents
         auto &content = temp.AddContainer(5, UI::ComponentCondition::Always)
             .AddIndex(6) //icon
             .AddIndex(7) //text
         ;
-        content.SetSize(100, 100, UI::Dimension::Percent);
-        content.SetSize(100, 100, UI::Dimension::Percent);
-        content.SetSizing(UI::ComponentTemplate::Automatic);
         content.SetPositioning(UI::ComponentTemplate::Absolute);
         content.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+        content.SetSizing(UI::ComponentTemplate::Automatic);
         
         //Icon container
         auto &iconcont = temp.AddContainer(6, UI::ComponentCondition::Icon1IsSet)
@@ -655,7 +655,6 @@ namespace Gorgon { namespace Widgets {
             txt.SetColor(color);
             txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             txt.SetDataEffect(UI::ComponentTemplate::Text);
-            txt.SetSize(100, 100, UI::Dimension::Percent);
             txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
         };
         
@@ -842,12 +841,12 @@ namespace Gorgon { namespace Widgets {
             //these coordinates are designed to look good across many different
             //sizes covering a wide range
             Geometry::PointList<Geometry::Pointf> tick ={
-                {ShapeBorder*2.4f, ObjectHeight/2.f},
-                {ObjectHeight*0.45f, ObjectHeight-ShapeBorder*2.4f},
-                {ObjectHeight-ShapeBorder*2.4f, ShapeBorder*2.4f}
+                {ShapeBorder*2.2f, ObjectHeight/2.f},
+                {ObjectHeight*0.45f, ObjectHeight-ShapeBorder*2.2f},
+                {ObjectHeight-ShapeBorder*2.4f, ShapeBorder*2.2f}
             };
             
-            if(ObjectHeight - ShapeBorder*4.8f < 3) {
+            if(ObjectHeight - ShapeBorder*4.6f < 3) {
                 CGI::Polyfill(*icon, Geometry::PointList<Geometry::Pointf>{
                     {ObjectBorder*2.f, ObjectBorder*2.f},
                     {ObjectHeight - ObjectBorder*2.f, ObjectBorder*2.f},
@@ -1020,7 +1019,7 @@ namespace Gorgon { namespace Widgets {
         state2.SetPositioning(UI::ComponentTemplate::Absolute);
         state2.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         
-        float outer_r = ObjectHeight / 2.f - 0.5;
+        float outer_r = ObjectHeight / 2.f - 0.5f;
         int borderstart_r = int(ceil(outer_r - ObjectBorder));
         float inner_r = std::max(outer_r - ObjectBorder - std::max(Spacing / 2.f, 1.5f), 1.5f);
         
@@ -1753,8 +1752,8 @@ namespace Gorgon { namespace Widgets {
             
             Geometry::PointList<Geometry::Pointf> border;
             float off = 0;
-            float w = icon->GetWidth();
-            float h = icon->GetHeight()-off;
+            float w = (float)icon->GetWidth();
+            float h = (float)icon->GetHeight()-off;
             
             if(upwards) {   
                 border = {
@@ -1953,7 +1952,7 @@ namespace Gorgon { namespace Widgets {
             
             icon->Clear();
             
-            float off = ObjectBorder;
+            float off = (float)ObjectBorder;
             float s = float(bs);
             float mid = s/2.f;
             

@@ -103,7 +103,7 @@ namespace Organizers {
         
         /// Returns the number of breaks at the given index.
         int BreakCount(int index) const {
-            return breaks.count(index);
+            return (int)breaks.count(index);
         }
         
         /// Removes all breaks in the organizer

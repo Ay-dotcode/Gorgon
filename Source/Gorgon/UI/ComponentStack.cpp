@@ -2138,6 +2138,12 @@ namespace Gorgon { namespace UI {
         if(stacksizes[0]) {
             //initial states
             get(0).size = size;
+            
+            if(autosize.first)
+                get(0).size.Width = 0;
+            if(autosize.second)
+                get(0).size.Height = 0;
+            
             get(0).location = {0,0};
             get(0).parent = -1;
             
@@ -2172,7 +2178,25 @@ namespace Gorgon { namespace UI {
             }
             
             //start the update from the root
-            update(get(0), value, -1);
+            update(get(0), value, -1, autosize.first ? size.Width : -1, autosize.first || autosize.second);
+            
+            if(autosize.first || autosize.second) {
+                auto sz = size;
+                
+                if(autosize.first && get(0).size.Width >= 0)
+                    sz.Width = get(0).size.Width;
+                
+                if(autosize.second && get(0).size.Height >= 0)
+                    sz.Height = get(0).size.Height;
+                
+                
+                //second run to get everything into proper size
+                update(get(0), value, -1);
+                
+                Layer::Resize(sz);
+                mouse.Resize(sz);
+            }
+
         }
         
         //update is complete
@@ -2198,7 +2222,7 @@ namespace Gorgon { namespace UI {
     }
     
     //location depends on the container location
-    void ComponentStack::update(Component &parent, const std::array<float, 4> &value, int ind, int textwidth) {
+    void ComponentStack::update(Component &parent, const std::array<float, 4> &value, int ind, int textwidth, bool autosize) {
         //get the template
         const ComponentTemplate &ctemp = parent.GetTemplate();
 
@@ -2212,11 +2236,11 @@ namespace Gorgon { namespace UI {
         parent.innersize = parent.size - cont.GetBorderSize();
         
         //if sizing is fixed and the size is 0 and clipping is on, nothing can be displayed
-        if(cont.GetClip() && cont.GetHorizontalSizing() == cont.Fixed && parent.innersize.Width <= 0) 
+        if(cont.GetClip() && cont.GetHorizontalSizing() == cont.Fixed && parent.innersize.Width <= 0 && !autosize) 
             return;
         
         //if sizing is fixed and the size is 0 and clipping is on, nothing can be displayed
-        if(cont.GetClip() && cont.GetVerticalSizing() == cont.Fixed && parent.innersize.Height <= 0) 
+        if(cont.GetClip() && cont.GetVerticalSizing() == cont.Fixed && parent.innersize.Height <= 0 && !autosize)
             return;
 
         //this function will loop through all components, including the repeats and calls the given
@@ -2587,7 +2611,10 @@ realign:
             
             
             //**** Automatic sizing
-            if((temp.GetHorizontalSizing() != temp.Fixed || temp.GetVerticalSizing() != temp.Fixed)
+            if(
+                (temp.GetHorizontalSizing() != temp.Fixed || temp.GetVerticalSizing() != temp.Fixed) ||
+                (parent.size.Width == 0 && autosize && temp.GetType() == ComponentType::Container && temp.GetSize().Width.IsRelative()) ||
+                (parent.size.Height == 0 && autosize && temp.GetType() == ComponentType::Container && temp.GetSize().Height.IsRelative())
             ) {
                 auto &st = *storage[&temp];
 
@@ -2600,19 +2627,19 @@ realign:
                         finalpass = true;
 
                     if(!size.Width.IsRelative() || stage==final) {
-                        int textwidth = -1;
+                        int tw = -1;
                         
                         //set the dimensions that are not fixed to 0.
-                        if(temp.GetHorizontalSizing() != ComponentTemplate::Fixed) {
-                            textwidth = comp.size.Width;
+                        if(parent.size.Width == 0 || temp.GetHorizontalSizing() != ComponentTemplate::Fixed) {
+                            tw = comp.size.Width ? comp.size.Width : textwidth;
                             comp.size.Width = 0;
                         }
                         
-                        if(temp.GetVerticalSizing() != ComponentTemplate::Fixed)
+                        if(parent.size.Height == 0 || temp.GetVerticalSizing() != ComponentTemplate::Fixed)
                             comp.size.Height = 0;
                         
                         //do an update
-                        update(comp, val, index, textwidth);
+                        update(comp, val, index, tw, true);
                     }
                 }
                 else if(temp.GetType() == ComponentType::Graphics) {
@@ -3261,7 +3288,9 @@ realign:
                 ;
                 
                 r += m.Right;
-                
+                if(comp.anchtoparent && IsCenter(comp.GetTemplate().GetMyAnchor()))
+                    r += m.Left;
+
                 if(w < r)
                     w = r;
             });
@@ -3285,6 +3314,8 @@ realign:
                 ;
                 
                 b += m.Bottom;
+                if(comp.anchtoparent && IsMiddle(comp.GetTemplate().GetMyAnchor()))
+                    b += m.Top;
                 
                 if(h < b) {
                     h = b;

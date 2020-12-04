@@ -1260,7 +1260,7 @@ TestData test_modify_minmax(Layer &layer) {
     cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
     cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
     cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyPosition);
-    cont2.SetValueRange(0, 0.2, 0.8);
+    cont2.SetValueRange(0, 0.2f, 0.8f);
     
     
     
@@ -1369,7 +1369,7 @@ TestData test_modify_ch4_minmax(Layer &layer) {
     cont2.SetPosition(0, 0, Gorgon::UI::Dimension::Percent);
     cont2.SetValueModification(Gorgon::UI::ComponentTemplate::ModifyPosition);
     cont2.SetValueOrdering(3, 0, 0, 0);
-    cont2.SetValueRange(0, 0.2, 0.8);
+    cont2.SetValueRange(0, 0.2f, 0.8f);
     
     auto &stack = *new ComponentStack(temp);
     
@@ -2198,7 +2198,7 @@ TestData test_gettagbounds_modifysize(Layer &layer) {
     
     layer.Add(stack);
     
-    stack.SetValue(0.2, 0.5);
+    stack.SetValue(0.2f, 0.5f);
     
     auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
     
@@ -2229,7 +2229,7 @@ TestData test_gettagbounds_modifypos(Layer &layer) {
     
     layer.Add(stack);
     
-    stack.SetValue(0.2, 0.5);
+    stack.SetValue(0.2f, 0.5f);
     
     auto b = stack.TagBounds(Gorgon::UI::ComponentTemplate::LeftTag);
     
@@ -2777,6 +2777,7 @@ TestData test_autosize_cont_text(Layer &layer) {
     , stack};
 }
 
+
 TestData test_anchacc(Layer &layer) {
     auto &temp = *new Template;
     temp.SetSize(60, 60);
@@ -2808,7 +2809,6 @@ TestData test_anchacc(Layer &layer) {
 
     return {"Anchoring accuracy", "Size 10x20, 10x19 and 10x20 objects on a 60x60 white background, second could be 0 or 1px from the top, first and third should be touching to the top.", stack};
 }
-
 
 TestData test_ignored(Layer &layer) {
     auto &temp = *new Template;
@@ -2846,6 +2846,434 @@ TestData test_ignored(Layer &layer) {
 }
 
 
+TestData test_autosizedstack(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetClip(true);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetSize(20, 20);
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Fixed);
+
+
+    auto &stack = *new ComponentStack(temp);
+    stack.SetAutoSize(true, true);
+
+    layer.Add(stack);
+    auto s = stack.GetSize();
+
+    return {"Autosized stack simple", String::Concat((s.operator ==({20, 20}) ? "Passed" : "Failed"), ". Size = ", s, ". Size 20x20 white background."), stack};
+}
+
+TestData test_autosizedstack_double(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always)
+        .AddIndex(1)
+        .AddIndex(2)
+    ;
+    cont1.Background.SetAnimation(whiteimg());
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetSize(20, 20);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Fixed);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::Relative);
+    
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.SetSize(20, 20);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetAnchor(Gorgon::UI::Anchor::BottomRight, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont3.SetSizing(Gorgon::UI::ComponentTemplate::Fixed);
+    cont3.SetPositioning(Gorgon::UI::ComponentTemplate::Relative);
+
+
+    auto &stack = *new ComponentStack(temp);
+    stack.SetAutoSize(true, true);
+
+    layer.Add(stack);
+    
+    auto s = stack.GetSize();
+
+    return {"Autosized stack double", String::Concat((s.operator ==({40, 40}) ? "Passed" : "Failed"), ". Size = ", s, ". Size 40x40 white background with 20x20 green at top left, red at bottom right."), stack};
+}
+
+TestData test_autosizedstack_padding(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(20, 20);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always)
+        .AddIndex(1)
+        .AddIndex(2)
+    ;
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetPadding(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetSize(20, 20);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Fixed);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::Relative);
+    
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.SetSize(20, 20);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetAnchor(Gorgon::UI::Anchor::BottomRight, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont3.SetSizing(Gorgon::UI::ComponentTemplate::Fixed);
+    cont3.SetPositioning(Gorgon::UI::ComponentTemplate::Relative);
+    cont3.SetPosition(10, 10);
+
+
+    auto &stack = *new ComponentStack(temp);
+    stack.SetAutoSize(true, true);
+
+    layer.Add(stack);
+    
+    auto s = stack.GetSize();
+
+    return {"Autosized stack padding", String::Concat((s.operator ==({70, 70}) ? "Passed" : "Failed"), ". Size = ", s, ". Size 70x70 white background with 20x20 green at top left, red at bottom right. green and red should not touch"), stack};
+}
+
+TestData test_autosizedstack_border(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(20, 20);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always)
+        .AddIndex(1)
+        .AddIndex(2)
+    ;
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetBorderSize(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetSize(20, 20);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Fixed);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::Relative);
+    
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.SetSize(20, 20);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetAnchor(Gorgon::UI::Anchor::BottomRight, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont3.SetSizing(Gorgon::UI::ComponentTemplate::Fixed);
+    cont3.SetPositioning(Gorgon::UI::ComponentTemplate::Relative);
+    cont3.SetPosition(10, 10);
+
+
+    auto &stack = *new ComponentStack(temp);
+    stack.SetAutoSize(true, true);
+
+    layer.Add(stack);
+    
+    auto s = stack.GetSize();
+
+    return {"Autosized stack border", String::Concat((s.operator ==({70, 70}) ? "Passed" : "Failed"), ". Size = ", s, ". Size 70x70 white background with 20x20 green at top left, red at bottom right. green and red should not touch"), stack};
+}
+
+TestData test_autosizedstack_nested(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(10, 10);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always)
+        .AddIndex(3)
+    ;
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetPadding(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetSize(20, 20);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Fixed);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::Relative);
+    
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.SetSize(20, 20);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetAnchor(Gorgon::UI::Anchor::BottomRight, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont3.SetSizing(Gorgon::UI::ComponentTemplate::Fixed);
+    cont3.SetPositioning(Gorgon::UI::ComponentTemplate::Relative);
+
+    auto &cont4 = temp.AddContainer(3, Gorgon::UI::ComponentCondition::Always)
+        .AddIndex(1)
+        .AddIndex(2)
+    ;
+    cont4.SetPositioning(Gorgon::UI::ComponentTemplate::Absolute);
+    cont4.Background.SetAnimation(yellowimg());
+
+    auto &stack = *new ComponentStack(temp);
+    stack.SetAutoSize(true, true);
+
+    layer.Add(stack);
+    
+    auto s = stack.GetSize();
+    
+    return {"Autosized stack nested", String::Concat((s.operator ==({60, 60}) ? "Passed" : "Failed"), ". Size = ", s, ". Size 60x60 white background with 20x20 green at top left, red at bottom right, yellow at other corners."), stack};
+}
+
+TestData test_autosizedstack_text(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(100, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetPadding(10);
+    
+    static Graphics::BitmapFont fnt;
+    fnt.SetGlyphSpacing(10);
+    fnt.AddGlyph('1', greenimg1x2());
+    fnt.AddGlyph('2', greenimg2x2());
+    fnt.SetLineGap(25);
+    fnt.SetBaseline(20);
+    fnt.SetHeight(20);
+    
+    auto &cont2 = temp.AddTextholder(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetRenderer(fnt);
+    cont2.SetText("12");
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Automatic);
+
+
+    auto &stack = *new ComponentStack(temp);
+    stack.SetAutoSize(true, true);
+
+    layer.Add(stack);
+    auto s = stack.GetSize();
+
+    return {"Autosized stack text", String::Concat((s.operator ==({70, 45}) ? "Passed" : "Failed"), ". Size = ", s, ". Two green rectangles on 70x45 white background."), stack};
+}
+
+TestData test_autosizedstack_textnested(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(100, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetPadding(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.AddIndex(2);
+    
+    static Graphics::BitmapFont fnt;
+    fnt.SetGlyphSpacing(10);
+    fnt.AddGlyph('1', greenimg1x2());
+    fnt.AddGlyph('2', greenimg2x2());
+    fnt.SetLineGap(25);
+    fnt.SetBaseline(20);
+    fnt.SetHeight(20);
+    
+    auto &cont3 = temp.AddTextholder(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.SetRenderer(fnt);
+    cont3.SetText("12");
+    cont3.SetSizing(Gorgon::UI::ComponentTemplate::Automatic);
+
+
+    auto &stack = *new ComponentStack(temp);
+    stack.SetAutoSize(true, true);
+
+    layer.Add(stack);
+    auto s = stack.GetSize();
+
+    return {"Autosized stack nested text", String::Concat((s.operator ==({70, 45}) ? "Passed" : "Failed"), ". Size = ", s, ". Two green rectangles on 70x45 white background."), stack};
+}
+
+TestData test_autosizedstack_textnested_sister(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(100, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(3);
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetPadding(10);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.AddIndex(2);
+    
+    static Graphics::BitmapFont fnt;
+    fnt.SetGlyphSpacing(10);
+    fnt.AddGlyph('1', greenimg1x2());
+    fnt.AddGlyph('2', greenimg2x2());
+    fnt.SetLineGap(25);
+    fnt.SetBaseline(20);
+    fnt.SetHeight(20);
+    
+    auto &cont3 = temp.AddTextholder(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.SetRenderer(fnt);
+    cont3.SetText("12");
+    cont3.SetSizing(Gorgon::UI::ComponentTemplate::Automatic);
+    
+    auto &cont4 = temp.AddContainer(3, Gorgon::UI::ComponentCondition::Always);
+    cont4.SetSize(100, 100, Gorgon::UI::Dimension::Percent);
+    cont4.SetPositioning(Gorgon::UI::ComponentTemplate::Absolute);
+    cont4.Background.SetAnimation(yellowimg());
+
+
+    auto &stack = *new ComponentStack(temp);
+    stack.SetAutoSize(true, true);
+
+    layer.Add(stack);
+    auto s = stack.GetSize();
+
+    return {"Autosized stack nested text with a sister", String::Concat((s.operator ==({70, 45}) ? "Passed" : "Failed"), ". Size = ", s, ". Two green rectangles on 70x45 white background overlayed by a 50x25 yellow rectangle."), stack};
+}
+
+TestData test_autosizedstack_textdoublenested(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(100, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetPadding(5);
+    
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.AddIndex(2);
+    cont2.SetPadding(5);
+    
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.AddIndex(3);
+    cont3.SetPadding(5);
+    
+    static Graphics::BitmapFont fnt;
+    fnt.SetGlyphSpacing(10);
+    fnt.AddGlyph('1', greenimg1x2());
+    fnt.AddGlyph('2', greenimg2x2());
+    fnt.SetLineGap(25);
+    fnt.SetBaseline(20);
+    fnt.SetHeight(20);
+    
+    auto &text = temp.AddTextholder(3, Gorgon::UI::ComponentCondition::Always);
+    text.SetRenderer(fnt);
+    text.SetText("12");
+    text.SetSizing(Gorgon::UI::ComponentTemplate::Automatic);
+
+
+    auto &stack = *new ComponentStack(temp);
+    stack.SetAutoSize(true, true);
+
+    layer.Add(stack);
+    auto s = stack.GetSize();
+
+    return {"Autosized stack double nested text", String::Concat((s.operator ==({80, 55}) ? "Passed" : "Failed"), ". Size = ", s, ". Two green rectangles on 80x55 white background."), stack};
+}
+
+TestData test_autosizedstack_clip(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetClip(true);
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetSize(20, 20);
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Fixed);
+
+
+    auto &stack = *new ComponentStack(temp);
+    stack.SetAutoSize(true, true);
+
+    layer.Add(stack);
+    auto s = stack.GetSize();
+
+    return {"Autosized stack clipping", String::Concat((s.operator ==({20, 20}) ? "Passed" : "Failed"), ". Size = ", s, ". Size 20x20 white background."), stack};
+}
+
+TestData test_autosizedstack_complex(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(100, 60);
+
+    auto &cont0 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont0.AddIndex(1);
+    cont0.AddIndex(2);
+    cont0.Background.SetAnimation(whiteimg());
+    
+    auto &cont1 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont1.SetPositioning(Gorgon::UI::ComponentTemplate::Absolute);
+    
+    auto &cont2 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont2.AddIndex(3);
+    cont2.AddIndex(4);
+    cont2.SetPadding(3);
+    cont2.SetBorderSize(2);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::Absolute);
+    
+    auto &cont3 = temp.AddContainer(3, Gorgon::UI::ComponentCondition::Always);
+    cont3.AddIndex(5);
+    cont3.SetPadding(5);
+    cont3.SetClip(true);
+    
+    auto &cont5 = temp.AddContainer(5, Gorgon::UI::ComponentCondition::Always);
+    cont5.AddIndex(6);
+    cont5.AddIndex(7);
+    cont5.SetSizing(Gorgon::UI::ComponentTemplate::Automatic);
+    cont5.SetPositioning(Gorgon::UI::ComponentTemplate::Absolute);
+    cont5.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+
+    auto &cont6 = temp.AddContainer(6, Gorgon::UI::ComponentCondition::Icon1IsSet);
+    
+    static Graphics::BitmapFont fnt;
+    fnt.SetGlyphSpacing(10);
+    fnt.AddGlyph('1', greenimg1x2());
+    fnt.AddGlyph('2', greenimg2x2());
+    fnt.SetLineGap(25);
+    fnt.SetBaseline(20);
+    fnt.SetHeight(20);
+    
+    auto &text = temp.AddTextholder(7, Gorgon::UI::ComponentCondition::Always);
+    text.SetRenderer(fnt);
+    text.SetText("12");
+    //text.SetSizing(Gorgon::UI::ComponentTemplate::Automatic);
+    
+    auto &cont4 = temp.AddContainer(4, Gorgon::UI::ComponentCondition::Always);
+    cont4.SetPadding(5);
+    cont4.SetPositioning(Gorgon::UI::ComponentTemplate::Absolute);
+    
+
+
+    auto &stack = *new ComponentStack(temp);
+    stack.SetAutoSize(true, true);
+
+    layer.Add(stack);
+    auto s = stack.GetSize();
+
+    return {"Autosized stack complex", String::Concat((s.operator ==({70, 45}) ? "Passed" : "Failed"), ". Size = ", s, ". Two green rectangles on 70x45 white background."), stack};
+}
+
+TestData test_autosizedstack_center(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(30, 30);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always)
+        .AddIndex(1)
+        .AddIndex(2)
+    ;
+    cont1.Background.SetAnimation(whiteimg());
+    cont1.SetPadding(10, 20);
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetSize(20, 30);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Fixed);
+    cont2.SetPositioning(Gorgon::UI::ComponentTemplate::Relative);
+    cont2.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+
+    auto &stack = *new ComponentStack(temp);
+    stack.SetAutoSize(true, true);
+
+    layer.Add(stack);
+
+    auto s = stack.GetSize();
+
+    return {"Autosized stack center aligned", String::Concat((s.operator ==({40, 70}) ? "Passed" : "Failed"), ". Size = ", s, ". Size 40x70 white background with 20x30 green at center"), stack};
+}
 
 std::vector<std::function<TestData(Layer &)>> tests = {
     //BEGIN layout
@@ -2974,9 +3402,26 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_autosize_cont_text,
     //END
     
+    //BEGIN Autosized stack
+    &test_autosizedstack,
+    &test_autosizedstack_double,
+    &test_autosizedstack_padding,
+    &test_autosizedstack_border,
+    &test_autosizedstack_nested,
+    &test_autosizedstack_text,
+    &test_autosizedstack_textnested,
+    &test_autosizedstack_textnested_sister,
+    &test_autosizedstack_textdoublenested,
+    &test_autosizedstack_clip,
+    &test_autosizedstack_complex,
+    &test_autosizedstack_center,
+    //END
+    /*
+    //BEGIN Extra
     &test_anchacc,
     &test_ignored,
-    
+    //END
+    */
 };
 
 //END tests

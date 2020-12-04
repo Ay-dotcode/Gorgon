@@ -526,7 +526,7 @@ namespace Gorgon { namespace Graphics {
 	}
 	
 	bool FreeType::Exists(Glyph g) const {
-        int c = glyphmap.count(g);
+        int c = (int)glyphmap.count(g);
         return c != 0;
     }
     
@@ -1098,7 +1098,7 @@ namespace Gorgon { namespace Graphics {
             loadglyphs('f', true);
             loadglyphs('j', true);
 
-            if(glyphmap.count(0xc2)) {
+            if(glyphmap.count(0xc2)) { 
                 c[0] = 0xc2;
             }
             else
@@ -1126,6 +1126,6 @@ namespace Gorgon { namespace Graphics {
                 maxy = g.offset.Y + g.images.regular->GetHeight();
         }
 
-        return {miny + baseline, maxy - miny};
+        return {miny + (int)baseline, maxy - miny};
     }
 } }

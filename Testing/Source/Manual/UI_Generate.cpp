@@ -93,7 +93,7 @@ int main() {
     ///Blank Panel & elements with Registry & Regulars
     /*Widgets::SimpleGenerator generator;
     generator.Density = 5;
-    generator.Init(9);
+    generator.Init(16, "freesans");
     generator.UpdateBorders();
     generator.Border.Width = 2;
     generator.Border.Radius = 4;

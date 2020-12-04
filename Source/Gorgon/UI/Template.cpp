@@ -349,7 +349,37 @@ namespace Gorgon { namespace UI {
      * 
      */
 
-    PlaceholderTemplate& Template::AddPlaceholder(int index, ComponentCondition from, ComponentCondition to){ 
+
+
+
+    Template::Template(Template &&other) :
+        ChangedEvent(std::move(other.ChangedEvent)),
+        Name(std::move(other.Name)),
+        components(std::move(other.components)),
+        tokens(std::move(other.tokens)),
+        durations(std::move(other.durations)),
+        xsizing(std::move(other.xsizing)),
+        ysizing(std::move(other.ysizing)),
+        size(std::move(other.size)),
+        additional(std::move(other.additional)),
+        spacing(std::move(other.spacing)),
+        unitwidth(std::move(other.unitwidth)),
+        resizehandlesize(std::move(other.resizehandlesize))
+    {
+        auto token = tokens.begin();
+        for(auto &c : components) {
+            c.ChangedEvent.Unregister(*token);
+            token++;
+        }
+        tokens.clear();
+        for(auto &c : components) {
+            tokens.push_back(
+                c.ChangedEvent.Register(ChangedEvent, &Event<Template>::operator ())
+            );
+        }
+    }
+
+    PlaceholderTemplate& Template::AddPlaceholder(int index, ComponentCondition from, ComponentCondition to){
         auto obj = new PlaceholderTemplate();
         components.Add(obj);
         

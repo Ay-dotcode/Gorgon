@@ -411,9 +411,10 @@ namespace Gorgon {
         Template() {
         }
 
-        Template(Template &&) = default;
+        //Move constructor. Moving is only allowed on construction
+        Template(Template &&other);
         
-        Template &operator =(Template &&) = default;
+        Template &operator =(Template &&) = delete;
 
         /// Destructor
         ~Template() {
@@ -632,6 +633,8 @@ namespace Gorgon {
         int spacing = 4;
         int unitwidth = 25;
         int resizehandlesize = -1;
+
+        //Do not forget to update move constructor!
     };
 
     /// Defines an object according to the Box Model.

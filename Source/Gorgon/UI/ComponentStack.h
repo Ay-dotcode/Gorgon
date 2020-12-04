@@ -252,6 +252,20 @@ namespace Gorgon { namespace UI {
             }
         }
         
+        virtual void SetBounds(const Geometry::Bounds &bounds) override {
+            Resize(bounds.GetSize());
+            
+            Layer::Move(bounds.TopLeft());
+        }
+        
+        virtual Geometry::Bounds GetBounds() const override {
+            if(updaterequired) {
+                const_cast<ComponentStack*>(this)->update();
+            }
+            
+            return Layer::GetBounds();
+        }
+        
         /// Returns the template used by this stack
         const Template &GetTemplate() const {
             return temp;
@@ -400,18 +414,35 @@ namespace Gorgon { namespace UI {
         /// Removes the fixed size for a set tagged component
         void RemoveTagSize(ComponentTemplate::Tag tag) {
             tagsizes.erase(tag);
+            Update();
         }
         
         /// Enables text wrapping on a specific tag, default is enabled.
         void EnableTagWrap(ComponentTemplate::Tag tag) {
             tagnowrap.erase(tag);
+            Update();
         }
         
         /// Disables text wrapping on a specific tag, default is enabled.
         void DisableTagWrap(ComponentTemplate::Tag tag) {
             tagnowrap.insert(tag);
         }
+        
+        /// Sets whether the ComponentStack should be autosized. Autosize
+        /// uses the set size for text width.
+        void SetAutoSize(bool horizontal, bool vertical) {
+            if(autosize == std::make_pair(horizontal, vertical))
+                return;
+                
+            autosize = {horizontal, vertical};
+            Update();
+        }
 
+        /** @name Events
+         * These are events that can be handled
+         * 
+         * @{
+         */
 
         /// Sets a function to be called before update check
         void SetFrameEvent(std::function<void()> handler) {
@@ -452,6 +483,8 @@ namespace Gorgon { namespace UI {
         void RemoveRenderEvent() {
             render_fn = std::function<void()>();
         }
+        
+        /// @}
         
         /** @name Mouse Events
         * These function will allow handling mouse events. If the mouse event is originating from a
@@ -553,7 +586,7 @@ namespace Gorgon { namespace UI {
         
         /// @}
 
-        
+        /// This event is fired when condition is changed.
         Event<ComponentStack> ConditionChanged;
         
         
@@ -588,7 +621,7 @@ namespace Gorgon { namespace UI {
         void update();
 
         ///updates a specific container component
-        void update(Component &parent, const std::array<float, 4> &value, int ind, int textwidth = -1);
+        void update(Component &parent, const std::array<float, 4> &value, int ind, int textwidth = -1, bool autosize = false);
 
         ///renders the given component, rendering will use parent layer if the component does not have its own layer. Index is for
         ///repeated components, it is the index of the repeat to be rendered. Unlike Layer::Render function, this function does not
@@ -676,7 +709,7 @@ namespace Gorgon { namespace UI {
         ///Dictates the speed which values reach to the target value. valuespeed = 0 disables animation
         std::array<float, 4> valuespeed = {{0.f, 0.f, 0.f, 0.f}};
         
-        ///??
+        ///Get value returns the target value if set the to true
         bool returntarget = false;
 
         ///Number of elements in each stack
@@ -690,6 +723,9 @@ namespace Gorgon { namespace UI {
         
         ///Whether component stack will be handling the mouse events
         bool handlingmouse = false;
+        
+        ///When set, component stack will resize itself to fit components.
+        std::pair<bool, bool> autosize = {false, false};
 
         ///Size of the component stack
         Geometry::Size size;
