@@ -119,6 +119,8 @@ namespace Gorgon { namespace Widgets {
         
         virtual bool Activate() override;
         
+        GORGON_UI_CSW_AUTOSIZABLE_WIDGET;
+        
         bool KeyEvent(Input::Key key, float state) override;
 
         TextualProperty<Checkbox, std::string, &Checkbox::GetText, &Checkbox::SetText> Text;

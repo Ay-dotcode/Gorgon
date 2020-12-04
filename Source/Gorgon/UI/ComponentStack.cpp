@@ -2139,9 +2139,9 @@ namespace Gorgon { namespace UI {
             //initial states
             get(0).size = size;
             
-            if(autosize.first)
+            if(autosize.first != Autosize::None)
                 get(0).size.Width = 0;
-            if(autosize.second)
+            if(autosize.second != Autosize::None)
                 get(0).size.Height = 0;
             
             get(0).location = {0,0};
@@ -2178,17 +2178,130 @@ namespace Gorgon { namespace UI {
             }
             
             //start the update from the root
-            update(get(0), value, -1, autosize.first ? size.Width : -1, autosize.first || autosize.second);
+            update(get(0), value, -1, autosize.first != Autosize::None ? size.Width : -1, autosize.first != Autosize::None || autosize.second != Autosize::None);
             
-            if(autosize.first || autosize.second) {
+            auto ceilfn = ceiltounitsize_fn;
+            if(!ceilfn) {
+                ceilfn = [this](int s) {
+                    return (s + temp.GetUnitWidth() - 1) / temp.GetUnitWidth() * temp.GetUnitWidth();
+                };
+            }
+            
+            if(autosize.first != Autosize::None || autosize.second != Autosize::None) {
                 auto sz = size;
                 
-                if(autosize.first && get(0).size.Width >= 0)
-                    sz.Width = get(0).size.Width;
+                //handle autosize options
+                auto &rootsize = get(0).size;
                 
-                if(autosize.second && get(0).size.Height >= 0)
-                    sz.Height = get(0).size.Height;
+                if(rootsize.Width > 0) {
+                    switch(autosize.first) {
+                        case Autosize::Automatic:
+                            sz.Width = rootsize.Width;
+                            break;
+                            
+                        case Autosize::Shrink:
+                            if(sz.Width > rootsize.Width) {
+                                sz.Width = rootsize.Width;
+                            }
+                            else {
+                                rootsize.Width = sz.Width;
+                            }
+                            break;
+                            
+                        case Autosize::Grow:
+                            if(sz.Width < rootsize.Width) {
+                                sz.Width = rootsize.Width;
+                            }
+                            else {
+                                rootsize.Width = sz.Width;
+                            }
+                            break;
+                            
+                        case Autosize::Unit:
+                            sz.Width = ceilfn(rootsize.Width);
+                            rootsize.Width = sz.Width;
+                            break;
+                            
+                        case Autosize::ShrinkToUnit:
+                            if(sz.Width > rootsize.Width) {
+                                sz.Width = ceilfn(rootsize.Width);
+                                rootsize.Width = sz.Width;
+                            }
+                            else {
+                                rootsize.Width = sz.Width;
+                            }
+                            break;
+                            
+                        case Autosize::GrowToUnit:
+                            if(sz.Width < rootsize.Width) {
+                                sz.Width = ceilfn(rootsize.Width);
+                                rootsize.Width = sz.Width;
+                            }
+                            else {
+                                rootsize.Width = sz.Width;
+                            }
+                            break;
+                            
+                        default:
+                            //nothing
+                            break;
+                    }
+                }
                 
+                if(rootsize.Height > 0) {
+                    switch(autosize.second) {
+                        case Autosize::Automatic:
+                            sz.Height = rootsize.Height;
+                            break;
+                            
+                        case Autosize::Shrink:
+                            if(sz.Height > rootsize.Height) {
+                                sz.Height = rootsize.Height;
+                            }
+                            else {
+                                rootsize.Height = sz.Height;
+                            }
+                            break;
+                            
+                        case Autosize::Grow:
+                            if(sz.Height < rootsize.Height) {
+                                sz.Height = rootsize.Height;
+                            }
+                            else {
+                                rootsize.Height = sz.Height;
+                            }
+                            break;
+                            
+                        case Autosize::Unit:
+                            sz.Height = ceilfn(rootsize.Height);
+                            rootsize.Height = sz.Height;
+                            break;
+                            
+                        case Autosize::ShrinkToUnit:
+                            if(sz.Height > rootsize.Height) {
+                                sz.Height = ceilfn(rootsize.Height);
+                                rootsize.Height = sz.Height;
+                            }
+                            else {
+                                rootsize.Height = sz.Height;
+                            }
+                            break;
+                            
+                        case Autosize::GrowToUnit:
+                            if(sz.Height < rootsize.Height) {
+                                sz.Height = ceilfn(rootsize.Height);
+                                rootsize.Height = sz.Height;
+                            }
+                            else {
+                                rootsize.Height = sz.Height;
+                            }
+                            break;
+                            
+                        default:
+                            //nothing
+                            break;
+                    }
+                }
                 
                 //second run to get everything into proper size
                 update(get(0), value, -1);

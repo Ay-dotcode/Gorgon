@@ -13,7 +13,18 @@ namespace Gorgon { namespace UI {
      */
     class ComponentStackWidget : public Widget {
     public:
-        ComponentStackWidget(const Template &temp, std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> generators = {}) : stack(*new ComponentStack(temp, temp.GetSize(), generators)) { }
+        ComponentStackWidget(const Template &temp, std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> generators = {}) : stack(*new ComponentStack(temp, temp.GetSize(), generators)) {
+            stack.SetCeilToUnitSize([this](int s) {
+                int w;
+                if(HasParent()) {
+                    w = GetParent().GetUnitWidth();
+                }
+                else {
+                    w = stack.GetTemplate().GetUnitWidth();
+                }
+                return (s + w - 1) / w * w;
+            }); 
+        }
         
         ComponentStackWidget(ComponentStackWidget &&) = default;
 
@@ -135,6 +146,38 @@ namespace Gorgon { namespace UI {
 		virtual void setlayerorder(Layer &, int order) override {
 			stack.PlaceBefore(order);
 		}
+		
+		//Make these functions public as necessary.
+        
+        /// Adjusts autosizing of the widget. In autosize mode, set width is used to limit
+        /// text width so that it will flow to next line.
+        void SetAutosize(UI::Autosize hor, UI::Autosize ver) {
+            stack.SetAutosize(hor, ver);
+        }
+        
+        /// Adjusts autosizing of the widget. In autosize mode, set width is used to limit
+        /// text width so that it will flow to next line.
+        void SetHorizonalAutosize(UI::Autosize value) {
+            stack.SetAutosize(value, stack.GetAutosize().second);
+        }
+        
+        /// Adjusts autosizing of the widget. In autosize mode, set width is used to limit
+        /// text width so that it will flow to next line.
+        void SetVerticalAutosize(UI::Autosize value) {
+            stack.SetAutosize(stack.GetAutosize().first, value);
+        }
+        
+        /// Returns the horizontal autosize mode of the widget
+        UI::Autosize GetHorizontalAutosize() const {
+            return stack.GetAutosize().first;
+        }
+        
+        /// Returns the horizontal autosize mode of the widget
+        UI::Autosize GetVerticalAutosize() const {
+            return stack.GetAutosize().second;
+        }
+        
+        
 
     private:
         virtual void show() override {
@@ -151,5 +194,12 @@ namespace Gorgon { namespace UI {
                 boundschanged();
 		}
 	};
+    
+#define GORGON_UI_CSW_AUTOSIZABLE_WIDGET \
+        using ComponentStackWidget::SetAutosize; \
+        using ComponentStackWidget::SetHorizonalAutosize; \
+        using ComponentStackWidget::SetVerticalAutosize; \
+        using ComponentStackWidget::GetHorizontalAutosize; \
+        using ComponentStackWidget::GetVerticalAutosize
     
 } }

@@ -295,6 +295,8 @@ int main() {
         << sizef
     ;
     
+    btn.SetHorizonalAutosize(Gorgon::UI::Autosize::Unit);
+    
     Widgets::Window wind("My window", {200, 300});
     wind.Add(btn);
     wind.OwnIcon(icon.CreateAnimation());
@@ -306,6 +308,7 @@ int main() {
     });
     btn.Move(0,0);
     Widgets::Checkbox enableclosebtn("Enable close button", true);
+    enableclosebtn.SetAutosize(Gorgon::UI::Autosize::Unit, Gorgon::UI::Autosize::Automatic);
     enableclosebtn.ChangedEvent.Register([&] { wind.SetCloseButtonEnabled(enableclosebtn); });
     wind.Add(enableclosebtn);
     wind.CreateOrganizer<UI::Organizers::List>() 

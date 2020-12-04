@@ -2861,7 +2861,7 @@ TestData test_autosizedstack(Layer &layer) {
 
 
     auto &stack = *new ComponentStack(temp);
-    stack.SetAutoSize(true, true);
+    stack.SetAutosize(UI::Autosize::Automatic, UI::Autosize::Automatic);
 
     layer.Add(stack);
     auto s = stack.GetSize();
@@ -2894,7 +2894,7 @@ TestData test_autosizedstack_double(Layer &layer) {
 
 
     auto &stack = *new ComponentStack(temp);
-    stack.SetAutoSize(true, true);
+    stack.SetAutosize(UI::Autosize::Automatic, UI::Autosize::Automatic);
 
     layer.Add(stack);
     
@@ -2930,7 +2930,7 @@ TestData test_autosizedstack_padding(Layer &layer) {
 
 
     auto &stack = *new ComponentStack(temp);
-    stack.SetAutoSize(true, true);
+    stack.SetAutosize(UI::Autosize::Automatic, UI::Autosize::Automatic);
 
     layer.Add(stack);
     
@@ -2966,7 +2966,7 @@ TestData test_autosizedstack_border(Layer &layer) {
 
 
     auto &stack = *new ComponentStack(temp);
-    stack.SetAutoSize(true, true);
+    stack.SetAutosize(UI::Autosize::Automatic, UI::Autosize::Automatic);
 
     layer.Add(stack);
     
@@ -3006,7 +3006,7 @@ TestData test_autosizedstack_nested(Layer &layer) {
     cont4.Background.SetAnimation(yellowimg());
 
     auto &stack = *new ComponentStack(temp);
-    stack.SetAutoSize(true, true);
+    stack.SetAutosize(UI::Autosize::Automatic, UI::Autosize::Automatic);
 
     layer.Add(stack);
     
@@ -3039,7 +3039,7 @@ TestData test_autosizedstack_text(Layer &layer) {
 
 
     auto &stack = *new ComponentStack(temp);
-    stack.SetAutoSize(true, true);
+    stack.SetAutosize(UI::Autosize::Automatic, UI::Autosize::Automatic);
 
     layer.Add(stack);
     auto s = stack.GetSize();
@@ -3074,7 +3074,7 @@ TestData test_autosizedstack_textnested(Layer &layer) {
 
 
     auto &stack = *new ComponentStack(temp);
-    stack.SetAutoSize(true, true);
+    stack.SetAutosize(UI::Autosize::Automatic, UI::Autosize::Automatic);
 
     layer.Add(stack);
     auto s = stack.GetSize();
@@ -3115,7 +3115,7 @@ TestData test_autosizedstack_textnested_sister(Layer &layer) {
 
 
     auto &stack = *new ComponentStack(temp);
-    stack.SetAutoSize(true, true);
+    stack.SetAutosize(UI::Autosize::Automatic, UI::Autosize::Automatic);
 
     layer.Add(stack);
     auto s = stack.GetSize();
@@ -3155,7 +3155,7 @@ TestData test_autosizedstack_textdoublenested(Layer &layer) {
 
 
     auto &stack = *new ComponentStack(temp);
-    stack.SetAutoSize(true, true);
+    stack.SetAutosize(UI::Autosize::Automatic, UI::Autosize::Automatic);
 
     layer.Add(stack);
     auto s = stack.GetSize();
@@ -3178,7 +3178,7 @@ TestData test_autosizedstack_clip(Layer &layer) {
 
 
     auto &stack = *new ComponentStack(temp);
-    stack.SetAutoSize(true, true);
+    stack.SetAutosize(UI::Autosize::Automatic, UI::Autosize::Automatic);
 
     layer.Add(stack);
     auto s = stack.GetSize();
@@ -3239,7 +3239,7 @@ TestData test_autosizedstack_complex(Layer &layer) {
 
 
     auto &stack = *new ComponentStack(temp);
-    stack.SetAutoSize(true, true);
+    stack.SetAutosize(UI::Autosize::Automatic, UI::Autosize::Automatic);
 
     layer.Add(stack);
     auto s = stack.GetSize();
@@ -3266,7 +3266,7 @@ TestData test_autosizedstack_center(Layer &layer) {
     cont2.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
 
     auto &stack = *new ComponentStack(temp);
-    stack.SetAutoSize(true, true);
+    stack.SetAutosize(UI::Autosize::Automatic, UI::Autosize::Automatic);
 
     layer.Add(stack);
 

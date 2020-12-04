@@ -76,6 +76,8 @@ namespace Gorgon { namespace Widgets {
         void OwnIcon(Graphics::Bitmap &&value);
         
         virtual bool Activate() override;
+        
+        GORGON_UI_CSW_AUTOSIZABLE_WIDGET;
 
         TextualProperty<Label, std::string, &Label::GetText, &Label::SetText> Text;
 

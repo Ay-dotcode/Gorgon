@@ -12,6 +12,37 @@
 
 namespace Gorgon { namespace UI {
     
+    
+    /**
+     * Defines autosize behavior of some widgets
+     */
+    enum class Autosize {
+        /// Automatic sizing will not be in effect
+        None,
+        
+        /// Automatic sizing will be in effect
+        Automatic,
+        
+        /// Automatic sizing will be in effect and will resize
+        /// to next size units. This is more effective horizontally.
+        Unit,
+        
+        /// Autosizing will only make the widget grow
+        Grow,
+        
+        /// Autosizing will only make the widget grow to next unit
+        /// size.
+        GrowToUnit,
+        
+        /// Autosizing will only make the widget shrink
+        Shrink,
+        
+        /// Autosizing will only make the widget shrink. It will be resized
+        /// to a unit size.
+        ShrinkToUnit,
+    };
+
+    
     class Widget;
 
     /**
@@ -152,6 +183,12 @@ namespace Gorgon { namespace UI {
         /// that is causing the translation and the value that needs to be transformed.
         void SetValueToText(std::function<std::string(int, ComponentTemplate::DataEffect, const std::array<float, 4> &)> handler) {
             valuetotext = handler;
+        }
+        
+        /// Sets the function that will be used perform Ceil operation in unit sizes. If
+        /// not set, unit width of the template will be used.
+        void SetCeilToUnitSize(std::function<int(int)> handler) {
+            ceiltounitsize_fn = handler;
         }
 
         /**
@@ -430,12 +467,17 @@ namespace Gorgon { namespace UI {
         
         /// Sets whether the ComponentStack should be autosized. Autosize
         /// uses the set size for text width.
-        void SetAutoSize(bool horizontal, bool vertical) {
+        void SetAutosize(Autosize horizontal, Autosize vertical) {
             if(autosize == std::make_pair(horizontal, vertical))
                 return;
                 
             autosize = {horizontal, vertical};
             Update();
+        }
+        
+        /// Returns the autosize mode of the stack
+        std::pair<Autosize, Autosize> GetAutosize() const {
+            return autosize;
         }
 
         /** @name Events
@@ -725,7 +767,7 @@ namespace Gorgon { namespace UI {
         bool handlingmouse = false;
         
         ///When set, component stack will resize itself to fit components.
-        std::pair<bool, bool> autosize = {false, false};
+        std::pair<Autosize, Autosize> autosize = {Autosize::None, Autosize::None};
 
         ///Size of the component stack
         Geometry::Size size;
@@ -761,6 +803,7 @@ namespace Gorgon { namespace UI {
         std::function<void()> beforeupdate_fn;
         std::function<void()> update_fn;
         std::function<void()> render_fn;
+        std::function<int(int)> ceiltounitsize_fn;
         
         std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> widgetgenerators;
         Containers::Hashmap<const ComponentTemplate *, Widget> widgets;
