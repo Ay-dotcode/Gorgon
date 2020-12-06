@@ -165,7 +165,7 @@ int main() {
 		}
 
 	img3.Prepare();
-	img3.DrawIn(l);
+	wind.SetBackground(img3);
     
     cursor3.Draw (l, 500, 400);
     pointer1.Draw(l, 500, 400);

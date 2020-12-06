@@ -14,6 +14,7 @@ namespace Gorgon { namespace UI {
         }
     }
 
+    
     int Window::GetUnitWidth() const {
         if(issizesset) {
             return unitwidth;
@@ -23,4 +24,271 @@ namespace Gorgon { namespace UI {
         }
     }
     
+    
+    void Window::Destroy() {
+        delete extenderlayer;
+        extenderlayer = nullptr;
+    }
+    
+    
+    void Window::init() {
+        extenderlayer = new Graphics::Layer;
+        Layer::Insert(*extenderlayer, 2);
+        extenderadapter.SetLayer(*extenderlayer);
+        extenderlayer->setname("extender");
+
+        //extender does not steal focus
+
+
+        dialoglayer = new Graphics::Layer;
+        Layer::Insert(*dialoglayer, 2); //this is not wrong
+        dialogadapter.SetLayer(*dialoglayer);
+        dialoglayer->setname("dialog");
+
+        dialogadapter.SetFocusChangedHandler([this] {
+            focuschangedin(dialogadapter);
+        });
+
+
+        barlayer = new Graphics::Layer;
+        Layer::Insert(*barlayer, 2); //this is not wrong
+        baradapter.SetLayer(*barlayer);
+        barlayer->setname("bar");
+
+        baradapter.SetFocusChangedHandler([this] {
+            focuschangedin(baradapter);
+        });
+
+
+        windowlayer = new Graphics::Layer;
+        Layer::Insert(*windowlayer, 2); //this is not wrong
+        windowadapter.SetLayer(*windowlayer);
+        windowlayer->setname("window");
+        windowadapter.SetFocusChangedHandler([this] {
+            focuschangedin(windowadapter);
+        });
+
+
+        widgetlayer = new Graphics::Layer;
+        Layer::Insert(*widgetlayer, 2); //this is not wrong
+        widgetlayer->setname("widget");
+
+
+        underlayer = new Graphics::Layer;
+        Layer::Insert(*underlayer, 1); //under the contents
+        underadapter.SetLayer(*underlayer);
+        underlayer->setname("under");
+
+        underadapter.SetFocusChangedHandler([this] {
+            focuschangedin(underadapter);
+        });
+    }
+
+    void Window::focuschangedin(LayerAdapter &cont) {
+        if(cont.HasFocusedWidget() && focusedadapter != &cont) {
+            if(focusedadapter == nullptr) {
+                RemoveFocus();
+            }
+            else {
+                focusedadapter->RemoveFocus();
+            }
+
+            focusedadapter = &cont;
+        }
+    }
+
+
+    auto Window::charinit() -> decltype(CharacterEvent)::Token {
+        chartoken = CharacterEvent.Register([this](Char c) {
+            return WidgetContainer::
+                CharacterEvent(c);
+        });
+
+        CharacterEvent.NewHandler = [this] {
+            RegisterOnce([this] {
+                this->CharacterEvent.MoveToTop(this->chartoken);
+            });
+        };
+
+        return chartoken;
+    }
+
+
+    auto Window::keyinit() -> decltype(KeyEvent)::Token {
+        inputtoken = KeyEvent.Register([this](Input::Key key, float amount) {
+            return WidgetContainer::KeyEvent(key, amount);
+        });
+
+        KeyEvent.NewHandler = [this] {
+            RegisterOnce([this] {
+                this->KeyEvent.MoveToTop(this->inputtoken);
+            });
+        };
+
+        return inputtoken;
+    }
+
+    
+    Window::Window(UI::Window &&other) : 
+        Gorgon::Window(std::move(other)), 
+        WidgetContainer(std::move(other)) 
+    {
+        KeyEvent.Unregister(inputtoken);
+        CharacterEvent.Unregister(chartoken);
+
+        inputtoken = keyinit();
+        chartoken = charinit();
+
+
+        delete extenderlayer;
+        extenderlayer = other.extenderlayer;
+        other.Layer::Remove(*extenderlayer);
+        other.extenderlayer = nullptr;
+
+        delete dialoglayer;
+        dialoglayer = other.dialoglayer;
+        other.Layer::Remove(*dialoglayer);
+        other.dialoglayer = nullptr;
+
+        delete barlayer;
+        barlayer = other.barlayer;
+        other.Layer::Remove(*barlayer);
+        other.barlayer = nullptr;
+
+        delete windowlayer;
+        windowlayer = other.windowlayer;
+        other.Layer::Remove(*windowlayer);
+        other.windowlayer = nullptr;
+
+        delete widgetlayer;
+        widgetlayer = other.widgetlayer;
+        other.Layer::Remove(*widgetlayer);
+        other.widgetlayer = nullptr;
+
+        delete underlayer;
+        underlayer = other.underlayer;
+        other.Layer::Remove(*underlayer);
+        other.underlayer = nullptr;
+
+        other.Destroy();
+
+        Layer::Insert(*extenderlayer, 2);
+        extenderadapter.SetLayer(*extenderlayer);
+
+        Layer::Insert(*dialoglayer, 2);
+        dialogadapter.SetLayer(*dialoglayer);
+
+        Layer::Insert(*barlayer, 2);
+        baradapter.SetLayer(*barlayer);
+
+        Layer::Insert(*windowlayer, 2);
+        windowadapter.SetLayer(*windowlayer);
+
+        Layer::Insert(*widgetlayer, 2);
+
+        Layer::Insert(*underlayer, 1);
+        underadapter.SetLayer(*underlayer);
+
+        //extender does not steal focus
+
+        dialogadapter.SetFocusChangedHandler([this] {
+            focuschangedin(dialogadapter);
+        });
+
+        baradapter.SetFocusChangedHandler([this] {
+            focuschangedin(baradapter);
+        });
+
+        windowadapter.SetFocusChangedHandler([this] {
+            focuschangedin(windowadapter);
+        });
+
+        underadapter.SetFocusChangedHandler([this] {
+            focuschangedin(underadapter);
+        });
+    }
+
+
+    UI::Window &Window::operator= (UI::Window &&other) {
+        other.KeyEvent.Unregister(other.inputtoken);
+        other.CharacterEvent.Unregister(other.chartoken);
+
+        KeyEvent.Unregister(inputtoken);
+        CharacterEvent.Unregister(chartoken);
+
+        delete extenderlayer;
+        extenderlayer = other.extenderlayer;
+        other.Layer::Remove(*extenderlayer);
+        other.extenderlayer = nullptr;
+
+        delete dialoglayer;
+        dialoglayer = other.dialoglayer;
+        other.Layer::Remove(*dialoglayer);
+        other.dialoglayer = nullptr;
+
+        delete barlayer;
+        barlayer = other.barlayer;
+        other.Layer::Remove(*barlayer);
+        other.barlayer = nullptr;
+
+        delete windowlayer;
+        windowlayer = other.windowlayer;
+        other.Layer::Remove(*windowlayer);
+        other.windowlayer = nullptr;
+
+        delete widgetlayer;
+        widgetlayer = other.widgetlayer;
+        other.Layer::Remove(*widgetlayer);
+        other.widgetlayer = nullptr;
+
+        delete underlayer;
+        underlayer = other.underlayer;
+        other.Layer::Remove(*underlayer);
+        other.underlayer = nullptr;
+
+        Gorgon::Window::operator = (std::move(other));
+        WidgetContainer::operator = (std::move(other));
+
+        Layer::Insert(*extenderlayer, 2);
+        extenderadapter.SetLayer(*extenderlayer);
+
+        Layer::Insert(*dialoglayer, 2);
+        dialogadapter.SetLayer(*dialoglayer);
+
+        Layer::Insert(*barlayer, 2);
+        baradapter.SetLayer(*barlayer);
+
+        Layer::Insert(*windowlayer, 2);
+        windowadapter.SetLayer(*windowlayer);
+
+        Layer::Insert(*widgetlayer, 2);
+
+        Layer::Insert(*underlayer, 1);
+        underadapter.SetLayer(*underlayer);
+
+        //extender does not steal focus
+
+        dialogadapter.SetFocusChangedHandler([this] {
+            focuschangedin(dialogadapter);
+        });
+
+        baradapter.SetFocusChangedHandler([this] {
+            focuschangedin(baradapter);
+        });
+
+        windowadapter.SetFocusChangedHandler([this] {
+            focuschangedin(windowadapter);
+        });
+
+        underadapter.SetFocusChangedHandler([this] {
+            focuschangedin(underadapter);
+        });
+
+        inputtoken = keyinit();
+        chartoken = charinit();
+
+        return *this;
+    }
+
+
 } }

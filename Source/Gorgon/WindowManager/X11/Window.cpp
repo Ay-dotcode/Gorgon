@@ -49,8 +49,6 @@ namespace internal {
         
         this->name = name;
         this->allowresize = allowresize;
-        pointerlayer = new Graphics::Layer;
-        Add(pointerlayer);
 
 #ifndef NDEBUG
         ASSERT(WindowManager::display, "Window manager system is not initialized.");
@@ -143,7 +141,7 @@ namespace internal {
             
             XMoveWindow(WindowManager::display, data->handle, rect.X, rect.Y);
             
-            XFlush(WindowManager::display);			
+            XFlush(WindowManager::display);
         }
         else {
             data->move=true;
@@ -159,13 +157,12 @@ namespace internal {
         glsize = rect.GetSize();
         
         WindowManager::XdndInit(data);
+        init();
     }
     
     Window::Window(const Gorgon::Window::FullscreenTag &, const WindowManager::Monitor &mon, const std::string &name, const std::string &title) : data(new internal::windowdata) {
         
         this->name = name;
-        pointerlayer = new Graphics::Layer;
-        Add(pointerlayer);
 
 #ifndef NDEBUG
         ASSERT(WindowManager::display, "Window manager system is not initialized.");
@@ -190,8 +187,6 @@ namespace internal {
                     FocusChangeMask|         //activate/deactivate
                     SubstructureRedirectMask //??
         ;
-        
-        bool autoplaced = false;
         
         auto rootwin=XRootWindow(WindowManager::display,screen);
         
@@ -238,18 +233,14 @@ namespace internal {
         glsize = mon.GetSize();
         
         WindowManager::XdndInit(data);
+        init();
     }
     
-    void Window::Destroy() {
+    void Window::osdestroy() {
         if(data) {
             Close();
         }
         
-        windows.Remove(this);
-
-        delete pointerlayer;
-        pointerlayer = nullptr;
-
         delete data;
         data = nullptr;
     }
@@ -265,7 +256,7 @@ namespace internal {
         if(data->move) {
             XMoveWindow(WindowManager::display, data->handle, data->moveto.X, data->moveto.Y);
             data->move=false;
-        }		
+        }
         XFlush(WindowManager::display);
         data->ismapped=true;
     }
@@ -718,6 +709,7 @@ namespace internal {
                         GL::Resize({(int)xce.width, (int)xce.height});
                         
                         ResizedEvent();
+                        redrawbg();
                     }
                     else {
                         int x, y;

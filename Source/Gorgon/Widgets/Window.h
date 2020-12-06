@@ -207,6 +207,8 @@ namespace Gorgon { namespace Widgets {
         virtual void updatescroll() override;
         
         virtual void updatecontent() override;
+
+        virtual void focused() override;
         
         void updatescrollvisibility();
         

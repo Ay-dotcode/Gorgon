@@ -105,6 +105,7 @@ namespace internal {
 			parent->Layer::Resize({rect.right-rect.left, rect.bottom-rect.top});
 			GL::Resize({rect.right-rect.left, rect.bottom-rect.top});
 			parent->ResizedEvent();
+            parent->redrawbg();
 		}
 
 		case WM_LBUTTONDOWN:
@@ -144,8 +145,6 @@ namespace internal {
 	Window::Window(const WindowManager::Monitor &monitor, Geometry::Rectangle rect, const std::string &name, const std::string &title, bool allowresize, bool visible) :
 		data(new internal::windowdata(*this)) { 
 		windows.Add(this);
-        pointerlayer = new Graphics::Layer;
-        Add(pointerlayer);
 
 		this->name = name;
 		this->allowresize = allowresize;
@@ -229,12 +228,11 @@ namespace internal {
 
 		OleInitialize(NULL);
 		RegisterDragDrop(hwnd, &data->target);
+        init();
 	}
 
 	Window::Window(const FullscreenTag &, const WindowManager::Monitor &monitor, const std::string &name, const std::string &title) : data(new internal::windowdata(*this)) {
 		windows.Add(this);
-        pointerlayer = new Graphics::Layer;
-        Add(pointerlayer);
 
 		this->name = name;
 		std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
@@ -292,21 +290,17 @@ namespace internal {
 
 		OleInitialize(NULL);
 		RegisterDragDrop(hwnd, &data->target);
+        init();
 	}
 
-	void Window::Destroy() {
+	void Window::osdestroy() {
         if(data) {
             DestroyWindow(data->handle);
             internal::windowdata::mapping[data->handle]=nullptr;
         }
         
-		windows.Remove(this);
-        
 		delete data;
         data = nullptr;
-
-        delete pointerlayer;
-        pointerlayer = nullptr;
 	}
 
 	void Window::Show() {
@@ -376,6 +370,7 @@ namespace internal {
 		activatecontext();
 		Layer::Resize(s);
 		GL::Resize(s);
+        redrawbg();
 	}
 
 	void Window::Move(const Geometry::Point &location) {
@@ -488,6 +483,7 @@ namespace internal {
 		Layer::Resize({int(rect.right-rect.left), int(rect.bottom-rect.top)});
 		activatecontext();
 		GL::Resize({int(rect.right-rect.left), int(rect.bottom-rect.top)});
+        redrawbg();
 	}
 
 	void Window::Restore() {
@@ -503,6 +499,7 @@ namespace internal {
             Layer::Resize({int(rect.right-rect.left), int(rect.bottom-rect.top)});
 			activatecontext();
 			GL::Resize({int(rect.right-rect.left), int(rect.bottom-rect.top)});
+            redrawbg();
         }
 	}
 

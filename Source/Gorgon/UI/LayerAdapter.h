@@ -88,11 +88,22 @@ namespace Gorgon { namespace UI {
         void UseDefaultSizes() {
             issizesset = false;
         }
+
+        void SetFocusChangedHandler(std::function<void()> fn) {
+            focushandler = fn;
+        }
         
     protected:
         virtual Gorgon::Layer &getlayer() override {
             return *base;
         }
+
+        virtual void focuschanged() override {
+            if(focushandler)
+                focushandler();
+        }
+
+        std::function<void()> focushandler;
         
         Layer *base = nullptr;
         

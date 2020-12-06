@@ -39,7 +39,7 @@ public:
 
         Gorgon::Initialize(appname);
 
-        wind ={{800, 600}, appname, title, true};
+        wind = W_{{800, 600}, appname, title, true};
 
         //Gorgon::GL::log.InitializeConsole();
 

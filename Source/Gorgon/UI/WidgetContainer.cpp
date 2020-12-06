@@ -142,7 +142,6 @@ namespace Gorgon { namespace UI {
         return FocusNext(focusindex);
     }
 
-
     bool WidgetContainer::FocusNext(int after) {
         if(focused && !focused->canloosefocus() && CurrentFocusStrategy() == Deny)
             return false;
@@ -331,7 +330,6 @@ namespace Gorgon { namespace UI {
         return true;
     }
 
-    
     bool WidgetContainer::RemoveFocus() {
         if(!focused)
             return true;
@@ -357,7 +355,6 @@ namespace Gorgon { namespace UI {
         
         focuschanged();
     }
-
 
     Gorgon::UI::Widget & WidgetContainer::GetFocus() const {
         if(!focused)

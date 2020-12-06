@@ -11,60 +11,62 @@ namespace Gorgon {
         
     }
     
-	std::vector<Geometry::Transform3D> prev_Transform;
+    std::vector<Geometry::Transform3D> prev_Transform;
     std::vector<Geometry::Bounds>      prev_Clip;
     std::vector<Geometry::Point>       prev_Offset;
 
-	extern Geometry::Transform3D Transform;
-	extern Graphics::RGBAf		 LayerColor;
-	extern Geometry::Bounds      Clip;
+    extern Geometry::Transform3D Transform;
+    extern Graphics::RGBAf		 LayerColor;
+    extern Geometry::Bounds      Clip;
     extern Geometry::Point       Offset;
 
-	void Layer::Add(Layer &layer) {
-		if(layer.parent)
-			layer.parent->Remove(layer);
+    void Layer::Add(Layer &layer) {
+        ASSERT(&layer != this, "Layer cannot be placed inside itself");
+        if(layer.parent)
+            layer.parent->Remove(layer);
 
-		layer.parent=this;
-		children.Add(layer);
-		layer.located(this);
+        layer.parent=this;
+        children.Add(layer);
+        layer.located(this);
 
-		added(layer);
-	}
+        added(layer);
+    }
 
-	void Layer::Insert(Layer &layer, long under) {
-		if(layer.parent)
-			layer.parent->Remove(layer);
+    void Layer::Insert(Layer &layer, long under) {
+        ASSERT(&layer != this, "Layer cannot be placed inside itself");
+        if(layer.parent)
+            layer.parent->Remove(layer);
 
-		layer.parent=this;
-		children.Insert(layer, under);
-		layer.located(this);
+        layer.parent=this;
+        children.Insert(layer, under);
+        layer.located(this);
 
-		if(layer.bounds.Width() == 0) 
-			layer.bounds.SetWidth(bounds.Width());
+        if(layer.bounds.Width() == 0) 
+            layer.bounds.SetWidth(bounds.Width());
 
-		if(layer.bounds.Height() == 0) 
-			layer.bounds.SetHeight(bounds.Height());
+        if(layer.bounds.Height() == 0) 
+            layer.bounds.SetHeight(bounds.Height());
 
-		added(layer);
-	}
+        added(layer);
+    }
 
-	void Layer::Render() {
-		dotransformandclip();
+    void Layer::Render() {
+        dotransformandclip();
 
-		for(auto &l : children) {
+        for(auto &l : children) {
             if(l.IsVisible()) {
                 l.Render();
             }
-		}
+        }
 
-		reverttransformandclip();
-	}
+        reverttransformandclip();
+    }
 
-	bool Layer::propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers) {
+    bool Layer::propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers) {
 
-		bool ret = false;
+        bool ret = false;
 
-		dotransformandclip(true);
+        dotransformandclip(true);
         
         auto curlocation = Transform * location;
         
@@ -80,11 +82,11 @@ namespace Gorgon {
             )
                 out = true;
                 
-                if(out) {
-                    reverttransformandclip();
-                    
-                    return false;
-                }
+            if(out) {
+                reverttransformandclip();
+                
+                return false;
+            }
         }
         
         
@@ -107,22 +109,22 @@ namespace Gorgon {
             }
         }
 
-		reverttransformandclip();
+        reverttransformandclip();
 
-		return ret;
-	}
+        return ret;
+    }
 
-	void Layer::dotransformandclip(bool inverse) {
-		prev_Transform.push_back(Transform);
-		prev_Clip.push_back(Clip);
+    void Layer::dotransformandclip(bool inverse) {
+        prev_Transform.push_back(Transform);
+        prev_Clip.push_back(Clip);
         prev_Offset.push_back(Offset);
 
         Offset += bounds.TopLeft();
 
-		if(inverse)
-			Transform.Translate(-(Gorgon::Float)bounds.Left, -(Gorgon::Float)bounds.Top, 0);
-		else
-			Transform.Translate((Gorgon::Float)bounds.Left, (Gorgon::Float)bounds.Top, 0);
+        if(inverse)
+            Transform.Translate(-(Gorgon::Float)bounds.Left, -(Gorgon::Float)bounds.Top, 0);
+        else
+            Transform.Translate((Gorgon::Float)bounds.Left, (Gorgon::Float)bounds.Top, 0);
 
 
         auto curbounds = Geometry::Bounds(Offset, bounds.GetSize());
@@ -146,15 +148,15 @@ namespace Gorgon {
             Clip.Bottom = Clip.Top;
     }
 
-	void Layer::reverttransformandclip() {
-		Transform = prev_Transform.back();
-		Clip = prev_Clip.back();
+    void Layer::reverttransformandclip() {
+        Transform = prev_Transform.back();
+        Clip = prev_Clip.back();
         Offset = prev_Offset.back();
 
-		prev_Transform.pop_back();
-		prev_Clip.pop_back();
+        prev_Transform.pop_back();
+        prev_Clip.pop_back();
         prev_Offset.pop_back();
-	}
+    }
 
     Layer::~Layer() {
         while(children.GetSize())
@@ -168,11 +170,131 @@ namespace Gorgon {
         }
     }
 
-	Geometry::Transform3D Transform;
-    Graphics::RGBAf		  LayerColor;
+
+    void Layer::Swap(Gorgon::Layer &other) {
+        using std::swap;
+
+        if(this == &other)
+            return;
+
+        swap(bounds, other.bounds);
+        swap(isvisible, other.isvisible);
+        swap(children, other.children);
+
+        for(auto &l : children)
+            l.parent = this;
+
+        for(auto &l : other.children)
+            l.parent = &other;
+
+        if(parent == other.parent)
+            return;
+
+        auto myparent = parent;
+        auto otherparent = other.parent;
+
+        int myind = -1;
+        int otherind = -1;
+
+        if(myparent) {
+            myind = myparent->Children.FindLocation(this);
+        }
+
+        if(otherparent) {
+            otherind = otherparent->Children.FindLocation(other);
+        }
+
+        if(myparent) {
+            myparent->Remove(this);
+            myparent->Insert(other, myind);
+        }
+
+        if(otherparent) {
+            otherparent->Remove(other);
+            otherparent->Insert(this, otherind);
+        }
+    }
+
+    Gorgon::Layer &Layer::operator= (Gorgon::Layer &&other) {
+        if(parent)
+            parent->Remove(this);
+
+        while(children.GetSize())
+            Remove(*children.First());
+
+        Swap(other);
+
+        return *this;
+    }
+
+
+    Geometry::Size Layer::GetCalculatedSize()const {
+        if(!parent)
+            return bounds.GetSize();
+
+        auto ps = parent->GetCalculatedSize();
+        auto s = GetSize();
+        auto p = GetLocation();
+
+        if(s.Width == 0) {
+            s.Width = ps.Width;
+            s.Width -= p.X;
+        }
+
+        if(s.Height == 0) {
+            s.Height = ps.Height;
+            s.Height -= p.Y;
+        }
+
+        return s;
+    }
+
+
+    Geometry::Point Layer::TranslateToTopLevel(Geometry::Point location) const {
+        const Layer *
+        cur = this;
+
+        while(cur->HasParent()) {
+            location += cur->GetLocation();
+            cur = &cur->GetParent();
+        }
+
+        return location;
+    }
+
+
+    Geometry::Bounds Layer::GetEffectiveBounds()const {
+        if(!parent)
+            return bounds;
+        
+        auto p = GetLocation();
+        auto s = GetSize();
+
+        auto pb = parent->GetEffectiveBounds();
+
+        if(s == Geometry::Size(0, 0)) {
+            s = pb.GetSize();
+            s.Width -= p.X;
+            s.Height -= p.Y;
+        }
+        else {
+            auto w = pb.Width() - p.X;
+            auto h = pb.Height() - p.Y;
+
+            if(s.Width > w)
+                s.Width = w;
+
+            if(s.Height > h)
+                s.Height = h;
+        }
+
+        return {p, s};
+    }
+    
+    Geometry::Transform3D Transform;
+    Graphics::RGBAf       LayerColor;
     Geometry::Bounds      Clip;
     Geometry::Point       Offset;
 
-	const Geometry::Bounds Layer::EntireRegion = {0,0,0,0};
-
+    const Geometry::Bounds Layer::EntireRegion = {0,0,0,0};
 }

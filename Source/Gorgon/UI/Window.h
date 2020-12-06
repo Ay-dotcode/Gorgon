@@ -23,54 +23,131 @@ namespace Gorgon { namespace UI {
     */
     class Window : public Gorgon::Window, public Runner, public WidgetContainer {
     public:
-        using Gorgon::Window::Window;
 
         Window() : Gorgon::Window() {
         }
-        
-        ~Window() {
+        /// Creates a new window
+        /// @param  rect the position and the **interior** size of the window unless
+        ///         use outer metrics is set to true
+        /// @param  name of the window
+        /// @param  visible after creation, window will be visible or invisible depending
+        ///         on this value. 
+        Window(Geometry::Rectangle rect, const std::string &name, bool allowresize = false, bool visible = true):
+            Gorgon::Window(rect, name, allowresize, visible) 
+        {
+            init();
+        }
+
+        /// Creates a new window
+        /// @param  rect the position and the **interior** size of the window unless
+        ///         use outer metrics is set to true
+        /// @param  name of the window
+        /// @param  visible after creation, window will be visible or invisible depending
+        ///         on this value. 
+        Window(Geometry::Rectangle rect, const char *name, bool allowresize = false, bool visible = true):
+            Gorgon::Window(rect, name, allowresize, visible)
+        {
+            init();
+        }
+
+        /// Creates a new window at the center of the screen
+        /// @param  size of the window
+        /// @param  name of the window
+        /// @param  title of the window
+        /// @param  visible after creation, window will be visible or invisible depending
+        ///         on this value. 
+        Window(const Geometry::Size &size, const std::string &name, const std::string &title, bool allowresize = false, bool visible = true):
+            Gorgon::Window(size, name, title, allowresize, visible) 
+        {
+            init();
+        }
+
+        /// Creates a new window at the center of the screen
+        /// @param  size of the window
+        /// @param  name of the window
+        /// @param  title of the window
+        /// @param  visible after creation, window will be visible or invisible depending
+        ///         on this value. 
+        Window(const Geometry::Size &size, const char *name, const char *title, bool allowresize = false, bool visible = true):
+            Gorgon::Window(size, name, title, allowresize, visible) 
+        {
+            init();
+        }
+
+        /// Creates a new window at the center of the screen
+        /// @param  size of the window
+        /// @param  name of the window
+        /// @param  visible after creation, window will be visible or invisible depending
+        ///         on this value. 
+        Window(const Geometry::Size &size, const std::string &name, bool allowresize = false, bool visible = true):
+            Gorgon::Window(size, name, allowresize, visible) 
+        {
+            init();
+        }
+
+        /// Creates a new window at the center of the screen
+        /// @param  size of the window
+        /// @param  name of the window
+        /// @param  visible after creation, window will be visible or invisible depending
+        ///         on this value. 
+        Window(const Geometry::Size &size, const char *name, bool allowresize = false, bool visible = true):
+            Gorgon::Window(size, name, allowresize, visible) 
+        {
+            init();
+        }
+
+        /// Creates a new window at the center of the screen
+        /// @param  monitor that the window will be centered on
+        /// @param  size of the window
+        /// @param  name of the window
+        /// @param  visible after creation, window will be visible or invisible depending
+        ///         on this value. 
+        Window(const WindowManager::Monitor &monitor, const Geometry::Size &size, const std::string &name, bool allowresize = false, bool visible = true):
+            Gorgon::Window(monitor, size, name, allowresize, visible) 
+        {
+            init();
+        }
+
+        /// Creates a new window at the center of the screen
+        /// @param  monitor that the window will be centered on
+        /// @param  size of the window
+        /// @param  name of the window
+        /// @param  visible after creation, window will be visible or invisible depending
+        ///         on this value. 
+        Window(const WindowManager::Monitor &monitor, const Geometry::Size &size, const char *name, bool allowresize = false, bool visible = true):
+            Gorgon::Window(monitor, size, name, allowresize, visible) 
+        {
+            init();
+        }
+
+        /// Creates a fullscreen window. Fullscreen windows do not have chrome and covers
+        /// entire screen, including any panels it contains.
+        Window(const FullscreenTag &tag, const WindowManager::Monitor &monitor, const std::string &name, const std::string &title = "") :
+            Gorgon::Window(tag, monitor, name, title)
+        {
+            init();
+        }
+
+        /// Creates a fullscreen window. Fullscreen windows do not have chrome and covers
+        /// entire screen, including any panels it contains.
+        Window(const FullscreenTag &tag, const std::string &name, const std::string &title = ""):
+            Gorgon::Window(tag, name, title) 
+        {
+            init();
+        }
+
+        /// Copy constructor is not allowed
+        Window(const Window &) = delete;
+
+        virtual ~Window() {
             KeyEvent.Unregister(inputtoken);
             CharacterEvent.Unregister(chartoken);
             delete extenderlayer;
         }
         
-        Window(Window &&other) : Gorgon::Window(std::move(other)), WidgetContainer(std::move(other)) {
-            KeyEvent.Unregister(inputtoken);
-            CharacterEvent.Unregister(chartoken);
-            
-            inputtoken = keyinit();
-            chartoken  = charinit();
-            
-            delete extenderlayer;
-            extenderlayer = other.extenderlayer;
-            Add(extenderlayer);
-            other.extenderlayer = other.layerinit();
-        }
+        Window(Window &&other);
         
-        Window &operator=(Window &&other) {
-            other.KeyEvent.Unregister(other.inputtoken);
-            other.CharacterEvent.Unregister(other.chartoken);
-            
-            KeyEvent.Unregister(inputtoken);
-            CharacterEvent.Unregister(chartoken);
-            
-            Gorgon::Window::operator =(std::move(other));
-            WidgetContainer::operator =(std::move(other));
-            
-            
-            inputtoken = keyinit();
-            chartoken  = charinit();
-            
-            delete extenderlayer;
-            extenderlayer = other.extenderlayer;
-            Add(extenderlayer);
-            adapter.SetLayer(*extenderlayer);
-            other.extenderlayer = other.layerinit();
-            other.Add(other.extenderlayer);
-            other.adapter.SetLayer(*other.extenderlayer);
-            
-            return *this;
-        }
+        Window &operator=(Window &&other);
         
         virtual Geometry::Size GetInteriorSize() const override {
             return Gorgon::Window::GetSize();
@@ -105,7 +182,7 @@ namespace Gorgon { namespace UI {
         }
         
         virtual ExtenderRequestResponse RequestExtender(const Gorgon::Layer &self) override {
-            return {true, &adapter, self.TranslateToTopLevel(), GetSize()};
+            return {true, &extenderadapter, self.TranslateToTopLevel(), GetSize()};
         }
         
         /// The spacing should be left between widgets
@@ -137,6 +214,31 @@ namespace Gorgon { namespace UI {
         void UseDefaultSizes() {
             issizesset = false;
         }
+
+        /// Returns a container that can be used to place windows
+        WidgetContainer &WindowContainer() {
+            return windowadapter;
+        }
+
+        /// Returns a container that can be used to place dialog windows. Dialog windows stays above
+        /// bars (status, menu, etc...)
+        WidgetContainer &DialogContainer() {
+            return dialogadapter;
+        }
+
+        /// Returns a container that can be used to place bars like statusbar, menubar, or taskbar.
+        /// Bar container stays above windows
+        WidgetContainer &BarContainer() {
+            return baradapter;
+        }
+
+        /// Returns a container that can be used to place widgets under the graphical contents of
+        /// the window.
+        WidgetContainer &UnderContainer() {
+            return dialogadapter;
+        }
+        
+        virtual void Destroy() override;
         
         using WidgetContainer::Add;
         using Gorgon::Window::Add;
@@ -145,7 +247,7 @@ namespace Gorgon { namespace UI {
 
     protected:
         virtual Gorgon::Layer &getlayer() override {
-            return *this;
+            return *widgetlayer;
         }
         
         virtual bool ResizeInterior(Geometry::Size size) override {
@@ -154,54 +256,32 @@ namespace Gorgon { namespace UI {
             return GetSize() == size;
         }
 
-        decltype(KeyEvent)::Token keyinit() {
-            inputtoken = KeyEvent.Register([this](Input::Key key, float amount) {
-                return WidgetContainer::KeyEvent(key, amount);
-            });
-            
-            KeyEvent.NewHandler = [this]{
-                RegisterOnce([this] {
-                    this->KeyEvent.MoveToTop(this->inputtoken);
-                });
-            };
+        decltype(KeyEvent)::Token keyinit();
 
-            return inputtoken;
-        }
-
-        decltype(CharacterEvent)::Token charinit() {
-            chartoken = CharacterEvent.Register([this](Char c) {
-                return WidgetContainer::CharacterEvent(c);
-            });
-            
-            CharacterEvent.NewHandler = [this]{
-                RegisterOnce([this] {
-                    this->CharacterEvent.MoveToTop(this->chartoken);
-                });
-            };
-
-            return chartoken;
-        }
+        decltype(CharacterEvent)::Token charinit();
         
-        Graphics::Layer *layerinit() {
-            auto l = new Graphics::Layer;
-            Add(l);
-            adapter.SetLayer(*l);
-            return l;
-        }
+        void init();
+        
+        void focuschangedin(LayerAdapter &cont);
 
-        void added(Layer &l) override {
-            long ind = children.FindLocation(extenderlayer);
-            if(ind != -1) {
-                children.MoveBefore(ind, children.GetSize());
+        virtual void focuschanged() {
+            if(HasFocusedWidget() && focusedadapter) {
+                focusedadapter->RemoveFocus();
+                focusedadapter = nullptr;
             }
-            
-            Gorgon::Window::added(l);
         }
 
     private:
         bool quiting = false;
-        LayerAdapter adapter;
-        Graphics::Layer *extenderlayer = layerinit();
+        LayerAdapter extenderadapter, windowadapter, baradapter, dialogadapter, underadapter;
+        Graphics::Layer *extenderlayer = nullptr;
+        Graphics::Layer *dialoglayer = nullptr;
+        Graphics::Layer *barlayer = nullptr;
+        Graphics::Layer *windowlayer = nullptr;
+        Graphics::Layer *widgetlayer = nullptr;
+        Graphics::Layer *underlayer = nullptr;
+
+        LayerAdapter *focusedadapter = nullptr;
 
         decltype(KeyEvent)::Token inputtoken = keyinit(); //to initialize token after window got constructed
         decltype(CharacterEvent)::Token chartoken = charinit(); //to initialize token after window got constructed

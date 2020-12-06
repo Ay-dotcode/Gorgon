@@ -1,6 +1,7 @@
 #include "Window.h"
 
 #include "../Window.h"
+#include "../UI/Window.h"
 #include "../Graphics/Bitmap.h"
 
 namespace Gorgon { namespace Widgets {
@@ -20,11 +21,25 @@ namespace Gorgon { namespace Widgets {
         
         updatescrollvisibility();
         if(autoplace) {
+            bool done = false;
             for(auto &w : Gorgon::Window::Windows) {
-                auto cont = dynamic_cast<UI::WidgetContainer *>(&w);
+                auto cont = dynamic_cast<UI::Window *>(&w);
                 if(cont && w.IsVisible() && !w.IsClosed()) {
-                    cont->Add(*this);
+                    cont->WindowContainer().Add(*this);
+                    done = true;
                     break;
+                }
+            }
+
+            //UI::Window not found, search for any window that is a container
+            if(!done) {
+                for(auto &w : Gorgon::Window::Windows) {
+                    auto cont = dynamic_cast<UI::WidgetContainer *>(&w);
+                    if(cont && w.IsVisible() && !w.IsClosed()) {
+                        cont->Add(*this);
+                        done = true;
+                        break;
+                    }
                 }
             }
             
@@ -118,6 +133,12 @@ namespace Gorgon { namespace Widgets {
     void Window::updatecontent() {
         Panel::updatecontent();
         updatescrollvisibility();
+    }
+
+    void Window::focused() {
+        Panel::focused();
+        if(HasParent())
+            GetParent().ChangeZorder(*this, -1);
     }
     
     void Window::updatescrollvisibility() {
