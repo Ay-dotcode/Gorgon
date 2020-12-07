@@ -235,7 +235,6 @@ namespace Gorgon { namespace Widgets {
         return *passivewindowborder;
     }
     
-    
     Graphics::BitmapRectangleProvider &SimpleGenerator::PanelBorder(int missingedge) {
         if(!panelborders[missingedge])
             panelborders[missingedge] = makeborder(Border.Color, Background.Panel, missingedge);
@@ -584,8 +583,8 @@ namespace Gorgon { namespace Widgets {
         foc.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
     }
     
-    UI::Template SimpleGenerator::Button() {
-        Geometry::Size defsize = {WidgetWidth, BorderedWidgetHeight};
+    UI::Template SimpleGenerator::Button(bool border) {
+        Geometry::Size defsize = {WidgetWidth, border ? BorderedWidgetHeight : WidgetHeight};
         
         UI::Template temp = maketemplate();
         temp.SetSize(defsize);
@@ -602,16 +601,25 @@ namespace Gorgon { namespace Widgets {
             bg.SetPositioning(UI::ComponentTemplate::Absolute);
         };
 
-        setupborder(NormalBorder(), UI::ComponentCondition::Always);
-        setupborder(HoverBorder(), UI::ComponentCondition::Hover);
-        setupborder(DownBorder(), UI::ComponentCondition::Down);
-        setupborder(DisabledBorder(), UI::ComponentCondition::Disabled);
+        if(border) {
+            setupborder(NormalBorder(), UI::ComponentCondition::Always);
+            setupborder(HoverBorder(), UI::ComponentCondition::Hover);
+            setupborder(DownBorder(), UI::ComponentCondition::Down);
+            setupborder(DisabledBorder(), UI::ComponentCondition::Disabled);
+        }
+        else {
+            setupborder(NormalBG(), UI::ComponentCondition::Always);
+            setupborder(HoverBG(), UI::ComponentCondition::Hover);
+            setupborder(DownBG(), UI::ComponentCondition::Down);
+            setupborder(DisabledBG(), UI::ComponentCondition::Disabled);
+        }
         
         auto &boxed = temp.AddContainer(2, UI::ComponentCondition::Always)
             .AddIndex(3) //clip
             .AddIndex(4) //focus
         ;
-        boxed.SetBorderSize(Border.Width);
+        if(border)
+            boxed.SetBorderSize(Border.Width);
         boxed.SetPadding(std::max(Border.Radius / 2, Focus.Spacing));
         boxed.SetPositioning(UI::ComponentTemplate::Absolute);
         
@@ -772,6 +780,10 @@ namespace Gorgon { namespace Widgets {
         setuptext(Forecolor.Regular.BlendWith(Forecolor.Disabled), UI::ComponentCondition::Disabled);
 
         return temp;
+    }
+    
+    UI::Template SimpleGenerator::DialogButton() {
+        return Button(false);
     }
 
     UI::Template SimpleGenerator::Checkbox() {
@@ -1997,4 +2009,42 @@ namespace Gorgon { namespace Widgets {
         
         return tmp;
     }
+    
+    UI::Template SimpleGenerator::DialogWindow() {
+        auto temp = Window();
+        
+        int maxind = 0;
+        for(auto &c : temp) {
+            if(maxind < c.GetIndex())
+                maxind = c.GetIndex();
+        }
+        
+        maxind++;
+        
+        for(auto &c : temp) {
+            if(c.GetIndex() == 0) {
+                auto rootp = dynamic_cast<UI::ContainerTemplate*>(&c);
+                if(rootp) {
+                    rootp->AddIndex(maxind); //dialog button place
+                }
+            }
+        }
+        
+        auto &btndiag = operator[](Button_Dialog);
+        
+        auto &btnplace = temp.AddContainer(maxind, UI::ComponentCondition::Always);
+        btnplace.SetSize({100, UI::Dimension::Percent}, btndiag.GetHeight());
+        btnplace.SetMargin(0, Spacing, 0, 0);
+        btnplace.SetPositioning(UI::ComponentTemplate::Relative);
+        btnplace.SetAnchor(UI::Anchor::BottomCenter, UI::Anchor::TopCenter, UI::Anchor::TopCenter);
+        btnplace.SetTag(UI::ComponentTemplate::DialogButtonsTag);
+
+        auto &btn = temp.AddPlaceholder(maxind+1, UI::ComponentCondition::Always);
+        btn.SetTemplate(btndiag);
+        btn.SetTag(UI::ComponentTemplate::ButtonTag);
+        
+        
+        return temp;
+    }
+    
 }}

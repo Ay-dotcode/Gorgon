@@ -44,4 +44,7 @@ SET(Local
 	
 	Window.h
 	Window.cpp
+	
+	DialogWindow.h
+	DialogWindow.cpp
 )

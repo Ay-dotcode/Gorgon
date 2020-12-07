@@ -79,6 +79,7 @@ namespace Gorgon { namespace UI {
             ASSERT(base, "Base layer is not set");
             
             this->spacing   = spacing;
+            issizesset      = true;
             this->unitwidth = ( base->GetWidth() - spacing * (units-1) ) / units;
             
             return base->GetWidth() - (this->unitwidth * units + this->spacing * (units-1));

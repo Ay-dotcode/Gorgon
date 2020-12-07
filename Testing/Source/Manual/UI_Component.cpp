@@ -905,11 +905,12 @@ TestData test_relanchvert(Layer &layer) {
 
 TestData test_relanchvertrelsize(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 80);
+    temp.SetSize(60, 110);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
     cont1.AddIndex(2);
+    cont1.AddIndex(3);
     cont1.SetOrientation(Gorgon::Graphics::Orientation::Vertical);
     cont1.Background.SetAnimation(whiteimg());
 
@@ -922,12 +923,18 @@ TestData test_relanchvertrelsize(Layer &layer) {
     cont3.Background.SetAnimation(redimg());
     cont3.SetSize(20, {100, Gorgon::UI::Dimension::Percent});
     cont3.SetAnchor(Gorgon::UI::Anchor::BottomLeft, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    
+    auto &cont4 = temp.AddContainer(3, Gorgon::UI::ComponentCondition::Always);
+    cont4.Background.SetAnimation(blueimg());
+    cont4.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+    cont4.SetAnchor(Gorgon::UI::Anchor::BottomLeft, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+    cont4.SetMargin(0,10,0,0);
 
     auto &stack = *new ComponentStack(temp);
 
     layer.Add(stack);
 
-    return {"Relative anchoring vertical relative sizing", "Size 20x20 and 20x50 objects on a 60x80 white background, first one should be aligned to top left, second should be under the first one after 10px of space. Objects are green and red.", stack};
+    return {"Relative anchoring vertical relative sizing", "Size 20x20, 20x50, 20x20 objects on a 60x110 white background, first one should be aligned to top left, second should be under the first one after 10px of space, third should be 10 from the second. Objects are green, red, and blue.", stack};
 }
 
 TestData test_relanch2(Layer &layer) {
@@ -3277,7 +3284,7 @@ TestData test_autosizedstack_center(Layer &layer) {
 
 std::vector<std::function<TestData(Layer &)>> tests = {
     //BEGIN layout
-    &test_graphic,
+    /*&test_graphic,
     &test_text,
     
     &test_setsize,
@@ -3312,7 +3319,7 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     
     &test_relanch,
     &test_relanch2,
-    &test_relanchvert,
+    &test_relanchvert,*/
     &test_relanchvertrelsize,
     
     &test_anchbaseline,

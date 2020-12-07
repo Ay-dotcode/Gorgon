@@ -615,6 +615,28 @@ namespace Gorgon {
             else
                 return resizehandlesize;
         }
+        
+        /// for iteration
+        auto begin() {
+            return components.begin();
+        }
+        
+        /// for iteration
+        auto end() {
+            return components.end();
+        }
+        
+        /// for iteration
+        auto begin() const {
+            return components.begin();
+        }
+        
+        /// for iteration
+        auto end() const {
+            return components.end();
+        }
+        
+        
 
 
         /// This event is fired whenever template or its components are changed.
@@ -924,6 +946,8 @@ namespace Gorgon {
             MinimizeTag,
             MaximizeTag,
             HelpTag,
+            ButtonTag,
+            DialogButtonsTag,
         };
         
         /// Some components are repeated along some axis, this property controls how they will be

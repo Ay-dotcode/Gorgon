@@ -25,6 +25,9 @@ namespace Gorgon { namespace Widgets {
         /// Generates a button template with the given default size.
         virtual UI::Template IconButton(Geometry::Size iconsize = {-1, -1}) = 0;
         
+        /// Generates a button template
+        virtual UI::Template DialogButton() = 0;
+        
         
         virtual UI::Template Checkbox() = 0;
         
@@ -70,7 +73,10 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template Dropdown() = 0;
         
+        
         virtual UI::Template Window() = 0;
+        
+        virtual UI::Template DialogWindow() = 0;
         
     protected:
         
@@ -80,6 +86,8 @@ namespace Gorgon { namespace Widgets {
                 return *new UI::Template(Button());
             case Button_Icon:
                 return *new UI::Template(IconButton());
+            case Button_Dialog:
+                return *new UI::Template(DialogButton());
             case Label_Regular:
                 return *new UI::Template(Label());
             case Label_Error:
@@ -120,6 +128,8 @@ namespace Gorgon { namespace Widgets {
                 return *new UI::Template(Dropdown());
             case Window_Regular:
                 return *new UI::Template(Window());
+            case Window_Dialog:
+                return *new UI::Template(DialogWindow());
             default:
                 return *new UI::Template();
             }
@@ -149,9 +159,13 @@ namespace Gorgon { namespace Widgets {
         
         virtual ~SimpleGenerator();
         
-        virtual UI::Template Button() override;
+                UI::Template Button(bool border);
+        
+        virtual UI::Template Button() override { return Button(true); }
         
         virtual UI::Template IconButton(Geometry::Size iconsize = {-1, -1}) override;
+        
+        virtual UI::Template DialogButton() override;
         
         
         virtual UI::Template Checkbox() override;
@@ -189,16 +203,20 @@ namespace Gorgon { namespace Widgets {
         virtual UI::Template VScrollbar() override;
         
         
-        
         virtual UI::Template BlankLayerbox() override;
         
         virtual UI::Template Layerbox() override;
         
+        
         virtual UI::Template Listbox() override;
+        
         
         virtual UI::Template Dropdown() override;
         
+        
         virtual UI::Template Window() override;
+        
+        virtual UI::Template DialogWindow() override;
         
 
         virtual int GetSpacing() const override {
@@ -373,6 +391,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::RectangleProvider *focusborder = nullptr;
         
         UI::Template listbox_listitem;
+        UI::Template empty;
 
         std::pair<int, int> lettervsize, asciivsize;
     };

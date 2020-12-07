@@ -10,6 +10,7 @@ namespace Gorgon { namespace Widgets {
         { UI::ComponentTemplate::HScrollTag, 
             std::bind(&Panel::createhscroll, this, std::placeholders::_1)
         },
+        { UI::ComponentTemplate::ButtonTag, { } },
     }) 
     {
         stack.HandleMouse();

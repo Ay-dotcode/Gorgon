@@ -197,6 +197,7 @@ namespace Gorgon { namespace Widgets {
         int AutomaticUnitSize(int spacing, int units = 6) {
             this->spacing   = spacing;
             this->unitwidth = ( GetInteriorSize().Width - spacing * (units-1) ) / units;
+            issizesset      = true;
             
             return GetInteriorSize().Width - (this->unitwidth * units + this->spacing * (units-1));
         }

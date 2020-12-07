@@ -23,6 +23,7 @@
 #include <Gorgon/Graphics/TintedObject.h>
 #include <Gorgon/Widgets/Dropdown.h>
 #include <Gorgon/Widgets/Window.h>
+#include <Gorgon/Widgets/DialogWindow.h>
 
 enum DaysOfWeek {
     Monday,
@@ -296,7 +297,7 @@ int main() {
     
     btn.SetHorizonalAutosize(Gorgon::UI::Autosize::Unit);
     
-    Widgets::Window wind("My window", {200, 300});
+    Widgets::DialogWindow wind("My window", {200, 300});
     wind.Add(btn);
     wind.OwnIcon(icon.CreateAnimation());
     int closetrycount = 0;
@@ -315,6 +316,10 @@ int main() {
         << "Click close twice"
     ;
     wind.AllowResize();
+    wind.AddButton("Hello", []{
+        std::cout << "Hello" << std::endl;
+    });
+    wind.AddButton("World", []{});
 
     app.wind.Add(blank);
     app.wind.Run();

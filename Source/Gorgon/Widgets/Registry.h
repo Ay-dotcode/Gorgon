@@ -18,6 +18,7 @@ namespace Gorgon { namespace Widgets {
         enum TemplateType {
             Button_Regular,
             Button_Icon,
+            Button_Dialog,
             
             Label_Regular,
             Label_Error,
@@ -36,8 +37,8 @@ namespace Gorgon { namespace Widgets {
             Panel_Bottom,
             Panel_Right,
             
-            
             Window_Regular,
+            Window_Dialog,
             
             Progress_Regular,
             
@@ -50,6 +51,7 @@ namespace Gorgon { namespace Widgets {
             Listbox_Regular,
             
             Dropdown_Regular,
+            
             
             ///Do not use this value
             Max 

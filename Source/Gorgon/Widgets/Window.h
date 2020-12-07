@@ -17,7 +17,7 @@ namespace Gorgon { namespace Widgets {
     class Window : public Panel {
     public:
         
-        Window(const Panel &) = delete;
+        Window(const Window &) = delete;
         
         explicit Window(const UI::Template &temp, const std::string &title = "", bool autoplace = true);
         
