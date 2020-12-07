@@ -171,7 +171,7 @@ namespace Gorgon { namespace Widgets {
             ClosingEvent(allow);
             if(allow) {
                 Hide();
-                CloseEvent();
+                ClosedEvent ();
             }
         }
         
@@ -201,7 +201,7 @@ namespace Gorgon { namespace Widgets {
         
         /// This event is called after the window is closed. In Gorgon, close button
         /// only hides the window. It is the owner's task to cleanup.
-        Event<Window> CloseEvent = Event<Window>{this};
+        Event<Window> ClosedEvent = Event<Window>{this};
 
     protected:
         virtual void updatescroll() override;
@@ -209,6 +209,8 @@ namespace Gorgon { namespace Widgets {
         virtual void updatecontent() override;
 
         virtual void focused() override;
+        
+        virtual bool allowfocus() const override;
         
         void updatescrollvisibility();
         

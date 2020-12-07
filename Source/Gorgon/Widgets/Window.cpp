@@ -136,7 +136,11 @@ namespace Gorgon { namespace Widgets {
     }
 
     void Window::focused() {
-        Panel::focused();
+        if(Panel::allowfocus())
+            Panel::focused();
+        else
+            ComponentStackWidget::focused();
+        
         if(HasParent())
             GetParent().ChangeZorder(*this, -1);
     }
@@ -371,6 +375,13 @@ namespace Gorgon { namespace Widgets {
     void Window::Center() {
         if(HasParent())
             Move(Geometry::Point((GetParent().GetInteriorSize() - GetSize())/2));
+    }
+    
+    bool Window::allowfocus() const {
+        if(CurrentFocusStrategy() == Deny)
+            return false;
+        
+        return true;
     }
 
 } }

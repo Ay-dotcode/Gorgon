@@ -91,6 +91,23 @@ namespace Gorgon { namespace UI {
         widgetremoved(widget);
         widget.removed();
     }
+    
+    void WidgetContainer::deleted(Widget *widget) {
+        auto pos = widgets.Find(*widget);
+
+        //not our widget
+        if(pos == widgets.end())
+            return;
+
+        if(focusindex == pos - widgets.begin())
+            FocusNext();
+
+        if(focusindex > pos - widgets.begin())
+            focusindex--;
+        
+        widgets.Remove(pos);
+        widgetremoved(*widget);
+    }
 
     void WidgetContainer::ChangeFocusOrder(Widget &widget, int order) {
         auto pos = widgets.Find(widget);

@@ -345,4 +345,13 @@ namespace Gorgon {
             contentslayer->Remove(layer);
     }
 
+
+    void Window::deleting(Gorgon::Layer *layer) {
+        if(layer == down)
+            down = MouseHandler{};
+        
+        if(layer == over)
+            over = MouseHandler{};
+    }
+
 }

@@ -456,7 +456,7 @@ namespace Gorgon {
         /// A window cannot be placed in another layer. This function always fails.
         virtual void located(Layer *) override { Utils::ASSERT_FALSE("A window cannot be placed in another layer"); }
         
-        void deleting(Layer *layer) { if(layer==down) down = MouseHandler{}; }
+        void deleting(Layer *layer);
         
         void init();
         

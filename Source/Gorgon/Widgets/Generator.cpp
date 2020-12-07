@@ -1879,7 +1879,7 @@ namespace Gorgon { namespace Widgets {
     
     UI::Template SimpleGenerator::Window() {
         auto tmp = makepanel(-1, true);
-        tmp.SetSize({300, 200});
+        tmp.SetSize({WidgetWidth*3+Spacing*2+BorderedWidgetHeight, BorderedWidgetHeight*10});
         
         auto &cbg = dynamic_cast<UI::ContainerTemplate&>(tmp[0]);
         cbg.Background.SetAnimation(NormalBG());
@@ -2012,6 +2012,7 @@ namespace Gorgon { namespace Widgets {
     
     UI::Template SimpleGenerator::DialogWindow() {
         auto temp = Window();
+        temp.SetSize({WidgetWidth*2+Spacing+BorderedWidgetHeight, BorderedWidgetHeight*5});
         
         int maxind = 0;
         for(auto &c : temp) {

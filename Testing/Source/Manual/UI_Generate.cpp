@@ -24,6 +24,7 @@
 #include <Gorgon/Widgets/Dropdown.h>
 #include <Gorgon/Widgets/Window.h>
 #include <Gorgon/Widgets/DialogWindow.h>
+#include <Gorgon/UI/Dialog.h>
 
 enum DaysOfWeek {
     Monday,
@@ -319,7 +320,9 @@ int main() {
     wind.AddButton("Hello", []{
         std::cout << "Hello" << std::endl;
     });
-    wind.AddButton("World", []{});
+    wind.AddButton("World", []{
+        UI::ShowMessage("Hello", "This class is the base class for all widget containers.\n\nAll widgets require a layer to be placed on, to allow widget containers that are also widgets, this class is left abstract. You may derive from this class and WidgetBase at the same time.");
+    });
 
     app.wind.Add(blank);
     app.wind.Run();

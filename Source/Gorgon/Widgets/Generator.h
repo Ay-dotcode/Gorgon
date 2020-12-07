@@ -297,8 +297,8 @@ namespace Gorgon { namespace Widgets {
             int Divisions                = 1;
             Graphics::RGBA Color         = Graphics::Color::Charcoal;
             Graphics::RGBA Disabled      = {Graphics::Color::Charcoal, 0.5};
-            Graphics::RGBA PassiveWindow = {Graphics::Color::SemiDarkGrey, 0.85};
-            Graphics::RGBA ActiveWindow  = {Graphics::Color::Charcoal, 0.85};
+            Graphics::RGBA PassiveWindow = {Graphics::Color::SemiDarkGrey, 0.9};
+            Graphics::RGBA ActiveWindow  = {Graphics::Color::Charcoal, 0.9};
         } Border;
         
         struct BackgroundInfo {

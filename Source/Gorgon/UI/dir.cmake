@@ -3,6 +3,10 @@ SET(Local
 	ComponentStack.h
 	ComponentStack.cpp
 	ComponentStackWidget.h
+	
+	Dialog.h
+	Dialog.cpp
+    
 	Dimension.h
 	Helpers.h
 	LayerAdapter.h

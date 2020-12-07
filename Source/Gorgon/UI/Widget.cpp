@@ -42,6 +42,9 @@ namespace Gorgon { namespace UI {
             if(value)
                 show();
             else {
+                if(IsFocused() && HasParent())
+                    GetParent().FocusPrevious();
+                
                 Defocus();
                 hide();
             }
@@ -102,6 +105,13 @@ namespace Gorgon { namespace UI {
     void Widget::focused() {
         focus = true;
         FocusEvent();
+    }
+
+
+    Widget::~Widget() {
+        if(HasParent()) {
+            GetParent().deleted(this);
+        }
     }
 
 } }

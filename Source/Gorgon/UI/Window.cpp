@@ -39,7 +39,6 @@ namespace Gorgon { namespace UI {
 
         //extender does not steal focus
 
-
         dialoglayer = new Graphics::Layer;
         Layer::Insert(*dialoglayer, 2); //this is not wrong
         dialogadapter.SetLayer(*dialoglayer);
@@ -100,8 +99,10 @@ namespace Gorgon { namespace UI {
 
     auto Window::charinit() -> decltype(CharacterEvent)::Token {
         chartoken = CharacterEvent.Register([this](Char c) {
-            return WidgetContainer::
-                CharacterEvent(c);
+            if(focusedadapter)
+                return focusedadapter->CharacterEvent(c);
+            else
+                return WidgetContainer::CharacterEvent(c);
         });
 
         CharacterEvent.NewHandler = [this] {
@@ -116,7 +117,10 @@ namespace Gorgon { namespace UI {
 
     auto Window::keyinit() -> decltype(KeyEvent)::Token {
         inputtoken = KeyEvent.Register([this](Input::Key key, float amount) {
-            return WidgetContainer::KeyEvent(key, amount);
+            if(focusedadapter)
+                return focusedadapter->KeyEvent(key, amount);
+            else
+                return WidgetContainer::KeyEvent(key, amount);
         });
 
         KeyEvent.NewHandler = [this] {

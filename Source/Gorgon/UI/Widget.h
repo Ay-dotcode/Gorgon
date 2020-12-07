@@ -39,7 +39,7 @@ namespace Gorgon { namespace UI {
         
         Widget(Widget &&) = default;
         
-        virtual ~Widget() { }
+        virtual ~Widget();
         
         /// Moves this widget to the given position.
         void Move(int x, int y) { Move({x, y}); }

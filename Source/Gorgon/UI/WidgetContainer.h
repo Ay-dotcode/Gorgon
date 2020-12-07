@@ -455,6 +455,9 @@ namespace Gorgon { namespace UI {
 
         /// The boundary of any of the children is changed. Source could be nullptr
         virtual void childboundschanged(Widget *source);
+        
+        /// This widget that is owned by the container is being deleted.
+        virtual void deleted(Widget *widget);
 
     private:
         bool isenabled              = true;
