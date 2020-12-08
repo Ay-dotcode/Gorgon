@@ -71,7 +71,7 @@ float StringDiv(std::string left, std::string min, std::string max) {
 }
 
 std::string StringVal(float value, std::string min, std::string max) {
-    return max.substr(0, (max.length() - min.length()) * value + min.length());
+    return max.substr(0, int((max.length() - min.length()) * value + min.length()));
 }
 
 // Do not forget to define enum and Enum Strings before the create your DropDown with the enum
@@ -106,14 +106,15 @@ int main() {
     Widgets::Panel blank/*(Gorgon::Widgets::Registry::Panel_Blank)*/;
     blank.Move(5, 210);
     blank.SetHeight(300);
-    Gorgon::Widgets::Button btn("Save Âj",Gorgon::Widgets::Registry::Button_Regular);
-    Gorgon::Widgets::Button icnbtn("+", Gorgon::Widgets::Registry::Button_Icon);
-    Gorgon::Widgets::Button icnbtn2("Âj", Gorgon::Widgets::Registry::Button_Icon);
-    Gorgon::Widgets::Button icnbtn3("X", Gorgon::Widgets::Registry::Button_Icon);
     auto icon = Triangle(5, 10);
     icon.Prepare();
     Graphics::TintedBitmapProvider icon2(icon.Rotate270(), Graphics::Color::Charcoal);
     icon2.Prepare();
+
+    Gorgon::Widgets::Button btn("Save Âj", Gorgon::Widgets::Registry::Button_Regular);
+    Gorgon::Widgets::Button icnbtn("+", Gorgon::Widgets::Registry::Button_Icon);
+    Gorgon::Widgets::Button icnbtn2("Âj", Gorgon::Widgets::Registry::Button_Icon);
+    Gorgon::Widgets::Button icnbtn3("X", Gorgon::Widgets::Registry::Button_Icon);
     btn.OwnIcon(icon2.CreateAnimation());
 
     icnbtn.OwnIcon(icon2.CreateAnimation());
@@ -317,8 +318,10 @@ int main() {
         << "Click close twice"
     ;
     wind.AllowResize();
-    wind.AddButton("Hello", []{
-        std::cout << "Hello" << std::endl;
+    std::vector<std::string> opts = {"Zero", "One", "Two"};
+    wind.AddButton("Hello", [&]{
+        //UI::MultipleChoice<DaysOfWeek>("Select one", [](DaysOfWeek ind) { std::cout << ind << std::endl; }, UI::CloseOption::Cancel);
+        UI::AskYesNo("Exit", "Are you certain?", [&app] { app.wind.Quit(); });
     });
     wind.AddButton("World", []{
         UI::ShowMessage("Hello", "This class is the base class for all widget containers.\n\nAll widgets require a layer to be placed on, to allow widget containers that are also widgets, this class is left abstract. You may derive from this class and WidgetBase at the same time.");

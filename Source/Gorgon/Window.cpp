@@ -341,7 +341,9 @@ namespace Gorgon {
     }
 
     void Window::Remove(Gorgon::Layer &layer) {
-        if(contentslayer)
+        if(layer.HasParent() && &layer.GetParent() == this)
+            Layer::Remove(layer);
+        else if(contentslayer)
             contentslayer->Remove(layer);
     }
 

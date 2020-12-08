@@ -43,8 +43,8 @@ namespace Gorgon { namespace Widgets {
         Scrollbar(const UI::Template &temp, T_ cur, T_ max) : 
             Base(temp, cur, max)
         {
-            SmallChange = temp.GetSpacing() * 8;
-            LargeChange = temp.GetSpacing() * 32;
+            SmallChange = T_(temp.GetSpacing() * 8);
+            LargeChange = T_(temp.GetSpacing() * 32);
         }
         
         using Base::SetValue;

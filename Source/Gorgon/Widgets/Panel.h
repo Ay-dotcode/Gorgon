@@ -194,7 +194,7 @@ namespace Gorgon { namespace Widgets {
         
         /// Sets the unit size automatically. Full width will be at least
         /// given units wide. Returns remaining size.
-        int AutomaticUnitSize(int spacing, int units = 6) {
+        int AutomaticUnitSize(int spacing, int units = 6) override {
             this->spacing   = spacing;
             this->unitwidth = ( GetInteriorSize().Width - spacing * (units-1) ) / units;
             issizesset      = true;

@@ -75,7 +75,7 @@ namespace Gorgon { namespace UI {
         
         /// Sets the unit size automatically. Full width will be at least
         /// given units wide. Returns remaining size.
-        int AutomaticUnitSize(int spacing, int units = 6) {
+        int AutomaticUnitSize(int spacing, int units = 6) override {
             ASSERT(base, "Base layer is not set");
             
             this->spacing   = spacing;

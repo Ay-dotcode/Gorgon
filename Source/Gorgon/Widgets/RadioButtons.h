@@ -257,6 +257,11 @@ namespace Gorgon { namespace Widgets {
             
             rearrange();
         }
+
+        /// This function is not supported.
+        int AutomaticUnitSize(int spacing, int units = 6) override {
+            return 0;
+        }
         
         using UI::RadioControl<T_, W_>::GetColumns;
 

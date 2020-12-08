@@ -1831,10 +1831,10 @@ namespace Gorgon { namespace Widgets {
                 return; //already visible
             }
             else if(targetind >= floor(target + md)) {
-                targetind -= md - 1.5; //show the next item a little bit
+                targetind -= md - 1.5f; //show the next item a little bit
             }
             else {
-                targetind -= 0.5; //show the next item a little bit
+                targetind -= 0.5f; //show the next item a little bit
             }
             
             auto elms = this->GetCount();
@@ -1982,10 +1982,10 @@ namespace Gorgon { namespace Widgets {
         
         UI::Widget *createvscroll(const UI::Template &temp) {
             auto vscroller = new VScroller<float>(temp);
-            vscroller->Maximum      = this->STR_::getsize();
+            vscroller->Maximum      = float(this->STR_::getsize());
             vscroller->Range        = 1;
             *vscroller              = scrolloffset;
-            vscroller->SmallChange  = scrolldist;
+            vscroller->SmallChange  = float(scrolldist);
             vscroller->ValueChanged.Register(*this, &ListboxWidgetBase::ScrollTo);
             
             return vscroller;

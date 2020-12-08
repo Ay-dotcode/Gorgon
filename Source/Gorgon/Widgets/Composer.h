@@ -81,8 +81,7 @@ namespace Gorgon { namespace Widgets {
         /// This function should be called whenever a character is received from
         /// operating system.
         virtual bool CharacterEvent(Char c) override { return distributecharevent(c); }
-        
-        
+
     protected:
         //ensure this object is derived
         Composer() {
@@ -130,7 +129,7 @@ namespace Gorgon { namespace Widgets {
         
         /// Sets the unit size automatically. Full width will be at least
         /// given units wide. Returns remaining size.
-        int AutomaticUnitSize(int spacing, int units = 6) {
+        int AutomaticUnitSize(int spacing, int units) override {
             this->spacing   = spacing;
             this->unitwidth = ( GetInteriorSize().Width - spacing * (units-1) ) / units;
             

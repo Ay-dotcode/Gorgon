@@ -12,7 +12,7 @@ namespace Gorgon { namespace Widgets {
 
         return true;
     }
-    
+
     bool Composer::allowfocus() const {
         if(CurrentFocusStrategy() == Deny)
             return false;
