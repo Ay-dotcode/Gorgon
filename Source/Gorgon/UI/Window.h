@@ -203,7 +203,7 @@ namespace Gorgon { namespace UI {
         
         /// Sets the unit size automatically. Full width will be at least
         /// given units wide. Returns remaining size.
-        int AutomaticUnitSize(int spacing, int units = 6) {
+        int AutomaticUnitSize(int spacing, int units = 6) override {
             this->spacing   = spacing;
             this->unitwidth = ( GetInteriorSize().Width - spacing * (units-1) ) / units;
             
@@ -264,7 +264,7 @@ namespace Gorgon { namespace UI {
         
         void focuschangedin(LayerAdapter &cont);
 
-        virtual void focuschanged() {
+        virtual void focuschanged() override {
             if(HasFocusedWidget() && focusedadapter) {
                 focusedadapter->RemoveFocus();
                 focusedadapter = nullptr;

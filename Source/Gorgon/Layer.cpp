@@ -41,12 +41,6 @@ namespace Gorgon {
         children.Insert(layer, under);
         layer.located(this);
 
-        if(layer.bounds.Width() == 0) 
-            layer.bounds.SetWidth(bounds.Width());
-
-        if(layer.bounds.Height() == 0) 
-            layer.bounds.SetHeight(bounds.Height());
-
         added(layer);
     }
 
