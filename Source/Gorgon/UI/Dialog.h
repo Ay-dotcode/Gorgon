@@ -157,6 +157,24 @@ namespace Gorgon { namespace UI {
     ) {
         AskYesNo("", message, onyes, onno, close, onclose);
     }
+    
+    /// Asks user to confirm an action. There will be a cancel button to
+    /// continue without confirming this dialog.
+    void Confirm(
+        const std::string &title, const std::string &message, 
+        std::function<void()> onconfirm, 
+        const std::string &confirmtext = "", const std::string &canceltext = ""
+    );
+    
+    /// Asks user to confirm an action. There will be a cancel button to
+    /// continue without confirming this dialog.
+    inline void Confirm(
+        const std::string &message, 
+        std::function<void()> onconfirm, 
+        const std::string &confirmtext = "", const std::string &canceltext = ""
+    ) {
+        Confirm("", message, onconfirm, confirmtext, canceltext);
+    }
 
     /// Changes the text of the close button. This change will effect only future
     /// dialogs.
@@ -165,6 +183,10 @@ namespace Gorgon { namespace UI {
     /// Changes the text of the yes and no buttons. This change will effect only 
     /// future dialogs.
     void SetYesNoText(const std::string &yes, const std::string &no);
+
+    /// Changes the text of the ok button. This change will effect only future
+    /// dialogs.
+    void SetOkText(const std::string &value);
 
     /// Changes the text of the cancel button. This change will effect only future
     /// dialogs.

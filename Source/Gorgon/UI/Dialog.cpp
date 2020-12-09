@@ -18,6 +18,7 @@ namespace Gorgon { namespace UI {
 namespace {
     std::string closetext = "Close";
     std::string canceltext = "Cancel";
+    std::string oktext = "Ok";
     std::string yestext = "Yes";
     std::string notext = "No";
 }
@@ -122,6 +123,7 @@ namespace internal {
         
         diag->SetCancel(close);
         diag->SetDefault(close);
+        diag->Own(close);
         
         auto text = new Widgets::Label(message);
         text->SetAutosize(Autosize::Automatic, Autosize::Automatic);
@@ -146,14 +148,16 @@ namespace internal {
         text->SetAutosize(Autosize::Automatic, Autosize::Automatic);
         diag->Add(*text);
 
-        int cnt = int(options.size()) + (close != CloseOption::None);
         auto &btnsarea = diag->ButtonAreaOrganizer().GetAttached();
         int index = 0;
         for(auto opt : options) {
-            diag->AddButton(opt, [index, onselect, diag]() {
+            auto &btn = diag->AddButton(opt, [index, onselect, diag]() {
                 closethis(diag);
                 onselect(index);
-            }).SetHorizonalAutosize(Autosize::Automatic);
+            });
+            btn.SetHorizonalAutosize(Autosize::Automatic);
+            
+            diag->Own(btn);
 
             index++;
         }
@@ -166,6 +170,7 @@ namespace internal {
 
             diag->SetCancel(closebtn);
             closebtn.SetHorizonalAutosize(Autosize::Automatic);
+            diag->Own(closebtn);
         }
 
         int totw = 0;
@@ -204,9 +209,28 @@ namespace internal {
             }
         }, close);
     }
+    
+    void Confirm(
+        const std::string &title, const std::string &message, 
+        std::function<void()> onconfirm, 
+        const std::string &confirm, const std::string &cancel
+    ) {
+        MultipleChoiceIndex(title, message, {cancel== "" ? canceltext : cancel, confirm== "" ? oktext : confirm}, [onconfirm](int ind) {
+            switch(ind) {
+            case 1:
+                if(onconfirm)
+                    onconfirm();
+                break;
+            }
+        });
+    }
 
     void SetCloseText(const std::string &value) {
         closetext = value;
+    }
+
+    void SetOkText(const std::string &value) {
+        oktext = value;
     }
 
     void SetCancelText(const std::string &value) {
