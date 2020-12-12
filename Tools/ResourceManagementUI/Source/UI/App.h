@@ -15,7 +15,7 @@
 #include <Gorgon/Widgets/Button.h>
 #include <Gorgon/Widgets/Checkbox.h>
 #include <Gorgon/Widgets/RadioButtons.h>
-#include <Gorgon/Widgets/Label.h>
+//#include <Gorgon/Widgets/Label.h>
 
 #include <Gorgon/UI/RadioControl.h>
 #include <Gorgon/WindowManager.h>
@@ -30,6 +30,10 @@
 #include <Gorgon/Graphics/Color.h>
 #include <Gorgon/Graphics/FreeType.h>
 
+#include <Gorgon/Graphics/Color.h>
+
+
+//#include "Cli.h"
 
 namespace UI{
     
@@ -37,7 +41,7 @@ namespace UI{
     public:
         InitUI() {
             Gorgon::Graphics::Initialize();
-            Gorgon::UI::Initialize("Goldman-Regular.ttf",7,12);            
+            Gorgon::UI::Initialize();            
         };
     };
     
@@ -48,11 +52,25 @@ namespace UI{
         
         
     private:
+        
+        void Import();
         //Gorgon Main UI Window
         Gorgon::UI::Window window;
         
         //This will initialize UI after the window is created.
         InitUI uninit;
+        
+        //Structure to handle styling of UI
+        struct initStyle {
+            initStyle(std::string fontname, int fh);
+            
+            Gorgon::Widgets::SimpleGenerator uiStyle;
+        };
+        
+        //Initialize styling
+        initStyle initstyl;
+        
+        //UI::Cli cli;
         
         //Gorgon Icon objects for app window
         Gorgon::Graphics::Bitmap ico;
@@ -65,10 +83,12 @@ namespace UI{
         Gorgon::Graphics::BlankImage applicationBG;
         
         //Gorgon Button Objects
-        Gorgon::Widgets::Button btnImport, btnFileFrom, btnFileTo;
+        Gorgon::Widgets::Button btnImport, btnFileFrom, btnFileTo, btnExit;
         
         //Gorgon Checkbox opjects
         //Gorgon::Widgets::Checkbox metadata;
+        
+        Gorgon::Widgets::Textbox pathTo, pathFrom;
         
         //Gorgon panel objects
         Gorgon::Widgets::Panel pnlSettings;
