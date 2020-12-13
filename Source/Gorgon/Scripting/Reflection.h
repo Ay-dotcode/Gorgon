@@ -143,7 +143,7 @@ namespace Gorgon {
 			template <class ...Params_>
 			Parameter(const std::string &name, const std::string &help, const Type *type, 
 					 Data defaultvalue, OptionList options, Params_ ...tags) : 
-			name(name), type(type), help(help), defaultvalue(defaultvalue) {
+			name(name), help(help), type(type), defaultvalue(defaultvalue) {
 				ASSERT((type!=nullptr), "Parameter type cannot be nullptr", 1, 2);
 				using std::swap;
 
@@ -591,7 +591,7 @@ namespace Gorgon {
 				/// Regular constructor that can take as many tags as needed.
 				template<class ...P_>
 				Overload(const Type *returntype, ParameterList parameters, P_ ...tags) :
-				returntype(returntype), Parameters(this->parameters)
+				Parameters(this->parameters), returntype(returntype)
 				{
 					using std::swap;
 					swap(parameters, this->parameters);
@@ -602,9 +602,9 @@ namespace Gorgon {
 				/// A full constructor
 				Overload(const Type *returntype, ParameterList parameters, bool stretchlast, bool repeatlast, 
 						bool accessible, bool constant, bool returnsref, bool returnsconst, bool implicit) :
-				returntype(returntype), stretchlast(stretchlast), repeatlast(repeatlast), 
-				accessible(accessible), constant(constant), returnsref(returnsref), returnsconst(returnsconst),
-				implicit(implicit), Parameters(this->parameters)
+				Parameters(this->parameters), returntype(returntype), stretchlast(stretchlast), 
+				repeatlast(repeatlast), accessible(accessible), constant(constant), 
+				returnsref(returnsref), returnsconst(returnsconst), implicit(implicit)
 				{
 					using std::swap;
 					swap(parameters, this->parameters);
@@ -771,7 +771,7 @@ namespace Gorgon {
 			Function(const std::string &name, const std::string &help, const Type *parent, 
 					 const Containers::Collection<Overload> &overloads, const Containers::Collection<Overload> &methods, 
 					 Tag tag, P_ ...tags) : 
-			StaticMember(name, help), parent(parent), Overloads(this->overloads), Methods(this->methods)
+			StaticMember(name, help), Overloads(this->overloads), Methods(this->methods), parent(parent)
 			{
 				
 				unpacktags(tag);
@@ -792,7 +792,7 @@ namespace Gorgon {
 			template<class ...P_>
 			Function(const std::string &name, const std::string &help, const Type *parent, 
 					 const Containers::Collection<Overload> &overloads, Tag tag, P_ ...tags) :
-			StaticMember(name, help), parent(parent), Overloads(this->overloads), Methods(this->methods)
+			StaticMember(name, help), Overloads(this->overloads), Methods(this->methods), parent(parent)
 			{
 				unpacktags(tag);
 				unpacktags(tags...);
@@ -809,7 +809,7 @@ namespace Gorgon {
 			Function(const std::string &name, const std::string &help, const Type *parent,
 					 const Containers::Collection<Overload> &overloads, const Containers::Collection<Overload> &methods=Containers::Collection<Overload>()
 			) : 
-			StaticMember(name, help), parent(parent), Overloads(this->overloads), Methods(this->methods)
+			StaticMember(name, help), Overloads(this->overloads), Methods(this->methods), parent(parent)
 			{ 
 				for(auto &overload : overloads) {
 					AddOverload(overload);

@@ -515,7 +515,7 @@ namespace Scripting {
 		
 		template<int ...S_>
 		void check(TMP::Sequence<S_...>) {
-			char dummy[] = {0, (checkparam<S_>(),'\0')...};
+			char dummy[[gnu::unused]] [] = {0, (checkparam<S_>(),'\0')...};
 		}
 		
 		virtual void dochecks(bool ismethod) override {
@@ -1861,11 +1861,11 @@ namespace Scripting {
 			}
 		}
 		
-		virtual std::string ToString(const Data &d) const {
+		virtual std::string ToString(const Data &d) const override {
 			return String::From(d.GetValue<E_>());
 		}
 		
-		virtual Data Parse(const std::string &s) const {
+		virtual Data Parse(const std::string &s) const override {
 			return {this, String::Parse<E_>(s)};
 		}
 		
@@ -1887,7 +1887,7 @@ namespace Scripting {
 		}
 		
 	protected:
-		virtual bool compare(const Data& l, const Data& r) const {
+		virtual bool compare(const Data& l, const Data& r) const override {
 			return l.GetValue<E_>() == r.GetValue<E_>();
 		}
 		
