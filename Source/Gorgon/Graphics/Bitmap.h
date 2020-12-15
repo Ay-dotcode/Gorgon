@@ -524,6 +524,12 @@ namespace Gorgon { namespace Graphics {
 		/// If image data is already discarded, there is no way to retrieve it. May throw if color mode is not supported
 		/// by PNG encoding. PNG encoding allows: RGB, RGBA, Grayscale, Grayscale alpha. Additionally, Alpha only
 		/// images are saved as grayscale alpha.
+		bool Export(const std::string &filename);
+        
+		/// Exports the data of the image resource to a PNG file. This function requires image data to be present.
+		/// If image data is already discarded, there is no way to retrieve it. May throw if color mode is not supported
+		/// by PNG encoding. PNG encoding allows: RGB, RGBA, Grayscale, Grayscale alpha. Additionally, Alpha only
+		/// images are saved as grayscale alpha.
 		bool ExportPNG(const std::string &filename);
 
 		/// Exports the data of the image resource to a PNG file. This function requires image data to be present.
@@ -547,7 +553,7 @@ namespace Gorgon { namespace Graphics {
 		/// Exports the data of the image resource to a JPG file. This function requires image data to be present.
 		/// If image data is already discarded, there is no way to retrieve it. May throw if color mode is not supported
 		/// by PNG encoding. JPG encoding allows: RGB and Grayscale. Quality is between 0 and 100.
-		bool ExportJPG(const std::string &filename, int quality = 90);
+		bool ExportJPEG(const std::string &filename, int quality = 90);
 
 		/// Exports the data of the image resource to a JPG file. This function requires image data to be present.
 		/// If image data is already discarded, there is no way to retrieve it. May throw if color mode is not supported

@@ -149,6 +149,25 @@ namespace Gorgon { namespace Graphics {
 		return data->ImportBMP(file);
 	}
 
+	bool Bitmap::Export(const std::string &filename) {
+		auto dotpos = filename.find_last_of('.');
+		if(dotpos!=-1) {
+			auto ext = filename.substr(dotpos+1);
+
+			if(String::ToLower(ext) == "png") {
+				return ExportPNG(filename);
+			}
+			else if(String::ToLower(ext) == "jpg" || String::ToLower(ext) =="jpeg") {
+				return ExportJPEG(filename);
+			}
+			else if(String::ToLower(ext) == "bmp") {
+				return ExportBMP(filename);
+			}
+		}
+		
+		return false;
+	}
+
 	bool Bitmap::ExportPNG(const std::string &filename) {
 		ASSERT(data, "Image data does not exists");
 
@@ -207,7 +226,7 @@ namespace Gorgon { namespace Graphics {
 		return data->ExportBMP(out);
 	}
 
-	bool Bitmap::ExportJPG(const std::string &filename, int quality) {
+	bool Bitmap::ExportJPEG(const std::string &filename, int quality) {
 		ASSERT(data, "Image data does not exists");
 
 		if(GetMode()!=Graphics::ColorMode::RGB &&
