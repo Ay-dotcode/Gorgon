@@ -5,7 +5,7 @@
 namespace UI{
 
     //Initialization of constructor class 
-    UI::App::App (Gorgon::Geometry::Size size, int fontSize, std::string title ):window(size,title),initstyl("Goldman-Regular.ttf",14), btnImport("IMPORT"),btnFileFrom("Path From"), btnFileTo("Path To"), btnExit("EXIT"){
+    UI::App::App (Gorgon::Geometry::Size size, int fontSize, std::string title, std::vector<std::string> &tcommands ):window(size,title),initstyl("Goldman-Regular.ttf",14), cli(tcommands),btnImport("IMPORT"),btnFileFrom("Path From"), btnFileTo("Path To"), btnExit("EXIT"){
         
         
         //Import application icon and apply to window

@@ -14,10 +14,41 @@ namespace Gorgon { namespace OS {
 } }
 #endif
 
+std::vector<std::string> PrepareArguments(int argc, char *argv[]) {
+    std::string line;
+    std::vector<std::string> commandline;
+    for (int i = 1; i < argc; i++) {
+        line += argv[i];
+        if (line.find("=") != std::string::npos) {
+            if (line.at(0) == '-')
+                line.erase(0, 1);
+            commandline.push_back(line);
+            line.clear();
+        }
+        else if (line.find("-") == std::string::npos) {
+            commandline.push_back(line);
+            line.clear();
+        }
+        else {
+            auto n = Gorgon::String::ToLower(line);
+            if (n == "-quit") {
+                line.erase(0, 1);
+                commandline.push_back(line);
+                line.clear();
+            }
+        
+        }
+    }
+    return commandline;
+}
+
 //Main execution function of Resource Management UI
 int main(int argc, char *argv[]){
     int fs = 12;
     std::string fontName = "";
+    std::vector<std::string> commandline;
+    if (argc > 0) 
+        commandline = PrepareArguments(argc, argv);
     
     Gorgon::Initialize("ResourceManagementUI");
     
@@ -27,7 +58,7 @@ int main(int argc, char *argv[]){
     system("pwd");
     
     //Initializes the UI
-    UI::App app({550,350}, fs, "Gorgon Resource Manager");
+    UI::App app({550,350}, fs, "Gorgon Resource Manager", commandline);
 
     //Continues to diplay the UI until it is closed by the user
     while(true){

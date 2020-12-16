@@ -32,8 +32,8 @@
 
 #include <Gorgon/Graphics/Color.h>
 
+#include "Cli.h"
 
-//#include "Cli.h"
 
 namespace UI{
     
@@ -48,7 +48,7 @@ namespace UI{
     class App{
     public:    
         //Declaration function for UI to be called in Main.cpp
-        App (Gorgon::Geometry::Size size, int fontSize, std::string title );
+        App (Gorgon::Geometry::Size size, int fontSize, std::string title, std::vector<std::string> &tcommands );
         
         
     private:
@@ -70,7 +70,7 @@ namespace UI{
         //Initialize styling
         initStyle initstyl;
         
-        //UI::Cli cli;
+        UI::Cli cli;
         
         //Gorgon Icon objects for app window
         Gorgon::Graphics::Bitmap ico;
