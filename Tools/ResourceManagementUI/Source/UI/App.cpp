@@ -2,15 +2,16 @@
 #include <Gorgon/UI/Organizers/Flow.h>
 
 
+
 namespace UI{
 
     //Initialization of constructor class 
-    UI::App::App (Gorgon::Geometry::Size size, int fontSize, std::string title, std::vector<std::string> &tcommands ):window(size,title),initstyl("Goldman-Regular.ttf",14), cli(tcommands),btnImport("IMPORT"),btnFileFrom("Path From"), btnFileTo("Path To"), btnExit("EXIT"){
+    UI::App::App (Gorgon::Geometry::Size size, int fontSize, std::string title, std::vector<std::string> &tcommands, std::string filePath):window(size,title),initstyl("/home/luca/Gorgon/Tools/ResourceManagementUI/Bin/Goldman-Regular.ttf",14), cli(tcommands),btnImport("IMPORT"),btnFileFrom("Path From"), btnFileTo("Path To"), btnExit("EXIT"), pathTo(filePath), pathFrom(filePath){
         
         
         //Import application icon and apply to window
         //This may fail if the debug path is not set correctly
-        ico.Import("Icon.png");
+        ico.Import("/home/luca/Gorgon/Tools/ResourceManagementUI/Bin/Icon.png");
         icon = Gorgon::WindowManager::Icon{ico.GetData()};
         window.SetIcon(icon);
         
@@ -24,24 +25,26 @@ namespace UI{
         
         
         //Initialization of settings  panel
-        pnlSettings.SetWidth(550);
+        pnlSettings.SetWidth(size.Width);
         pnlSettings.Move(0, 0);
-        pnlSettings.SetHeight(350);
+        pnlSettings.SetHeight(size.Height);
         pnlSettings.EnableScroll(false, false);
         window.Add(pnlSettings);
+        
+        
         
         //Organizers to display elements to the panel.
         auto &org = pnlSettings.CreateOrganizer<Gorgon::UI::Organizers::Flow>();
         
         org 
         << org.Break 
-        << 1 << "" << 4 << "Import From:" << 9 << pathFrom << btnFileFrom
+        << 1 << "" << 4 << "Import From:" << 19 << pathFrom << btnFileFrom
         << org.Break << org.Break
-        << 1 << "" << 4 << "Import To:" << 9 << pathTo << btnFileTo 
+        << 1 << "" << 4 << "Import To:" << 19 << pathTo << btnFileTo 
         << org.Break 
         << org.Break << org.Break << org.Break << org.Break << org.Break
         << org.Break 
-        << btnExit << 12 << "" << btnImport ;
+        << btnExit << 22 << "" << btnImport ;
         
         btnImport.PressEvent.Register([&]{
             Import();

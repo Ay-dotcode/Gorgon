@@ -3,11 +3,16 @@
 #include <Gorgon/String.h>
 #include <Gorgon/OS.h>
 
+#include <Gorgon/Filesystem.h>
+
 #include "UI/App.h"
+
+#include <filesystem>
 
 #ifdef LINUX
 #include <unistd.h>
 #include <wait.h>
+
 
 namespace Gorgon { namespace OS {
     bool Start(const std::string &name, std::streambuf *&buf, const std::vector<std::string> &args);
@@ -51,14 +56,15 @@ int main(int argc, char *argv[]){
         commandline = PrepareArguments(argc, argv);
     
     Gorgon::Initialize("ResourceManagementUI");
-    
     //This will set up default fonts on a linux system if the provided font is not available
     std::streambuf *buf;
     Gorgon::OS::Start("fc-match", buf, {"-v", "sans"});
     system("pwd");
     
+    std::string fp = Gorgon::Filesystem::CurrentDirectory();
+    
     //Initializes the UI
-    UI::App app({550,350}, fs, "Gorgon Resource Manager", commandline);
+    UI::App app({850,350}, fs, "Gorgon Resource Manager", commandline, fp);
 
     //Continues to diplay the UI until it is closed by the user
     while(true){
