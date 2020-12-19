@@ -33,6 +33,10 @@
 #include <Gorgon/Graphics/Color.h>
 #include <Gorgon/Filesystem.h>
 
+#include <Gorgon/UI/Organizers/Flow.h>
+#include <Gorgon/Widgets/DialogWindow.h>
+#include <Gorgon/UI/Dialog.h>
+
 #include "Cli.h"
 
 
@@ -84,7 +88,7 @@ namespace UI{
         Gorgon::Graphics::BlankImage applicationBG;
         
         //Gorgon Button Objects
-        Gorgon::Widgets::Button btnImport, btnFileFrom, btnFileTo, btnExit;
+        Gorgon::Widgets::Button btnImport, btnFileFrom, btnFileTo, btnExit, btnCheckExit;
         
         //Gorgon Checkbox opjects
         //Gorgon::Widgets::Checkbox metadata;
@@ -93,7 +97,6 @@ namespace UI{
         
         //Gorgon panel objects
         Gorgon::Widgets::Panel pnlSettings;
-        
         
     };
 }

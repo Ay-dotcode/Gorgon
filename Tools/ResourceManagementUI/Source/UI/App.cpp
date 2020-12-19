@@ -1,6 +1,4 @@
 #include "App.h"
-#include <Gorgon/UI/Organizers/Flow.h>
-
 
 
 namespace UI{
@@ -55,11 +53,11 @@ namespace UI{
             exit(0);
         });
         
-        //Program terminates if Exit button is clicked.
+        //Program terminates if Exit button is clicked and confirmedv.
         btnExit.PressEvent.Register([&]{
-            exit(0);
+            pnlSettings.Disable();
+            Gorgon::UI::AskYesNo("Exit","Any currently running imports will be lost!\n\n\nAre you sure you want to leave?", [&]{exit(0);}, [&]{pnlSettings.Enable();});
         });
-            
     }
     
     void App::Import(){
@@ -67,6 +65,8 @@ namespace UI{
         std::string toPath = pathTo.GetText();
         std::cout << "Importing Resources From \"" << fromPath << "\" to \"" << toPath << "\"" << std::endl;
     }
+    
+    
 
     
     App::initStyle::initStyle(std::string fontname, int fh) {
