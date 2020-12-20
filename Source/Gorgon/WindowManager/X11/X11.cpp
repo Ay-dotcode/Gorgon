@@ -274,6 +274,7 @@ namespace Gorgon { namespace WindowManager {
     void Icon::Destroy() {
         if(data->data) {
             delete data->data;
+            data->data = nullptr;
             data->w = 0;
             data->h = 0;
         }

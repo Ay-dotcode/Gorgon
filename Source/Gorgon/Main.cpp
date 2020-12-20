@@ -102,8 +102,6 @@ namespace Gorgon {
         }
         
         once.clear();
-
-		OS::processmessages();
 	}
 
 	void Render() {

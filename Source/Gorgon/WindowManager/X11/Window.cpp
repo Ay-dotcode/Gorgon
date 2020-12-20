@@ -641,6 +641,9 @@ namespace internal {
     }
  
     void Window::processmessages() {
+        if(data->handle == 0)
+            return;
+        
         XEvent event;
         
         mouselocation = WindowManager::GetMousePosition(data);
@@ -664,7 +667,7 @@ namespace internal {
                         
                         if(allow) {
                             Close();
-                            break;
+                            return;
                         }
                     }
                     else if(event.xclient.message_type==WindowManager::XdndEnter) {
