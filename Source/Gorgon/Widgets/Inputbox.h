@@ -387,7 +387,12 @@ namespace Gorgon { namespace Widgets {
         
         
         /// Returns the value in the box.
-        operator T_() const {
+        operator T_() {
+            return value;
+        }
+        
+        /// Returns the value in the box.
+        operator const T_() const {
             return value;
         }
         
