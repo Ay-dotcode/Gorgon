@@ -311,7 +311,7 @@ int main() {
     btn.Move(0,0);
     Widgets::Checkbox enableclosebtn("Enable close button", true);
     enableclosebtn.SetAutosize(Gorgon::UI::Autosize::Unit, Gorgon::UI::Autosize::Automatic);
-    enableclosebtn.ChangedEvent.Register([&] { wind.SetCloseButtonEnabled(enableclosebtn); });
+    enableclosebtn.ChangedEvent.Register([&] { wind.SetCloseButtonEnabled(bool(enableclosebtn)); });
     wind.Add(enableclosebtn);
     wind.CreateOrganizer<UI::Organizers::List>() 
         << "Try resize"

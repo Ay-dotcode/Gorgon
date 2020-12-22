@@ -1077,7 +1077,7 @@ namespace Gorgon {
 			}
 			
 			virtual MemberType GetMemberType() const override {
-				return StaticMember::DataMember;
+				return StaticMember::Namespace;
 			}
 			
 			virtual Data Get() const override {

@@ -7,10 +7,8 @@ IF(${WIN32})
 		Win32.cpp
 	)
 	
-	FIND_LIBRARY(Secur32.lib REQUIRED)
 	LIST(APPEND Libs Secur32)
 	
-	FIND_LIBRARY(Netapi32.lib REQUIRED)
 	LIST(APPEND Libs Netapi32)
 ELSE()
 	LIST(APPEND Local

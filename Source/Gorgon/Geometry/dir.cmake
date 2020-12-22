@@ -1,4 +1,6 @@
 SET(Local
+	../Geometry.h
+	
 	Bounds.h
 	Margin.h
 	Line.h

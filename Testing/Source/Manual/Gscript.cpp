@@ -9,6 +9,7 @@
 #include <Gorgon/Filesystem.h>
 #include <Gorgon/Enum.h>
 #include <Gorgon/Time.h>
+#include <Gorgon/Geometry.h>
 
 using namespace Gorgon::Scripting;
 
@@ -52,11 +53,6 @@ std::ostream &operator<<(std::ostream &out, const NullTest &n) {
 	return out;
 }
 
-namespace Gorgon { namespace Geometry {
-	extern Scripting::Library LibGeometry;
-	void init_scripting();
-	
-} }
 
 void test() {
 	std::string scriptdir="../Source/Unit/Scripts";
@@ -178,7 +174,7 @@ public:
 
 int main() {
 	VirtualMachine vm;
-	Gorgon::Geometry::init_scripting();
+	Gorgon::Geometry::InitializeScripting();
 	vm.AddLibrary(Gorgon::Geometry::LibGeometry);
 	vm.SetSpecialIdentifierHandler(SpecHandler);
     

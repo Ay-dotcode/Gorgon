@@ -102,8 +102,6 @@ namespace Gorgon { namespace Widgets {
         Checkbox(const UI::Template &temp, const char *text, bool state) : Checkbox(temp, std::string(text), state) { }
         
         Checkbox &operator =(bool value) { SetState(value); return *this; }
-        
-        operator bool() { return GetState(); }
 
         virtual ~Checkbox();
 
