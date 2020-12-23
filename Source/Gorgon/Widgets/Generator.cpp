@@ -1186,7 +1186,7 @@ namespace Gorgon { namespace Widgets {
             .AddIndex(1)
         ;
         
-        if(missingedge != -1)
+        if(missingedge > -1)
             bg.Background.SetAnimation(PanelBorder(missingedge));
         
         
@@ -1206,6 +1206,9 @@ namespace Gorgon { namespace Widgets {
             break;
         case -1:
             padding = Spacing;
+            break;
+        case -2:
+            padding = 0;
             break;
         }
         
@@ -1268,7 +1271,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::BlankPanel() {
-        auto tmp = makepanel(-1, true);
+        auto tmp = makepanel(-2, true);
         
         return tmp;
     }

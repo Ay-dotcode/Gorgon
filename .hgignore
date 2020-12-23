@@ -37,6 +37,7 @@ Docs/xml
 
 CMakeSettings.json
 .vs
+.vscode
 syntax: regexp
 .*\.kdev4(_.*)?
 
