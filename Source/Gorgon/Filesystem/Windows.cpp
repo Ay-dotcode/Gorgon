@@ -29,7 +29,7 @@ namespace Gorgon { namespace Filesystem {
             }
 		}
 
-		auto wpath = converter.from_bytes(name.substr(0, pos));
+		auto wpath = converter.from_bytes(name);
 		CreateDirectoryW(wpath.c_str(), NULL);
 
 		return IsDirectory(name);
