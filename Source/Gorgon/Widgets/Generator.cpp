@@ -137,6 +137,9 @@ namespace Gorgon { namespace Widgets {
         for(auto p : panelborders) {
             delete p;
         }
+        for(auto p : panelbgs) {
+            delete p;
+        }
     }
     
     void SimpleGenerator::UpdateDimensions() {
@@ -240,6 +243,13 @@ namespace Gorgon { namespace Widgets {
             panelborders[missingedge] = makeborder(Border.Color, Background.Panel, missingedge);
         
         return *panelborders[missingedge];
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::PanelBG(int missingedge) {
+        if(!panelbgs[missingedge])
+            panelbgs[missingedge] = makeborder(0x0, Background.Panel, missingedge);
+        
+        return *panelbgs[missingedge];
     }
     
     Graphics::BitmapRectangleProvider &SimpleGenerator::GrooveBorder() {
@@ -1885,7 +1895,7 @@ namespace Gorgon { namespace Widgets {
         tmp.SetSize({WidgetWidth*3+Spacing*2+BorderedWidgetHeight, BorderedWidgetHeight*10});
         
         auto &cbg = dynamic_cast<UI::ContainerTemplate&>(tmp[0]);
-        cbg.Background.SetAnimation(NormalBG());
+        cbg.Background.SetAnimation(PanelBG());
         cbg.SetIndex(6);
         cbg.SetSize(100, 100, UI::Dimension::Percent);
         cbg.SetPositioning(UI::ComponentTemplate::Relative);
@@ -1925,6 +1935,7 @@ namespace Gorgon { namespace Widgets {
         text.SetDataEffect(UI::ComponentTemplate::Title);
         text.SetSizing(UI::ComponentTemplate::Fixed);
         text.SetTag(UI::ComponentTemplate::DragTag);
+        text.SetColor(Forecolor.Inverted);
         text.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         
         //close button
@@ -2016,6 +2027,9 @@ namespace Gorgon { namespace Widgets {
     UI::Template SimpleGenerator::DialogWindow() {
         auto temp = Window();
         temp.SetSize({WidgetWidth*2+Spacing+BorderedWidgetHeight, BorderedWidgetHeight*5});
+        
+        auto &cbg = dynamic_cast<UI::ContainerTemplate&>(temp[0]);
+        cbg.Background.SetAnimation(PanelBG(3));
         
         int maxind = 0;
         for(auto &c : temp) {

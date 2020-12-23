@@ -241,6 +241,8 @@ namespace Gorgon { namespace Widgets {
         
         Graphics::BitmapRectangleProvider &PanelBorder(int missingedge = 0);
         
+        Graphics::BitmapRectangleProvider &PanelBG(int missingedge = 0);
+        
         Graphics::BitmapRectangleProvider &GrooveBorder();
         
         Graphics::BitmapRectangleProvider &NormalEditBorder();
@@ -361,6 +363,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider *activewindowborder = nullptr;
         
         Graphics::BitmapRectangleProvider *panelborders[5] = {};
+        Graphics::BitmapRectangleProvider *panelbgs[5] = {};
         
         Graphics::BitmapRectangleProvider *grooveborder = nullptr;
         

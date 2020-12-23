@@ -627,8 +627,10 @@ namespace internal {
         sizehints->min_height=sz.Height;
         sizehints->max_height=sz.Height;
         sizehints->flags=PMinSize | PMaxSize;
+        XSync(WindowManager::display, False);
         XSetWMNormalHints(WindowManager::display, data->handle, sizehints);	
         XFlush(WindowManager::display);
+        XSync(WindowManager::display, False);
         XFree(sizehints);
     }
 
