@@ -1600,7 +1600,7 @@ namespace Gorgon { namespace Widgets {
             .AddIndex(4) //listitem
             .AddIndex(5) //scrollbar
         ;
-        bg.Background.SetAnimation(NormalBG());
+        bg.Background.SetAnimation(PanelBG());
         bg.SetPadding(std::max(Border.Radius / 2, Focus.Spacing)+Border.Width);
         
         auto &viewport = temp.AddContainer(1, UI::ComponentCondition::Always)

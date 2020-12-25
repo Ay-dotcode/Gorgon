@@ -617,6 +617,7 @@ namespace internal {
         XSetWMNormalHints(WindowManager::display, data->handle, sizehints);	
         XFlush(WindowManager::display);
         XFree(sizehints);
+        allowresize = true;
     }
     
     void Window::PreventResize() {
@@ -632,6 +633,7 @@ namespace internal {
         XFlush(WindowManager::display);
         XSync(WindowManager::display, False);
         XFree(sizehints);
+        allowresize = false;
     }
 
     void Window::SetIcon(const WindowManager::Icon& icon) {

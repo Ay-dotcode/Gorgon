@@ -1190,6 +1190,16 @@ namespace Gorgon { namespace Widgets {
                 storage.reserve(amount);
             }
             
+            /// Clears all items from the listbox
+            void Clear() {
+                long len = long(storage.size());
+                storage.clear();
+                
+                dynamic_cast<F_*>(this)->sel_remove(0, len);
+                
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
             /**
              * @name Iteration 
              * 
