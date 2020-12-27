@@ -270,5 +270,39 @@ namespace Gorgon { namespace Geometry {
 		});
         
 		LibGeometry.AddMember(point);
+        
+        
+        
+		auto pointf = new Scripting::MappedValueType<Pointf>(
+			"Pointf",
+			"Basic class for representing a point in space."
+			"The class is composed of two fields, x and y of type float."
+			"See documentation for complete list of overloaded operators and member functions"
+		);
+
+		LibGeometry.AddMember(pointf);
+        
+        
+		auto size = new Scripting::MappedValueType<Size>(
+			"Size",
+			"Basic class for representing a size in space."
+			"The class is composed of two fields, width and height of type int."
+			"See documentation for complete list of overloaded operators and member functions"
+		);
+
+		LibGeometry.AddMember(size);
+        
+        
+        
+		auto sizef = new Scripting::MappedValueType<Sizef>(
+			"Sizef",
+			"Basic class for representing a size in space."
+			"The class is composed of two fields, width and height of type float."
+			"See documentation for complete list of overloaded operators and member functions"
+		);
+
+		LibGeometry.AddMember(sizef);
+        
+        
 	}
 } }

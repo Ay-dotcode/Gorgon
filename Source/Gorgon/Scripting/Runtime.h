@@ -148,12 +148,15 @@ namespace Gorgon {
 		public:
 			
 			/// Creates an invalid variable
-			Variable(const std::string &name="", const Data &data=Data::Invalid()) : name(name), Data(data) { }
+			explicit Variable(const std::string &name="") : Variable(name, Data::Invalid()) { }
+			
+			/// Creates an invalid variable
+			Variable(const std::string &name, const Data &data) : Data(data), name(name) { }
 			
 			/// Constructor that sets the name, type and value of the variable. Unless this variable is
 			/// declared inside an executing code, definedin should be left nullptr.
 			Variable(const std::string &name, const Type &type, const Any &value) : 
-			name(name), Data(type, value) {
+			Data(type, value), name(name) {
 			}
 			
 			
@@ -161,7 +164,7 @@ namespace Gorgon {
 			/// type is used as value. Unless this variable is declared inside an executing code, definedin 
 			/// should be left nullptr.
 			Variable(const std::string &name, const Type &type) :
-			name(name), Data(type) {
+			Data(type), name(name) {
 			}
 			
 			

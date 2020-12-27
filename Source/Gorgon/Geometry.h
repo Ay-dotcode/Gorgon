@@ -14,6 +14,9 @@ namespace Gorgon { namespace Geometry {
         }
 
         DEFTYPE(Point)
+        DEFTYPE(Pointf)
+        DEFTYPE(Size)
+        DEFTYPE(Sizef)
         
 #undef DEFTYPE
     }
