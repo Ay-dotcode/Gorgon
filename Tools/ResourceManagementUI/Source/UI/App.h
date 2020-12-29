@@ -15,7 +15,7 @@
 #include <Gorgon/Widgets/Button.h>
 #include <Gorgon/Widgets/Checkbox.h>
 #include <Gorgon/Widgets/RadioButtons.h>
-//#include <Gorgon/Widgets/Label.h>
+#include <Gorgon/Widgets/Label.h>
 
 #include <Gorgon/UI/RadioControl.h>
 #include <Gorgon/WindowManager.h>
@@ -37,10 +37,33 @@
 #include <Gorgon/Widgets/DialogWindow.h>
 #include <Gorgon/UI/Dialog.h>
 
+#include <Gorgon/Widgets/Dropdown.h>
+#include <Gorgon/Enum.h>
+#include <Gorgon/Widgets/Composer.h>
+#include <Gorgon/Widgets/Listbox.h>
+#include <Gorgon/Widgets/ListItem.h>
+#include <Gorgon/Widgets/Generator.h>
+#include <Gorgon/UI/ComponentStack.h>
+
+
 #include "Cli.h"
 
 
+
 namespace UI{
+    
+    enum FileTypes{
+        Visual,
+        Audio,
+        Text
+    
+    };
+
+    DefineEnumStrings(FileTypes,{
+        {Visual, "  .png (Images)"},
+        {Audio, "  .flac (Audio)"},
+        {Text, "  .txt (text)"}
+    });
     
     class InitUI {
     public:
@@ -57,6 +80,8 @@ namespace UI{
         
         
     private:
+        
+        
         
         void Import();
         //Gorgon Main UI Window
@@ -88,11 +113,18 @@ namespace UI{
         Gorgon::Graphics::BlankImage applicationBG;
         
         //Gorgon Button Objects
-        Gorgon::Widgets::Button btnImport, btnFileFrom, btnFileTo, btnExit, btnCheckExit;
+        Gorgon::Widgets::Button btnImport, btnFileFrom, btnFileTo, btnExit;
         
         //Gorgon Checkbox opjects
-        //Gorgon::Widgets::Checkbox metadata;
+        Gorgon::Widgets::Checkbox metadata;
         
+        //Gorgon labels
+        Gorgon::Widgets::Label metaLabel;
+        
+        //Gorgon Drop downbox
+        Gorgon::Widgets::DropdownList<FileTypes> fileList;
+        
+        //Gorgon text areas
         Gorgon::Widgets::Textbox pathTo, pathFrom;
         
         //Gorgon panel objects

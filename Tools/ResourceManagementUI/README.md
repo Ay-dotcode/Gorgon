@@ -9,6 +9,6 @@ This is a tool built with Gorgon to help import Resource that will be needed in 
 
 To set Resource Management UI to be run from any directory, add the following line to your .bashrc file in your /home/user/ directory.
 
-    ```export PATH=$PATH:/Path/To/Gorgon/Tools/ResourceManagementUI/Bin```
+```export PATH=$PATH:/Path/To/Gorgon/Tools/ResourceManagementUI/Bin```
     
-Now you can run the Gorgon Resource Management UI tool in any directory.
+Now you can run the Gorgon Resource Management UI tool in any directory by simply typing  "ResourceManagementUI" in terminal.

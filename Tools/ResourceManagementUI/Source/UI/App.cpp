@@ -4,7 +4,7 @@
 namespace UI{
 
     //Initialization of constructor class 
-    UI::App::App (Gorgon::Geometry::Size size, int fontSize, std::string title, std::vector<std::string> &tcommands, std::string filePath):window(size,title),initstyl("/home/luca/Gorgon/Tools/ResourceManagementUI/Bin/Goldman-Regular.ttf",14), cli(tcommands),btnImport("IMPORT"),btnFileFrom("Path From"), btnFileTo("Path To"), btnExit("EXIT"), pathTo(filePath), pathFrom(filePath){
+    UI::App::App (Gorgon::Geometry::Size size, int fontSize, std::string title, std::vector<std::string> &tcommands, std::string filePath):window(size,title),initstyl("/home/luca/Gorgon/Tools/ResourceManagementUI/Bin/Goldman-Regular.ttf",14), cli(tcommands),btnImport("IMPORT"),btnFileFrom("Path From"), btnFileTo("Path To"), btnExit("EXIT"), metadata(), metaLabel("Add metadata file for each resource."), fileList(begin(Gorgon::Enumerate<FileTypes>()),end(Gorgon::Enumerate<FileTypes>())), pathTo(filePath), pathFrom(filePath){
         
         
         //Import application icon and apply to window
@@ -29,7 +29,7 @@ namespace UI{
         pnlSettings.EnableScroll(false, false);
         window.Add(pnlSettings);
         
-        
+        fileList.List.SetSelectedIndex(1);
         
         //Organizers to display elements to the panel.
         auto &org = pnlSettings.CreateOrganizer<Gorgon::UI::Organizers::Flow>();
@@ -39,8 +39,9 @@ namespace UI{
         << 1 << "" << 4 << "Import From:" << 19 << pathFrom << btnFileFrom
         << org.Break << org.Break
         << 1 << "" << 4 << "Import To:" << 19 << pathTo << btnFileTo 
-        << org.Break 
-        << org.Break << org.Break << org.Break << org.Break << org.Break
+        << org.Break << org.Break
+        << 1 << "" << 4 << "File Type:" << 5 << fileList << 2 << "" << 1 << metadata << 8 << metaLabel
+        << org.Break << org.Break << org.Break << org.Break
         << org.Break 
         << btnExit << 22 << "" << btnImport ;
         
@@ -50,7 +51,7 @@ namespace UI{
         
         //Allows the program to be terminated if the window is closed.
         window.DestroyedEvent.Register([&]() {
-            exit(0);
+            window.Quit();
         });
         
         //Program terminates if Exit button is clicked and confirmedv.
