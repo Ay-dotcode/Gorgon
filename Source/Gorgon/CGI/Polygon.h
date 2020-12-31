@@ -367,7 +367,7 @@ namespace Gorgon { namespace CGI {
      * This function fills the given point list as a polygon. List is treated as closed
      * where last pixel connects to the first. 
      */
-    template<int S_ = 8, int W_ = 1, class P_, class F_ = SolidFill<>>
+    template<int S_ = 8, int W_ = 1, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void Polyfill(Graphics::Bitmap &target, const std::vector<Geometry::PointList<P_>> &points, F_ fill = SolidFill<>{Graphics::Color::Black}) {
         if(target.HasData())
             Polyfill<S_, W_, P_, F_>(target.GetData(), points, fill);
@@ -560,7 +560,7 @@ namespace Gorgon { namespace CGI {
      * This function fills the given point list as a polygon. List is treated as closed
      * where last pixel connects to the first. 
      */
-    template<int S_ = 8, class P_, class F_ = SolidFill<>>
+    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void Polyfill(Graphics::Bitmap &target, const Geometry::PointList<P_> &points, F_ fill = SolidFill<>{Graphics::Color::Black}) {
         if(target.HasData())
             Polyfill<S_>(target.GetData(), points, fill);
