@@ -162,6 +162,8 @@ namespace Gorgon { namespace Widgets {
         WidgetWidth = 3 * BorderedWidgetHeight + 2 * Spacing;
         
         ObjectHeight = totalh;
+        
+        RegularFont.SetTabWidth(totalh + Spacing + Focus.Spacing + Focus.Width); //Align with checkbox radio button
     }
     
     void SimpleGenerator::UpdateBorders(bool smooth) {
@@ -1084,7 +1086,7 @@ namespace Gorgon { namespace Widgets {
             auto &tic = temp.AddGraphics(6, condition);
             tic.Content.SetDrawable(*tick(color));
             tic.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-            tic.SetMargin(-1, 0, 0, 0);
+            tic.SetMargin(-1, 0, -1, 0);
             
             auto &tt = temp.AddTextholder(5, condition);
             tt.SetRenderer(RegularFont);

@@ -119,7 +119,7 @@ int main() {
 
     icnbtn.OwnIcon(icon2.CreateAnimation());
 
-    Gorgon::Widgets::Label l("Coffee:");
+    Gorgon::Widgets::Label l("\tOne:");
     Gorgon::Widgets::Label l2("Error", Gorgon::Widgets::Registry::Label_Error);
 
     Gorgon::Widgets::RadioButtons<int> radio(Gorgon::Widgets::Registry::Radio_Regular);
@@ -130,7 +130,7 @@ int main() {
 
     Gorgon::Widgets::Textbox input;
 
-    Gorgon::Widgets::Checkbox chk("Black",Gorgon::Widgets::Registry::Checkbox_Regular);
+    Gorgon::Widgets::Checkbox chk("One",Gorgon::Widgets::Registry::Checkbox_Regular);
     Gorgon::Widgets::Checkbox chk2("Lattej");
     Gorgon::Widgets::Checkbox chkbutton("C", Gorgon::Widgets::Registry::Checkbox_Button);
     Gorgon::Widgets::Progressbar bar(Gorgon::Widgets::Registry::Progress_Regular);
@@ -289,9 +289,9 @@ int main() {
         << btn
         << list << org.Break << UI::Organizers::Flow::Break
         << icnbtn << icnbtn2 << dlist
-        << icnbtn3 << l << radio << l2
+        << icnbtn3 << radio << l
+        << chk << chk2 << chkbutton << l2
         << input
-        << chk << chk2 << chkbutton
         << bar
         << scroll1 << scroll2
         << sizef
