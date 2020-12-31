@@ -4,10 +4,20 @@
 
 #include <iosfwd>
 #include <unordered_set>
+#include <utility>
+#include <functional>
 
-namespace Gorgon { namespace UI { 
+namespace Gorgon { 
 
-class Widget;
+namespace Widgets {
+    
+    class Button;
+    
+}
+    
+namespace UI { 
+
+    class Widget;
     
 namespace Organizers {
     
@@ -137,6 +147,26 @@ namespace Organizers {
             nextsize = unitsize;
             
             return *this;
+        }
+        
+        /// Adds a button to the container
+        Flow &operator << (const std::pair<std::string, std::function<void()>> &action);
+        
+        /// Creates an action, which when streamed to organizer will create a button
+        std::pair<std::string, std::function<void()>> Action(const std::string &text, std::function<void()> fn) {
+            return std::make_pair(text, fn);
+        }
+        
+        /// Creates an action, which when streamed to organizer will create a button
+        template<class T_>
+        std::pair<std::string, std::function<void()>> Action(const std::string &text, T_ &obj, void(T_::*fn)()) {
+            return std::make_pair(text, std::bind(fn, obj));
+        }
+        
+        /// Creates an action, which when streamed to organizer will create a button
+        template<class T_>
+        std::pair<std::string, std::function<void()>> Action(const std::string &text, T_ *obj, void(T_::*fn)()) {
+            return std::make_pair(text, std::bind(fn, obj));
         }
         
         

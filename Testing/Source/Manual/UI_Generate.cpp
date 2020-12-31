@@ -288,13 +288,14 @@ int main() {
     org << std::endl << 2 << "Label" << Coffee
         << btn
         << list << org.Break << UI::Organizers::Flow::Break
-        << icnbtn << icnbtn2 << dlist
-        << icnbtn3 << radio << l
+        << icnbtn2 << dlist
+        << icnbtn3 << radio << icnbtn << 5 << "Hello"
         << chk << chk2 << chkbutton << l2
         << input
         << bar
         << scroll1 << scroll2
         << sizef
+        << org.Action("Ok", [&]() { std::cout << "Ok clicked" << std::endl; })
     ;
     
     btn.SetHorizonalAutosize(Gorgon::UI::Autosize::Unit);

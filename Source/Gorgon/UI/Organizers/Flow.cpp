@@ -1,6 +1,8 @@
 #include "Flow.h"
+
 #include "../WidgetContainer.h"
 #include "../../Widgets/Registry.h"
+#include "../../Widgets/Button.h"
 
 #include <iostream>
 
@@ -129,8 +131,25 @@ namespace Gorgon { namespace UI { namespace Organizers {
 
         return *this;
     }
+
+    Flow &Flow::operator << (const std::pair<std::string, std::function<void()>> &action) {
+        if(!IsAttached()) {
+            throw std::runtime_error("This organizer is not attached to a container");
+        }
+        
+        auto &b = *new Widgets::Button(action.first, action.second);
+        
+        operator <<(b);
+        GetAttached().Own(b);
+
+        return *this;
+
+        
+        return *this;
+    }
     
     Flow::BreakTag Flow::Break;
+
 
 
 } } }
