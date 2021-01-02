@@ -47,6 +47,7 @@
 
 
 #include "Cli.h"
+#include "../Importer/Image.h"
 
 
 

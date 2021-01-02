@@ -4,7 +4,20 @@
 namespace UI{
 
     //Initialization of constructor class 
-    UI::App::App (Gorgon::Geometry::Size size, int fontSize, std::string title, std::vector<std::string> &tcommands, std::string filePath):window(size,title),initstyl("/home/luca/Gorgon/Tools/ResourceManagementUI/Bin/Goldman-Regular.ttf",14), cli(tcommands),btnImport("IMPORT"),btnFileFrom("Path From"), btnFileTo("Path To"), btnExit("EXIT"), metadata("  Add metadata file for each resource."), fileList(begin(Gorgon::Enumerate<FileTypes>()),end(Gorgon::Enumerate<FileTypes>())), pathTo(filePath), pathFrom(filePath){
+    UI::App::App (Gorgon::Geometry::Size size, int fontSize, std::string title, std::vector<std::string> &tcommands, std::string filePath):
+    
+    window(size,title),
+    initstyl("/home/luca/Gorgon/Tools/ResourceManagementUI/Bin/Goldman-Regular.ttf",14), 
+    cli(tcommands),
+    btnImport("IMPORT"),
+    btnFileFrom("Path From"), 
+    btnFileTo("Path To"), 
+    btnExit("EXIT"), 
+    metadata("  Add metadata file for each resource."), fileList(begin(Gorgon::Enumerate<FileTypes>()),end(Gorgon::Enumerate<FileTypes>())), 
+    pathTo(filePath), 
+    pathFrom(filePath)
+    
+    {
         
         
         //Import application icon and apply to window
@@ -64,7 +77,11 @@ namespace UI{
     void App::Import(){
         std::string fromPath = pathFrom.GetText();
         std::string toPath = pathTo.GetText();
+        
+        Importer::Image image(fromPath, toPath);
         std::cout << "Importing Resources From \"" << fromPath << "\" to \"" << toPath << "\"" << std::endl;
+        
+        
     }
     
     
