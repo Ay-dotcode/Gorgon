@@ -1354,6 +1354,16 @@ namespace Gorgon { namespace Widgets {
                 return storage.FindLocation(item);
             }
             
+            /// Removes all elements without destroying them
+            void Clear() {
+                auto s = storage.GetSize();
+                
+                storage.Clear();
+                
+                dynamic_cast<F_*>(this)->sel_remove(0, s);
+                dynamic_cast<F_*>(this)->Refresh();
+            }
+            
             /// Deletes and removes all elements in the listbox
             void DeleteAll() {
                 auto s = storage.GetSize();
