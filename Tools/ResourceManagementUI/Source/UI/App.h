@@ -118,9 +118,6 @@ namespace UI{
         //Gorgon Checkbox opjects
         Gorgon::Widgets::Checkbox metadata;
         
-        //Gorgon labels
-        Gorgon::Widgets::Label metaLabel;
-        
         //Gorgon Drop downbox
         Gorgon::Widgets::DropdownList<FileTypes> fileList;
         
