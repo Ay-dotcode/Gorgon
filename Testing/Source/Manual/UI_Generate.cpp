@@ -243,7 +243,7 @@ int main() {
     
     Widgets::DropdownList<DaysOfWeek> dlist(begin(Enumerate<DaysOfWeek>()), end(Enumerate<DaysOfWeek>()));
     dlist.List.SetSelectedIndex(1);
-    dlist.SelectionChanged.Register([](long index) {
+    dlist.SelectionChangedEvent.Register([](long index) {
         std::cout << "Dropdown index: " << index << std::endl;
     });
    
@@ -256,8 +256,8 @@ int main() {
     // or index
     Coffee.List.SetSelectedIndex(1);
     
-    // Use SelectionChanged.Register to handle selection event
-    Coffee.SelectionChanged.Register([&](long index){
+    // Use SelectionChangedEvent.Register to handle selection event
+    Coffee.SelectionChangedEvent.Register([&](long index){
         //this can throw if nothing is selected, check index, it should be > -1
         //this can only happen if you remove the selected item from the list.
         if(index == -1) {
