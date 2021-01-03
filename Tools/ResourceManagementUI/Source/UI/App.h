@@ -102,6 +102,7 @@ namespace UI{
         initStyle initstyl;
         
         UI::Cli cli;
+        Importer::Image image;
         
         //Gorgon Icon objects for app window
         Gorgon::Graphics::Bitmap ico;

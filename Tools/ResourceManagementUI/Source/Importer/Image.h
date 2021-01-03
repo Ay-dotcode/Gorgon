@@ -21,14 +21,17 @@ namespace Importer{
     class Image{
     public:
         
-        Image(std::string pathFrom, std::string pathTo);
+        Image();
         
-        
+        void DoImport(int scale, std::function<void(std::string)> report, std::string pathFrom, std::string pathTo, std::string fileType, std::string resourceType);
         
     private:
         
-        void DoImport(int scale, std::function<void(std::string)> report);
+         
         Gorgon::Graphics::Bitmap Scale(const Gorgon::Graphics::Bitmap &bmp, int scale);
+        
+        
+       
     };
 }
 

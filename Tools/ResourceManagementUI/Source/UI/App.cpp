@@ -78,8 +78,10 @@ namespace UI{
         std::string fromPath = pathFrom.GetText();
         std::string toPath = pathTo.GetText();
         
-        Importer::Image image(fromPath, toPath);
-        std::cout << "Importing Resources From \"" << fromPath << "\" to \"" << toPath << "\"" << std::endl;
+        
+        
+        image.DoImport(3, [](auto r) {std::cout<<r<<std::endl;}, pathFrom, pathTo, "png", "testFiletype");
+        //std::cout << "Importing Resources From \"" << fromPath << "\" to \"" << toPath << "\"" << std::endl;
         
         
     }
