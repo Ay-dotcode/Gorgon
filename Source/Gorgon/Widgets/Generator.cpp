@@ -945,7 +945,7 @@ namespace Gorgon { namespace Widgets {
         //checked border
         auto &border = temp.AddContainer(8, UI::ComponentCondition::Always, UI::ComponentCondition::State2);
         border.SetValueModification(UI::ComponentTemplate::ModifyAlpha, UI::ComponentTemplate::UseTransition);
-        border.SetValueRange(0, 0.5, 1);
+        border.SetValueRange(0, 0.25, 1);
         border.SetReversible(true);
         border.Background.SetAnimation(NormalEmptyBorder());        
         
