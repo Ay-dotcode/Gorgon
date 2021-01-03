@@ -265,17 +265,10 @@ namespace Gorgon { namespace Widgets {
             
             /// Selects the first item that has the given value. If item does
             /// not exists, this function will remove the selection
-            void SetSelection(T_ item) {
+            void SetSelection(const T_ &item) {
                 auto &me = dynamic_cast<F_&>(*this);
                 
-                for(long i=0; i<me.GetCount(); i++) {
-                    if(me[i] == item) {
-                        SetSelectedIndex(i);
-                        return;
-                    }
-                }
-                
-                SetSelectedIndex(-1);
+                SetSelectedIndex(me.Find(item));
             }
             
             /// Returns true if the selected item is the focused item. Default
@@ -1177,7 +1170,7 @@ namespace Gorgon { namespace Widgets {
             
             /// Return the index of the first item that has the given value.
             /// Returns -1 if item not found.
-            long Find(const T_ item, long start = 0) {
+            long Find(const T_ &item, long start = 0) {
                 auto it = std::find(storage.begin() + start, storage.end(), item);
                 if(it == storage.end())
                     return -1;

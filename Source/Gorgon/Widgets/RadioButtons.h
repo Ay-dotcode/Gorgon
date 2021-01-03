@@ -213,6 +213,10 @@ namespace Gorgon { namespace Widgets {
             
             return *this;
         }
+        
+        operator T_() const {
+            return Get();
+        }
 
         using UI::RadioControl<T_, W_>::ChangedEvent;
 
