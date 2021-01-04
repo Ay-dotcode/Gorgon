@@ -13,9 +13,14 @@ namespace UI{
     btnFileFrom("Path From"), 
     btnFileTo("Path To"), 
     btnExit("EXIT"), 
-    metadata("  Add metadata file for each resource."), fileList(begin(Gorgon::Enumerate<FileTypes>()),end(Gorgon::Enumerate<FileTypes>())), 
+    btnClassInfo("i"),
+    btnScaleInfo("i"),
+    metadata("  Add metadata file for each resource."),
+    fileList(begin(Gorgon::Enumerate<FileTypes>()),end(Gorgon::Enumerate<FileTypes>())), 
+    scaleList(begin(Gorgon::Enumerate<Scales>()),end(Gorgon::Enumerate<Scales>())),
     pathTo(filePath), 
-    pathFrom(filePath)
+    pathFrom(filePath),
+    lblMetadata("Type each metadata element in the textbox below followed by a coma.")
     
     {
         
@@ -42,7 +47,11 @@ namespace UI{
         pnlSettings.EnableScroll(false, false);
         window.Add(pnlSettings);
         
+        metadata1.SetVisible(false);
+        lblMetadata.SetVisible(false);
+        
         fileList.List.SetSelectedIndex(0);
+        scaleList.List.SetSelectedIndex(0);
         
         //Organizers to display elements to the panel.
         auto &org = pnlSettings.CreateOrganizer<Gorgon::UI::Organizers::Flow>();
@@ -53,8 +62,14 @@ namespace UI{
         << org.Break << org.Break
         << 1 << "" << 4 << "Import To:" << 19 << pathTo << btnFileTo 
         << org.Break << org.Break
-        << 1 << "" << 4 << "File Type:" << 5 << fileList << 2 << "" << 8 << metadata 
-        << org.Break << org.Break << org.Break << org.Break
+        << 1 << "" << 4 << "File Type:" << 6 << fileList << 2 << "" << 4 << "Resource Class:" << 5 << resourceClass<< 1 <<btnClassInfo
+        << org.Break << org.Break 
+        << 1 << "" << 4 << "Resource Scale:" << 2 << scaleList  << 1 << btnScaleInfo
+        << org.Break << org.Break 
+        << 1 << "" << 10 << metadata  << "" << org.Break
+        << org.Break
+        << 1 << "" << 17 << lblMetadata << "" << org.Break
+        << 1 << "" << 25 << metadata1 << ""
         << org.Break 
         << btnExit << 22 << "" << btnImport ;
         
@@ -71,6 +86,19 @@ namespace UI{
         btnExit.PressEvent.Register([&]{
             pnlSettings.Disable();
             Gorgon::UI::AskYesNo("Exit","Any currently running imports will be lost!\n\n\nAre you sure you want to leave?", [&]{exit(0);}, [&]{pnlSettings.Enable();});
+        });
+        
+        btnClassInfo.PressEvent.Register([&]{
+            Gorgon::UI::ShowMessage("Resource Class Info","This is the type of resource that you are importing for you prohject. It can be character models, tiles, items, sounds or UI elements and so on. \n\n This is what your .gor file will be saved as. With the scale size included.");
+        });
+        
+        btnScaleInfo.PressEvent.Register([&]{
+            Gorgon::UI::ShowMessage("Resource Scale Info","This is the scale at which you want to import your resource. \n\n The scale sze will be made present on the saved .gor file.");
+        });
+        
+        metadata.ChangedEvent.Register([&] {            
+            metadata1.SetVisible(bool(metadata));
+            lblMetadata.SetVisible(bool(metadata));
         });
     }
     
@@ -94,13 +122,13 @@ namespace UI{
 
         uiStyle.Init ( fh, fontname );
         uiStyle.Background.Regular = { Gorgon::Graphics::Color::White, 0.2f };
-        uiStyle.Background.Hover = { Gorgon::Graphics::Color::Black, 0.2f };
+        uiStyle.Background.Hover = { Gorgon::Graphics::Color::Black, 0.5f };
         uiStyle.Background.Edit = { Gorgon::Graphics::Color::LightTan, 0.2f };
         uiStyle.Forecolor.Regular = Gorgon::Graphics::Color::White;
         uiStyle.Forecolor.Hover = Gorgon::Graphics::Color::Amber;
         uiStyle.Forecolor.Down = { Gorgon::Graphics::Color::Black, 0.3f };
         //uiStyle.Border.Color = Gorgon::Graphics::Color::Grey;
-        uiStyle.Background.Panel = {Gorgon::Graphics::RGBA(54,54,54,1),1};
+        uiStyle.Background.Panel = {Gorgon::Graphics::RGBA(54,54,54,1),0.99};
         uiStyle.Focus.Color = Gorgon::Graphics::Color::Yellow;
         uiStyle.Activate();
         

@@ -54,17 +54,42 @@
 namespace UI{
     
     enum FileTypes{
-        Visual,
+        Image,
         Audio,
         Text
     
     };
 
     DefineEnumStrings(FileTypes,{
-        {Visual, "  .png (Images)"},
+        {Image, "  .png (Images)"},
         {Audio, "  .flac (Audio)"},
         {Text, "  .txt (text)"}
     });
+    
+    enum Scales{
+        s1,
+        s2,
+        s3,
+        s4,
+        s5,
+        s6,
+        s7,
+        s8,
+        s9
+    };
+    
+    DefineEnumStrings(Scales ,{
+        {s1, "  1x"},
+        {s2, "  2x"},
+        {s3, "  3x"},
+        {s4, "  4x"},
+        {s5, "  5x"},
+        {s6, "  6x"},
+        {s7, "  7x"},
+        {s8, "  8x"},
+        {s9, "  9x"},
+    });
+    
     
     class InitUI {
     public:
@@ -115,16 +140,20 @@ namespace UI{
         Gorgon::Graphics::BlankImage applicationBG;
         
         //Gorgon Button Objects
-        Gorgon::Widgets::Button btnImport, btnFileFrom, btnFileTo, btnExit;
+        Gorgon::Widgets::Button btnImport, btnFileFrom, btnFileTo, btnExit, btnClassInfo, btnScaleInfo;
         
         //Gorgon Checkbox opjects
         Gorgon::Widgets::Checkbox metadata;
         
         //Gorgon Drop downbox
         Gorgon::Widgets::DropdownList<FileTypes> fileList;
+        Gorgon::Widgets::DropdownList<Scales> scaleList;
         
         //Gorgon text areas
-        Gorgon::Widgets::Textbox pathTo, pathFrom;
+        Gorgon::Widgets::Textbox pathTo, pathFrom, resourceClass, metadata1;
+        
+        //Gorgon labels
+        Gorgon::Widgets::Label lblMetadata;
         
         //Gorgon panel objects
         Gorgon::Widgets::Panel pnlSettings;

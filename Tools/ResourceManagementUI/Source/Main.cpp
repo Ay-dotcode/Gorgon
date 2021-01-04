@@ -64,7 +64,7 @@ int main(int argc, char *argv[]){
     std::string fp = Gorgon::Filesystem::CurrentDirectory();
     
     //Initializes the UI
-    UI::App app({850,350}, fs, "Gorgon Resource Manager", commandline, fp);
+    UI::App app({850,440}, fs, "Gorgon Resource Manager", commandline, fp);
 
     //Continues to diplay the UI until it is closed by the user
     while(true){
