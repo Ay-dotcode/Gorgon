@@ -40,6 +40,15 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template ErrorLabel() = 0;
         
+        virtual UI::Template BoldLabel() = 0;
+        
+        virtual UI::Template TitleLabel() = 0;
+        
+        virtual UI::Template SubtitleLabel() = 0;
+        
+        virtual UI::Template LeadingLabel() = 0;
+        
+        
         
         virtual UI::Template Panel() = 0;
         
@@ -92,6 +101,14 @@ namespace Gorgon { namespace Widgets {
                 return *new UI::Template(Label());
             case Label_Error:
                 return *new UI::Template(ErrorLabel());
+            case Label_Bold:
+                return *new UI::Template(BoldLabel());
+            case Label_Title:
+                return *new UI::Template(TitleLabel());
+            case Label_Subtitle:
+                return *new UI::Template(SubtitleLabel());
+            case Label_Leading:
+                return *new UI::Template(LeadingLabel());
             case Checkbox_Regular:
                 return *new UI::Template(Checkbox());
             case Checkbox_Button:
@@ -147,7 +164,7 @@ namespace Gorgon { namespace Widgets {
     public:
         
         /// Initializes the generator. Density controls the spacing between elements
-        explicit SimpleGenerator(int fontsize, std::string fontname = "", bool activate = true, float density = 7.5);
+        explicit SimpleGenerator(int fontsize, std::string fontname = "", std::string boldfontname = "", bool activate = true, float density = 7.5);
         
         /// Creates a non-working simple generator. Calls to any function other than Init
         /// is undefined behaviour.
@@ -155,7 +172,7 @@ namespace Gorgon { namespace Widgets {
         }
         
         /// Initializes the generator
-        void Init(int fontsize = 14, std::string fontname = "");
+        void Init(int fontsize = 14, std::string fontname = "", std::string boldfontname = "");
         
         virtual ~SimpleGenerator();
         
@@ -178,6 +195,14 @@ namespace Gorgon { namespace Widgets {
         virtual UI::Template Label() override;
 
         virtual UI::Template ErrorLabel() override;
+        
+        virtual UI::Template BoldLabel() override;
+        
+        virtual UI::Template TitleLabel() override;
+        
+        virtual UI::Template SubtitleLabel() override;
+        
+        virtual UI::Template LeadingLabel() override;
         
         
         virtual UI::Template BlankPanel() override;
@@ -266,6 +291,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider &DisabledRBG();
         Graphics::BitmapRectangleProvider &ObjectShape();
         Graphics::MaskedObjectProvider &InnerObjectShape();
+
         
         Graphics::BitmapRectangleProvider &GrooveBG();
         
@@ -285,6 +311,9 @@ namespace Gorgon { namespace Widgets {
 
         Graphics::StyledRenderer RegularFont;
         Graphics::StyledRenderer CenteredFont;
+        Graphics::StyledRenderer BoldFont;
+        Graphics::StyledRenderer TitleFont;
+        Graphics::StyledRenderer SubtitleFont;
 
         struct FocusInfo {
             Graphics::RGBA  Color   = {Graphics::Color::Charcoal, 0.7};
@@ -320,6 +349,7 @@ namespace Gorgon { namespace Widgets {
         
         struct ForecolorInfo {
             Graphics::RGBA Regular = Graphics::Color::Charcoal;
+            Graphics::RGBA Title   = Graphics::Color::DarkGreen;
             Graphics::RGBA Disabled= {Graphics::Color::Grey, 0.5};
             Graphics::RGBA Hover   = Graphics::Color::Black;
             Graphics::RGBA Down    = Graphics::Color::Black;
@@ -352,6 +382,10 @@ namespace Gorgon { namespace Widgets {
         void setupfocus(UI::GraphicsTemplate &focus);
         
         Graphics::GlyphRenderer *regularrenderer = nullptr;
+        Graphics::GlyphRenderer *boldrenderer = nullptr;
+        Graphics::GlyphRenderer *titlerenderer = nullptr;
+        Graphics::GlyphRenderer *subtitlerenderer = nullptr;
+        
         Containers::Collection<Graphics::Drawable> drawables;
         Containers::Collection<Graphics::AnimationProvider> providers;
         
@@ -390,6 +424,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider *groovebg = nullptr;
         Graphics::BitmapRectangleProvider *objectshape = nullptr;
         Graphics::MaskedObjectProvider *innerobjectshape = nullptr;
+        
         
         Graphics::RectangleProvider *focusborder = nullptr;
         

@@ -18,6 +18,12 @@ namespace Gorgon { namespace Graphics {
 
 		explicit BlankImage(RGBAf color = 1.f) : color(color) {}
 		
+		static BlankImage &Get() {
+            static BlankImage b;
+            
+            return b;
+        }
+		
 		virtual BlankImage &MoveOutProvider() override {
             return *new BlankImage(size, color);
         }

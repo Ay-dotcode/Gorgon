@@ -286,13 +286,6 @@ namespace Gorgon {
 		Token operator()(Params_... args) {
             //stops the request if it is received from a different thread.
             std::lock_guard<std::recursive_mutex> g(firemtx);
-            
-#ifndef NDEBUG
-            ASSERT(!fire.test_and_set(), "Recursion detected during event execution.");
-#else
-			//prevent recursion
-			if(fire.test_and_set()) return EmptyToken;
-#endif
 
 			ASSERT(!movedout, "This event is moved out of");
 

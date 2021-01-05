@@ -32,7 +32,7 @@ namespace Gorgon { namespace UI { namespace Organizers {
                 ind++;
                 
                 if(!widget.IsVisible() || widget.IsFloating()) {
-                    breaks = 0;
+                    //breaks = 0;
                     continue;
                 }
                 

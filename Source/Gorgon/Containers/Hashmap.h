@@ -399,6 +399,30 @@ namespace Gorgon {
 			
 			/// Finds the given key in the hashmap and returns iterator for it. An !IsValid() iterator
 			/// is returned if item is not found
+			Iterator FindObject(const T_ &obj) {
+                for(auto it = mapping.begin(); it != mapping.end(); ++it) {
+                    if(it->second == &obj) {
+                        return Iterator(*this, it);
+                    }
+                }
+                
+				return Iterator(*this, mapping.end());
+			}
+			
+			/// Finds the given key in the hashmap and returns iterator for it. An !IsValid() iterator
+			/// is returned if item is not found
+			ConstIterator FindObject(const T_ &obj) const {
+                for(auto it = mapping.begin(); it != mapping.end(); ++it) {
+                    if(it->second == &obj) {
+                        return Iterator(*this, it);
+                    }
+                }
+                
+				return Iterator(*this, mapping.end());
+			}
+			
+			/// Finds the given key in the hashmap and returns iterator for it. An !IsValid() iterator
+			/// is returned if item is not found
 			Iterator Find(const K_ &key) {
 				return Iterator(*this, mapping.find(key));
 			}

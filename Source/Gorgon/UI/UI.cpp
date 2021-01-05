@@ -9,14 +9,20 @@ namespace UI {
     Widgets::Generator *generator = nullptr;
     
     //create a default widget registry.
-    void Initialize(std::string fontname, float density, int min) {
+    void Initialize(std::string fontname, std::string boldfontname, float density, int min) {
+        
+        generator = new Widgets::SimpleGenerator(FontHeight(density, min), fontname, boldfontname, true, density);
+    }
+    
+    int FontHeight(float density, int min) {
         int fh = int(std::round(sqrt(WindowManager::Monitor::Primary().GetSize().Width / (density+0.6f))));
         
         if(fh < min) 
             fh = min;
         
-        generator = new Widgets::SimpleGenerator(fh, fontname, true, density);
+        return fh;
     }
+
     
 }
 

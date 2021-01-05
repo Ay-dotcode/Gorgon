@@ -182,6 +182,11 @@ namespace Gorgon {
 
 			/// Sets the current progress of the controller
 			virtual void SetProgress(unsigned progress) { this->progress=progress; }
+			
+			virtual unsigned GetProgress() const override {
+                return progress;
+            }
+                
 
 			/// Sets the current progress of the controller. If the progress is a negative value, it will be
 			/// subtracted from the animation length. If the animation length is 0, then the controller will

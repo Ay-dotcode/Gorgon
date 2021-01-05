@@ -23,21 +23,21 @@ namespace Gorgon { namespace OS {
 
 namespace Gorgon { namespace Widgets { 
 
-    SimpleGenerator::SimpleGenerator(int fontsize, std::string fontname, bool activate, float density) : Generator(activate), Density(density) {
-        Init(fontsize, fontname);
+    SimpleGenerator::SimpleGenerator(int fontsize, std::string fontname, std::string boldfontname, bool activate, float density) : Generator(activate), Density(density) {
+        Init(fontsize, fontname, boldfontname);
     }
     
-    void SimpleGenerator::Init(int fontsize, std::string fontname) {
+    std::string findfontfile(std::string fontname, bool bold) {
 #ifdef WIN32
         if(fontname.find_last_of('.') == fontname.npos)
-            fontname = Filesystem::Join(Filesystem::Join(OS::GetEnvVar("WINDIR"), "Fonts"), fontname == "" ? "tahoma.ttf" : fontname + ".ttf");
+            fontname = Filesystem::Join(Filesystem::Join(OS::GetEnvVar("WINDIR"), "Fonts"), fontname == "" ? (bold ? "Tahomabd.ttf" : "Tahoma.ttf") : fontname + ".ttf");
 #else
         if(fontname.find_last_of('.') == fontname.npos) {
             bool found = false;
             
             try {
                 std::streambuf *buf;
-                OS::Start("fc-match", buf, {"-v", fontname == "" ? "sans" : fontname});
+                OS::Start("fc-match", buf, {"-v", fontname == "" ? (bold ? "sans:bold" : "sans") : fontname});
 
                 if(buf) {
                     std::istream in(buf);
@@ -62,28 +62,36 @@ namespace Gorgon { namespace Widgets {
             }
 
             if(!found)
-                fontname = "/usr/share/fonts/gnu-free/FreeSans.ttf";
+                fontname = bold ? "/usr/share/fonts/gnu-free/FreeSansBold.ttf" : "/usr/share/fonts/gnu-free/FreeSans.ttf";
         }
 #endif
-
+        
+        return fontname;
+    }
+    
+    void SimpleGenerator::Init(int fontsize, std::string fontname, std::string boldfontname) {
         auto &regular = *new Graphics::FreeType();
-        regular.LoadFile(fontname, fontsize);
-
+        regular.LoadFile(findfontfile(fontname, false), fontsize);
+        regularrenderer = &regular;
+        
         RegularFont.SetGlyphRenderer(regular);
         CenteredFont.SetGlyphRenderer(regular);
         CenteredFont.AlignCenter();
-
-        /*if(!regular.HasKerning()) {
-            auto &bmpfnt = *new Graphics::BitmapFont(regular.MoveOutBitmap());
-            RegularFont.SetGlyphRenderer(bmpfnt);
-            bmpfnt.AutoKern();
-            regularrenderer = &bmpfnt;
-
-            delete &regular;
-        }
-        else {*/
-        regularrenderer = &regular;
-        //}
+        
+        auto &bold = *new Graphics::FreeType();
+        bold.LoadFile(findfontfile(boldfontname, true), fontsize);
+        boldrenderer = &bold;
+        BoldFont.SetGlyphRenderer(bold);
+        
+        auto &title = *new Graphics::FreeType();
+        title.LoadFile(findfontfile(boldfontname, true), int(std::round(fontsize*1.2)));
+        titlerenderer = &title;
+        TitleFont.SetGlyphRenderer(title);
+        
+        auto &subtitle = *new Graphics::FreeType();
+        subtitle.LoadFile(findfontfile(boldfontname, true), int(std::round(fontsize*1.1)));
+        subtitlerenderer = &subtitle;
+        SubtitleFont.SetGlyphRenderer(subtitle);
         
         UpdateDimensions();
         UpdateBorders();
@@ -99,9 +107,11 @@ namespace Gorgon { namespace Widgets {
     }
 
     SimpleGenerator::~SimpleGenerator() {
-        if(regularrenderer)
-            delete regularrenderer;
-
+        delete regularrenderer;
+        delete boldrenderer;
+        delete titlerenderer;
+        delete subtitlerenderer;
+        
         providers.DeleteAll();
         drawables.DeleteAll();
         
@@ -1176,6 +1186,168 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
+    UI::Template SimpleGenerator::BoldLabel() {
+        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight};
+        
+        UI::Template temp = maketemplate();
+        temp.SetSpacing(Spacing);
+        temp.SetSize(defsize);
+        
+        auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always, UI::ComponentCondition::Disabled)
+            .AddIndex(1) //icon
+            .AddIndex(2) //text
+        ;
+        cont.SetValueModification(UI::ComponentTemplate::ModifyAlpha, UI::ComponentTemplate::UseTransition);
+        cont.SetValueRange(0, 1, 0.5);
+        cont.SetReversible(true);
+        cont.SetClip(true);
+        
+        auto &icon = temp.AddPlaceholder(1, UI::ComponentCondition::Icon1IsSet);
+        icon.SetDataEffect(UI::ComponentTemplate::Icon);
+        icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        icon.SetSize(100, 100, UI::Dimension::Percent);
+        icon.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        icon.SetMargin(0, 0, Spacing, 0);
+        
+        auto &txt = temp.AddTextholder(2, UI::ComponentCondition::Always);
+        txt.SetRenderer(BoldFont);
+        txt.SetColor(Forecolor.Regular);
+        txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        txt.SetDataEffect(UI::ComponentTemplate::Text);
+        txt.SetSize(100, 100, UI::Dimension::Percent);
+        txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        
+        return temp;
+    }
+
+    UI::Template SimpleGenerator::TitleLabel() {
+        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight + TitleFont.GetHeight() - RegularFont.GetHeight()};
+        
+        UI::Template temp = maketemplate();
+        temp.SetSpacing(Spacing);
+        temp.SetSize(defsize);
+        
+        auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always, UI::ComponentCondition::Disabled)
+            .AddIndex(1) //icon
+            .AddIndex(2) //text
+            .AddIndex(3) //line
+        ;
+        cont.SetValueModification(UI::ComponentTemplate::ModifyAlpha, UI::ComponentTemplate::UseTransition);
+        cont.SetValueRange(0, 1, 0.5);
+        cont.SetReversible(true);
+        cont.SetClip(true);
+        
+        auto &icon = temp.AddPlaceholder(1, UI::ComponentCondition::Icon1IsSet);
+        icon.SetDataEffect(UI::ComponentTemplate::Icon);
+        icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        icon.SetSize(100, 100, UI::Dimension::Percent);
+        icon.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        icon.SetMargin(0, 0, Spacing, 0);
+        
+        auto &txt = temp.AddTextholder(2, UI::ComponentCondition::Always);
+        txt.SetRenderer(TitleFont);
+        txt.SetColor(Forecolor.Title);
+        txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        txt.SetDataEffect(UI::ComponentTemplate::Text);
+        txt.SetSize(100, 100, UI::Dimension::Percent);
+        txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        
+        auto &ln = temp.AddGraphics(3, UI::ComponentCondition::Always);
+        ln.Content.SetAnimation(Graphics::BlankImage::Get());
+        ln.SetColor(Forecolor.Title);
+        ln.SetSize({100, UI::Dimension::Percent}, Border.Width);
+        ln.SetMargin(Spacing*2, 0, 0, 0);
+        ln.SetAnchor(UI::Anchor::FirstBaselineRight, UI::Anchor::BottomLeft, UI::Anchor::BottomLeft);
+        
+        return temp;
+    }
+
+    UI::Template SimpleGenerator::SubtitleLabel() {
+        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight + SubtitleFont.GetHeight() - RegularFont.GetHeight()};
+        
+        UI::Template temp = maketemplate();
+        temp.SetSpacing(Spacing);
+        temp.SetSize(defsize);
+        
+        auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always, UI::ComponentCondition::Disabled)
+            .AddIndex(1) //icon
+            .AddIndex(2) //text
+            .AddIndex(3) //line
+        ;
+        cont.SetValueModification(UI::ComponentTemplate::ModifyAlpha, UI::ComponentTemplate::UseTransition);
+        cont.SetValueRange(0, 1, 0.5);
+        cont.SetReversible(true);
+        cont.SetClip(true);
+        
+        auto &icon = temp.AddPlaceholder(1, UI::ComponentCondition::Icon1IsSet);
+        icon.SetDataEffect(UI::ComponentTemplate::Icon);
+        icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        icon.SetSize(100, 100, UI::Dimension::Percent);
+        icon.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        icon.SetMargin(0, 0, Spacing, 0);
+        
+        auto &txt = temp.AddTextholder(2, UI::ComponentCondition::Always);
+        txt.SetRenderer(SubtitleFont);
+        txt.SetColor(Forecolor.Title);
+        txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        txt.SetDataEffect(UI::ComponentTemplate::Text);
+        txt.SetSize(100, 100, UI::Dimension::Percent);
+        txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        
+        auto &ln = temp.AddGraphics(3, UI::ComponentCondition::Always);
+        ln.Content.SetAnimation(Graphics::BlankImage::Get());
+        ln.SetColor(Forecolor.Title);
+        ln.SetSize({100, UI::Dimension::Percent}, std::max(1, int(std::round(Border.Width/2.f))));
+        ln.SetMargin(Spacing*2, 0, BorderedWidgetHeight, 0);
+        ln.SetAnchor(UI::Anchor::FirstBaselineRight, UI::Anchor::BottomLeft, UI::Anchor::BottomLeft);
+        
+        
+        return temp;
+    }
+
+    UI::Template SimpleGenerator::LeadingLabel() {
+        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight + SubtitleFont.GetHeight() - RegularFont.GetHeight()};
+        
+        UI::Template temp = maketemplate();
+        temp.SetSpacing(Spacing);
+        temp.SetSize(defsize);
+        
+        auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always, UI::ComponentCondition::Disabled)
+            .AddIndex(1) //icon
+            .AddIndex(2) //text
+            .AddIndex(3) //line
+        ;
+        cont.SetValueModification(UI::ComponentTemplate::ModifyAlpha, UI::ComponentTemplate::UseTransition);
+        cont.SetValueRange(0, 1, 0.5);
+        cont.SetReversible(true);
+        cont.SetClip(true);
+        
+        auto &icon = temp.AddPlaceholder(1, UI::ComponentCondition::Icon1IsSet);
+        icon.SetDataEffect(UI::ComponentTemplate::Icon);
+        icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        icon.SetSize(100, 100, UI::Dimension::Percent);
+        icon.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        icon.SetMargin(0, 0, Spacing, 0);
+        
+        auto &txt = temp.AddTextholder(2, UI::ComponentCondition::Always);
+        txt.SetRenderer(BoldFont);
+        txt.SetColor(Forecolor.Title);
+        txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        txt.SetDataEffect(UI::ComponentTemplate::Text);
+        txt.SetSize(100, 100, UI::Dimension::Percent);
+        txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        
+        auto &ln = temp.AddGraphics(3, UI::ComponentCondition::Always);
+        ln.Content.SetAnimation(Graphics::BlankImage::Get());
+        ln.SetColor(Forecolor.Title);
+        ln.SetSize({100, UI::Dimension::Percent}, std::max(1, int(std::round(Border.Width/2.f))));
+        ln.SetMargin(Spacing*2, 0, BorderedWidgetHeight, 0);
+        ln.SetAnchor(UI::Anchor::FirstBaselineRight, UI::Anchor::BottomLeft, UI::Anchor::BottomLeft);
+        
+        
+        return temp;
+    }
+
     UI::Template SimpleGenerator::makepanel(int missingedge, bool scrollers) {
         Geometry::Size defsize = {
             WidgetWidth * 2 + Spacing + Border.Width * 2 + Spacing * 2, 

@@ -120,7 +120,7 @@ int main() {
     icnbtn.OwnIcon(icon2.CreateAnimation());
 
     Gorgon::Widgets::Label l("\tOne:");
-    Gorgon::Widgets::Label l2("Error", Gorgon::Widgets::Registry::Label_Error);
+    Gorgon::Widgets::Label l2("Error", Gorgon::Widgets::Registry::Label_Subtitle);
 
     Gorgon::Widgets::RadioButtons<int> radio(Gorgon::Widgets::Registry::Radio_Regular);
     radio.Add(0,"One");
@@ -285,12 +285,12 @@ int main() {
     
     auto &org = blank.CreateOrganizer<UI::Organizers::Flow>();
     
-    org << std::endl << 2 << "Label" << Coffee
+    org << std::endl << 2 << "Label" << Coffee << l2
         << btn
         << list << org.Break << UI::Organizers::Flow::Break
         << icnbtn2 << dlist
         << icnbtn3 << radio << icnbtn << 5 << "Hello"
-        << chk << chk2 << chkbutton << l2
+        << chk << chk2 << chkbutton
         << input
         << bar
         << scroll1 << scroll2
