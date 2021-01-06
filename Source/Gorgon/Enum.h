@@ -16,7 +16,7 @@ public:
 /// @endcond
 
 template<class T_>
-gorgon__no_enum_trait gorgon__enum_tr_loc(T_);
+gorgon__no_enum_trait gorgon__enum_tr_loc(const T_ &);
 
 namespace Gorgon {
 
@@ -198,7 +198,7 @@ namespace Gorgon {
 		\
 		const std::multimap<type, std::string> mapping;\
 	};\
-	gorgon_enumtraits_##type gorgon__enum_tr_loc(type);
+	gorgon_enumtraits_##type gorgon__enum_tr_loc(const type &);
 
 	/// This macro converts a regular C++ enumeration in to an enumerable, stream-able, and parsable
 	/// enumeration by assigning one or more strings to enum values. This macro should be invoked
@@ -221,7 +221,7 @@ namespace Gorgon {
 		\
 		const std::multimap<type, std::string> mapping;\
 	};\
-	gorgon_enumtraits_##type gorgon__enum_tr_loc(type);
+	gorgon_enumtraits_##type gorgon__enum_tr_loc(const type &);
 
 	/// This macro converts a regular C++ enumeration in to an enumerable, stream-able, and parsable
 	/// enumeration by assigning one or more strings to enum values. This macro should be invoked
@@ -243,7 +243,7 @@ namespace Gorgon {
 		\
 		const std::multimap<clsname::type, std::string> mapping;\
 	};\
-	gorgon_enumtraits_##type gorgon__enum_tr_loc(clsname::type);
+	gorgon_enumtraits_##type gorgon__enum_tr_loc(const clsname::type &);
 
 	/// This macro converts a regular C++ enumeration in to an enumerable, stream-able, and parsable
 	/// enumeration by assigning one or more strings to enum values. This macro should be invoked
@@ -264,7 +264,7 @@ namespace Gorgon {
 		\
 		const std::multimap<clsname::type, std::string> mapping;\
 	};\
-	gorgon_enumtraits_##type gorgon__enum_tr_loc(clsname::type);
+	gorgon_enumtraits_##type gorgon__enum_tr_loc(const clsname::type &);
 	
 	/// Allows enumeration of upgraded enums using range based for.
 	/// @code
