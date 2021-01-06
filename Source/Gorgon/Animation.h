@@ -184,7 +184,7 @@ namespace Gorgon {
 			virtual void SetProgress(unsigned progress) { this->progress=progress; }
 			
 			virtual unsigned GetProgress() const override {
-                return progress;
+                return (unsigned)progress;
             }
                 
 

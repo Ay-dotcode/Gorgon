@@ -434,7 +434,6 @@ namespace Gorgon { namespace Widgets {
                 if(index <= focusindex) {
                     if(index+count > focusindex) {
                         focusindex = -1;
-                        ChangedEvent(-1);
                     }
                     else {
                         focusindex -= count;
