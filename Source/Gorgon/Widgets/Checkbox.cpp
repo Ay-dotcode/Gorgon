@@ -2,8 +2,6 @@
 #include "../UI/WidgetContainer.h"
 
 namespace Gorgon { namespace Widgets {
-
-    
     
     Checkbox::Checkbox(const UI::Template &temp, std::string text, bool state) :
         ComponentStackWidget(temp),
@@ -127,6 +125,65 @@ namespace Gorgon { namespace Widgets {
         }
         else
             return true;
+    }
+    
+    void Checkbox::SetIcon(const Graphics::Animation &value) {
+        if(ownicon) {
+            icon->DeleteAnimation();;
+        }
+        delete iconprov;
+        
+        icon = &value;
+        iconprov = nullptr;
+        stack.SetData(UI::ComponentTemplate::Icon, *icon);
+        
+        ownicon = false;
+    }
+    
+    
+    void Checkbox::SetIcon(const Graphics::Bitmap& value){
+        SetIcon(dynamic_cast<const Graphics::Animation&>(value));
+    }
+    
+    
+    void Checkbox::SetIconProvider(const Graphics::AnimationProvider &value) {
+        auto &anim = value.CreateAnimation(true);
+        
+        OwnIcon(anim);
+    }
+    
+    void Checkbox::SetIconProvider(Graphics::AnimationProvider &&provider) {
+        iconprov = &(provider.MoveOutProvider());
+        auto &anim = iconprov->CreateAnimation(true);
+        
+        OwnIcon(anim);
+    }
+    
+    void Checkbox::RemoveIcon() {
+        if(ownicon) {
+            icon->DeleteAnimation();
+        }
+        delete iconprov;
+        
+        icon = nullptr;
+        
+        stack.RemoveData(UI::ComponentTemplate::Icon);
+    }
+    
+    
+    void Checkbox::OwnIcon() {
+        ownicon = true;
+    }
+    
+    
+    void Checkbox::OwnIcon(const Graphics::Animation &value) {
+        SetIcon(value);
+        
+        ownicon = true;
+    }
+    
+    void Checkbox::OwnIcon(Graphics::Bitmap &&value) {
+        OwnIcon(*new Graphics::Bitmap(std::move(value)));
     }
     
 } }

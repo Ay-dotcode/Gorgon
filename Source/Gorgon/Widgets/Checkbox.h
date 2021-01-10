@@ -5,6 +5,8 @@
 #include "../Property.h"
 #include "Registry.h"
 
+#include "../Graphics/Bitmap.h"
+
 namespace Gorgon { namespace Widgets {
 
     class Checkbox : public UI::ComponentStackWidget, public UI::TwoStateControl {
@@ -115,6 +117,52 @@ namespace Gorgon { namespace Widgets {
         /// Changes the state of the checkbox
         virtual bool SetState(bool value, bool force = false) override;
         
+        /// Changes the icon on the checkbox. The ownership of the bitmap
+        /// is not transferred. If you wish the bitmap to be destroyed
+        /// with the checkbox, use OwnIcon instead. Not every checkbox
+        /// template supports icons.
+        void SetIcon(const Graphics::Bitmap &value);
+        
+        /// Changes the icon on the checkbox. The ownership of the animation
+        /// is not transferred. If you wish the animation to be destroyed
+        /// with the checkbox, use OwnIcon instead. Not every checkbox
+        /// template supports icons.
+        void SetIcon(const Graphics::Animation &value);
+        
+        /// Changes the icon on the checkbox. This will create a new animation
+        /// from the given provider and will own the resultant animation. Not 
+        /// every checkbox template supports icons.
+        void SetIconProvider(const Graphics::AnimationProvider &value);
+        
+        /// Changes the icon on the checkbox. This will move in the provider,
+        /// create a new animation and own both the provider and the animation.
+        /// Not every checkbox template supports icons.
+        void SetIconProvider(Graphics::AnimationProvider &&provider);
+        
+        /// Removes the icon on the checkbox
+        void RemoveIcon();
+        
+        /// Returns if the checkbox has an icon
+        bool HasIcon() const { return icon != nullptr; }
+        
+        /// Returns the icon on the checkbox. If the checkbox does not have an
+        /// icon, this function will throw
+        const Graphics::Animation &GetIcon() const {
+            if(!HasIcon())
+                throw std::runtime_error("This widget has no icon.");
+            
+            return *icon;
+        }
+        
+        /// Transfers the ownership of the current icon.
+        void OwnIcon();
+        
+        /// Sets the icon while transferring the ownership
+        void OwnIcon(const Graphics::Animation &value);
+        
+        /// Moves the given animation to the icon of the checkbox
+        void OwnIcon(Graphics::Bitmap &&value);
+        
         virtual bool Activate() override;
         
         GORGON_UI_CSW_AUTOSIZABLE_WIDGET;
@@ -129,6 +177,12 @@ namespace Gorgon { namespace Widgets {
         std::string text;
         bool spacedown  = false;
         bool state = false;
+        
+        const Graphics::Animation          *icon     = nullptr;
+        const Graphics::AnimationProvider  *iconprov = nullptr;
+        
+        bool ownicon = false;
+        
         
     protected:
         virtual bool allowfocus() const override;

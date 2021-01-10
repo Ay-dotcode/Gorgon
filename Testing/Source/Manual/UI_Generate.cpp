@@ -141,6 +141,8 @@ int main() {
     toppanel.Add(toplabel);
     toppanel.Add(topbtn);
     topbtn.Move(toplabel.GetLocation().X, toplabel.GetLocation().Y + toplabel.GetSize().Height);
+    
+    chkbutton.SetIconProvider(icon2);
 
     Gorgon::Widgets::Panel leftpanel(Gorgon::Widgets::Registry::Panel_Left);
     leftpanel.Resize({ 30,30 });
