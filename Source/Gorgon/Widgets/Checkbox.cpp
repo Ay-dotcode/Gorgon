@@ -5,7 +5,7 @@ namespace Gorgon { namespace Widgets {
     
     Checkbox::Checkbox(const UI::Template &temp, std::string text, bool state) :
         ComponentStackWidget(temp),
-        Text(this), ChangedEvent(this), 
+        Text(this), Icon(this), ChangedEvent(this), 
         text(text), state(state)
     {
         stack.SetData(UI::ComponentTemplate::Text, text);
@@ -127,11 +127,8 @@ namespace Gorgon { namespace Widgets {
             return true;
     }
     
-    void Checkbox::SetIcon(const Graphics::Animation &value) {
-        if(ownicon) {
-            icon->DeleteAnimation();;
-        }
-        delete iconprov;
+    void Checkbox::SetIcon(const Graphics::Drawable &value) {
+        RemoveIcon();
         
         icon = &value;
         iconprov = nullptr;
@@ -161,7 +158,10 @@ namespace Gorgon { namespace Widgets {
     
     void Checkbox::RemoveIcon() {
         if(ownicon) {
-            icon->DeleteAnimation();
+            if(dynamic_cast<const Graphics::Animation*>(icon))
+                dynamic_cast<const Graphics::Animation*>(icon)->DeleteAnimation();
+            else
+                delete icon;
         }
         delete iconprov;
         
@@ -176,7 +176,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     
-    void Checkbox::OwnIcon(const Graphics::Animation &value) {
+    void Checkbox::OwnIcon(const Graphics::Drawable &value) {
         SetIcon(value);
         
         ownicon = true;
@@ -185,5 +185,4 @@ namespace Gorgon { namespace Widgets {
     void Checkbox::OwnIcon(Graphics::Bitmap &&value) {
         OwnIcon(*new Graphics::Bitmap(std::move(value)));
     }
-    
 } }

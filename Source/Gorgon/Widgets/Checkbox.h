@@ -127,7 +127,7 @@ namespace Gorgon { namespace Widgets {
         /// is not transferred. If you wish the animation to be destroyed
         /// with the checkbox, use OwnIcon instead. Not every checkbox
         /// template supports icons.
-        void SetIcon(const Graphics::Animation &value);
+        void SetIcon(const Graphics::Drawable &value);
         
         /// Changes the icon on the checkbox. This will create a new animation
         /// from the given provider and will own the resultant animation. Not 
@@ -147,7 +147,7 @@ namespace Gorgon { namespace Widgets {
         
         /// Returns the icon on the checkbox. If the checkbox does not have an
         /// icon, this function will throw
-        const Graphics::Animation &GetIcon() const {
+        const Graphics::Drawable &GetIcon() const {
             if(!HasIcon())
                 throw std::runtime_error("This widget has no icon.");
             
@@ -158,7 +158,7 @@ namespace Gorgon { namespace Widgets {
         void OwnIcon();
         
         /// Sets the icon while transferring the ownership
-        void OwnIcon(const Graphics::Animation &value);
+        void OwnIcon(const Graphics::Drawable &value);
         
         /// Moves the given animation to the icon of the checkbox
         void OwnIcon(Graphics::Bitmap &&value);
@@ -170,6 +170,7 @@ namespace Gorgon { namespace Widgets {
         bool KeyEvent(Input::Key key, float state) override;
 
         TextualProperty<Checkbox, std::string, &Checkbox::GetText, &Checkbox::SetText> Text;
+        ObjectProperty<Checkbox, const Graphics::Drawable, &Checkbox::GetIcon, &Checkbox::SetIcon> Icon;
 
         Event<Checkbox, bool /*state*/> ChangedEvent;
         
@@ -178,7 +179,7 @@ namespace Gorgon { namespace Widgets {
         bool spacedown  = false;
         bool state = false;
         
-        const Graphics::Animation          *icon     = nullptr;
+        const Graphics::Drawable           *icon     = nullptr;
         const Graphics::AnimationProvider  *iconprov = nullptr;
         
         bool ownicon = false;

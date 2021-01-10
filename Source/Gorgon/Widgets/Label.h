@@ -41,7 +41,7 @@ namespace Gorgon { namespace Widgets {
         /// Changes the icon on the label. The ownership of the animation
         /// is not transferred. If you wish the animation to be destroyed
         /// with the label, use OwnIcon instead.
-        void SetIcon(const Graphics::Animation &value);
+        void SetIcon(const Graphics::Drawable &value);
         
         /// Changes the icon on the label. This will create a new animation
         /// from the given provider and will own the resultant animation.
@@ -59,7 +59,7 @@ namespace Gorgon { namespace Widgets {
         
         /// Returns the icon on the label. If the label does not have an
         /// icon, this function will throw
-        const Graphics::Animation &GetIcon() const {
+        const Graphics::Drawable &GetIcon() const {
             if(!HasIcon())
                 throw std::runtime_error("This widget has no icon.");
             
@@ -70,7 +70,7 @@ namespace Gorgon { namespace Widgets {
         void OwnIcon();
         
         /// Sets the icon while transferring the ownership
-        void OwnIcon(const Graphics::Animation &value);
+        void OwnIcon(const Graphics::Drawable &value);
         
         /// Moves the given animation to the icon of the label
         void OwnIcon(Graphics::Bitmap &&value);
@@ -81,11 +81,11 @@ namespace Gorgon { namespace Widgets {
 
         TextualProperty<Label, std::string, &Label::GetText, &Label::SetText> Text;
 
-        ObjectProperty<Label, const Graphics::Animation, &Label::GetIcon, &Label::SetIcon> Icon;
+        ObjectProperty<Label, const Graphics::Drawable, &Label::GetIcon, &Label::SetIcon> Icon;
         
     private:
         std::string text;
-        const Graphics::Animation          *icon     = nullptr;
+        const Graphics::Drawable           *icon     = nullptr;
         const Graphics::AnimationProvider  *iconprov = nullptr;
         
         bool ownicon = false;

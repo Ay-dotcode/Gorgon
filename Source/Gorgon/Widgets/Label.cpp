@@ -3,39 +3,35 @@
 #include "../Graphics/Bitmap.h"
 
 namespace Gorgon { namespace Widgets {
-   
-    
-    
-	Label::Label(const UI::Template &temp, std::string text) :
-		ComponentStackWidget(temp),
-		Text(this), Icon(this), text(text) 
-	{
-		stack.SetData(UI::ComponentTemplate::Text, text);
-		stack.HandleMouse(Input::Mouse::Button::Left);
 
-		stack.SetClickEvent([this](auto, auto, auto btn) {
+    
+    
+    Label::Label(const UI::Template &temp, std::string text) :
+        ComponentStackWidget(temp),
+        Text(this), Icon(this), text(text) 
+    {
+        stack.SetData(UI::ComponentTemplate::Text, text);
+        stack.HandleMouse(Input::Mouse::Button::Left);
+
+        stack.SetClickEvent([this](auto, auto, auto btn) {
             if(btn == Input::Mouse::Button::Left && HasParent()) {
-				GetParent().FocusNext(*this);
+                GetParent().FocusNext(*this);
             }
-		});
-	}
+        });
+    }
 
-	Label::~Label() {
-		if(ownicon)
-			delete icon;
-	}
+    Label::~Label() {
+        RemoveIcon();
+    }
 
-	void Label::SetText(const std::string &value) {
-		text = value;
-		stack.SetData(UI::ComponentTemplate::Text, text);
-	}
+    void Label::SetText(const std::string &value) {
+        text = value;
+        stack.SetData(UI::ComponentTemplate::Text, text);
+    }
 
-	
-	void Label::SetIcon(const Graphics::Animation &value) {
-        if(ownicon) {
-            icon->DeleteAnimation();;
-        }
-        delete iconprov;
+    
+    void Label::SetIcon(const Graphics::Drawable &value) {
+        RemoveIcon();
         
         icon = &value;
         iconprov = nullptr;
@@ -65,7 +61,10 @@ namespace Gorgon { namespace Widgets {
     
     void Label::RemoveIcon() {
         if(ownicon) {
-            icon->DeleteAnimation();
+            if(dynamic_cast<const Graphics::Animation*>(icon))
+                dynamic_cast<const Graphics::Animation*>(icon)->DeleteAnimation();
+            else
+                delete icon;
         }
         delete iconprov;
         
@@ -80,7 +79,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     
-    void Label::OwnIcon(const Graphics::Animation &value) {
+    void Label::OwnIcon(const Graphics::Drawable &value) {
         SetIcon(value);
         
         ownicon = true;
@@ -90,16 +89,16 @@ namespace Gorgon { namespace Widgets {
         OwnIcon(*new Graphics::Bitmap(std::move(value)));
     }
     
-	bool Label::Activate() {
-		if(HasParent())
+    bool Label::Activate() {
+        if(HasParent())
             GetParent().FocusNext();
 
-		return true;
-	}
+        return true;
+    }
 
-	bool Label::allowfocus() const {
-		return false;
-	}
-	
+    bool Label::allowfocus() const {
+        return false;
+    }
+    
 }
 }

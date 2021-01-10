@@ -138,8 +138,8 @@ namespace Gorgon { namespace Widgets {
         
     private:
         std::string text;
-        const Graphics::Drawable         *icon     = nullptr;
-        const Graphics::AnimationProvider  *iconprov = nullptr;
+        const Graphics::Drawable          *icon     = nullptr;
+        const Graphics::AnimationProvider *iconprov = nullptr;
         bool ownicon    = false;
         bool spacedown  = false;
         bool mousedown  = false;
