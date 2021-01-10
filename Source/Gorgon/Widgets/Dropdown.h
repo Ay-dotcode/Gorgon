@@ -209,12 +209,12 @@ namespace Gorgon { namespace Widgets {
                 if(this->list.HasSelectedItem()) {
                     TW_(this->list.GetSelectedItem(), *this);
                     this->Close();
-                    SelectionChangedEvent(this->list.GetSelectedIndex());
+                    ChangedEvent(this->list.GetSelectedIndex());
                 }
                 else {
                     this->SetText("");
                     this->RemoveIcon();
-                    SelectionChangedEvent(-1);
+                    ChangedEvent(-1);
                 }
             });
         }
@@ -270,7 +270,7 @@ namespace Gorgon { namespace Widgets {
             return this->list.GetSelectedItem();
         }
         
-        Event<SingleSelectionDropdown, long> SelectionChangedEvent = Event<SingleSelectionDropdown, long>{this};
+        Event<SingleSelectionDropdown, long> ChangedEvent = Event<SingleSelectionDropdown, long>{this};
     };
     
     template <class T_, void (*TW_)(const T_ &, ListItem &), class L_>
@@ -313,8 +313,8 @@ namespace Gorgon { namespace Widgets {
      * // or index
      * Coffee.List.SetSelectedIndex(1);
      * 
-     * // Use SelectionChangedEvent.Register to handle selection event
-     * Coffee.SelectionChangedEvent.Register([&](long index){
+     * // Use ChangedEvent.Register to handle selection event
+     * Coffee.ChangedEvent.Register([&](long index){
      *     //this can only happen if you remove the selected item from the list.
      *     if(index == -1) {
      *         std::cout << "Nothing is selected" << std::endl;
