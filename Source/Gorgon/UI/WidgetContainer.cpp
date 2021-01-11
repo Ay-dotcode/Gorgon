@@ -54,6 +54,22 @@ namespace Gorgon { namespace UI {
         return true;
     }
 
+    bool WidgetContainer::Clear() {
+        bool success = true;
+        
+        for(int i=0; i<widgets.GetSize(); i++) {
+            if(Remove(widgets[i])) {
+                i--;
+            }
+            else {
+                success = false;
+            }
+        }
+        
+        
+        return success;
+    }
+
     bool WidgetContainer::Remove(Widget &widget) {
         auto pos = widgets.Find(widget);
 
@@ -488,5 +504,5 @@ namespace Gorgon { namespace UI {
             w.displaced();
         }
     }
-
+    
 } }
