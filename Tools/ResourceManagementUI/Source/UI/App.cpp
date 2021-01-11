@@ -7,7 +7,7 @@ namespace UI{
     UI::App::App (Gorgon::Geometry::Size size, int fontSize, std::string title, std::vector<std::string> &tcommands, std::string filePath):
     
     window(size,title),
-    initstyl("/home/luca/Gorgon/Tools/ResourceManagementUI/Bin/Goldman-Regular.ttf",14), 
+    initstyl(Gorgon::String::Concat(Gorgon::Filesystem::ExeDirectory(), "/Goldman-Regular.ttf"),14), 
     cli(tcommands),
     btnImport("IMPORT"),
     btnFileFrom("Path From"), 
@@ -24,10 +24,9 @@ namespace UI{
     
     {
         
-        
         //Import application icon and apply to window
         //This may fail if the debug path is not set correctly
-        ico.Import("/home/luca/Gorgon/Tools/ResourceManagementUI/Bin/GRM-Logo-72x72.png");
+        ico.Import(Gorgon::String::Concat(Gorgon::Filesystem::ExeDirectory(),"/GRM-Logo-72x72.png"));
         icon = Gorgon::WindowManager::Icon{ico.GetData()};
         window.SetIcon(icon);
         
@@ -114,12 +113,22 @@ namespace UI{
         std::string toPath = pathTo.GetText();
         
         if(resourceClass.GetText() == ""){
-            Gorgon::UI::ShowMessage("Please Enter a Resource class name before Importing.");
+                Gorgon::UI::ShowMessage("Please Enter a Resource class name before Importing.");
         }
         else{
-            image.DoImport(scaleList, [](auto r) {std::cout<<r<<std::endl;}, pathFrom, pathTo, resourceClass.GetText());
+        
+            if(fileList == Audio){
+                audio.DoImport(pathFrom, pathTo, resourceClass.GetText());
             
+            }else if(fileList == Image){
+            
+                image.DoImport(scaleList, [](auto r) {std::cout<<r<<std::endl;}, pathFrom, pathTo, resourceClass.GetText());
+            } 
         }
+        
+        
+        
+        
         
         
         //std::cout << "Importing Resources From \"" << fromPath << "\" to \"" << toPath << "\"" << std::endl;
@@ -142,6 +151,7 @@ namespace UI{
         uiStyle.Forecolor.Regular = Gorgon::Graphics::Color::White;
         uiStyle.Forecolor.Hover = Gorgon::Graphics::Color::Amber;
         uiStyle.Forecolor.Down = { Gorgon::Graphics::Color::Black, 0.3f };
+        uiStyle.Background.Disabled = Gorgon::Graphics::Color::Black;
         //uiStyle.Border.Color = Gorgon::Graphics::Color::Grey;
         uiStyle.Background.Panel = {Gorgon::Graphics::RGBA(54,54,54,1),0.99};
         uiStyle.Focus.Color = Gorgon::Graphics::Color::Yellow;

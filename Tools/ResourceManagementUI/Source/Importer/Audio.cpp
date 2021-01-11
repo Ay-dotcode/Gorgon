@@ -32,6 +32,8 @@ namespace Importer{
         }
 
         file.Save(Gorgon::String::Concat(resourceType, "_Audio.gor"));
+        
+        std::cout << "Audio files Imported!" << std::endl;
     }
 
 }

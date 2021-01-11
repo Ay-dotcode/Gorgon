@@ -55,11 +55,13 @@ int main(int argc, char *argv[]){
     if (argc > 0) 
         commandline = PrepareArguments(argc, argv);
     
+    
+    
     Gorgon::Initialize("ResourceManagementUI");
     //This will set up default fonts on a linux system if the provided font is not available
     std::streambuf *buf;
-    Gorgon::OS::Start("fc-match", buf, {"-v", "sans"});
-    system("pwd");
+    
+    
     
     std::string fp = Gorgon::Filesystem::CurrentDirectory();
     

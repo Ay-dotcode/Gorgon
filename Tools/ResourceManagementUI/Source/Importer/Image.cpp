@@ -2,10 +2,9 @@
 
 namespace Importer{
     
-    Importer::Image::Image (){
+    Importer::Image::Image (): wind("Preview Import", {300, 300}){
         std::cout << "Image class is created." << std::endl;
-        
-        
+        wind.SetVisible(true);
     }
     
     Gorgon::Graphics::Bitmap Importer::Image::Scale(const Gorgon::Graphics::Bitmap &bmp, int scale){
@@ -20,8 +19,12 @@ namespace Importer{
         return n;
     }
     
+    void Image::Preview(std::string fileName){
+        
+    }
+
     
-    void Image::DoImport (int scale, std::function<void(std::string)> report, std::string pathFrom, std::string pathTo, std::string resourceType){
+    void Image::DoImport (int scale, std::function<void(std::string)> report, std::string pathFrom, std::string pathTo, std::string resourceName){
         std::cout << "Image class is does Import\n";
         std::string fileType = "png";
         Gorgon::Resource::File file;
@@ -38,6 +41,8 @@ namespace Importer{
 
             if(Gorgon::String::ToLower(Gorgon::Filesystem::GetExtension(file_name)) != fileType)
                 continue;
+            
+            Preview(resourceName);
 
             Gorgon::Graphics::Bitmap im;
             
@@ -88,11 +93,10 @@ namespace Importer{
         
         std::cout << "About to save\n";
 
-        file.Save(Gorgon::String::Concat(resourceType,"_", scale, "x.gor"));
+        file.Save(Gorgon::String::Concat(resourceName,"_", scale, "x.gor"));
         
         std::cout << "Saving done\n";
     }
-        
     
     
 }
