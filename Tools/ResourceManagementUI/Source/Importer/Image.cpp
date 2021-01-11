@@ -3,7 +3,7 @@
 namespace Importer{
     
     Importer::Image::Image (){
-        std::cout << "Image class is created\n";
+        std::cout << "Image class is created." << std::endl;
         
         
     }
@@ -88,7 +88,7 @@ namespace Importer{
         
         std::cout << "About to save\n";
 
-        file.Save(Gorgon::String::Concat(resourceType, scale, "x.gor"));
+        file.Save(Gorgon::String::Concat(resourceType,"_", scale, "x.gor"));
         
         std::cout << "Saving done\n";
     }

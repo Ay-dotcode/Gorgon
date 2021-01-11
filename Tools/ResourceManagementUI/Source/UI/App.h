@@ -48,6 +48,7 @@
 
 #include "Cli.h"
 #include "../Importer/Image.h"
+#include "../Importer/Audio.h"
 
 
 
@@ -129,6 +130,7 @@ namespace UI{
         
         UI::Cli cli;
         Importer::Image image;
+        Importer::Audio audio;
         
         //Gorgon Icon objects for app window
         Gorgon::Graphics::Bitmap ico;
