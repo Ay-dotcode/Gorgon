@@ -21,9 +21,9 @@ namespace Importer{
     }
     
     
-    void Image::DoImport (int scale, std::function<void(std::string)> report, std::string pathFrom, std::string pathTo, std::string fileType, std::string resourceType){
+    void Image::DoImport (int scale, std::function<void(std::string)> report, std::string pathFrom, std::string pathTo, std::string resourceType){
         std::cout << "Image class is does Import\n";
-        
+        std::string fileType = "png";
         Gorgon::Resource::File file;
         
         auto fold_path = pathFrom;

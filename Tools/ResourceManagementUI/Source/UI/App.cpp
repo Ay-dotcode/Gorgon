@@ -47,14 +47,17 @@ namespace UI{
         pnlSettings.EnableScroll(false, false);
         window.Add(pnlSettings);
         
-        metadata1.SetVisible(false);
-        lblMetadata.SetVisible(false);
+        metadata1.SetEnabled(false);
+        lblMetadata.SetEnabled(false);
         
         fileList.List.SetSelectedIndex(0);
         scaleList.List.SetSelectedIndex(0);
         
         //Organizers to display elements to the panel.
         auto &org = pnlSettings.CreateOrganizer<Gorgon::UI::Organizers::Flow>();
+        
+        
+        //org.SetTight(true);
         
         org 
         << org.Break 
@@ -67,11 +70,13 @@ namespace UI{
         << 1 << "" << 4 << "Resource Scale:" << 2 << scaleList  << 1 << btnScaleInfo
         << org.Break << org.Break 
         << 1 << "" << 10 << metadata  << "" << org.Break
-        << org.Break
         << 1 << "" << 17 << lblMetadata << "" << org.Break
         << 1 << "" << 25 << metadata1 << ""
-        << org.Break 
+        << org.Break << org.Break
         << btnExit << 22 << "" << btnImport ;
+        
+        
+        
         
         btnImport.PressEvent.Register([&]{
             Import();
@@ -97,22 +102,32 @@ namespace UI{
         });
         
         metadata.ChangedEvent.Register([&] {            
-            metadata1.SetVisible(bool(metadata));
-            lblMetadata.SetVisible(bool(metadata));
+            org.Reorganize();
+            metadata1.SetEnabled(bool(metadata));
+            lblMetadata.SetEnabled(bool(metadata));
         });
     }
+    
     
     void App::Import(){
         std::string fromPath = pathFrom.GetText();
         std::string toPath = pathTo.GetText();
         
+        if(resourceClass.GetText() == ""){
+            Gorgon::UI::ShowMessage("Please Enter a Resource class name before Importing.");
+        }
+        else{
+            image.DoImport(scaleList, [](auto r) {std::cout<<r<<std::endl;}, pathFrom, pathTo, resourceClass.GetText());
+            
+        }
         
         
-        image.DoImport(3, [](auto r) {std::cout<<r<<std::endl;}, pathFrom, pathTo, "png", "testFiletype");
         //std::cout << "Importing Resources From \"" << fromPath << "\" to \"" << toPath << "\"" << std::endl;
         
         
     }
+    
+    
     
     
 

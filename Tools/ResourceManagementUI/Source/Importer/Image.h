@@ -23,7 +23,7 @@ namespace Importer{
         
         Image();
         
-        void DoImport(int scale, std::function<void(std::string)> report, std::string pathFrom, std::string pathTo, std::string fileType, std::string resourceType);
+        void DoImport(int scale, std::function<void(std::string)> report, std::string pathFrom, std::string pathTo, std::string resourceType);
         
     private:
         
