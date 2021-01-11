@@ -90,6 +90,10 @@ namespace Gorgon { namespace UI {
         /// taking any additional action. If the widget cannot be removed
         /// from the container, this function will return false.
         bool Remove(Widget &widget);
+        
+        /// Removes all widgets from this container. Returns true if all
+        /// widgets are removed successfully.
+        bool Clear();
 
         /// Forcefully removes the given widget from this container.
         void ForceRemove(Widget &widget);
