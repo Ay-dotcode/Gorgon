@@ -121,8 +121,9 @@ namespace UI{
                 audio.DoImport(pathFrom, pathTo, resourceClass.GetText());
             
             }else if(fileList == Image){
-            
-                image.DoImport(scaleList, [](auto r) {std::cout<<r<<std::endl;}, pathFrom, pathTo, resourceClass.GetText());
+                
+                image.Set(scaleList, pathFrom, pathTo, resourceClass.GetText());
+                image.DoImport();
             } 
         }
         

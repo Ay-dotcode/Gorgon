@@ -2,9 +2,33 @@
 
 namespace Importer{
     
-    Importer::Image::Image (): wind("Preview Import", {300, 300}){
+    Importer::Image::Image(): 
+    wind("Preview Import", {300, 300}),
+    scale(1),
+    pathFrom(""),
+    pathTo(""),
+    resourceName("")
+    
+    {
         std::cout << "Image class is created." << std::endl;
-        wind.SetVisible(true);
+        
+        process.SetWidthInUnits(10);
+        process.SetHeight(240);
+        //process.SetOddEven(false);
+        wind.Add(process);
+        
+        wind.SetVisible(false);
+        
+        wind.AddButton("Confirm", [&]{
+            ActualImport();
+        });
+    }
+    
+    void Image::Set(int s, std::string pF, std::string pT, std::string rN){
+        scale = s;
+        pathFrom = pF;
+        pathTo = pT;
+        resourceName = rN;
     }
     
     Gorgon::Graphics::Bitmap Importer::Image::Scale(const Gorgon::Graphics::Bitmap &bmp, int scale){
@@ -19,19 +43,58 @@ namespace Importer{
         return n;
     }
     
-    void Image::Preview(std::string fileName){
+    
+    int Image::CountItemsInFolder()
+    {
+        int count = 0;
+        for(Gorgon::Filesystem::Iterator it(pathFrom); it.IsValid(); it.Next()){ 
+            auto file_name = *it;
+            if(Gorgon::String::ToLower(Gorgon::Filesystem::GetExtension(file_name)) != "png" || Gorgon::String::ToLower(Gorgon::Filesystem::GetExtension(file_name)) != "jpeg")
+                count++;
+            
+        }
+        return count;
         
     }
-
     
-    void Image::DoImport (int scale, std::function<void(std::string)> report, std::string pathFrom, std::string pathTo, std::string resourceName){
-        std::cout << "Image class is does Import\n";
+    void Image::PreviewUI(){
+        
+        
+        
+        std::string fileType1 = "png";
+        std::string fileType2 = "jpeg";
+        
+        auto fold_path = pathFrom;
+        
+        
+        for(Gorgon::Filesystem::Iterator it(fold_path); it.IsValid(); it.Next()) {
+            auto file_name = *it;
+            
+            std::cout << "In for loop for Preview\n";
+
+            if(Gorgon::String::ToLower(Gorgon::Filesystem::GetExtension(file_name)) != fileType1)
+                continue;
+            
+            std::cout << "If is done!\n";
+            process.Add(Gorgon::String::Concat("",file_name));
+                
+            
+            std::cout << "Added " << file_name << " to preview list\n";
+            
+        }
+    }
+    
+    void Image::ActualImport()
+    {
+        std::cout << "Clicked Import\n";
+        
         std::string fileType = "png";
         Gorgon::Resource::File file;
         
         auto fold_path = pathFrom;
         
         auto &fold = file.Root();
+         std::cout << "About to for loop\n";
         
         for(Gorgon::Filesystem::Iterator it(fold_path); it.IsValid(); it.Next()) {
             auto file_name = *it;
@@ -41,14 +104,15 @@ namespace Importer{
 
             if(Gorgon::String::ToLower(Gorgon::Filesystem::GetExtension(file_name)) != fileType)
                 continue;
-            
-            Preview(resourceName);
-
+                
             Gorgon::Graphics::Bitmap im;
             
             std::cout << "About to Import\n";
             
             if(im.Import(file_path)) {
+                
+                
+
                 im = Scale(im, scale);
 
                 auto &imres = *new Gorgon::Resource::Image(std::move(im));
@@ -83,19 +147,34 @@ namespace Importer{
                 //data.Append("name", name);
                 //data.Append("descr", descr);
                 //data.Append("offset", off);
+                
+                
+                
 
-                report(Gorgon::String::Concat("Imported ", file_name, "."));
+                std::cout << Gorgon::String::Concat("Imported ", file_name, ".\n");
             }
             else {
-                report(Gorgon::String::Concat("Cannot import file: ", file_name, "!"));
+                std::cout << Gorgon::String::Concat("Cannot import file: ", file_name, "!\n");
             }
-        }
         
+        }
         std::cout << "About to save\n";
 
-        file.Save(Gorgon::String::Concat(resourceName,"_", scale, "x.gor"));
+        file.Save(Gorgon::String::Concat(pathTo , "/" ,resourceName,"_", scale, "x.gor"));
         
         std::cout << "Saving done\n";
+        wind.SetVisible(false);
+    }
+
+
+
+    
+    void Image::DoImport (){
+        
+        int numItems = CountItemsInFolder();
+        std::cout << "There are "<< numItems << " items in the folder!\n";
+        wind.SetVisible(true);
+        PreviewUI();
     }
     
     

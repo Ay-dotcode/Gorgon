@@ -30,6 +30,7 @@
 #include <Gorgon/Widgets/Dropdown.h>
 #include <Gorgon/Widgets/Window.h>
 #include <Gorgon/Widgets/DialogWindow.h>
+#include <Gorgon/UI/Dialog.h>
 
 #include <functional>
 #include <fstream>
@@ -41,7 +42,9 @@ namespace Importer{
         
         Image();
         
-        void DoImport(int scale, std::function<void(std::string)> report, std::string pathFrom, std::string pathTo, std::string resourceName);
+        void Set(int scale, std::string pathFrom, std::string pathTo, std::string resourceName);
+        
+        void DoImport();
         
     private:
         
@@ -50,7 +53,16 @@ namespace Importer{
         
         Gorgon::Widgets::DialogWindow wind;
         
-        void Preview(std::string fileName);
+        Gorgon::Widgets::MultiListbox<std::string> process;
+        
+        int CountItemsInFolder();
+        
+        void PreviewUI();
+        
+        void ActualImport();
+        
+        int scale;
+        std::string pathFrom, pathTo, resourceName;
         
         
     };
