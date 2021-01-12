@@ -103,7 +103,7 @@ namespace Gorgon { namespace Widgets {
             
         protected:
             LBTRF_ListItem() { }
-            ~LBTRF_ListItem() { }
+            virtual ~LBTRF_ListItem() { }
             
             void apply(long, W_ &w, const T_ &, Geometry::Point p, Geometry::Size) { 
                 if(oddeven) {
