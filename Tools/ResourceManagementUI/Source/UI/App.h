@@ -143,7 +143,7 @@ namespace UI{
         Gorgon::Graphics::BlankImage applicationBG;
         
         //Gorgon Button Objects
-        Gorgon::Widgets::Button btnImport, btnFileFrom, btnFileTo, btnExit, btnClassInfo, btnScaleInfo;
+        Gorgon::Widgets::Button btnImport, btnClearFileFrom, btnClearFileTo, btnExit, btnClassInfo, btnScaleInfo;
         
         //Gorgon Checkbox opjects
         Gorgon::Widgets::Checkbox metadata;

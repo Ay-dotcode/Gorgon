@@ -10,8 +10,8 @@ namespace UI{
     initstyl(Gorgon::String::Concat(Gorgon::Filesystem::ExeDirectory(), "/Goldman-Regular.ttf"),14), 
     cli(tcommands),
     btnImport("IMPORT"),
-    btnFileFrom("Path From"), 
-    btnFileTo("Path To"), 
+    btnClearFileFrom("Clear"), 
+    btnClearFileTo("Clear"), 
     btnExit("EXIT"), 
     btnClassInfo("i"),
     btnScaleInfo("i"),
@@ -56,13 +56,11 @@ namespace UI{
         auto &org = pnlSettings.CreateOrganizer<Gorgon::UI::Organizers::Flow>();
         
         
-        //org.SetTight(true);
-        
         org 
         << org.Break 
-        << 1 << "" << 4 << "Import From:" << 19 << pathFrom << btnFileFrom
+        << 1 << "" << 4 << "Import From:" << 19 << pathFrom << btnClearFileFrom
         << org.Break << org.Break
-        << 1 << "" << 4 << "Import To:" << 19 << pathTo << btnFileTo 
+        << 1 << "" << 4 << "Import To:" << 19 << pathTo << btnClearFileTo 
         << org.Break << org.Break
         << 1 << "" << 4 << "File Type:" << 6 << fileList << 2 << "" << 4 << "Resource Class:" << 5 << resourceClass<< 1 <<btnClassInfo
         << org.Break << org.Break 
@@ -92,18 +90,31 @@ namespace UI{
             Gorgon::UI::AskYesNo("Exit","Any currently running imports will be lost!\n\n\nAre you sure you want to leave?", [&]{exit(0);}, [&]{pnlSettings.Enable();});
         });
         
+        //Info button
         btnClassInfo.PressEvent.Register([&]{
             Gorgon::UI::ShowMessage("Resource Class Info","This is the type of resource that you are importing for you prohject. It can be character models, tiles, items, sounds or UI elements and so on. \n\n This is what your .gor file will be saved as. With the scale size included.");
         });
         
+        //Info Button
         btnScaleInfo.PressEvent.Register([&]{
             Gorgon::UI::ShowMessage("Resource Scale Info","This is the scale at which you want to import your resource. \n\n The scale sze will be made present on the saved .gor file.");
         });
         
+        //Checkbox button selected
         metadata.ChangedEvent.Register([&] {            
             org.Reorganize();
             metadata1.SetEnabled(bool(metadata));
             lblMetadata.SetEnabled(bool(metadata));
+        });
+        
+        //Clear File Path From button action
+        btnClearFileFrom.PressEvent.Register([&](){
+            pathFrom.clear();
+        });
+        
+        //Clear File Path To button action
+        btnClearFileTo.PressEvent.Register([&](){
+            pathTo.clear();
         });
     }
     
@@ -127,11 +138,6 @@ namespace UI{
             } 
         }
         
-        
-        
-        
-        
-        
         //std::cout << "Importing Resources From \"" << fromPath << "\" to \"" << toPath << "\"" << std::endl;
         
         
@@ -141,7 +147,7 @@ namespace UI{
     
     
 
-    //UI 
+    //UI Styling
     App::initStyle::initStyle(std::string fontname, int fh) {
         Gorgon::Graphics::Initialize();
 
