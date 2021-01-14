@@ -12,13 +12,11 @@ namespace Importer{
     resourceName(""),
     currentImage("")
     
-    
     {
         std::cout << "Image class is created." << std::endl;
         
         
         bmp.Import(Gorgon::String::Concat(Gorgon::Filesystem::ExeDirectory(),"/GRM-Logo-72x72.png"));
-        
         bmp.Prepare();
         
         l.GetLayer().Add(imgLayer);
@@ -26,29 +24,19 @@ namespace Importer{
         imgWind.Add(l);
         imgWind.SetVisible(false);
         
-        
-        
         process.SetWidthInUnits(10);
         process.SetHeight(240);
         process.SetOddEven(false);
         
         process.ChangedEvent.Register([&](long index, bool status){
-            
             currentImage = "";
-            std::cout << "Starting off CurrentImage is " << currentImage << std::endl << "s = ";
-
             bmp.Clear();
-            
             currentImage = process[index];
-            
-            std::cout << currentImage;
-            
             bmp.Import(Gorgon::String::Concat(pathFrom , "/", currentImage ));
             bmp.Prepare();
             imgWind.SetVisible(true);
+            imgWind.Focus();
             imgWind.SetTitle(currentImage);
-            
-            std::cout << std::endl << "CurrentImage is " << currentImage << std::endl;
         });
         
         imgWind.ClosingEvent.Register([&](){
@@ -59,8 +47,21 @@ namespace Importer{
         
         wind.SetVisible(false);
         
-        wind.AddButton("Confirm", [&]{
+        wind.AddButton("Import", [&]{
             ActualImport();
+            imgWind.SetVisible(false);
+            wind.SetVisible(false);
+        });
+        
+        wind.AddButton("Cancel", [&]{
+            process.Clear();
+            imgWind.SetVisible(false);
+            wind.SetVisible(false);
+        });
+        
+        wind.ClosingEvent.Register([&](){
+            process.Clear();
+            imgWind.SetVisible(false);
         });
     }
     
@@ -89,9 +90,8 @@ namespace Importer{
         int count = 0;
         for(Gorgon::Filesystem::Iterator it(pathFrom); it.IsValid(); it.Next()){ 
             auto file_name = *it;
-            if(Gorgon::String::ToLower(Gorgon::Filesystem::GetExtension(file_name)) != "png" || Gorgon::String::ToLower(Gorgon::Filesystem::GetExtension(file_name)) != "jpeg")
+            if(Gorgon::String::ToLower(Gorgon::Filesystem::GetExtension(file_name)) == "png" || Gorgon::String::ToLower(Gorgon::Filesystem::GetExtension(file_name)) == "jpeg")
                 count++;
-            
         }
         return count;
         
@@ -99,28 +99,26 @@ namespace Importer{
     
     void Image::PreviewUI(){
         
-        
-        
         std::string fileType1 = "png";
         std::string fileType2 = "jpeg";
         
         auto fold_path = pathFrom;
         
+        wind.SetTitle(Gorgon::String::Concat(CountItemsInFolder()," Imports Found"));
         
         for(Gorgon::Filesystem::Iterator it(fold_path); it.IsValid(); it.Next()) {
             auto file_name = *it;
             
             std::cout << "In for loop for Preview\n";
 
-            if(Gorgon::String::ToLower(Gorgon::Filesystem::GetExtension(file_name)) != fileType1)
-                continue;
+            if(Gorgon::String::ToLower(Gorgon::Filesystem::GetExtension(file_name)) == fileType1 || Gorgon::String::ToLower(Gorgon::Filesystem::GetExtension(file_name)) == fileType2){
             
-            std::cout << "If is done!\n";
+            std::cout << "If is true!\n";
             process.Add(Gorgon::String::Concat("",file_name));
                 
             
             std::cout << "Added " << file_name << " to preview list\n";
-            
+            }
         }
     }
     
@@ -128,7 +126,9 @@ namespace Importer{
     {
         std::cout << "Clicked Import\n";
         
-        std::string fileType = "png";
+        std::string fileType1 = "png";
+        std::string fileType2 = "jpeg";
+        
         Gorgon::Resource::File file;
         
         auto fold_path = pathFrom;
@@ -142,8 +142,8 @@ namespace Importer{
             
             std::cout << "In for loop\n";
 
-            if(Gorgon::String::ToLower(Gorgon::Filesystem::GetExtension(file_name)) != fileType)
-                continue;
+            if(Gorgon::String::ToLower(Gorgon::Filesystem::GetExtension(file_name)) == fileType1 || Gorgon::String::ToLower(Gorgon::Filesystem::GetExtension(file_name)) == fileType2){
+                
                 
             Gorgon::Graphics::Bitmap im;
             
@@ -196,6 +196,8 @@ namespace Importer{
             else {
                 std::cout << Gorgon::String::Concat("Cannot import file: ", file_name, "!\n");
             }
+                
+            }
         
         }
         std::cout << "About to save\n";
@@ -203,7 +205,6 @@ namespace Importer{
         file.Save(Gorgon::String::Concat(pathTo , "/" ,resourceName,"_", scale, "x.gor"));
         
         std::cout << "Saving done\n";
-        wind.SetVisible(false);
     }
 
 

@@ -52,9 +52,8 @@ namespace Importer{
          
         Gorgon::Graphics::Bitmap Scale(const Gorgon::Graphics::Bitmap &bmp, int scale);
         
-        Gorgon::Widgets::Window imgWind;
         
-        Gorgon::Widgets::DialogWindow wind;
+        Gorgon::Widgets::DialogWindow imgWind, wind;
         
         Gorgon::Widgets::MultiListbox<std::string> process;
         
