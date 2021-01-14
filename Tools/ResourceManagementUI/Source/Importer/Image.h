@@ -30,6 +30,7 @@
 #include <Gorgon/Widgets/Dropdown.h>
 #include <Gorgon/Widgets/Window.h>
 #include <Gorgon/Widgets/DialogWindow.h>
+#include <Gorgon/Widgets/Layerbox.h>
 #include <Gorgon/UI/Dialog.h>
 
 #include <functional>
@@ -51,6 +52,8 @@ namespace Importer{
          
         Gorgon::Graphics::Bitmap Scale(const Gorgon::Graphics::Bitmap &bmp, int scale);
         
+        Gorgon::Widgets::Window imgWind;
+        
         Gorgon::Widgets::DialogWindow wind;
         
         Gorgon::Widgets::MultiListbox<std::string> process;
@@ -62,7 +65,15 @@ namespace Importer{
         void ActualImport();
         
         int scale;
-        std::string pathFrom, pathTo, resourceName;
+        std::string pathFrom, pathTo, resourceName, currentImage;
+        
+        //Gorgon::Resource::Image prevImage;
+        Gorgon::Graphics::Bitmap bmp;
+        
+        Gorgon::Graphics::Layer imgLayer;
+        
+        Gorgon::Widgets::Layerbox l;
+        
         
         
     };

@@ -3,18 +3,58 @@
 namespace Importer{
     
     Importer::Image::Image(): 
+    
+    imgWind("Image Preview",{300,300}),
     wind("Preview Import", {300, 300}),
     scale(1),
     pathFrom(""),
     pathTo(""),
-    resourceName("")
+    resourceName(""),
+    currentImage("")
+    
     
     {
         std::cout << "Image class is created." << std::endl;
         
+        
+        bmp.Import(Gorgon::String::Concat(Gorgon::Filesystem::ExeDirectory(),"/GRM-Logo-72x72.png"));
+        
+        bmp.Prepare();
+        
+        l.GetLayer().Add(imgLayer);
+        bmp.Draw(imgLayer,10,10);
+        imgWind.Add(l);
+        imgWind.SetVisible(false);
+        
+        
+        
         process.SetWidthInUnits(10);
         process.SetHeight(240);
-        //process.SetOddEven(false);
+        process.SetOddEven(false);
+        
+        process.ChangedEvent.Register([&](long index, bool status){
+            
+            currentImage = "";
+            std::cout << "Starting off CurrentImage is " << currentImage << std::endl << "s = ";
+
+            bmp.Clear();
+            
+            currentImage = process[index];
+            
+            std::cout << currentImage;
+            
+            bmp.Import(Gorgon::String::Concat(pathFrom , "/", currentImage ));
+            bmp.Prepare();
+            imgWind.SetVisible(true);
+            imgWind.SetTitle(currentImage);
+            
+            std::cout << std::endl << "CurrentImage is " << currentImage << std::endl;
+        });
+        
+        imgWind.ClosingEvent.Register([&](){
+            imgWind.SetVisible(false);
+        });
+        
         wind.Add(process);
         
         wind.SetVisible(false);
