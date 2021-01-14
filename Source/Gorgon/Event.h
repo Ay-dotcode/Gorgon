@@ -291,7 +291,7 @@ namespace Gorgon {
 					access.lock();
 					// fire method will unlock access after it creates a local copy of the function
 					// this allows the fired object to be safely deleted.
-					iterator->Fire(access, source, std::forward<Params_>(args)...);
+					iterator->Fire(access, source, args...);
 				}
 			}
 			catch(...) {
