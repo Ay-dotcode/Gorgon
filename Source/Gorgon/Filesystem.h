@@ -335,7 +335,7 @@ namespace Gorgon {
 		/// external devices. On Linux systems, home, root and removable devices are listed.
 		/// @return The list of entry points
 		std::vector<EntryPoint> EntryPoints();
-
+        
 		/// Locates the given file or directory. If localonly is true, this function only
 		/// searches locations that are in the working directory. If it is set to false
 		/// standard system locations like user home directory or application data directory

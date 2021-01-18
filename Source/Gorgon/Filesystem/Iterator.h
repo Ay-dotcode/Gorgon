@@ -4,6 +4,12 @@
 
 #include <iterator>
 
+#include "../Filesystem.h"
+#include "../String.h"
+
+#include <algorithm>
+#include <set>
+
 namespace Gorgon {
 	
 	namespace Filesystem {
@@ -182,5 +188,81 @@ namespace Gorgon {
 			l.Swap(r);
 		}
 		
+        /// Collects all files matching the given predicate to a vector. Vector contains paths
+        /// relative to the given path.
+        /// @param paths are files/directories that will be collected
+        /// @param checkfn is a function taking a string, returning bool. Return true to add
+        ///        the file into the collection
+        /// @param maxdepth is the recursion depth. -1 means infinite
+        template<class F_>
+        std::vector<std::string> Collect(std::vector<std::string> paths, F_ checkfn, int maxdepth = -1) {
+            std::vector<int> depths(paths.size());
+            
+            std::vector<std::string> v;
+            std::set<std::string>    visited;
+
+            while(!paths.empty()) {
+                int d = depths.back();
+                std::string name = paths.back();
+                depths.pop_back();
+                paths.pop_back();
+
+                if(IsDirectory(name) && (d < maxdepth || maxdepth == -1)) {
+                    if(visited.count(name))
+                        continue;
+                    
+                    visited.insert(name);
+                    
+                    for(auto it = Iterator(name); it.IsValid(); it.Next()) {
+                        paths.push_back(Canonical(Join(name, *it)));
+                        depths.push_back(d+1);
+                    }
+                }
+                else if(IsFile(name) && checkfn(name)) {
+                    v.push_back(name);
+                }
+            }
+            
+            return v;
+        }
+        
+        /// Collects all files matching the given predicate to a vector. Filenames in the vector
+        /// contains the path as well.
+        /// @param path is the directory to start collecting
+        /// @param checkfn is a function taking a string, returning bool. Return true to add
+        ///        the file into the collection
+        /// @param maxdepth is the recursion depth. -1 means infinite
+        template<class F_>
+        std::vector<std::string> Collect(const std::string &path, F_ checkfn, int maxdepth = -1) {
+            return Collect({path}, checkfn, maxdepth);
+        }
+        
+        /// Collects all files in the given directory to a vector. Filenames in the vector
+        /// contains the path as well.
+        /// @param path is the directory to start collecting
+        /// @param maxdepth is the recursion depth. -1 means infinite
+        inline std::vector<std::string> Collect(const std::string &path, int maxdepth = -1) {
+            return Collect({path}, [](auto){ return true; }, maxdepth);
+        }
+        
+        /// Collects all given files to a vector with controllable depth. Filenames in the vector
+        /// contains the path as well.
+        /// @param paths are files/directories that will be collected
+        /// @param maxdepth is the recursion depth. -1 means infinite
+        inline std::vector<std::string> Collect(std::vector<std::string> paths, int maxdepth = -1) {
+            return Collect(std::move(paths), [](auto){ return true; }, maxdepth);
+        }
+        
+        /// Collects all given files to a vector if their extension matches the supplied list. Filenames 
+        /// in the vector contains the path as well.
+        /// @param paths are files/directories that will be collected
+        /// @param extensions are the allowed file extensions, enter only lowercase extensions
+        /// @param maxdepth is the recursion depth. -1 means infinite
+        inline std::vector<std::string> Collect(std::vector<std::string> paths, const std::vector<std::string> &extensions, int maxdepth = -1) {
+            return Collect(std::move(paths), [&extensions](const std::string &name){ 
+                return std::find(extensions.begin(), extensions.end(), String::ToLower(GetExtension(name))) != extensions.end();
+            }, maxdepth);
+        }
+
 	}
 }
