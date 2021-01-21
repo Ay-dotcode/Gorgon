@@ -256,13 +256,15 @@ namespace Gorgon { namespace Widgets {
             return BorderedWidgetHeight; //UnitWidth = Bordered height
         }
 
-        Graphics::BitmapRectangleProvider &NormalBorder();
-        Graphics::BitmapRectangleProvider &HoverBorder();
-        Graphics::BitmapRectangleProvider &DownBorder();
-        Graphics::BitmapRectangleProvider &DisabledBorder();
+        Graphics::BitmapRectangleProvider &NormalBorder(int missingedge = 0);
+        Graphics::BitmapRectangleProvider &HoverBorder(int missingedge = 0);
+        Graphics::BitmapRectangleProvider &DownBorder(int missingedge = 0);
+        Graphics::BitmapRectangleProvider &DisabledBorder(int missingedge = 0);
 
         Graphics::BitmapRectangleProvider &ActiveWindowBorder();
         Graphics::BitmapRectangleProvider &PassiveWindowBorder();
+        
+        Graphics::BitmapRectangleProvider &DialogDefaultBorder();
         
         Graphics::BitmapRectangleProvider &PanelBorder(int missingedge = 0);
         
@@ -276,10 +278,10 @@ namespace Gorgon { namespace Widgets {
         
         Graphics::BitmapRectangleProvider &NormalEmptyBorder();
         
-        Graphics::BitmapRectangleProvider &NormalBG();
-        Graphics::BitmapRectangleProvider &HoverBG();
-        Graphics::BitmapRectangleProvider &DownBG();
-        Graphics::BitmapRectangleProvider &DisabledBG();
+        Graphics::BitmapRectangleProvider &NormalBG(int missingedge = 0);
+        Graphics::BitmapRectangleProvider &HoverBG(int missingedge = 0);
+        Graphics::BitmapRectangleProvider &DownBG(int missingedge = 0);
+        Graphics::BitmapRectangleProvider &DisabledBG(int missingedge = 0);
         Graphics::BitmapRectangleProvider &NormalStraightBG();
         Graphics::BitmapRectangleProvider &AltStraightBG();
         Graphics::BitmapRectangleProvider &HoverStraightBG();
@@ -389,12 +391,13 @@ namespace Gorgon { namespace Widgets {
         Containers::Collection<Graphics::Drawable> drawables;
         Containers::Collection<Graphics::AnimationProvider> providers;
         
-        Graphics::BitmapRectangleProvider *normalborder = nullptr;
-        Graphics::BitmapRectangleProvider *hoverborder = nullptr;
-        Graphics::BitmapRectangleProvider *downborder = nullptr;
-        Graphics::BitmapRectangleProvider *disabledborder = nullptr;
+        Graphics::BitmapRectangleProvider *normalborder[5] = {};
+        Graphics::BitmapRectangleProvider *hoverborder[5] = {};
+        Graphics::BitmapRectangleProvider *downborder[5] = {};
+        Graphics::BitmapRectangleProvider *disabledborder[5] = {};
         Graphics::BitmapRectangleProvider *passivewindowborder = nullptr;
         Graphics::BitmapRectangleProvider *activewindowborder = nullptr;
+        Graphics::BitmapRectangleProvider *dialogdefaultborder = nullptr;
         
         Graphics::BitmapRectangleProvider *panelborders[5] = {};
         Graphics::BitmapRectangleProvider *panelbgs[5] = {};
@@ -412,10 +415,10 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider *downrbg = nullptr;
         Graphics::BitmapRectangleProvider *disabledrbg = nullptr;
         
-        Graphics::BitmapRectangleProvider *normalbg = nullptr;
-        Graphics::BitmapRectangleProvider *hoverbg = nullptr;
-        Graphics::BitmapRectangleProvider *downbg = nullptr;
-        Graphics::BitmapRectangleProvider *disabledbg = nullptr;
+        Graphics::BitmapRectangleProvider *normalbg[5] = {};
+        Graphics::BitmapRectangleProvider *hoverbg[5] = {};
+        Graphics::BitmapRectangleProvider *downbg[5] = {};
+        Graphics::BitmapRectangleProvider *disabledbg[5] = {};
         Graphics::BitmapRectangleProvider *normalstraight = nullptr;
         Graphics::BitmapRectangleProvider *altstraight = nullptr;
         Graphics::BitmapRectangleProvider *hoverstraight = nullptr;

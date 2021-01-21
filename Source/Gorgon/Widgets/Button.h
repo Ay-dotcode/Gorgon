@@ -164,6 +164,20 @@ namespace Gorgon { namespace Widgets {
         virtual bool allowfocus() const override;
 
         void repeattick();
+        
+        virtual void setdefaultstate(bool def) override {
+            if(def)
+                stack.AddCondition(UI::ComponentCondition::Default);
+            else
+                stack.RemoveCondition(UI::ComponentCondition::Default);
+        }
+        
+        virtual void setcancelstate(bool cancel) override {
+            if(cancel)
+                stack.AddCondition(UI::ComponentCondition::Cancel);
+            else
+                stack.RemoveCondition(UI::ComponentCondition::Cancel);
+        }
     };
     
 } }

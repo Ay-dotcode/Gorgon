@@ -504,5 +504,35 @@ namespace Gorgon { namespace UI {
             w.displaced();
         }
     }
-    
+
+    void WidgetContainer::SetDefault(Widget &widget) {
+        if(def && def != &widget)
+            def->setdefaultstate(false);
+
+        def = &widget;
+        def->setdefaultstate(true);
+    }
+
+    void WidgetContainer::RemoveDefault() {
+        if(def)
+            def->setdefaultstate(false);
+
+        def = nullptr;
+    }
+
+    void WidgetContainer::SetCancel(Widget &widget) {
+        if(cancel && cancel != &widget)
+            cancel->setcancelstate(false);
+
+        cancel = &widget;
+        cancel->setcancelstate(true);
+   }
+
+    void WidgetContainer::RemoveCancel() {
+        if(cancel)
+            cancel->setcancelstate(false);
+
+        cancel = nullptr;
+    }
+
 } }

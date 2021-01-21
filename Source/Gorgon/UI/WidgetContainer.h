@@ -306,10 +306,10 @@ namespace Gorgon { namespace UI {
         
         /// Sets the default object of the container. Ideally this should be
         /// a button or a similar widget.
-        virtual void SetDefault(Widget &widget) { def=&widget; }
+        virtual void SetDefault(Widget &widget);
         
         /// Removes the default widget of this container.
-        virtual void RemoveDefault() { def=nullptr; }
+        virtual void RemoveDefault();
         
         /// Returns the cancel element of the container which is called when the
         /// use presses escape key. It also might be activated programmatically. 
@@ -317,7 +317,7 @@ namespace Gorgon { namespace UI {
         /// be cancel widget. If there is no cancel object set, this function 
         /// will throw. Use HasCancel to check if this container has a cancel widget.
         virtual Widget &GetCancel() const { 
-            if(!def) 
+            if(!cancel) 
                 throw std::runtime_error("Container does not have a default");
             
             return *cancel; 
@@ -328,10 +328,10 @@ namespace Gorgon { namespace UI {
         
         /// Sets the cancel widget of the container. Ideally this should be
         /// a button or a similar widget.
-        virtual void SetCancel(Widget &widget) { cancel=&widget; }
+        virtual void SetCancel(Widget &widget);
         
         /// Removes the cancel widget of this container.
-        virtual void RemoveCancel() { cancel=nullptr; }
+        virtual void RemoveCancel();
 
         /// Sets the focus strategy, see FocusStrategy
         void SetFocusStrategy(FocusStrategy value) {

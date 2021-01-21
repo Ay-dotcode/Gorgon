@@ -245,7 +245,13 @@ namespace Gorgon { namespace UI {
         virtual void displaced() { }
 
         /// This function is called when the parent's enabled state changes.
-        virtual void parentenabledchanged(bool state) { }
+        virtual void parentenabledchanged(bool /*state*/) { }
+        
+        /// This function is called when this widget is made or unmade default.
+        virtual void setdefaultstate(bool /*default*/) { }
+        
+        /// This function is called when this widget is made or unmade cancel.
+        virtual void setcancelstate(bool /*cancel*/) { }
         
     private:
         bool visible = true;

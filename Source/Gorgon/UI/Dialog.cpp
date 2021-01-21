@@ -2,6 +2,7 @@
 
 #include "../Widgets/Label.h"
 #include "../Main.h"
+#include "../Window.h"
 #include "../Containers/GarbageCollection.h"
 
 
@@ -66,16 +67,18 @@ namespace internal {
         Geometry::Size sz;
         int maxw = int(diag->GetParent().GetInteriorSize().Width * 0.9);
 
+        bool compact = false;
+        
         for(int i=0; i<5; i++) { //maximum 5 iterations
             sz = text->GetSize();
 
             if(!allowshrink)
                 sz.Width = diag->GetInteriorSize().Width;
 
-            if(sz.Width < diag->GetUnitWidth() * 4) {
+            if(sz.Width < diag->GetUnitWidth() * 6) {
                 //too small, use 4units at least
-                sz.Width = diag->GetUnitWidth() * 4;
-                return sz;
+                sz.Width = diag->GetUnitWidth() * 6;
+                break;
             }
             else if(sz.Width <= maxw && sz.Height > diag->GetHeight()) {
                 //too high, increase width
@@ -88,10 +91,23 @@ namespace internal {
                     diag->SetWidth(sz.Width);
                     text->SetWidth(diag->GetInteriorSize().Width);
                 }
+                
+                compact = true;
             }
             else {
-                return sz;
+                break;
             }
+        }
+        
+        if(compact) {
+            text->Move(diag->GetSpacing(), diag->GetSpacing());
+            sz.Width  += diag->GetSpacing()*2;
+            sz.Height += diag->GetSpacing()*2;
+        }
+        else {
+            text->Move(diag->GetSpacing()*4, diag->GetSpacing()*4);
+            sz.Width  += diag->GetSpacing()*8;
+            sz.Height += diag->GetSpacing()*8;
         }
 
         return sz;
@@ -99,10 +115,42 @@ namespace internal {
 
     //move, focus, add to dialogs
     static void place(Widgets::DialogWindow *diag) {
-        auto sz = diag->GetParent().GetInteriorSize() - diag->GetSize();
-        sz /= 10;
-        diag->Move(Geometry::Point(sz * std::min(10, (int)internal::dialogs.GetCount()+3)));
-
+        auto parent = &diag->GetParent();
+        
+        Geometry::Point location = {std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
+        
+        if(dynamic_cast<LayerAdapter*>(parent)) {
+            auto &layer = dynamic_cast<LayerAdapter*>(parent)->GetLayer();
+            auto lp = dynamic_cast<Gorgon::Window*>(&layer.GetTopLevel());
+            
+            if(lp)
+                location = lp->GetMouseLocation() - Geometry::Point(diag->GetSize()/2) - layer.GetEffectiveBounds().TopLeft();
+        }
+        if(dynamic_cast<Gorgon::Window*>(parent)) {
+            location = dynamic_cast<Gorgon::Window*>(parent)->GetMouseLocation() - Geometry::Point(diag->GetSize()/2);
+        }
+        
+        if(location != Geometry::Point{std::numeric_limits<int>::min(), std::numeric_limits<int>::min()}) {
+            auto psz = diag->GetParent().GetInteriorSize();
+            auto sz  = diag->GetSize();
+            
+            if(location.X < 0)
+                location.X = 0;
+            if(location.Y < 0)
+                location.Y = 0;
+            if(location.X + sz.Width > psz.Width)
+                location.X = psz.Width - sz.Width;
+            if(location.Y + sz.Height > psz.Height)
+                location.Y = psz.Height - sz.Height;
+            
+            diag->Move(location);
+        }
+        else {
+            auto sz = diag->GetParent().GetInteriorSize() - diag->GetSize();
+            sz /= 10;
+            diag->Move(Geometry::Point(sz * std::min(10, (int)internal::dialogs.GetCount()+3)));
+        }
+        
         diag->Focus();
         internal::dialogs.Add(diag);
 
@@ -155,6 +203,7 @@ namespace internal {
                 closethis(diag);
                 onselect(index);
             });
+            btn.SetWidthInUnits(10); //allow up to 10 units
             btn.SetHorizonalAutosize(Autosize::Automatic);
             
             diag->Own(btn);

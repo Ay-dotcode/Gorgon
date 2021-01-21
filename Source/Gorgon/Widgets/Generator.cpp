@@ -105,6 +105,11 @@ namespace Gorgon { namespace Widgets {
         
         return temp;
     }
+    
+#define DELETEALL(x) \
+    for(auto p : x) {\
+        delete p; \
+    }
 
     SimpleGenerator::~SimpleGenerator() {
         delete regularrenderer;
@@ -115,22 +120,23 @@ namespace Gorgon { namespace Widgets {
         providers.DeleteAll();
         drawables.DeleteAll();
         
-        delete normalborder;
-        delete hoverborder;
-        delete downborder;
-        delete disabledborder;
+        DELETEALL(normalborder);
+        DELETEALL(hoverborder);
+        DELETEALL(downborder);
+        DELETEALL(disabledborder);
         delete passivewindowborder;
         delete activewindowborder;
+        delete dialogdefaultborder;
         delete grooveborder;
         delete normaleditborder;
         delete hovereditborder;
         delete readonlyborder;
         delete focusborder;
         delete normalemptyborder;
-        delete normalbg;
-        delete hoverbg;
-        delete downbg;
-        delete disabledbg;
+        DELETEALL(normalbg);
+        DELETEALL(hoverbg);
+        DELETEALL(downbg);
+        DELETEALL(disabledbg);
         delete normalstraight;
         delete altstraight;
         delete hoverstraight;
@@ -144,12 +150,8 @@ namespace Gorgon { namespace Widgets {
         delete innerobjectshape;
         delete groovebg;
         
-        for(auto p : panelborders) {
-            delete p;
-        }
-        for(auto p : panelbgs) {
-            delete p;
-        }
+        DELETEALL(panelborders);
+        DELETEALL(panelbgs);
     }
     
     void SimpleGenerator::UpdateDimensions() {
@@ -198,42 +200,42 @@ namespace Gorgon { namespace Widgets {
         Focus.Width = std::max(1, Border.Width / 2);
     }
     
-    Graphics::BitmapRectangleProvider &SimpleGenerator::NormalBorder() {
-        if(!normalborder)
-            normalborder = makeborder(Border.Color, Background.Regular);
+    Graphics::BitmapRectangleProvider &SimpleGenerator::NormalBorder(int missingedge) {
+        if(!normalborder[missingedge])
+            normalborder[missingedge] = makeborder(Border.Color, Background.Regular, missingedge);
         
-        return *normalborder;
+        return *normalborder[missingedge];
     }
     
-    Graphics::BitmapRectangleProvider &SimpleGenerator::HoverBorder() {
-        if(!hoverborder) {
+    Graphics::BitmapRectangleProvider &SimpleGenerator::HoverBorder(int missingedge) {
+        if(!hoverborder[missingedge]) {
             auto c = Background.Regular;
             c.Blend(Background.Hover);
-            hoverborder = makeborder(Border.Color, c);
+            hoverborder[missingedge] = makeborder(Border.Color, c, missingedge);
         }
         
-        return *hoverborder;
+        return *hoverborder[missingedge];
     }
 
-    Graphics::BitmapRectangleProvider &SimpleGenerator::DownBorder() {
-        if(!downborder) {
+    Graphics::BitmapRectangleProvider &SimpleGenerator::DownBorder(int missingedge) {
+        if(!downborder[missingedge]) {
             auto c = Background.Regular;
             c.Blend(Background.Down);
-            downborder = makeborder(Border.Color, c);
+            downborder[missingedge] = makeborder(Border.Color, c, missingedge);
         }
 
-        return *downborder;
+        return *downborder[missingedge];
     }
 
-    Graphics::BitmapRectangleProvider &SimpleGenerator::DisabledBorder() {
-        if(!disabledborder) {
+    Graphics::BitmapRectangleProvider &SimpleGenerator::DisabledBorder(int missingedge) {
+        if(!disabledborder[missingedge]) {
             auto c = Background.Disabled;
             auto c2 = Border.Disabled;
 
-            disabledborder = makeborder(c2, c);
+            disabledborder[missingedge] = makeborder(c2, c, missingedge);
         }
 
-        return *disabledborder;
+        return *disabledborder[missingedge];
     }
     
     Graphics::BitmapRectangleProvider &SimpleGenerator::ActiveWindowBorder() {
@@ -248,6 +250,18 @@ namespace Gorgon { namespace Widgets {
             passivewindowborder = makeborder(0x0, Border.PassiveWindow, 0, 0, Border.Radius ? Border.Radius+Border.Width*2 : 0);
         
         return *passivewindowborder;
+    }
+    
+    Graphics::BitmapRectangleProvider &SimpleGenerator::DialogDefaultBorder() {
+        if(!dialogdefaultborder) {
+            auto r = Border.Radius - Focus.Spacing;
+            if(r < 0)
+                r = 0;
+            
+            dialogdefaultborder = makeborder(Focus.Color, 0x0, 1, -1, r);
+        }
+        
+        return *dialogdefaultborder;
     }
     
     Graphics::BitmapRectangleProvider &SimpleGenerator::PanelBorder(int missingedge) {
@@ -300,41 +314,41 @@ namespace Gorgon { namespace Widgets {
         return *hovereditborder;
     }
 
-    Graphics::BitmapRectangleProvider &SimpleGenerator::NormalBG() {
-        if(!normalbg)
-            normalbg = makeborder(0x0, Background.Regular);
+    Graphics::BitmapRectangleProvider &SimpleGenerator::NormalBG(int missingedge) {
+        if(!normalbg[missingedge])
+            normalbg[missingedge] = makeborder(0x0, Background.Regular, missingedge);
         
-        return *normalbg;
+        return *normalbg[missingedge];
     }
     
-    Graphics::BitmapRectangleProvider &SimpleGenerator::HoverBG() {
-        if(!hoverbg) {
+    Graphics::BitmapRectangleProvider &SimpleGenerator::HoverBG(int missingedge) {
+        if(!hoverbg[missingedge]) {
             auto c = Background.Regular;
             c.Blend(Background.Hover);
-            hoverbg = makeborder(0x0, c);
+            hoverbg[missingedge] = makeborder(0x0, c, missingedge);
         }
         
-        return *hoverbg;
+        return *hoverbg[missingedge];
     }
 
-    Graphics::BitmapRectangleProvider &SimpleGenerator::DownBG() {
-        if(!downbg) {
+    Graphics::BitmapRectangleProvider &SimpleGenerator::DownBG(int missingedge) {
+        if(!downbg[missingedge]) {
             auto c = Background.Regular;
             c.Blend(Background.Down);
-            downbg = makeborder(0x0, c);
+            downbg[missingedge] = makeborder(0x0, c, missingedge);
         }
 
-        return *downbg;
+        return *downbg[missingedge];
     }
     
-    Graphics::BitmapRectangleProvider &SimpleGenerator::DisabledBG() {
-        if(!disabledbg) {
+    Graphics::BitmapRectangleProvider &SimpleGenerator::DisabledBG(int missingedge) {
+        if(!disabledbg[missingedge]) {
             auto c = Background.Regular;
             c.Blend(Background.Disabled);
-            disabledbg = makeborder(0x0, c);
+            disabledbg[missingedge] = makeborder(0x0, c, missingedge);
         }
 
-        return *disabledbg;
+        return *disabledbg[missingedge];
     }
 
     Graphics::BitmapRectangleProvider &SimpleGenerator::NormalStraightBG() {
@@ -642,6 +656,7 @@ namespace Gorgon { namespace Widgets {
         ;
         if(border)
             boxed.SetBorderSize(Border.Width);
+        
         boxed.SetPadding(std::max(Border.Radius / 2, Focus.Spacing));
         boxed.SetPositioning(UI::ComponentTemplate::Absolute);
         
@@ -805,7 +820,99 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::DialogButton() {
-        return Button(false);
+        Geometry::Size defsize = {WidgetWidth, BorderedWidgetHeight};
+        
+        UI::Template temp = maketemplate();
+        temp.SetSize(defsize);
+        
+        
+        temp.AddContainer(0, UI::ComponentCondition::Always)
+            .AddIndex(1) //border
+            .AddIndex(9) //default border
+            .AddIndex(2) //boxed content
+        ;
+        
+        auto setupborder = [&](auto &anim, UI::ComponentCondition condition, int ind = 1) {
+            auto &bg = temp.AddGraphics(ind, condition);
+            bg.SetSize(100, 100, UI::Dimension::Percent);
+            bg.SetSizing(UI::ComponentTemplate::Fixed);
+            bg.Content.SetAnimation(anim);
+            bg.SetPositioning(UI::ComponentTemplate::Absolute);
+        };
+
+        setupborder(NormalBG(1), UI::ComponentCondition::Always);
+        setupborder(HoverBG(1), UI::ComponentCondition::Hover);
+        setupborder(DownBG(1), UI::ComponentCondition::Down);
+        setupborder(DisabledBG(1), UI::ComponentCondition::Disabled);
+        
+        auto &defbord = temp.AddGraphics(9, UI::ComponentCondition::Default);
+        
+        defbord.Content.SetAnimation(DialogDefaultBorder());
+        defbord.SetMargin(Focus.Spacing, 0, Focus.Spacing, Focus.Spacing);
+        defbord.SetSize(100, 100, UI::Dimension::Percent);
+        defbord.SetSizing(UI::ComponentTemplate::Fixed);
+        
+        
+        auto &boxed = temp.AddContainer(2, UI::ComponentCondition::Always)
+            .AddIndex(3) //clip
+            .AddIndex(4) //focus
+        ;
+        boxed.SetBorderSize(Border.Width);
+        
+        boxed.SetPadding(std::max(Border.Radius / 2, Focus.Spacing));
+        boxed.SetPositioning(UI::ComponentTemplate::Absolute);
+        
+        auto &clip = temp.AddContainer(3, UI::ComponentCondition::Always)
+            .AddIndex(5)
+        ;
+        clip.SetClip(true);
+        clip.SetPadding(Focus.Spacing + Focus.Width);
+        
+        //Contents
+        auto &content = temp.AddContainer(5, UI::ComponentCondition::Always)
+            .AddIndex(6) //icon
+            .AddIndex(7) //text
+        ;
+        content.SetPositioning(UI::ComponentTemplate::Absolute);
+        content.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+        content.SetSizing(UI::ComponentTemplate::Automatic);
+        
+        //Icon container
+        auto &iconcont = temp.AddContainer(6, UI::ComponentCondition::Icon1IsSet)
+            .AddIndex(8)
+        ;
+        iconcont.SetMargin(0, 0, Spacing, 0);
+        iconcont.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        iconcont.SetSizing(UI::ComponentTemplate::Automatic);
+        
+        auto setupicon = [&](auto &icon) -> auto& {
+            icon.SetDataEffect(UI::ComponentTemplate::Icon1);
+            icon.SetSizing(UI::ComponentTemplate::Automatic);
+            
+            return icon;
+        };
+        
+        setupicon(temp.AddGraphics(8, UI::ComponentCondition::Always));
+        setupicon(temp.AddGraphics(8, UI::ComponentCondition::Disabled)).SetColor({1.0f, 0.5f});
+        
+        //Text
+        auto setuptext = [&](Graphics::RGBA color, UI::ComponentCondition condition) {
+            auto &txt = temp.AddTextholder(7, condition);
+            txt.SetRenderer(CenteredFont);
+            txt.SetColor(color);
+            txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+            txt.SetDataEffect(UI::ComponentTemplate::Text);
+            txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        };
+        
+        setuptext(Forecolor.Regular, UI::ComponentCondition::Always);
+        setuptext(Forecolor.Regular.BlendWith(Forecolor.Hover), UI::ComponentCondition::Hover);
+        setuptext(Forecolor.Regular.BlendWith(Forecolor.Down), UI::ComponentCondition::Down);
+        setuptext(Forecolor.Regular.BlendWith(Forecolor.Disabled), UI::ComponentCondition::Disabled);
+
+        setupfocus(temp.AddGraphics(4, UI::ComponentCondition::Focused));
+
+        return temp;
     }
 
     UI::Template SimpleGenerator::Checkbox() {

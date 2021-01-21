@@ -324,7 +324,9 @@ int main() {
     std::vector<std::string> opts = {"Zero", "One", "Two"};
     wind.AddButton("Hello", [&]{
         //UI::MultipleChoice<DaysOfWeek>("Select one", [](DaysOfWeek ind) { std::cout << ind << std::endl; }, UI::CloseOption::Cancel);
-        UI::AskYesNo("Exit", "Are you certain?", [&app] { app.wind.Quit(); });
+        UI::AskYesNo("Exit", "Are you certain?", [&app] { 
+            app.wind.Quit(); 
+        });
     });
     wind.AddButton("World", []{
         UI::ShowMessage("Hello", "This class is the base class for all widget containers.\n\nAll widgets require a layer to be placed on, to allow widget containers that are also widgets, this class is left abstract. You may derive from this class and WidgetBase at the same time.");
