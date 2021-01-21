@@ -243,7 +243,13 @@ namespace Gorgon { namespace Widgets {
         
         
         if(moving) {
-            Move(GetLocation() + location-dragoffset);
+            auto newlocation = GetLocation() + location-dragoffset;
+            if(HasParent()) {
+                FitInto(newlocation.X, 0, GetParent().GetInteriorSize().Width - GetWidth()/2);
+                FitInto(newlocation.Y, 0, GetParent().GetInteriorSize().Height - GetHeight()/2);
+            }
+            
+            Move(newlocation);
         }
         
         switch(resizing) {
@@ -252,21 +258,24 @@ namespace Gorgon { namespace Widgets {
         case bottom: {
             int ch = GetHeight();
             int h = ch + location.Y - dragoffset.Y;
-            if(h < minsize.Height)
-                h = minsize.Height;
+            
+            if(HasParent()) {
+                FitInto(h, minsize.Height, std::min((GetParent().GetInteriorSize().Height - GetLocation().Y) * 2, GetParent().GetInteriorSize().Height));
+            }
             
             SetHeight(h);
             dragoffset.Y = location.Y;
             break;
-        }    
+        }
         case topleft:
         case topright:
         case top: {
             int ch = GetHeight();
             int h = ch - location.Y + dragoffset.Y;
             
-            if(h < minsize.Height)
-                h = minsize.Height;
+            if(HasParent()) {
+                FitInto(h, minsize.Height, GetHeight()+GetLocation().Y);
+            }
             
             SetHeight(h);
             
@@ -285,10 +294,13 @@ namespace Gorgon { namespace Widgets {
         case right: {
             int cw = GetWidth();
             int w = cw + location.X - dragoffset.X;
-            if(w < minsize.Width)
-                w = minsize.Width;
+            
+            if(HasParent()) {
+                FitInto(w, minsize.Width, std::min((GetParent().GetInteriorSize().Width - GetLocation().X) * 2, GetParent().GetInteriorSize().Width));
+            }
             
             SetWidth(w);
+            
             dragoffset.X = location.X;
             break;
         }
@@ -298,8 +310,9 @@ namespace Gorgon { namespace Widgets {
             int cw = GetWidth();
             int w = cw - location.X + dragoffset.X;
             
-            if(w < minsize.Width)
-                w = minsize.Width;
+            if(HasParent()) {
+                FitInto(w, minsize.Width, GetWidth()+GetLocation().X);
+            }
             
             SetWidth(w);
             
