@@ -15,8 +15,20 @@ namespace Gorgon { namespace Input {
         }
     }
     
+    bool needsforward(Input::Mouse::EventType event) {
+        switch(event) {
+            case Input::Mouse::EventType::Out:
+			case Input::Mouse::EventType::Up:
+			case Input::Mouse::EventType::MovePressed:
+			case Input::Mouse::EventType::DownPressed:
+                return false;
+            default: 
+                return true;
+        }
+    }
+    
 	bool Layer::propagate_mouseevent(Input::Mouse::EventType event, Geometry::Point location, Input::Mouse::Button button, float amount, MouseHandler &handlers) { 
-        if(event != Input::Mouse::EventType::Out && event != Input::Mouse::EventType::Up) {
+        if(needsforward(event)) {
             if(Gorgon::Layer::propagate_mouseevent(event, location, button, amount, handlers))
                 return true;
         }

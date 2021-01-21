@@ -177,6 +177,11 @@ namespace Gorgon { namespace Widgets {
         if(button == Input::Mouse::Button::Left) {
             if(allowmove && tag == UI::ComponentTemplate::DragTag) {
                 moving = true;
+                
+                auto parent = dynamic_cast<Gorgon::Window*>(&stack.GetTopLevel());
+                if(parent)
+                    location = parent->GetMouseLocation();
+                
                 dragoffset = location;
             }
             else if(allowresize && tag == UI::ComponentTemplate::ResizeTag) {
@@ -210,6 +215,10 @@ namespace Gorgon { namespace Widgets {
                     }
                 }
                 
+                auto parent = dynamic_cast<Gorgon::Window*>(&stack.GetTopLevel());
+                if(parent)
+                    location = parent->GetMouseLocation();
+                
                 dragoffset = location;
             }
         }
@@ -225,8 +234,13 @@ namespace Gorgon { namespace Widgets {
     }
     
     void Window::mouse_move(UI::ComponentTemplate::Tag, Geometry::Point location) {
+        auto parent = dynamic_cast<Gorgon::Window*>(&stack.GetTopLevel());
+        if(parent)
+            location = parent->GetMouseLocation();
+        
         if(location == dragoffset) 
             return;
+        
         
         if(moving) {
             Move(GetLocation() + location-dragoffset);
@@ -297,6 +311,9 @@ namespace Gorgon { namespace Widgets {
             //nothing
             break;
         }
+        
+        if(parent)
+            dragoffset = location;
     }
     
     void Window::mouse_click(UI::ComponentTemplate::Tag tag, Geometry::Point location, Input::Mouse::Button button) {

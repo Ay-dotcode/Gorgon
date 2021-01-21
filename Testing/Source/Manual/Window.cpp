@@ -345,6 +345,7 @@ int main() {
 	});
 
 	Gorgon::Input::Layer il;
+    il.Move(0, 25);
 	il.setname("Input");
 	wind.Add(il);
 
@@ -369,6 +370,14 @@ int main() {
 
 	il.SetOver([&wind]() {
 		std::cout<<"Over"<<std::endl;
+	});
+
+    Gorgon::Geometry::Point last = {0,0};
+	il.SetMove([&last](Point location) {
+        if(last == location)
+            return;
+        last = location;
+		std::cout<<"Move: " << location <<std::endl;
 	});
 
 	il.SetOut([]() {

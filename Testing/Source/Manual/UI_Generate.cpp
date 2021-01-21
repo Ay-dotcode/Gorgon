@@ -169,21 +169,6 @@ int main() {
     icnbtn2.PressEvent.Register([&] {
         bar -= 10;
     });
-    //blank.CreateOrganizer<Gorgon::UI::Organizers::List>().SetSpacing(Gorgon::Widgets::Registry::Active().GetSpacing());
-
-    auto addme = [&](auto &pnl, UI::Widget &w) {
-        /*Geometry::Point offsetx = {Widgets::Registry::Active().GetSpacing(), 0};
-        if(pnl.UI::WidgetContainer::begin() != pnl.UI::WidgetContainer::end()) {
-            auto &last = *(pnl.UI::WidgetContainer::end() - 1);
-            auto lastb = last.GetBounds();
-            if(lastb.Right + w.GetWidth() <= pnl.GetInteriorSize().Width)
-                w.Move(last.GetBounds().TopRight() + offsetx);
-            else
-                w.Move(0, last.GetBounds().Bottom + Widgets::Registry::Active().GetSpacing());
-        }*/
-
-        pnl.Add(w);
-    };
 
     app.wind.KeyEvent.Register([&](Gorgon::Input::Key key, float amount) {
         namespace Keycodes = Gorgon::Input::Keyboard::Keycodes;
