@@ -155,6 +155,20 @@ namespace Gorgon { namespace Widgets {
             return scrollspeed != 0;
         }
         
+        /// Sets the the duration that scrolling can take. This speeds up scrolling
+        /// if the distance is too much. This value is not exact and scrolling will
+        /// slow down as it gets close to the target. However, total scroll duration 
+        /// cannot exceed twice this value. The time is in milliseconds and default 
+        /// value is 500. 
+        void SetMaximumScrollDuration(int value) {
+            maxscrolltime = value;
+        }
+        
+        /// Returns how long a scrolling operation can take.
+        int GetMaximumScrollDuration() const {
+            return maxscrolltime;
+        }
+        
         using Widget::EnsureVisible;
         
         bool EnsureVisible(const UI::Widget &widget) override;
@@ -268,6 +282,7 @@ namespace Gorgon { namespace Widgets {
         Geometry::Point scrolldist = {80, 45};
         Geometry::Point scrolloffset = {0, 0};
         int scrollspeed = 500;
+        int maxscrolltime = 500;
         Geometry::Point target = {0, 0};
         bool isscrolling = false;
         float scrollleftover = 0;

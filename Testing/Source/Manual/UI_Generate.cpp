@@ -204,7 +204,9 @@ int main() {
     list.Add("9");
     list.Add("Hello");
     list.Add("World");
-    list.Add("Welcome", "to", "the", "wonderful", "Gorgon", "Library", "!");
+    for(int i=0; i<10; i++)
+        list.Add("Welcome", "to", "the", "wonderful", "Gorgon", "Library", "!");
+    list.Add("World");
     list.AddToSelection(3);
     list.AddToSelection(1, 4);
     list.InvertSelection();
@@ -284,7 +286,6 @@ int main() {
         << sizef
         << org.Action("Ok", [&]() { std::cout << "Ok clicked" << std::endl; })
     ;
-    
     btn.SetHorizonalAutosize(Gorgon::UI::Autosize::Unit);
     
     Widgets::DialogWindow wind("My window", {200, 300});

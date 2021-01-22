@@ -54,7 +54,7 @@ namespace Gorgon { namespace Widgets {
         virtual W_ *getrepresentation(long index) = 0;
         
         /// For internal use.
-        /// Returns the first widget used to represent any item at within the 
+        /// Returns the first widget used to represent any item within the 
         /// listbox. This function will return nullptr if there are no items in the
         /// list.
         virtual W_ *getrepresentation() = 0;
@@ -1039,6 +1039,7 @@ namespace Gorgon { namespace Widgets {
                 while(shifted != selected.end()) {
                     if(*item < index+count) {
                         shifted++;
+                        continue;
                     }
                     
                     *item = *shifted - count;
@@ -1651,7 +1652,10 @@ namespace Gorgon { namespace Widgets {
             
             auto scroller = dynamic_cast<VScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
             if(scroller) {
-                scroller->SetMaximum(elms + overscroll);
+                if(elms == 0)
+                    scroller->SetMaximum(0);
+                else
+                    scroller->SetMaximum(elms + overscroll);
                 
                 scroller->Range = maxdisplay;
                 scroller->LargeChange = maxdisplay * 0.8f;
@@ -1719,8 +1723,12 @@ namespace Gorgon { namespace Widgets {
             overscroll = value;
             
             auto scroller = dynamic_cast<VScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
-            if(scroller)
-                scroller->SetMaximum(this->STR_::getsize() + overscroll);
+            if(scroller) {
+                if(this->STR_::getsize() == 0)
+                    scroller->SetMaximum(0);
+                else
+                    scroller->SetMaximum(this->STR_::getsize() + overscroll);
+            }
         }
         
         /// Returns the amount of extra scrolling distance after the bottom-most
@@ -1729,10 +1737,10 @@ namespace Gorgon { namespace Widgets {
             return overscroll;
         }
         
-        /// Sets the horizontal scroll distance per click in pixels. Default depends
-        /// on the default size of the panel.
-        void SetScrollDistance(int vert) {
-            scrolldist = vert;
+        /// Sets the scroll distance per click in pixels. Default depends
+        /// on the default size of the listbox.
+        void SetScrollDistance(int value) {
+            scrolldist = value;
         }
         
         /// Returns the scroll distance per click
@@ -1745,7 +1753,7 @@ namespace Gorgon { namespace Widgets {
             SetSmoothScrollSpeed(0);
         }
         
-        /// Adjusts the smooth scrolling speed of the panel. Given value is
+        /// Adjusts the smooth scrolling speed of the listbox. Given value is
         /// in items per second, default value is 20.
         void SetSmoothScrollSpeed(int value) {
             scrollspeed = value;
@@ -1760,7 +1768,7 @@ namespace Gorgon { namespace Widgets {
             stack.SetValueTransitionSpeed({elms > 0 ? float(value)/elms : 0, 0, 0, 0});
         }
         
-        /// Returns the smooth scrolling speed of the panel. If smooth scroll
+        /// Returns the smooth scrolling speed of the listbox. If smooth scroll
         /// is disabled, this value will be 0.
         int GetSmoothScrollSpeed() const {
             return scrollspeed;
@@ -1769,6 +1777,20 @@ namespace Gorgon { namespace Widgets {
         /// Returns if the smooth scroll is enabled.
         bool IsSmoothScrollEnabled() const {
             return scrollspeed != 0;
+        }
+        
+        /// Sets the the duration that scrolling can take. This speeds up scrolling
+        /// if the distance is too much. This value is not exact and scrolling will
+        /// slow down as it gets close to the target. However, total scroll duration 
+        /// cannot exceed twice this value. The time is in milliseconds and default 
+        /// value is 500. 
+        void SetMaximumScrollDuration(int value) {
+            maxscrolltime = value;
+        }
+        
+        /// Returns how long a scrolling operation can take.
+        int GetMaximumScrollDuration() const {
+            return maxscrolltime;
         }
         
         /// This may not be a perfect number
@@ -1998,6 +2020,7 @@ namespace Gorgon { namespace Widgets {
             vscroller->Range        = 1;
             *vscroller              = scrolloffset;
             vscroller->SmallChange  = float(scrolldist);
+            vscroller->SetSmoothChangeSpeed(scrollspeed);
             vscroller->ValueChanged.Register(*this, &ListboxWidgetBase::ScrollTo);
             
             return vscroller;
@@ -2008,8 +2031,19 @@ namespace Gorgon { namespace Widgets {
                 Utils::ASSERT_FALSE("This should not happen");
             
             auto cur = scrolloffset;
+            auto curspeed = scrollspeed;
             
-            float dist = (float)scrollspeed/1000 * Time::DeltaTime();
+            if(1000*abs(target-cur)/scrollspeed > maxscrolltime) {
+                //due to integer division, this value would be scrollspeed at some points, which will reset smooth speed
+                //if not, when scrolling is finished it will be reset
+                curspeed = 1000*abs(target-cur) / maxscrolltime;
+            
+                auto scroller = dynamic_cast<VScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
+                if(scroller)
+                    scroller->SetSmoothChangeSpeed(curspeed);
+            }
+            
+            float dist = (float)curspeed/1000 * Time::DeltaTime();
             
             bool done = false;
             
@@ -2039,6 +2073,11 @@ namespace Gorgon { namespace Widgets {
             
             if(done) {
                 isscrolling = false;
+                
+                auto scroller = dynamic_cast<VScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
+                if(scroller)
+                    scroller->SetSmoothChangeSpeed(scrollspeed); //just in case
+                    
                 stack.RemoveFrameEvent();
             }
         }
@@ -2076,6 +2115,7 @@ namespace Gorgon { namespace Widgets {
         float target = 0.f;
         float overscroll = 1;
         int scrollspeed = 20;
+        int maxscrolltime = 500;
         int scrolldist  = 5;
         bool isscrolling = false;
         float maxdisplay = 0; //maximum elements that can be displayed

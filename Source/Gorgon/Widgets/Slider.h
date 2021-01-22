@@ -45,32 +45,32 @@ namespace Gorgon { namespace Widgets {
         T_(*VAL_)(float, T_, T_) = FloatToValue<T_>, 
         template<class C_, class PT_, PT_(C_::*Getter_)() const, void(C_::*Setter_)(const PT_ &)> class P_ = Gorgon::NumericProperty,
         internal::SliderInteractivity interactive = internal::SliderInteractivity::None,
-        internal::SliderValueMapping valuemapping = internal::SliderValueMapping::OneValue
-        
+        internal::SliderValueMapping valuemapping = internal::SliderValueMapping::OneValue,
+        bool scaleanimations = true
     >
     class SliderBase : 
         public UI::ComponentStackWidget,
         public P_<
-            UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>, 
+            UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping, scaleanimations>, T_>, 
             T_, 
-            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>::get_, 
-            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>::set_
+            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping, scaleanimations>, T_>::get_, 
+            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping, scaleanimations>, T_>::set_
         >
     {
     public:
         using Type     = T_;
         using PropType = P_<
-            UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>, 
+            UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping, scaleanimations>, T_>, 
             T_, 
-            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>::get_, 
-            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>::set_
+            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping, scaleanimations>, T_>::get_, 
+            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping, scaleanimations>, T_>::set_
         >;
         
         friend class P_<
-            UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>, 
+            UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping, scaleanimations>, T_>, 
             T_, 
-            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>::get_, 
-            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>::set_
+            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping, scaleanimations>, T_>::get_, 
+            &UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping, scaleanimations>, T_>::set_
         >;
         
         template<
@@ -84,11 +84,12 @@ namespace Gorgon { namespace Widgets {
                 void(C_::*Setter_)(const PT_&)
             > class P1_,
             internal::SliderInteractivity I2_,
-            internal::SliderValueMapping V2_
+            internal::SliderValueMapping V2_,
+            bool A_
         >
         friend class SliderBase;
         
-        friend struct UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>;
+        friend struct UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping, scaleanimations>, T_>;
 
         SliderBase(const SliderBase &) = delete;
         
@@ -112,7 +113,8 @@ namespace Gorgon { namespace Widgets {
             Range(this),
             SmallChange(this),
             LargeChange(this),
-            value(cur), max(max)
+            value(cur), max(max),
+            unitspersec(max)
         {
             refreshvalue();
             stack.SetValueTransitionSpeed({changespeed, 0, 0, 0});
@@ -139,7 +141,10 @@ namespace Gorgon { namespace Widgets {
             max = value;
             
             if(valuemapping == internal::SliderValueMapping::ValueAndRange) {
-                SetSmoothChangeSpeedRatio(changespeed);
+                if(scaleanimations)
+                    SetSmoothChangeSpeedRatio(changespeed);
+                else
+                    SetSmoothChangeSpeed(unitspersec);
             }
 
             if(!setval(this->value)) //if returns true, refresh is already called
@@ -157,7 +162,10 @@ namespace Gorgon { namespace Widgets {
             min = value;
 
             if(valuemapping == internal::SliderValueMapping::ValueAndRange) {
-                SetSmoothChangeSpeedRatio(changespeed);
+                if(scaleanimations)
+                    SetSmoothChangeSpeedRatio(changespeed);
+                else
+                    SetSmoothChangeSpeed(unitspersec);
             }
             
             if(!setval(this->value)) //if returns true, refresh is already called
@@ -181,7 +189,10 @@ namespace Gorgon { namespace Widgets {
             this->max = max;
             
             if(valuemapping == internal::SliderValueMapping::ValueAndRange) {
-                SetSmoothChangeSpeedRatio(changespeed);
+                if(scaleanimations)
+                    SetSmoothChangeSpeedRatio(changespeed);
+                else
+                    SetSmoothChangeSpeed(unitspersec);
             }
             
             if(setval(this->value)) //if returns true, refresh is already called
@@ -213,7 +224,10 @@ namespace Gorgon { namespace Widgets {
                 range = value;
 
             if(valuemapping == internal::SliderValueMapping::ValueAndRange) {
-                SetSmoothChangeSpeedRatio(changespeed);
+                if(scaleanimations)
+                    SetSmoothChangeSpeedRatio(changespeed);
+                else
+                    SetSmoothChangeSpeed(unitspersec);
             }
             
             this->refreshvalue();
@@ -268,15 +282,18 @@ namespace Gorgon { namespace Widgets {
         }
         
         /// Adjusts the smooth change speed. Given value is in values per second, 
-        /// default value is max and will be sync to the maximum value.
+        /// default value is max and maybe sync to the maximum value.
         void SetSmoothChangeSpeed(T_ value) {
             SetSmoothChangeSpeedRatio(DIV_(value, min, max));
+            unitspersec = value;
         }
         
         /// Adjusts the smooth change speed. Given value is in values per second, 
         /// default value is 1 and will be sync to the maximum value.
         void SetSmoothChangeSpeedRatio(float value) {
             changespeed = value;
+            unitspersec = VAL_(value, min, max);
+            
             if(valuemapping == internal::SliderValueMapping::OneValue) {
                 stack.SetValueTransitionSpeed({value, 0, 0, 0});
             }
@@ -391,6 +408,7 @@ namespace Gorgon { namespace Widgets {
         T_ range = T_{};
         
         float changespeed = 1;
+        T_    unitspersec;
         
         internal::SliderInteractivity grab = internal::SliderInteractivity::None;
         Geometry::Point     downlocation   = {0, 0};
@@ -524,7 +542,7 @@ namespace Gorgon { namespace Widgets {
             });
         }
         
-        struct UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_> helper = UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping>, T_>(this);
+        struct UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping, scaleanimations>, T_> helper = UI::internal::prophelper<SliderBase<T_, DIV_, VAL_, P_, interactive, valuemapping, scaleanimations>, T_>(this);
 
     };
     

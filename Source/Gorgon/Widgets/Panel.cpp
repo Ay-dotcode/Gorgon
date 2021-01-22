@@ -1,6 +1,8 @@
 #include "Panel.h"
 #include "../Main.h"
 
+#include <math.h>
+
 namespace Gorgon { namespace Widgets {
     Panel::Panel(const UI::Template &temp) : 
     UI::ComponentStackWidget(temp, {
@@ -200,7 +202,6 @@ namespace Gorgon { namespace Widgets {
         if(scrollspeed == 0) {
             stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, {-x, -y});
             scrolloffset = {x, y};
-            updatebars();
         }
         else {
             if(!isscrolling) {
@@ -209,6 +210,7 @@ namespace Gorgon { namespace Widgets {
             }
         }
         
+        updatebars();        
         scrollclipped = clip;
     }
     
@@ -220,7 +222,23 @@ namespace Gorgon { namespace Widgets {
         
         auto cur = -b.TopLeft();
         
-        float d = (float)scrollspeed/1000 * Time::DeltaTime() + scrollleftover;
+        auto curspeed = scrollspeed;
+        
+        if(1000*target.ManhattanDistance(cur)/scrollspeed > maxscrolltime) {
+            //due to integer division, this value would be scrollspeed at some points, which will reset smooth speed
+            //if not, when scrolling is finished it will be reset
+            curspeed = 1000*target.ManhattanDistance(cur) / maxscrolltime;
+        
+            auto vscroller = dynamic_cast<VScroller<int>*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
+            if(vscroller)
+                vscroller->SetSmoothChangeSpeed(curspeed);
+            
+            auto hscroller = dynamic_cast<HScroller<int>*>(stack.GetWidget(UI::ComponentTemplate::HScrollTag));
+            if(hscroller)
+                hscroller->SetSmoothChangeSpeed(curspeed);
+        }
+        
+        float d = (float)curspeed/1000 * Time::DeltaTime() + scrollleftover;
         int dist = (int)std::round(d);
         scrollleftover = d - dist;
         
@@ -254,12 +272,20 @@ namespace Gorgon { namespace Widgets {
         scrolloffset = cur;
         stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, -cur);
         
-        updatebars();
         Displaced();
         
         if(done == 2) {
             isscrolling = false;
             stack.RemoveFrameEvent();
+                
+            auto vscroller = dynamic_cast<VScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
+            if(vscroller)
+                vscroller->SetSmoothChangeSpeed(scrollspeed);
+            
+            auto hscroller = dynamic_cast<HScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::HScrollTag));
+            if(hscroller)
+                hscroller->SetSmoothChangeSpeed(scrollspeed);
+                    
             scrollleftover = 0;
         }
     }
@@ -324,8 +350,6 @@ namespace Gorgon { namespace Widgets {
         auto size = GetInteriorSize();
         auto val = stack.GetValue();
         stack.SetValue(val[0], val[1], Clamp((size.Width+1.f) / (maxx+1.f), 0.f, 1.f), Clamp((size.Height+1.f) / (maxy+1.f), 0.f, 1.f));
-
-        SetSmoothScrollSpeed(scrollspeed);
         
         updaterequired = false;
     }
