@@ -153,8 +153,22 @@ namespace Gorgon { namespace UI {
             return Gorgon::Window::GetSize();
         }
         
-        virtual bool IsVisible() const override {
+        virtual bool IsDisplayed () const override {
             return Gorgon::Window::IsVisible();
+        }
+        
+        using Gorgon::Window::Resize;
+        
+        virtual void Resize(const Geometry::Size &size) override {
+            Gorgon::Window::Resize(size);
+            
+            distributeparentboundschanged();
+        }
+        
+        virtual bool ResizeInterior(Geometry::Size size) override {
+            Gorgon::Window::Resize(size);
+            
+            return GetSize() == size;
         }
         
         /// Closes the window, returning the execution to the
@@ -248,12 +262,6 @@ namespace Gorgon { namespace UI {
     protected:
         virtual Gorgon::Layer &getlayer() override {
             return *widgetlayer;
-        }
-        
-        virtual bool ResizeInterior(Geometry::Size size) override {
-            Gorgon::Window::Resize(size);
-            
-            return GetSize() == size;
         }
 
         decltype(KeyEvent)::Token keyinit();

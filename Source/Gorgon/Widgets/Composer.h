@@ -31,8 +31,8 @@ namespace Gorgon { namespace Widgets {
         
         virtual bool Activate() override;
 
-        virtual bool IsVisible() const override {
-            return base.IsVisible();
+        virtual bool IsDisplayed() const override {
+            return base.IsVisible() && IsVisible() && HasParent() && GetParent().IsDisplayed();
         }
 
         
@@ -53,6 +53,11 @@ namespace Gorgon { namespace Widgets {
         }
         
         virtual void Move(const Geometry::Point &location) override;
+        
+        virtual void SetVisible(bool value) override {
+            Widget::SetVisible(value);
+            distributeparentboundschanged();
+        }
 
         using Widget::EnsureVisible;
         
@@ -149,6 +154,11 @@ namespace Gorgon { namespace Widgets {
         
         virtual Geometry::Size GetInteriorSize() const override {
             return base.GetSize();
+        }
+        
+    protected:
+        virtual void parentboundschanged () override {
+            distributeparentboundschanged();
         }
         
         

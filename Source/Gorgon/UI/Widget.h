@@ -104,16 +104,16 @@ namespace Gorgon { namespace UI {
         virtual void Show() { SetVisible(true); }
         
         /// Hides this widget, when hidden, widgets cannot gain focus
-        void Hide() { SetVisible(false); }
+        virtual void Hide() { SetVisible(false); }
         
         /// Toggles the visibility state of the widget.
-        void ToggleVisible() { SetVisible(!IsVisible()); }
+        void ToggleVisible() { SetVisible(!IsVisible ()); }
         
         /// Changes the visibility of the widget
-        void SetVisible(bool value);
+        virtual void SetVisible(bool value);
         
         /// Returns if the widget is visible
-        bool IsVisible() const {
+        virtual bool IsVisible() const {
             return visible;
         }
         
@@ -239,11 +239,9 @@ namespace Gorgon { namespace UI {
         /// Call this function when the widget bounds is changed
         virtual void boundschanged();
         
-        /// Call this function when the widget container causes it to be 
-        /// displaced. This function will not be called when the widget is
-        /// moved on parent.
-        virtual void displaced() { }
-
+        /// Call this function when the bounds of the parent is changed
+        virtual void parentboundschanged() { }
+        
         /// This function is called when the parent's enabled state changes.
         virtual void parentenabledchanged(bool /*state*/) { }
         

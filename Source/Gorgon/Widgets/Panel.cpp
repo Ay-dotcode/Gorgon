@@ -99,8 +99,8 @@ namespace Gorgon { namespace Widgets {
         return UI::WidgetContainer::CharacterEvent(c);
     }
     
-    bool Panel::IsVisible() const {
-        return stack.IsVisible();
+    bool Panel::IsDisplayed() const {
+        return stack.IsVisible() && IsVisible() && HasParent() && GetParent().IsDisplayed();
     }
     
     Geometry::Size Panel::GetInteriorSize() const {
@@ -133,12 +133,13 @@ namespace Gorgon { namespace Widgets {
             GetOrganizer().Reorganize();
         
         childboundschanged(nullptr);
+        distributeparentboundschanged();
     }
     
     void Panel::Move(const Geometry::Point &location) { 
         ComponentStackWidget::Move(location);
         
-        Displaced();
+        distributeparentboundschanged();
     }
     
     bool Panel::allowfocus() const {
@@ -272,7 +273,7 @@ namespace Gorgon { namespace Widgets {
         scrolloffset = cur;
         stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, -cur);
         
-        Displaced();
+        distributeparentboundschanged();
         
         if(done == 2) {
             isscrolling = false;

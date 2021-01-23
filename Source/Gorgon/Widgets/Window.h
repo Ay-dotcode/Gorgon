@@ -171,7 +171,7 @@ namespace Gorgon { namespace Widgets {
             ClosingEvent(allow);
             if(allow) {
                 Hide();
-                ClosedEvent ();
+                ClosedEvent();
             }
         }
         

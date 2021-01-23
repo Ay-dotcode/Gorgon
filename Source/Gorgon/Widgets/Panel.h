@@ -33,6 +33,11 @@ namespace Gorgon { namespace Widgets {
 
         virtual bool Activate() override;
 
+        virtual void SetVisible(bool value) override {
+            ComponentStackWidget::SetVisible(value);
+            distributeparentboundschanged();
+        }
+
 
         virtual bool KeyEvent(Input::Key, float) override;
 
@@ -40,7 +45,7 @@ namespace Gorgon { namespace Widgets {
         virtual bool CharacterEvent(Char) override;
 
 
-        virtual bool IsVisible() const override;
+        virtual bool IsDisplayed() const override;
 
 
         virtual Geometry::Size GetInteriorSize() const override;
@@ -220,7 +225,27 @@ namespace Gorgon { namespace Widgets {
         void UseDefaultSizes() {
             issizesset = false;
         }
-        
+            
+        bool IsInFullView(const Widget &widget) const override {
+            if(widgets.Find(widget) == widgets.end())
+                return false;
+            
+            auto wbounds = widget.GetBounds() - target;
+            auto sz      = GetInteriorSize();
+            
+            return wbounds.Top >= 0 && wbounds.Left >= 0 && wbounds.Bottom <= sz.Height && wbounds.Right <= sz.Width;
+        }
+
+        bool IsInPartialView(const Widget &widget) const override {
+            if(widgets.Find(widget) == widgets.end())
+                return false;
+            
+            auto wbounds = widget.GetBounds() - target;
+            auto sz      = GetInteriorSize();
+            
+            return wbounds.Bottom > 0 && wbounds.Right > 0 && wbounds.Top < sz.Height && wbounds.Left < sz.Width;
+        }
+
         /// Report mouse scroll. This function will be called automatically
         /// for regular mouse events. This function will return false if the
         /// given mouse event is not consumed.
@@ -238,6 +263,10 @@ namespace Gorgon { namespace Widgets {
         void focuschanged() override;
         
         virtual void childboundschanged(Widget *source) override;
+        
+        virtual void parentboundschanged () override {
+            distributeparentboundschanged();
+        }
         
         virtual void updatecontent();
         

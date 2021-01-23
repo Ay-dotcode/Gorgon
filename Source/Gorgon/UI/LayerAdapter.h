@@ -36,7 +36,7 @@ namespace Gorgon { namespace UI {
             return true;
         }
         
-        virtual bool IsVisible() const override {
+        virtual bool IsDisplayed () const override {
             return base->IsVisible();
         }
         

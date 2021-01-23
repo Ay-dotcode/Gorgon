@@ -86,6 +86,8 @@ namespace Gorgon { namespace Widgets {
         void Open() {
             if(!HasParent())
                 return;
+            if(!GetParent().IsInPartialView(*this))
+                return;
             if(opened)
                 return;
             
@@ -103,9 +105,15 @@ namespace Gorgon { namespace Widgets {
             if(below < defaultheight && above > below) {
                 bool fit = list.FitHeight(below);
                 if(!fit) {
-                    list.FitHeight(above);
+                    fit = list.FitHeight(above);
+                    if(!fit)
+                        list.SetHeight(above);
+                    
                     reversed = true;
                 }
+            }
+            else {
+                list.FitHeight(std::min(defaultheight, below));
             }
             
             if(reversed) {
@@ -159,13 +167,32 @@ namespace Gorgon { namespace Widgets {
             return opened && reversed;
         }
         
-    protected:
-        virtual void boundschanged() override {
-            Close();
+        bool KeyEvent (Input::Key key, float status) override {
+            if(status && key == Input::Keyboard::Keycodes::Space) {
+                Toggle();
+                
+                return true;
+            }
+            
+            return false;
         }
         
-        virtual void displaced() override {
-            Close();
+    protected:
+        virtual void boundschanged() override {
+            parentboundschanged();
+        }
+        
+        virtual void parentboundschanged() override {
+            if(IsOpened()) {
+                Close();
+                
+                if(!HasParent())
+                    return;
+                if(!GetParent().IsInFullView(*this) || !IsVisible() || !GetParent().IsDisplayed())
+                    return;
+                
+                Open();
+            }
         }
         
         void checkfocus() {

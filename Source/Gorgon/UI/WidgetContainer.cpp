@@ -458,6 +458,11 @@ namespace Gorgon { namespace UI {
             w.parentenabledchanged(state);
     }
 
+    void WidgetContainer::distributeparentboundschanged() {
+        for(auto &w : widgets)
+            w.parentboundschanged();
+    }
+
     void WidgetContainer::childboundschanged(Widget *) {
         if(organizer)
             organizer->Reorganize();
@@ -499,12 +504,6 @@ namespace Gorgon { namespace UI {
         owned.Destroy();
     }
 
-    void WidgetContainer::Displaced() {
-        for(auto &w : widgets) {
-            w.displaced();
-        }
-    }
-
     void WidgetContainer::SetDefault(Widget &widget) {
         if(def && def != &widget)
             def->setdefaultstate(false);
@@ -533,6 +532,26 @@ namespace Gorgon { namespace UI {
             cancel->setcancelstate(false);
 
         cancel = nullptr;
+    }
+    
+    bool WidgetContainer::IsInFullView(const Widget &widget) const {
+        if(widgets.Find(widget) == widgets.end())
+            return false;
+        
+        auto wbounds = widget.GetBounds();
+        auto sz      = GetInteriorSize();
+        
+        return wbounds.Top >= 0 && wbounds.Left >= 0 && wbounds.Bottom <= sz.Height && wbounds.Right <= sz.Width;
+    }
+
+    bool WidgetContainer::IsInPartialView(const Widget &widget) const {
+        if(widgets.Find(widget) == widgets.end())
+            return false;
+        
+        auto wbounds = widget.GetBounds();
+        auto sz      = GetInteriorSize();
+        
+        return wbounds.Bottom > 0 && wbounds.Right > 0 && wbounds.Top < sz.Height && wbounds.Left < sz.Width;
     }
 
 } }

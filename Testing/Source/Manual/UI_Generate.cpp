@@ -103,8 +103,8 @@ int main() {
     generator.UpdateDimensions();
     generator.Activate();*/
 
-    Widgets::Panel blank/*(Gorgon::Widgets::Registry::Panel_Blank)*/;
-    blank.Move(5, 210);
+    Widgets::Window blank/*(Gorgon::Widgets::Registry::Panel_Blank)*/;
+    blank.Move(5, 50);
     blank.SetHeight(300);
     auto icon = Triangle(5, 10);
     icon.Prepare();

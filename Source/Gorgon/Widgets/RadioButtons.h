@@ -32,11 +32,11 @@ namespace Gorgon { namespace Widgets {
         
         /// Radio buttons height is automatically adjusted. Only width will be used.
         virtual void Resize(const Geometry::Size &size) override {
+            Composer::Resize(size);
+            
             for(auto p : this->elements) {
                 p.second.SetWidth((GetWidth() - spacing * (GetColumns() - 1)) / GetColumns());
             }
-            
-            contents.SetWidth(size.Width);
         }
 
         virtual bool Activate() override {
@@ -87,7 +87,7 @@ namespace Gorgon { namespace Widgets {
             if(IsVisible())
                 this->PlaceIn((UI::WidgetContainer&)*this, {0, 0}, spacing);
                 
-            contents.SetHeight(this->widgets.Last()->GetBounds().Bottom);
+            SetHeight(this->widgets.Last()->GetBounds().Bottom);
             
             boundschanged();
             childboundschanged(&c);
@@ -110,7 +110,7 @@ namespace Gorgon { namespace Widgets {
                 if(IsVisible())
                     this->PlaceIn((UI::WidgetContainer&)*this, {0, 0}, spacing);
                 
-                contents.SetHeight(this->widgets.Last()->GetBounds().Bottom);
+                SetHeight(this->widgets.Last()->GetBounds().Bottom);
                 
                 boundschanged();
                 childboundschanged(&elm);
@@ -180,31 +180,11 @@ namespace Gorgon { namespace Widgets {
             return size == GetSize();
         }
         
-        Geometry::Point GetLocation() const override {
-            return contents.GetLocation();
-        }
-        
-        Geometry::Size GetSize() const override {
-            return contents.GetSize();
-        }
-        
-        bool IsVisible() const override {
-            return contents.IsVisible();
-        }
-        
-        bool EnsureVisible(const UI::Widget &) override {
-            return EnsureVisible();
-        }
-
         using Widget::Resize;
 
         using Widget::Move;
         
         using Widget::EnsureVisible;
-        
-        void Move(const Geometry::Point &location) override {
-            contents.Move(location);
-        }
         
         /// Assigns a new value to the radio control. If the specified value exists
         /// in the, it will be selected, if not, nothing will be selected.
@@ -270,20 +250,6 @@ namespace Gorgon { namespace Widgets {
         using UI::RadioControl<T_, W_>::GetColumns;
 
     protected:
-        virtual void addto(Layer &layer) override { 
-            layer.Add(contents);
-        }
-
-
-        virtual void removefrom(Layer &layer) override { 
-            layer.Remove(contents);
-        }
-
-
-        virtual void setlayerorder(Layer &, int order) override {
-            contents.PlaceBefore(order);
-        }
-
 
         virtual bool allowfocus() const override {
             return !HasParent() || GetParent().CurrentFocusStrategy() == UI::WidgetContainer::AllowAll;
@@ -296,10 +262,6 @@ namespace Gorgon { namespace Widgets {
             Widget::focused();
         }
         
-        Gorgon::Layer &getlayer() override {
-            return contents;
-        }
-
         virtual void parentenabledchanged(bool state) override {
             if(!state && IsEnabled())
                 distributeparentenabled(state);
@@ -330,7 +292,7 @@ namespace Gorgon { namespace Widgets {
             
             if(total > 0) total -= spacing;
             
-            contents.SetHeight(total);
+            SetHeight(total);
             
             this->PlaceIn((UI::WidgetContainer&)*this, {0, 0}, spacing);
         }
@@ -357,14 +319,6 @@ namespace Gorgon { namespace Widgets {
         bool enabled = true;
         
     private:
-        virtual void show() override {
-            contents.Show();
-        }
-        
-        virtual void hide() override {
-            contents.Hide();
-        }
-        
         
         FocusStrategy getparentfocusstrategy() const override {
             if(HasParent())
@@ -389,7 +343,6 @@ namespace Gorgon { namespace Widgets {
             }
         }
         
-        Gorgon::Graphics::Layer contents;
     };
     
 } }

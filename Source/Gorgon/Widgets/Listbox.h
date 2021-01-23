@@ -1667,6 +1667,11 @@ namespace Gorgon { namespace Widgets {
             
             contents.Displaced();
         }
+
+        virtual void SetVisible(bool value) override {
+            ComponentStackWidget::SetVisible(value);
+            contents.Displaced();
+        }
         
         /// Scrolls the contents of the listbox so that the it will start displaying
         /// items from the given location in list items. This function takes columns

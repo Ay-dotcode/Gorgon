@@ -188,7 +188,7 @@ namespace Gorgon { namespace UI {
         /// Should return whether the container is visible. Due to
         /// different container designs and capabilities, setting
         /// visibility depends on the particular container
-        virtual bool IsVisible() const = 0;
+        virtual bool IsDisplayed () const = 0;
         
         /// Returns whether container is enabled.
         virtual bool IsEnabled() const { return isenabled; }
@@ -385,9 +385,6 @@ namespace Gorgon { namespace UI {
             return *organizer;
         }
         
-        /// Call this function if the container or widgets in it is moved without move function is called.
-        void Displaced();
-        
         /// This container will own the given widget.
         void Own(const Widget &widget) {
             owned.Add(widget);
@@ -397,6 +394,11 @@ namespace Gorgon { namespace UI {
         void Disown(const Widget &widget) {
             owned.Remove(widget);
         }
+        
+        /// Call this function if this container is moved without its knowledge
+        void Displaced() {
+            distributeparentboundschanged();
+        }
 
         /// This function should be called whenever a key is pressed or released.
         virtual bool KeyEvent(Input::Key key, float state) { return distributekeyevent(key, state, true); }
@@ -404,6 +406,14 @@ namespace Gorgon { namespace UI {
         /// This function should be called whenever a character is received from
         /// operating system.
         virtual bool CharacterEvent(Char c) { return distributecharevent(c); }
+        
+        /// Returns if the given widget is in view. Returns false if the widget is
+        /// not on the container. This should be overloaded by scrollable containers.
+        virtual bool IsInFullView(const Widget &widget) const;
+        
+        /// Returns if the given widget is in view. Returns false if the widget is
+        /// not on the container. This should be overloaded by scrollable containers.
+        virtual bool IsInPartialView(const Widget &widget) const;
         
         /// This function will return a container that will act as an extender.
         virtual ExtenderRequestResponse RequestExtender(const Gorgon::Layer &self) = 0;
@@ -460,6 +470,9 @@ namespace Gorgon { namespace UI {
 
         /// Distributes a enabled state to children
         void distributeparentenabled(bool state);
+
+        /// Distributes bounds changed event to children
+        void distributeparentboundschanged();
 
         /// The boundary of any of the children is changed. Source could be nullptr
         virtual void childboundschanged(Widget *source);
