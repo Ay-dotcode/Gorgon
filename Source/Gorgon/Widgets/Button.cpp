@@ -135,7 +135,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     
-    bool Button::KeyEvent(Input::Key key, float state) {
+    bool Button::KeyPressed(Input::Key key, float state) {
         if(Input::Keyboard::CurrentModifier.IsModified())
             return false;
        

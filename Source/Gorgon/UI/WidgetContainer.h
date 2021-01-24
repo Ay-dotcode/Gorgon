@@ -401,11 +401,11 @@ namespace Gorgon { namespace UI {
         }
 
         /// This function should be called whenever a key is pressed or released.
-        virtual bool KeyEvent(Input::Key key, float state) { return distributekeyevent(key, state, true); }
+        virtual bool KeyPressed(Input::Key key, float state) { return distributekeyevent(key, state, true); }
         
         /// This function should be called whenever a character is received from
         /// operating system.
-        virtual bool CharacterEvent(Char c) { return distributecharevent(c); }
+        virtual bool CharacterPressed(Char c) { return distributecharevent(c); }
         
         /// Returns if the given widget is in view. Returns false if the widget is
         /// not on the container. This should be overloaded by scrollable containers.

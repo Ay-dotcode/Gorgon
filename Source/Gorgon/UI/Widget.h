@@ -162,11 +162,11 @@ namespace Gorgon { namespace UI {
         }
 
         /// This function should be called whenever a key is pressed or released.
-        virtual bool KeyEvent(Input::Key, float) { return false; }
+        virtual bool KeyPressed(Input::Key, float) { return false; }
 
         /// This function should be called whenever a character is received from
         /// operating system.
-        virtual bool CharacterEvent(Char) { return false; }
+        virtual bool CharacterPressed(Char) { return false; }
         
         /// For widgets that supports it, this will trigger finalization the user
         /// interaction. This may cause widget fire change event or reorganize

@@ -54,7 +54,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     
-    bool Checkbox::KeyEvent(Input::Key key, float state) {
+    bool Checkbox::KeyPressed(Input::Key key, float state) {
         if(Input::Keyboard::CurrentModifier.IsModified())
             return false;
         

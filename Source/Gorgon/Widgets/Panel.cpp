@@ -66,8 +66,8 @@ namespace Gorgon { namespace Widgets {
         return true;
     }
     
-    bool Panel::KeyEvent(Input::Key key, float state) {
-        if(UI::WidgetContainer::KeyEvent(key, state))
+    bool Panel::KeyPressed(Input::Key key, float state) {
+        if(UI::WidgetContainer::KeyPressed(key, state))
             return true;
         
         namespace Keycodes = Input::Keyboard::Keycodes;
@@ -95,8 +95,8 @@ namespace Gorgon { namespace Widgets {
         return false;
     }
     
-    bool Panel::CharacterEvent(Char c) {
-        return UI::WidgetContainer::CharacterEvent(c);
+    bool Panel::CharacterPressed(Char c) {
+        return UI::WidgetContainer::CharacterPressed(c);
     }
     
     bool Panel::IsDisplayed() const {

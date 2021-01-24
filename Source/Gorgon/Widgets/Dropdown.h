@@ -167,7 +167,7 @@ namespace Gorgon { namespace Widgets {
             return opened && reversed;
         }
         
-        bool KeyEvent (Input::Key key, float status) override {
+        bool KeyPressed (Input::Key key, float status) override {
             if(status && key == Input::Keyboard::Keycodes::Space) {
                 Toggle();
                 

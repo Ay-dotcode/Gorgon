@@ -431,7 +431,7 @@ namespace Gorgon { namespace UI {
         if(CurrentFocusStrategy() == Deny)
             return false;
         
-        if(focused && focused->KeyEvent(key, state))
+        if(focused && focused->KeyPressed(key, state))
             return true;
 
         if(CurrentFocusStrategy() == Strict)
@@ -448,7 +448,7 @@ namespace Gorgon { namespace UI {
             return false;
         
         if(focused)
-            return focused->CharacterEvent(c);
+            return focused->CharacterPressed(c);
 
         return false;
     }

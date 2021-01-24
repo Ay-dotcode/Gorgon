@@ -231,10 +231,6 @@ namespace Gorgon { namespace Widgets {
             return enabled;
         }
         
-        bool KeyEvent(Input::Key key, float state) override {
-            return UI::WidgetContainer::KeyEvent(key, state);
-        }
-        
         /// Changes the number of columns
         void SetColumns(int value) {
             UI::RadioControl<T_, W_>::SetColumns(value);
@@ -243,7 +239,7 @@ namespace Gorgon { namespace Widgets {
         }
 
         /// This function is not supported.
-        int AutomaticUnitSize(int spacing, int units = 6) override {
+        int AutomaticUnitSize(int, int = 6) override {
             return 0;
         }
         

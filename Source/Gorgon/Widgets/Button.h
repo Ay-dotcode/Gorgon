@@ -126,7 +126,7 @@ namespace Gorgon { namespace Widgets {
         
         virtual bool Activate() override;
         
-        bool KeyEvent(Input::Key key, float state) override;
+        bool KeyPressed(Input::Key key, float state) override;
 
         TextualProperty<Button, std::string, &Button::GetText, &Button::SetText> Text;
 

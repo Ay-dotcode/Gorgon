@@ -1890,7 +1890,7 @@ namespace Gorgon { namespace Widgets {
                 EnsureVisible(index);
         }
         
-        bool KeyEvent(Input::Key key, float state) override {
+        bool KeyPressed (Input::Key key, float state) override {
             namespace Keycodes = Input::Keyboard::Keycodes;
             
             if(repeater.KeyEvent(key, state))

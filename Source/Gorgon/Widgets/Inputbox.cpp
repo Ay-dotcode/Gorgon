@@ -181,7 +181,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
         return true;
     }
 
-    bool Inputbox_base::KeyEvent(Input::Key key, float state) {
+    bool Inputbox_base::KeyPressed(Input::Key key, float state) {
         namespace Keycodes = Input::Keyboard::Keycodes;
         using Input::Keyboard::Modifier;
 
@@ -275,7 +275,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
         return !Input::Keyboard::CurrentModifier.IsModified() && key >= 0x20;
     }
 
-    bool Inputbox_base::CharacterEvent(Char c) {
+    bool Inputbox_base::CharacterPressed(Char c) {
         if(c == Input::Keyboard::Keycodes::Enter) 
             return false;
 

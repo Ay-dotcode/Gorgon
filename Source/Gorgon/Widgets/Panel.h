@@ -39,10 +39,10 @@ namespace Gorgon { namespace Widgets {
         }
 
 
-        virtual bool KeyEvent(Input::Key, float) override;
+        virtual bool KeyPressed(Input::Key, float) override;
 
 
-        virtual bool CharacterEvent(Char) override;
+        virtual bool CharacterPressed(Char) override;
 
 
         virtual bool IsDisplayed() const override;

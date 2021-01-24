@@ -100,9 +100,9 @@ namespace Gorgon { namespace UI {
     auto Window::charinit() -> decltype(CharacterEvent)::Token {
         chartoken = CharacterEvent.Register([this](Char c) {
             if(focusedadapter)
-                return focusedadapter->CharacterEvent(c);
+                return focusedadapter->CharacterPressed(c);
             else
-                return WidgetContainer::CharacterEvent(c);
+                return WidgetContainer::CharacterPressed(c);
         });
 
         CharacterEvent.NewHandler = [this] {
@@ -118,9 +118,9 @@ namespace Gorgon { namespace UI {
     auto Window::keyinit() -> decltype(KeyEvent)::Token {
         inputtoken = KeyEvent.Register([this](Input::Key key, float amount) {
             if(focusedadapter)
-                return focusedadapter->KeyEvent(key, amount);
+                return focusedadapter->KeyPressed(key, amount);
             else
-                return WidgetContainer::KeyEvent(key, amount);
+                return WidgetContainer::KeyPressed(key, amount);
         });
 
         KeyEvent.NewHandler = [this] {

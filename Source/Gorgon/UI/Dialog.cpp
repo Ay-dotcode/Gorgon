@@ -5,6 +5,7 @@
 #include "../Window.h"
 #include "../Containers/GarbageCollection.h"
 
+using namespace std::placeholders;
 
 namespace Gorgon { namespace Widgets {
     
@@ -39,16 +40,35 @@ namespace internal {
         });
     }
     
-}
-    /**
-     * @page uidialog UI dialog system
-     * Dialog system contains commonly used UI dialogboxes. These dialogs have their lifetime 
-     * managed internally. They can be created using a simple function call.
-     * 
-     * @see ShowMessage
-     */
+    bool handledialogcopy(Input::Key key, float state, const std::string &message) {
+        if(state == 1 && key == Input::Keyboard::Keycodes::C && Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::Ctrl) {
+            WindowManager::SetClipboardText(message);
+            
+            return true;
+        }
+        
+        return false;
+    }
     
-    static void closethis(Widgets::DialogWindow *diag) {
+    void attachdialogcopy(Widgets::DialogWindow *diag, const std::string &title, const std::string &message) {
+        if(title.empty()) {
+            diag->KeyEvent.Register(
+                static_cast<std::function<bool(Input::Key, float)>>(
+                    std::bind(&handledialogcopy, _1, _2, message)
+                )
+            );
+        }
+        else {
+            diag->KeyEvent.Register(
+                static_cast<std::function<bool(Input::Key, float)>>(
+                    std::bind(&handledialogcopy, _1, _2, title + "\n---\n" + message)
+                )
+            );
+        }
+    }
+    
+    
+    void closethis(Widgets::DialogWindow *diag) {
         if(internal::dialogs.GetCount() > 1) {
             if(internal::dialogs.Last().CurrentPtr() == diag) {
                 (internal::dialogs.Last()-1)->Focus();
@@ -61,7 +81,7 @@ namespace internal {
         diag->Close();
     }
 
-    static Geometry::Size negotiatesize(Widgets::DialogWindow *diag, Widget *text, bool allowshrink = true) {
+    Geometry::Size negotiatesize(Widgets::DialogWindow *diag, Widget *text, bool allowshrink) {
         text->SetWidth(diag->GetInteriorSize().Width);
 
         Geometry::Size sz;
@@ -114,7 +134,7 @@ namespace internal {
     }
 
     //move, focus, add to dialogs
-    static void place(Widgets::DialogWindow *diag) {
+    void place(Widgets::DialogWindow *diag) {
         auto parent = &diag->GetParent();
         
         Geometry::Point location = {std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
@@ -155,7 +175,19 @@ namespace internal {
         internal::dialogs.Add(diag);
 
     }
-   
+    
+}
+
+    using namespace internal;
+    
+    /**
+     * @page uidialog UI dialog system
+     * Dialog system contains commonly used UI dialogboxes. These dialogs have their lifetime 
+     * managed internally. They can be created using a simple function call.
+     * 
+     * @see ShowMessage
+     */
+
     void ShowMessage(const std::string &title, const std::string &message, std::function<void()> onclose, const std::string &buttontext) {
         internal::init();
         
@@ -171,11 +203,12 @@ namespace internal {
         
         diag->SetCancel(close);
         diag->SetDefault(close);
-        diag->Own(close);
+        attachdialogcopy(diag, title, message);
         
         auto text = new Widgets::Label(message);
         text->SetAutosize(Autosize::Automatic, Autosize::Automatic);
         diag->Add(*text);
+        diag->Own(*text);
         
         diag->ResizeInterior(negotiatesize(diag, text));
         place(diag);
@@ -195,7 +228,9 @@ namespace internal {
         auto text = new Widgets::Label(message);
         text->SetAutosize(Autosize::Automatic, Autosize::Automatic);
         diag->Add(*text);
+        diag->Own(*text);
 
+        std::string buttontexts = "";
         auto &btnsarea = diag->ButtonAreaOrganizer().GetAttached();
         int index = 0;
         for(auto opt : options) {
@@ -206,7 +241,7 @@ namespace internal {
             btn.SetWidthInUnits(10); //allow up to 10 units
             btn.SetHorizonalAutosize(Autosize::Automatic);
             
-            diag->Own(btn);
+            buttontexts += opt + " | ";
 
             index++;
         }
@@ -220,7 +255,14 @@ namespace internal {
             diag->SetCancel(closebtn);
             closebtn.SetHorizonalAutosize(Autosize::Automatic);
             diag->Own(closebtn);
+            
+            buttontexts += (close == CloseOption::Close ? closetext : canceltext) + " | ";
         }
+        
+        if(buttontexts.empty())
+                attachdialogcopy(diag, title, message);
+        else
+                attachdialogcopy(diag, title, message + "\n---\n" + buttontexts.substr(0, buttontexts.length()-3));
 
         int totw = 0;
         for(auto &w : btnsarea) {
@@ -289,6 +331,14 @@ namespace internal {
     void SetYesNoText(const std::string &yes, const std::string &no) {
         yestext = yes;
         notext = no;
+    }
+    
+    std::string GetOkText() {
+        return oktext;
+    }
+    
+    std::string GetCancelText() {
+        return canceltext;
     }
     
     

@@ -102,9 +102,9 @@ namespace Gorgon { namespace Widgets {
             
             bool Done() override;
             
-            bool CharacterEvent(Gorgon::Char c) override;
+            bool CharacterPressed(Gorgon::Char c) override;
             
-            virtual bool KeyEvent(Input::Key key, float state) override;
+            virtual bool KeyPressed(Input::Key key, float state) override;
 
             virtual void SetEnabled(bool value) override {
                 ComponentStackWidget::SetEnabled(value);

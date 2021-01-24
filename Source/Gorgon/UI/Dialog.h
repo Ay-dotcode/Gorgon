@@ -2,10 +2,23 @@
 
 #include "../Containers/Collection.h"
 #include "../Widgets/DialogWindow.h"
+#include "../Widgets/Inputbox.h"
+#include "../Widgets/Label.h"
 #include "../Enum.h"
 
 namespace Gorgon { namespace UI {
-
+    
+    /// @cond internal
+    namespace internal {
+        void init();
+        bool handledialogcopy(Input::Key key, float state, const std::string &message);
+        void attachdialogcopy(Widgets::DialogWindow *diag, const std::string &title, const std::string &message);
+        void closethis(Widgets::DialogWindow *diag);
+        Geometry::Size negotiatesize(Widgets::DialogWindow *diag, Widget *text, bool allowshrink = true);
+        void place(Widgets::DialogWindow *diag);
+    }
+    /// @endcond
+    
     /// Allows specifying how the dialog can be closed without supplying a
     /// response. 
     enum class CloseOption {
@@ -188,8 +201,96 @@ namespace Gorgon { namespace UI {
     /// dialogs.
     void SetOkText(const std::string &value);
 
+    /// Returns the text of the ok button.
+    std::string GetOkText();
+
     /// Changes the text of the cancel button. This change will effect only future
     /// dialogs.
     void SetCancelText(const std::string &value);
 
+    /// Returns the text of the cancel button.
+    std::string GetCancelText();
+
+    /// Requests an input from the user
+    template<class T_>
+    void Input(
+        const std::string &title, const std::string &message, 
+        const std::string &label, const T_ &def, 
+        std::function<void(const T_ &)> onconfirm, 
+        bool allowcancel = true,
+        std::function<void()> oncancel = {}, 
+        const std::string &confirmtext = "", const std::string &canceltext = ""
+    ) {
+        using namespace internal;
+        
+        init();
+        
+        auto diag = new Widgets::DialogWindow(title);
+        diag->HideCloseButton(); //not to confuse user
+        
+        if(allowcancel) {
+            auto &close = diag->AddButton(canceltext != "" ? canceltext : GetCancelText(), [diag, oncancel]() {
+                closethis(diag);
+                if(oncancel)
+                    oncancel();
+            });
+            
+            diag->SetCancel(close);
+        }
+        
+        auto inp = new Widgets::Inputbox<T_>(def);
+        inp->SelectAll();
+        diag->Own(*inp);
+        diag->Add(*inp);
+        
+        auto &confirm = diag->AddButton(confirmtext != "" ? confirmtext : GetOkText(), [diag, onconfirm, inp]() {
+            closethis(diag);
+            
+            onconfirm(*inp);
+        });
+        
+        diag->SetDefault(confirm);
+        
+        auto text = new Widgets::Label(message);
+        text->SetAutosize(Autosize::Automatic, Autosize::Automatic);
+        diag->Add(*text);
+        diag->Own(*text);
+        inp->Move(0, text->GetBounds().Bottom + diag->GetSpacing());
+        
+        Widgets::Label *l = nullptr;
+        
+        if(!label.empty()) {
+            l = new Widgets::Label(label);
+            l->SetHorizonalAutosize(Autosize::Automatic);
+            l->Move(0, text->GetBounds().Bottom + diag->GetSpacing());
+            l->SetHeight(inp->GetHeight());
+            inp->Location.X = l->GetBounds().Right + diag->GetSpacing()*2;
+            
+            diag->Add(*l);
+            diag->Own(*l);
+        }
+        
+        diag->ResizeInterior({inp->GetBounds().Right, inp->GetBounds().Bottom});
+        
+        attachdialogcopy(diag, title, message);
+        
+        diag->ResizeInterior(negotiatesize(diag, text, false));
+        
+        if(l) {
+            l->Move(text->Location.X, text->GetBounds().Bottom + text->Location.Y);
+            l->SetHeight(inp->GetHeight());
+            inp->Move(l->GetBounds().Right + diag->GetSpacing()*2, l->Location.Y);
+            inp->SetWidth(diag->GetInteriorSize().Width - inp->Location.X - text->Location.X);
+        }
+        else {
+            inp->Move(text->Location.X, text->GetBounds().Bottom + text->Location.Y);
+            inp->SetWidth(diag->GetInteriorSize().Width - text->Location.X*2);
+        }
+        
+        diag->ResizeInterior({diag->GetInteriorSize().Width, inp->GetBounds().Bottom});
+        
+        place(diag);
+        diag->Center(); //input dialogs will be centered
+    }
+    
 } }

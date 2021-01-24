@@ -175,6 +175,13 @@ namespace Gorgon { namespace Widgets {
             }
         }
         
+        bool KeyPressed(Input::Key key, float state) override {
+            if(KeyEvent(key, state))
+                return true;
+            
+            return Panel::KeyPressed(key, state);
+        }
+        
         virtual void Show() override {
             UI::ComponentStackWidget::Show();
             Focus();
@@ -202,6 +209,9 @@ namespace Gorgon { namespace Widgets {
         /// This event is called after the window is closed. In Gorgon, close button
         /// only hides the window. It is the owner's task to cleanup.
         Event<Window> ClosedEvent = Event<Window>{this};
+        
+        /// This event is called when a key is pressed.
+        ConsumableEvent<Window, Input::Key /*key*/, float /*state*/> KeyEvent = ConsumableEvent<Window, Input::Key, float>{this};
 
     protected:
         virtual void updatescroll() override;

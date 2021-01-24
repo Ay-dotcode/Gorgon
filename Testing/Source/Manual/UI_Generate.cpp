@@ -317,6 +317,11 @@ int main() {
     wind.AddButton("World", []{
         UI::ShowMessage("Hello", "This class is the base class for all widget containers.\n\nAll widgets require a layer to be placed on, to allow widget containers that are also widgets, this class is left abstract. You may derive from this class and WidgetBase at the same time.");
     });
+    wind.AddButton("Name", []{
+        UI::Input<std::string>("??", "Please enter your name below", "Name", "[]", [](const std::string &reply) {
+            UI::ShowMessage("Hello "+reply);
+        });
+    });
 
     app.wind.Add(blank);
     app.wind.Run();

@@ -81,11 +81,11 @@ namespace Gorgon { namespace Widgets {
 		void SetWidthInUnits(int n) override;
         
         /// This function should be called whenever a key is pressed or released.
-        virtual bool KeyEvent(Input::Key key, float state) override { return distributekeyevent(key, state, true); }
+        virtual bool KeyPressed(Input::Key key, float state) override { return distributekeyevent(key, state, true); }
 
         /// This function should be called whenever a character is received from
         /// operating system.
-        virtual bool CharacterEvent(Char c) override { return distributecharevent(c); }
+        virtual bool CharacterPressed(Char c) override { return distributecharevent(c); }
 
     protected:
         //ensure this object is derived
