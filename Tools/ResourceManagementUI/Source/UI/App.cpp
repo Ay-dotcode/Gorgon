@@ -46,13 +46,21 @@ namespace UI{
         pnlSettings.EnableScroll(false, false);
         window.Add(pnlSettings);
         
+        //Initialization of Preview panel
+        pnlPreview.SetWidth(size.Width);
+        pnlPreview.Move(0, 0);
+        pnlPreview.SetHeight(size.Height);
+        pnlPreview.EnableScroll(false, false);
+        pnlPreview.SetVisible(false);
+        window.Add(pnlPreview);
+        
         metadata1.SetEnabled(false);
         lblMetadata.SetEnabled(false);
         
         fileList.List.SetSelectedIndex(0);
         scaleList.List.SetSelectedIndex(0);
         
-        //Organizers to display elements to the panel.
+        //Organizers to display elements to the settijng panel.
         auto &org = pnlSettings.CreateOrganizer<Gorgon::UI::Organizers::Flow>();
         
         
@@ -73,10 +81,19 @@ namespace UI{
         << btnExit << 22 << "" << btnImport ;
         
         
+        //Organizers to display elements to the settijng panel.
+        auto &pnlorg = pnlPreview.CreateOrganizer<Gorgon::UI::Organizers::Flow>();
         
+        pnlorg
+        << pnlorg.Break 
+        << 1 << "" << 9 << "Hello from me to you"
+        << pnlorg.Break << pnlorg.Break
+        << 1 << "" << 9 << "Testing dual panel";
         
         btnImport.PressEvent.Register([&]{
-            Import();
+            pnlSettings.SetVisible(false);
+            pnlPreview.SetVisible(true);
+            //Import();
         });
         
         //Allows the program to be terminated if the window is closed.
@@ -132,18 +149,29 @@ namespace UI{
                 audio.DoImport(pathFrom, pathTo, resourceClass.GetText());
             
             }else if(fileList == Image){
+                bool mdata = false;
+                if(metadata1.IsEnabled()){
+                    GetMetadataVariables();
+                    mdata = true;
+                }
                 
-                image.Set(scaleList, pathFrom, pathTo, resourceClass.GetText());
+                image.Set(scaleList, pathFrom, pathTo, resourceClass.GetText(), metas, mdata);
                 image.DoImport();
             } 
         }
         
         //std::cout << "Importing Resources From \"" << fromPath << "\" to \"" << toPath << "\"" << std::endl;
         
-        
     }
     
-    
+    void App::GetMetadataVariables(){
+
+        std::istringstream ss(metadata1.GetText());
+        std::string token;
+        while(std::getline(ss, token, ',')) {
+            metas.push_back(token);
+        }
+    }
     
     
 

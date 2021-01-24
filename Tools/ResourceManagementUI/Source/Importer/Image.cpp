@@ -15,18 +15,41 @@ namespace Importer{
     {
         std::cout << "Image class is created." << std::endl;
         
+        //All Import files list
+        process.SetWidthInUnits(10);
+        process.SetHeight(240);
+        process.SetOddEven(false);
         
+        wind.Add(process);
+        
+        wind.SetVisible(false);
+        
+        
+        //Preview stuff
         bmp.Import(Gorgon::String::Concat(Gorgon::Filesystem::ExeDirectory(),"/GRM-Logo-72x72.png"));
         bmp.Prepare();
         
         l.GetLayer().Add(imgLayer);
+        l.SetHeight(100);
+        l.SetWidthInUnits(8);
+        l.Move({0,0});
+       
         bmp.Draw(imgLayer,10,10);
-        imgWind.Add(l);
-        imgWind.SetVisible(false);
         
-        process.SetWidthInUnits(10);
-        process.SetHeight(240);
-        process.SetOddEven(false);
+        /*metaI.Move({0,120});
+        metaI.SetHeight(300);
+        metaI.SetWidthInUnits(8);
+        metaI.SetOddEven(false);
+        metaI.Add("This is an element");
+        metaI.Add("This ");
+        metaI.Add("an element");
+        metaI.Add("element");
+        metaI.Add("This element");
+        */
+        
+        imgWind.Add(l);
+        //imgWind.Add(metaI);
+        imgWind.SetVisible(false);
         
         process.ChangedEvent.Register([&](long index, bool status){
             currentImage = "";
@@ -37,39 +60,45 @@ namespace Importer{
             imgWind.SetVisible(true);
             imgWind.Focus();
             imgWind.SetTitle(currentImage);
+            if(mdata)
+                Gorgon::UI::ShowMessage("Metadata",Gorgon::String::Concat("",metas));
         });
         
         imgWind.ClosingEvent.Register([&](){
             imgWind.SetVisible(false);
         });
         
-        wind.Add(process);
         
-        wind.SetVisible(false);
         
         wind.AddButton("Import", [&]{
             ActualImport();
+            process.ClearSelection();
+            process.Clear();
             imgWind.SetVisible(false);
             wind.SetVisible(false);
         });
         
         wind.AddButton("Cancel", [&]{
+            wind.SetVisible(false);
+            process.ClearSelection();
             process.Clear();
             imgWind.SetVisible(false);
-            wind.SetVisible(false);
         });
         
         wind.ClosingEvent.Register([&](){
+            process.ClearSelection();
             process.Clear();
             imgWind.SetVisible(false);
         });
     }
     
-    void Image::Set(int s, std::string pF, std::string pT, std::string rN){
+    void Image::Set(int s, std::string pF, std::string pT, std::string rN, std::vector<std::string> m, bool md){
         scale = s;
         pathFrom = pF;
         pathTo = pT;
         resourceName = rN;
+        metas = m;
+        mdata = md;
     }
     
     Gorgon::Graphics::Bitmap Importer::Image::Scale(const Gorgon::Graphics::Bitmap &bmp, int scale){
@@ -108,12 +137,9 @@ namespace Importer{
         
         for(Gorgon::Filesystem::Iterator it(fold_path); it.IsValid(); it.Next()) {
             auto file_name = *it;
-            
-            std::cout << "In for loop for Preview\n";
 
             if(Gorgon::String::ToLower(Gorgon::Filesystem::GetExtension(file_name)) == fileType1 || Gorgon::String::ToLower(Gorgon::Filesystem::GetExtension(file_name)) == fileType2){
             
-            std::cout << "If is true!\n";
             process.Add(Gorgon::String::Concat("",file_name));
                 
             
@@ -157,8 +183,10 @@ namespace Importer{
 
                 auto &imres = *new Gorgon::Resource::Image(std::move(im));
                 fold.Add(imres);
-                //auto &data  = *new Gorgon::Resource::Data;
-                //fold.Add(data);
+                
+                if(mdata){
+                auto &data  = *new Gorgon::Resource::Data;
+                fold.Add(data);
 
                 /*auto name = Gorgon::Filesystem::GetBasename(file_name);
                 std::string descr = "";
@@ -189,7 +217,7 @@ namespace Importer{
                 //data.Append("offset", off);
                 
                 
-                
+                }
 
                 std::cout << Gorgon::String::Concat("Imported ", file_name, ".\n");
             }

@@ -29,6 +29,8 @@ namespace Importer{
             sr.Assume(s);
         
             fold.Add(sr);
+            
+            std::cout << Gorgon::String::Concat("Imported ", file_name, ".\n");
         }
 
         file.Save(Gorgon::String::Concat(pathTo , "/" ,resourceType, "_Audio.gor"));

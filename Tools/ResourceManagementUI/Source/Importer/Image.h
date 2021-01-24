@@ -43,7 +43,7 @@ namespace Importer{
         
         Image();
         
-        void Set(int scale, std::string pathFrom, std::string pathTo, std::string resourceName);
+        void Set(int scale, std::string pathFrom, std::string pathTo, std::string resourceName, std::vector<std::string> m, bool md);
         
         void DoImport();
         
@@ -56,6 +56,8 @@ namespace Importer{
         Gorgon::Widgets::DialogWindow imgWind, wind;
         
         Gorgon::Widgets::MultiListbox<std::string> process;
+        
+        Gorgon::Widgets::SimpleListbox<std::string> metaI;
         
         int CountItemsInFolder();
         
@@ -71,9 +73,13 @@ namespace Importer{
         
         Gorgon::Graphics::Layer imgLayer;
         
-        Gorgon::Widgets::Layerbox l;
+        Gorgon::Widgets::Layerbox l, lm;
         
+        Gorgon::Widgets::Panel tex;
         
+        std::vector<std::string> metas;
+        
+        bool mdata;
         
     };
 }

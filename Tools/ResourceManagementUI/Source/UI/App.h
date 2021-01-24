@@ -109,8 +109,11 @@ namespace UI{
     private:
         
         
-        
+        //Import function
         void Import();
+        
+        //Read in metadata elemnts from textbox and convert to a vector
+        void GetMetadataVariables();
         
         //Gorgon Main UI Window
         Gorgon::UI::Window window;
@@ -159,7 +162,9 @@ namespace UI{
         Gorgon::Widgets::Label lblMetadata;
         
         //Gorgon panel objects
-        Gorgon::Widgets::Panel pnlSettings;
+        Gorgon::Widgets::Panel pnlSettings, pnlPreview;
+        
+        std::vector<std::string> metas;
         
     };
 }
