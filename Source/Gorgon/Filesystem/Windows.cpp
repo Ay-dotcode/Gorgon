@@ -8,6 +8,10 @@
 
 #include <windows.h>
 #include <shlobj.h>
+
+#undef min
+#undef max
+
 #include "Iterator.h"
 
 #include <locale>
