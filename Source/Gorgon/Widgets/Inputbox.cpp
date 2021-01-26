@@ -232,9 +232,9 @@ namespace Gorgon { namespace Widgets { namespace internal {
                     std::string s = GetSelectedText();
                     if(!s.empty()) {
                         WindowManager::SetClipboardText(s);
+                        return true;
                     }
-                    
-                    return true;
+                    break;
                 }
                 
                 case Keycodes::V:

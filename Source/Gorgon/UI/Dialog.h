@@ -5,6 +5,7 @@
 #include "../Widgets/Inputbox.h"
 #include "../Widgets/Label.h"
 #include "../Enum.h"
+#include "../WindowManager.h"
 
 namespace Gorgon { namespace UI {
     
@@ -12,7 +13,8 @@ namespace Gorgon { namespace UI {
     namespace internal {
         void init();
         bool handledialogcopy(Input::Key key, float state, const std::string &message);
-        void attachdialogcopy(Widgets::DialogWindow *diag, const std::string &title, const std::string &message);
+        void attachdialogcopy(Widgets::DialogWindow *diag, const std::string &title, 
+                              const std::string &message);
         void closethis(Widgets::DialogWindow *diag);
         Geometry::Size negotiatesize(Widgets::DialogWindow *diag, Widget *text, bool allowshrink = true);
         void place(Widgets::DialogWindow *diag);
@@ -29,11 +31,14 @@ namespace Gorgon { namespace UI {
 
     /// Displays the given message in a message window, calls the given function 
     /// when the window is closed
-    void ShowMessage(const std::string &title, const std::string &message, std::function<void()> onclose = {}, const std::string &buttontext = "");
+    void ShowMessage(const std::string &title, const std::string &message, 
+                     std::function<void()> onclose = {}, const std::string &buttontext = "");
 
     /// Displays the given message in a message window, calls the given function 
     /// when the window is closed
-    inline void ShowMessage(const std::string &title, const std::string &message, const std::string &buttontext) {
+    inline void ShowMessage(const std::string &title, const std::string &message, 
+                            const std::string &buttontext) 
+    {
         ShowMessage(title, message, {}, buttontext);
     }
 
@@ -193,6 +198,9 @@ namespace Gorgon { namespace UI {
     /// dialogs.
     void SetCloseText(const std::string &value);
 
+    /// Returns the text of the close button.
+    std::string GetCloseText();
+    
     /// Changes the text of the yes and no buttons. This change will effect only 
     /// future dialogs.
     void SetYesNoText(const std::string &yes, const std::string &no);
@@ -215,11 +223,13 @@ namespace Gorgon { namespace UI {
     template<class T_>
     void Input(
         const std::string &title, const std::string &message, 
-        const std::string &label, const T_ &def, 
+        const std::string &label, 
         std::function<void(const T_ &)> onconfirm, 
-        bool allowcancel = true,
-        std::function<void()> oncancel = {}, 
-        const std::string &confirmtext = "", const std::string &canceltext = ""
+        const T_ &def, 
+        std::function<bool(const T_ &)> validate = {}, 
+        CloseOption close = CloseOption::None,
+        std::function<void()> onclose= {}, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
     ) {
         using namespace internal;
         
@@ -228,14 +238,19 @@ namespace Gorgon { namespace UI {
         auto diag = new Widgets::DialogWindow(title);
         diag->HideCloseButton(); //not to confuse user
         
-        if(allowcancel) {
-            auto &close = diag->AddButton(canceltext != "" ? canceltext : GetCancelText(), [diag, oncancel]() {
-                closethis(diag);
-                if(oncancel)
-                    oncancel();
-            });
+        if(close != CloseOption::None) {
+            auto &closebtn = diag->AddButton(
+                closetext != "" ? 
+                    (close == CloseOption::Close ? GetCloseText() : GetCancelText()) : 
+                    GetCancelText(), 
+                [diag, onclose]() {
+                    closethis(diag);
+                    if(onclose)
+                        onclose();
+                }
+            );
             
-            diag->SetCancel(close);
+            diag->SetCancel(closebtn);
         }
         
         auto inp = new Widgets::Inputbox<T_>(def);
@@ -243,13 +258,22 @@ namespace Gorgon { namespace UI {
         diag->Own(*inp);
         diag->Add(*inp);
         
-        auto &confirm = diag->AddButton(confirmtext != "" ? confirmtext : GetOkText(), [diag, onconfirm, inp]() {
-            closethis(diag);
-            
-            onconfirm(*inp);
-        });
+        auto &confirm = diag->AddButton(confirmtext != "" ? confirmtext : GetOkText(), 
+            [diag, onconfirm, inp]() {
+                closethis(diag);            
+                onconfirm(*inp);
+            }
+        );
         
         diag->SetDefault(confirm);
+        if(validate) {
+            if(!validate(def)) {
+                confirm.Disable();
+            }
+            inp->EditedEvent.Register([inp, &confirm, validate] {
+                confirm.SetEnabled(validate(*inp));
+            });
+        }
         
         auto text = new Widgets::Label(message);
         text->SetAutosize(Autosize::Automatic, Autosize::Automatic);
@@ -270,9 +294,35 @@ namespace Gorgon { namespace UI {
             diag->Own(*l);
         }
         
-        diag->ResizeInterior({inp->GetBounds().Right, inp->GetBounds().Bottom});
+        diag->ResizeInterior({
+            std::max(diag->GetInteriorSize().Width, inp->GetBounds().Right), 
+            inp->GetBounds().Bottom
+        });
         
-        attachdialogcopy(diag, title, message);
+        diag->KeyEvent.Register(
+            [inp, message, label](Input::Key key, float state) {
+                if(state == 1 && key == Input::Keyboard::Keycodes::C && (
+                    Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::Ctrl  ||
+                    Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::ShiftCtrl
+                )) {
+                    if(label.empty()) {
+                        WindowManager::SetClipboardText(
+                            message + "\n---\n" + String::From(inp->Get())
+                        );
+                    }
+                    else {
+                        WindowManager::SetClipboardText(
+                            message + "\n---\n" + 
+                            label + ": " + String::From(inp->Get())
+                        );
+                    }
+                    
+                    return true;
+                }
+                
+                return false;
+            }
+        );
         
         diag->ResizeInterior(negotiatesize(diag, text, false));
         
@@ -288,9 +338,80 @@ namespace Gorgon { namespace UI {
         }
         
         diag->ResizeInterior({diag->GetInteriorSize().Width, inp->GetBounds().Bottom});
+        diag->ResizeInterior(Geometry::Size(inp->GetBounds().BottomRight() + text->Location));
         
         place(diag);
         diag->Center(); //input dialogs will be centered
     }
+
+    /// Requests an input from the user
+    template<class T_>
+    void Input(
+        const std::string &title, const std::string &message, 
+        const std::string &label, 
+        std::function<void(const T_ &)> onconfirm, 
+        std::function<bool(const T_ &)> validate = {}, 
+        CloseOption close = CloseOption::None,
+        std::function<void()> onclose= {}, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Input(title, message, label, onconfirm, T_{}, validate, close, onclose, confirmtext, closetext);
+    }
+    
+    /// Requests an input from the user
+    template<class T_>
+    void Input(
+        const std::string &title, const std::string &message, 
+        std::function<void(const T_ &)> onconfirm, 
+        const T_ &def, 
+        std::function<bool(const T_ &)> validate = {}, 
+        CloseOption close = CloseOption::None,
+        std::function<void()> onclose= {}, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Input(title, message, "", onconfirm, def, validate, close, onclose, confirmtext, closetext);
+    }
+    
+    /// Requests an input from the user
+    template<class T_>
+    void Input(
+        const std::string &title, const std::string &message, 
+        std::function<void(const T_ &)> onconfirm, 
+        std::function<bool(const T_ &)> validate = {}, 
+        CloseOption close = CloseOption::None,
+        std::function<void()> onclose= {}, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Input(title, message, "", onconfirm, T_{}, validate, close, onclose, confirmtext, closetext);
+    }
+    
+    /// Requests an input from the user
+    template<class T_>
+    void Input(
+        const std::string &message, 
+        std::function<void(const T_ &)> onconfirm, 
+        const T_ &def, 
+        std::function<bool(const T_ &)> validate = {}, 
+        CloseOption close = CloseOption::None,
+        std::function<void()> onclose= {}, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Input("", message, "", onconfirm, def, validate, close, onclose, confirmtext, closetext);
+    }
+    
+    
+    /// Requests an input from the user
+    template<class T_>
+    void Input(
+        const std::string &message, 
+        std::function<void(const T_ &)> onconfirm, 
+        std::function<bool(const T_ &)> validate = {}, 
+        CloseOption close = CloseOption::None,
+        std::function<void()> onclose= {}, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Input("", message, "", onconfirm, T_{}, validate, close, onclose, confirmtext, closetext);
+    }
+    
     
 } }

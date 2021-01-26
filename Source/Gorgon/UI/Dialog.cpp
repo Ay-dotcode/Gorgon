@@ -341,5 +341,9 @@ namespace internal {
         return canceltext;
     }
     
+    std::string GetCloseText() {
+        return closetext;
+    }
+    
     
 } }

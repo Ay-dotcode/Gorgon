@@ -176,10 +176,13 @@ namespace Gorgon { namespace Widgets {
         }
         
         bool KeyPressed(Input::Key key, float state) override {
-            if(KeyEvent(key, state))
+            if(KeyPreviewEvent(key, state))
                 return true;
             
-            return Panel::KeyPressed(key, state);
+            if(Panel::KeyPressed(key, state))
+                return true;
+            
+            return KeyEvent(key, state);
         }
         
         virtual void Show() override {
@@ -210,7 +213,10 @@ namespace Gorgon { namespace Widgets {
         /// only hides the window. It is the owner's task to cleanup.
         Event<Window> ClosedEvent = Event<Window>{this};
         
-        /// This event is called when a key is pressed.
+        /// This event is called when a key is pressed in this window before any widgets receive it.
+        ConsumableEvent<Window, Input::Key /*key*/, float /*state*/> KeyPreviewEvent = ConsumableEvent<Window, Input::Key, float>{this};
+        
+        /// This event is called when a key is pressed and focused widget is not consumed it.
         ConsumableEvent<Window, Input::Key /*key*/, float /*state*/> KeyEvent = ConsumableEvent<Window, Input::Key, float>{this};
 
     protected:
