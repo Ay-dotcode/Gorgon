@@ -28,6 +28,36 @@ namespace Gorgon { namespace UI {
         Close,
         Cancel
     };
+    
+    /** @page UIDialog UI Dialogs
+     * Gorgon library has an extensive UI dialog system. Currently all dialogs are non modal and 
+     * call the supplied function(s) when closed. 
+     * 
+     * All dialogs support title and message. Titles are optional. Adding icon support is in 
+     * consideration. **Currently**, if title is not specified, it is left blank and has no effect
+     * on the dialog. There are two options that can happen when title is not specified and is under
+     * deliberation. First method is to use system name as the title and second is to use a 
+     * different dialog template that does not have any title bar.
+     * 
+     * Default button texts can be changed using SetOkText, SetCloseText, SetCancelText, and
+     * SetYesNoText functions
+     * 
+     * The following is the list of current dialogs
+     * * ShowMessage(): Displays the given message with a close button, supports onclose event
+     * * MultipleChoiceIndex(): Displays a message and shows buttons supplied by a vector. Close or
+     *                          cancel button can be shown. Supports onselect event which receives
+     *                          the index of the selected option or -1 on close/cancel.
+     * * MultipleChoice(): Displays a message and shows buttons supplied by a vector of any type.
+     *                     Vector is optional if a StringEnum is used. Supports onselect event
+     *                     which receives the value of the selected option and onclose event.
+     * * AskYesNo(): Displays a message and shows yes, no buttons and optionally close/cancel 
+     *               button. Supports onyes, onno and onclose events
+     * * Confirm(): Displays a message with ok and cancel buttons. Supports onconfirm event.
+     * * Input(): Displays a message and an inputbox optionally prepended with a label. Supports 
+     *            onconfirm event which takes the supplied value and onclose event. It is also
+     *            possible to supply a validation function that will control if the value is 
+     *            acceptable as input.
+     */
 
     /// Displays the given message in a message window, calls the given function 
     /// when the window is closed
