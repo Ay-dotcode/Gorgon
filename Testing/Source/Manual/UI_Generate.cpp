@@ -308,22 +308,35 @@ int main() {
     ;
     wind.AllowResize();
     std::vector<std::string> opts = {"Zero", "One", "Two"};
-    wind.AddButton("Hello", [&]{
+    wind.AddButton("?", [&]{
         //UI::MultipleChoice<DaysOfWeek>("Select one", [](DaysOfWeek ind) { std::cout << ind << std::endl; }, UI::CloseOption::Cancel);
         UI::AskYesNo("Exit", "Are you certain?", [&app] { 
             app.wind.Quit(); 
         });
-    });
-    wind.AddButton("World", []{
+    }).SetHorizonalAutosize(Gorgon::UI::Autosize::Automatic);
+    
+    wind.AddButton("Msg", []{
         UI::ShowMessage("Hello", "This class is the base class for all widget containers.\n\nAll widgets require a layer to be placed on, to allow widget containers that are also widgets, this class is left abstract. You may derive from this class and WidgetBase at the same time.");
-    });
-    wind.AddButton("Name", []{
-        UI::Input<std::string>("??", "Please enter your name below", [](const std::string &reply) {
-            UI::ShowMessage("Hello "+reply);
-        }, [](const std::string &reply) {
-            return reply.length()>2;
-        });
-    });
+    }).SetHorizonalAutosize(Gorgon::UI::Autosize::Automatic);
+    
+    wind.AddButton("Inp", []{
+        UI::Input<std::string>("??", "Please enter your name below", "Name", 
+            [](const std::string &reply) {
+                UI::ShowMessage("Hello "+reply);
+            }, 
+            [](const std::string &reply) {
+                return reply.length()>2;
+            }
+        );
+    }).SetHorizonalAutosize(Gorgon::UI::Autosize::Automatic);
+    
+    wind.AddButton("Sel", []{
+        UI::Select<DaysOfWeek>("Holiday", "Please select an option",
+            [](DaysOfWeek v) {
+                UI::ShowMessage("We are going holiday on " + String::From(v));
+            }, 2
+        );
+    }).SetHorizonalAutosize(Gorgon::UI::Autosize::Automatic);
 
     app.wind.Add(blank);
     app.wind.Run();

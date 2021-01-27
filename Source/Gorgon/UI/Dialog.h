@@ -6,17 +6,24 @@
 #include "../Widgets/Label.h"
 #include "../Enum.h"
 #include "../WindowManager.h"
+#include "../Widgets/Dropdown.h"
 
 namespace Gorgon { namespace UI {
     
     /// @cond internal
     namespace internal {
         void init();
+        
         bool handledialogcopy(Input::Key key, float state, const std::string &message);
+        
         void attachdialogcopy(Widgets::DialogWindow *diag, const std::string &title, 
                               const std::string &message);
+        
         void closethis(Widgets::DialogWindow *diag);
-        Geometry::Size negotiatesize(Widgets::DialogWindow *diag, Widget *text, bool allowshrink = true);
+        
+        Geometry::Size negotiatesize(Widgets::DialogWindow *diag, Widget *text, 
+                                     bool allowshrink = true);
+        
         void place(Widgets::DialogWindow *diag);
     }
     /// @endcond
@@ -136,7 +143,7 @@ namespace Gorgon { namespace UI {
         MultipleChoice<T_>("", message, options, onselect, close, onclose);
     }
 
-    //disallow passing temporary vectors
+    /// disallow passing temporary vectors. The vectors should outlive the dialog.
     template<class T_>
     void MultipleChoice(
         const std::string &title, const std::string &message,
@@ -429,7 +436,6 @@ namespace Gorgon { namespace UI {
         Input("", message, "", onconfirm, def, validate, close, onclose, confirmtext, closetext);
     }
     
-    
     /// Requests an input from the user
     template<class T_>
     void Input(
@@ -442,6 +448,436 @@ namespace Gorgon { namespace UI {
     ) {
         Input("", message, "", onconfirm, T_{}, validate, close, onclose, confirmtext, closetext);
     }
+
+    /// Asks a select question to the user with a confirm button and  optional close/cancel button.
+    /// MultipleChoiceIndex is a better fit if there are a few choices.
+    void SelectIndex(
+        const std::string &title, const std::string &message, const std::string &label,
+        const std::vector<std::string> &options, 
+        std::function<void(int)> onselect, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    );
     
+    /// Asks a select question to the user with a confirm button and  optional close/cancel button.
+    /// MultipleChoiceIndex is a better fit if there are a few choices.
+    inline void SelectIndex(
+        const std::string &title, const std::string &message,
+        const std::vector<std::string> &options,
+        std::function<void(int)> onselect, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        SelectIndex(title, message, "", options, onselect, def, 
+                    requireselection, close, confirmtext, closetext);
+    }
+    
+    /// Asks a select question to the user with a confirm button and  optional close/cancel button.
+    /// MultipleChoiceIndex is a better fit if there are a few choices.
+    inline void SelectIndex(
+        const std::string &message,
+        const std::vector<std::string> &options,
+        std::function<void(int)> onselect, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        SelectIndex("", message, "", options, onselect, def, 
+                    requireselection, close, confirmtext, closetext);
+    }
+    
+    /// Asks a select question to the user with a confirm button and  optional close/cancel button.
+    /// MultipleChoiceIndex is a better fit if there are a few choices. If requireselection is false
+    /// and user clicks on confirm, onclose will be called instead of onselect. Options vector is
+    /// not needed and could be destroyed once the dialog is created.
+    template<class T_, class I_>
+    void Select(
+        const std::string &title, const std::string &message,
+        const std::string &label,
+        const I_ &optionsbegin, const I_ &optionsend,
+        std::function<void(const T_ &)> onselect, 
+        std::function<void()> onclose, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        using namespace internal;
+        init();
+        
+        auto diag = new Widgets::DialogWindow(title);
+        diag->HideCloseButton(); //not to confuse user
+        
+        if(close != CloseOption::None) {
+            auto &closebtn = diag->AddButton(
+                closetext != "" ? 
+                    (close == CloseOption::Close ? GetCloseText() : GetCancelText()) : 
+                    GetCancelText(), 
+                [diag, onclose]() {
+                    closethis(diag);
+                    onclose();
+                }
+            );
+            
+            diag->SetCancel(closebtn);
+        }
+        
+        auto inp = new Widgets::DropdownList<T_>(optionsbegin, optionsend);
+        if(def != -1)
+            inp->List.SetSelectedIndex(def);
+        diag->Own(*inp);
+        diag->Add(*inp);
+        
+        auto &confirm = diag->AddButton(confirmtext != "" ? confirmtext : GetOkText(), 
+            [diag, onselect, onclose, inp]() {
+                closethis(diag);
+                
+                if(inp->List.HasSelectedItem())
+                    onselect(*inp);
+                else
+                    onclose();
+            }
+        );
+        
+        diag->SetDefault(confirm);
+        if(requireselection) {
+            if(def == -1) {
+                confirm.Disable();
+            }
+            inp->ChangedEvent.Register([inp, &confirm] {
+                confirm.SetEnabled(inp->List.HasSelectedItem());
+            });
+        }
+        
+        auto text = new Widgets::Label(message);
+        text->SetAutosize(Autosize::Automatic, Autosize::Automatic);
+        diag->Add(*text);
+        diag->Own(*text);
+        inp->Move(0, text->GetBounds().Bottom + diag->GetSpacing());
+        
+        Widgets::Label *l = nullptr;
+        
+        if(!label.empty()) {
+            l = new Widgets::Label(label);
+            l->SetHorizonalAutosize(Autosize::Automatic);
+            l->Move(0, text->GetBounds().Bottom + diag->GetSpacing());
+            l->SetHeight(inp->GetHeight());
+            inp->Location.X = l->GetBounds().Right + diag->GetSpacing()*2;
+            
+            diag->Add(*l);
+            diag->Own(*l);
+        }
+        
+        diag->ResizeInterior({
+            std::max(diag->GetInteriorSize().Width, inp->GetBounds().Right), 
+            inp->GetBounds().Bottom
+        });
+        
+        diag->KeyEvent.Register(
+            [inp, message, label](Input::Key key, float state) {
+                if(state == 1 && key == Input::Keyboard::Keycodes::C && (
+                    Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::Ctrl  ||
+                    Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::ShiftCtrl
+                )) {
+                    if(label.empty()) {
+                        if(inp->List.HasSelectedItem()) {
+                            WindowManager::SetClipboardText(
+                                message + "\n---\n" + String::From(inp->Get())
+                            );
+                        }
+                        else {
+                            WindowManager::SetClipboardText(
+                                message
+                            );
+                        }
+                    }
+                    else {
+                        WindowManager::SetClipboardText(
+                            message + "\n---\n" + 
+                            label + ": " + (inp->List.HasSelectedItem() ? String::From(inp->Get()) : "")
+                        );
+                    }
+                    
+                    return true;
+                }
+                
+                return false;
+            }
+        );
+        
+        diag->ResizeInterior(negotiatesize(diag, text, false));
+        
+        if(l) {
+            l->Move(text->Location.X, text->GetBounds().Bottom + text->Location.Y);
+            l->SetHeight(inp->GetHeight());
+            inp->Move(l->GetBounds().Right + diag->GetSpacing()*2, l->Location.Y);
+            inp->SetWidth(diag->GetInteriorSize().Width - inp->Location.X - text->Location.X);
+        }
+        else {
+            inp->Move(text->Location.X, text->GetBounds().Bottom + text->Location.Y);
+            inp->SetWidth(diag->GetInteriorSize().Width - text->Location.X*2);
+        }
+        
+        diag->ResizeInterior({diag->GetInteriorSize().Width, inp->GetBounds().Bottom});
+        diag->ResizeInterior(Geometry::Size(inp->GetBounds().BottomRight() + text->Location));
+        
+        place(diag);
+        diag->Center(); //input dialogs will be centered
+    }
+    
+    template<class T_>
+    void Select(
+        const std::string &title, const std::string &message,
+        const std::string &label,
+        const std::vector<T_> &options,
+        std::function<void(const T_ &)> onselect, 
+        std::function<void()> onclose, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Select<T_>(title, message, label, begin(options), end(options), onselect, onclose, def,
+                   requireselection, close, confirmtext, closetext);
+    }
+    
+    template<class T_>    
+    typename std::enable_if<decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum, void>::type 
+    Select(
+        const std::string &title, const std::string &message,
+        const std::string &label,
+        std::function<void(const T_ &)> onselect, 
+        std::function<void()> onclose,
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Select<T_>(
+            title, message, label, begin(Enumerate<T_>()), end(Enumerate<T_>()), 
+            onselect, onclose, def,
+            requireselection, close, confirmtext, closetext
+        );
+    }
+    
+    
+    template<class T_, class I_>
+    void Select(
+        const std::string &title, const std::string &message,
+        const I_ &optionsbegin, const I_ &optionsend,
+        std::function<void(const T_ &)> onselect, 
+        std::function<void()> onclose, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Select<T_>(title, message, "", optionsbegin(), optionsend, onselect, onclose, def,
+                   requireselection, close, confirmtext, closetext);
+    }
+    
+    template<class T_>
+    void Select(
+        const std::string &title, const std::string &message,
+        const std::vector<T_> &options,
+        std::function<void(const T_ &)> onselect, 
+        std::function<void()> onclose, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Select<T_>(title, message, "", begin(options), end(options), onselect, onclose, def,
+                   requireselection, close, confirmtext, closetext);
+    }
+    
+    template<class T_>    
+    typename std::enable_if<decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum, void>::type 
+    Select(
+        const std::string &title, const std::string &message,
+        std::function<void(const T_ &)> onselect, 
+        std::function<void()> onclose, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Select<T_>(
+            title, message, "", begin(Enumerate<T_>()), end(Enumerate<T_>()), 
+            onselect, onclose, def,
+            requireselection, close, confirmtext, closetext
+        );
+    }
+    
+    
+    template<class T_, class I_>
+    void Select(
+        const std::string &message,
+        const I_ &optionsbegin, const I_ &optionsend,
+        std::function<void(const T_ &)> onselect, 
+        std::function<void()> onclose, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Select<T_>("", message, "", optionsbegin(), optionsend, onselect, onclose, def,
+                   requireselection, close, confirmtext, closetext);
+    }
+    
+    template<class T_>
+    void Select(
+        const std::string &message,
+        const std::vector<T_> &options,
+        std::function<void(const T_ &)> onselect, 
+        std::function<void()> onclose, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Select<T_>("", message, "", begin(options), end(options), onselect, onclose, def,
+                   requireselection, close, confirmtext, closetext);
+    }
+    
+    template<class T_>    
+    typename std::enable_if<decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum, void>::type 
+    Select(
+        const std::string &message,
+        std::function<void(const T_ &)> onselect, 
+        std::function<void()> onclose, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Select<T_>(
+            "", message, "", begin(Enumerate<T_>()), end(Enumerate<T_>()), 
+            onselect, onclose, def,
+            requireselection, close, confirmtext, closetext
+        );
+    }
+    
+    
+    template<class T_, class I_>
+    void Select(
+        const std::string &title, const std::string &message, const std::string &label,
+        const I_ &optionsbegin, const I_ &optionsend,
+        std::function<void(const T_ &)> onselect, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Select<T_>(title, message, label, optionsbegin(), optionsend, onselect, {}, def,
+                   requireselection, close, confirmtext, closetext);
+    }
+    
+    template<class T_>
+    void Select(
+        const std::string &title, const std::string &message, const std::string &label,
+        const std::vector<T_> &options,
+        std::function<void(const T_ &)> onselect, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Select<T_>(title, message, label, begin(options), end(options), onselect, {}, def,
+                   requireselection, close, confirmtext, closetext);
+    }
+    
+    template<class T_>    
+    typename std::enable_if<decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum, void>::type 
+    Select(
+        const std::string &title, const std::string &message, const std::string &label,
+        std::function<void(const T_ &)> onselect, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Select<T_>(
+            title, message, label, begin(Enumerate<T_>()), end(Enumerate<T_>()), 
+            onselect, {}, def,
+            requireselection, close, confirmtext, closetext
+        );
+    }
+    
+    
+    template<class T_, class I_>
+    void Select(
+        const std::string &title, const std::string &message,
+        const I_ &optionsbegin, const I_ &optionsend,
+        std::function<void(const T_ &)> onselect, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Select<T_>(title, message, "", optionsbegin(), optionsend, onselect, {}, def,
+                   requireselection, close, confirmtext, closetext);
+    }
+    
+    template<class T_>
+    void Select(
+        const std::string &title, const std::string &message,
+        const std::vector<T_> &options,
+        std::function<void(const T_ &)> onselect, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Select<T_>(title, message, "", begin(options), end(options), onselect, {}, def,
+                   requireselection, close, confirmtext, closetext);
+    }
+    
+    template<class T_>    
+    typename std::enable_if<decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum, void>::type 
+    Select(
+        const std::string &title, const std::string &message,
+        std::function<void(const T_ &)> onselect, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Select<T_>(
+            title, message, "", begin(Enumerate<T_>()), end(Enumerate<T_>()), 
+            onselect, {}, def,
+            requireselection, close, confirmtext, closetext
+        );
+    }
+    
+    
+    template<class T_, class I_>
+    void Select(
+        const std::string &message,
+        const I_ &optionsbegin, const I_ &optionsend,
+        std::function<void(const T_ &)> onselect, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Select<T_>("", message, "", optionsbegin(), optionsend, onselect, {}, def,
+                   requireselection, close, confirmtext, closetext);
+    }
+    
+    template<class T_>
+    void Select(
+        const std::string &message,
+        const std::vector<T_> &options,
+        std::function<void(const T_ &)> onselect, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Select<T_>("", message, "", begin(options), end(options), onselect, {}, def,
+                   requireselection, close, confirmtext, closetext);
+    }
+    
+    template<class T_>    
+    typename std::enable_if<decltype(gorgon__enum_tr_loc(T_()))::isupgradedenum, void>::type 
+    Select(
+        const std::string &message,
+        std::function<void(const T_ &)> onselect, 
+        int def = -1, bool requireselection = true,
+        CloseOption close = CloseOption::None, 
+        const std::string &confirmtext = "", const std::string &closetext = ""
+    ) {
+        Select<T_>(
+            "", message, "", begin(Enumerate<T_>()), end(Enumerate<T_>()), 
+            onselect, {}, def,
+            requireselection, close, confirmtext, closetext
+        );
+    }
     
 } }

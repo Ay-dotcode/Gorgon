@@ -286,14 +286,19 @@ namespace Gorgon { namespace Widgets {
             this->list.SetSelectedIndex(index);
         }
         
-        /// Returns the currently selected item.
+        /// Returns the currently selected item. If nothing is selected, this will throw.
         operator const T_ &() const {
             return this->list.GetSelectedItem();
         }
         
         /// Returns the currently selected item. Changing the selected item does not update
-        /// dropdown automatically.
+        /// dropdown automatically. If nothing is selected, this will throw.
         operator T_ &() {
+            return this->list.GetSelectedItem();
+        }
+        
+        /// Returns the currently selected item. If nothing is selected, this will throw.
+        T_ Get() const {
             return this->list.GetSelectedItem();
         }
         

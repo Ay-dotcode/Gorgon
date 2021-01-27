@@ -1,6 +1,5 @@
 #include "Dialog.h"
 
-#include "../Widgets/Label.h"
 #include "../Main.h"
 #include "../Window.h"
 #include "../Containers/GarbageCollection.h"
@@ -314,6 +313,133 @@ namespace internal {
                 break;
             }
         });
+    }
+
+    void SelectIndex(
+        const std::string &title, const std::string &message,
+        const std::string &label,
+        const std::vector<std::string> &options,
+        std::function<void(int)> onselect, 
+        int def, bool requireselection,
+        CloseOption close, 
+        const std::string &confirmtext, const std::string &closetext
+    ) {
+        init();
+        
+        auto diag = new Widgets::DialogWindow(title);
+        diag->HideCloseButton(); //not to confuse user
+        
+        if(close != CloseOption::None) {
+            auto &closebtn = diag->AddButton(
+                closetext != "" ? 
+                    (close == CloseOption::Close ? GetCloseText() : GetCancelText()) : 
+                    GetCancelText(), 
+                [diag, onselect]() {
+                    closethis(diag);
+                    onselect(-1);
+                }
+            );
+            
+            diag->SetCancel(closebtn);
+        }
+        
+        auto inp = new Widgets::DropdownList<std::string>(begin(options), end(options));
+        if(def != -1)
+            inp->List.SetSelectedIndex(def);
+        diag->Own(*inp);
+        diag->Add(*inp);
+        
+        auto &confirm = diag->AddButton(confirmtext != "" ? confirmtext : GetOkText(), 
+            [diag, onselect, inp]() {
+                closethis(diag);            
+                onselect(inp->List.GetSelectedIndex());
+            }
+        );
+        
+        diag->SetDefault(confirm);
+        if(requireselection) {
+            if(def == -1) {
+                confirm.Disable();
+            }
+            inp->ChangedEvent.Register([inp, &confirm] {
+                confirm.SetEnabled(inp->List.HasSelectedItem());
+            });
+        }
+        
+        auto text = new Widgets::Label(message);
+        text->SetAutosize(Autosize::Automatic, Autosize::Automatic);
+        diag->Add(*text);
+        diag->Own(*text);
+        inp->Move(0, text->GetBounds().Bottom + diag->GetSpacing());
+        
+        Widgets::Label *l = nullptr;
+        
+        if(!label.empty()) {
+            l = new Widgets::Label(label);
+            l->SetHorizonalAutosize(Autosize::Automatic);
+            l->Move(0, text->GetBounds().Bottom + diag->GetSpacing());
+            l->SetHeight(inp->GetHeight());
+            inp->Location.X = l->GetBounds().Right + diag->GetSpacing()*2;
+            
+            diag->Add(*l);
+            diag->Own(*l);
+        }
+        
+        diag->ResizeInterior({
+            std::max(diag->GetInteriorSize().Width, inp->GetBounds().Right), 
+            inp->GetBounds().Bottom
+        });
+        
+        diag->KeyEvent.Register(
+            [inp, message, label](Input::Key key, float state) {
+                if(state == 1 && key == Input::Keyboard::Keycodes::C && (
+                    Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::Ctrl  ||
+                    Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::ShiftCtrl
+                )) {
+                    if(label.empty()) {
+                        if(inp->List.HasSelectedItem()) {
+                            WindowManager::SetClipboardText(
+                                message + "\n---\n" + inp->Get()
+                            );
+                        }
+                        else {
+                            WindowManager::SetClipboardText(
+                                message
+                            );
+                        }
+                    }
+                    else {
+                        WindowManager::SetClipboardText(
+                            message + "\n---\n" + 
+                            label + ": " + (inp->List.HasSelectedItem() ? inp->Get() : "")
+                        );
+                    }
+                    
+                    return true;
+                }
+                
+                return false;
+            }
+        );
+        
+        diag->ResizeInterior(negotiatesize(diag, text, false));
+        
+        if(l) {
+            l->Move(text->Location.X, text->GetBounds().Bottom + text->Location.Y);
+            l->SetHeight(inp->GetHeight());
+            inp->Move(l->GetBounds().Right + diag->GetSpacing()*2, l->Location.Y);
+            inp->SetWidth(diag->GetInteriorSize().Width - inp->Location.X - text->Location.X);
+        }
+        else {
+            inp->Move(text->Location.X, text->GetBounds().Bottom + text->Location.Y);
+            inp->SetWidth(diag->GetInteriorSize().Width - text->Location.X*2);
+        }
+        
+        diag->ResizeInterior({diag->GetInteriorSize().Width, inp->GetBounds().Bottom});
+        diag->ResizeInterior(Geometry::Size(inp->GetBounds().BottomRight() + text->Location));
+        
+        place(diag);
+        diag->Center(); //input dialogs will be centered
     }
 
     void SetCloseText(const std::string &value) {
