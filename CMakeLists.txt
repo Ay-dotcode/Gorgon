@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.0)
-cmake_policy(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
+cmake_policy(VERSION 3.5)
 
 project(Gorgon)
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Tools/ShaderEmbedder")
@@ -17,6 +17,8 @@ set(CMAKE_TESTING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/Testing)
 set(CMAKE_DOCUMENT_OUTPUT_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/Docs)
 set(PROJECT_BINARY_DIR ${CMAKE_CURRENT_LIST_DIR}/Bin)
 set(PROJECT_PACKAGE_DIR ${CMAKE_CURRENT_LIST_DIR}/Package)
+
+set(gorgon_external_options "" NONE BUILTIN SYSTEM)
 
 #### SETTINGS ####
 
@@ -42,7 +44,18 @@ option(FLAC_SUPPORT "Enable FLAC decoding and streaming." ON)
 
 option(UI "Enable UI subsystem." ON)
 
-option(FREETYPE "Enable FreeType font support" ON)
+if(WIN32)
+	set(FREETYPE BUILTIN CACHE STRING "Enable FreeType font support")
+else()
+	set(FREETYPE SYSTEM CACHE STRING "Enable FreeType font support")
+endif()
+if("${FREETYPE}" STREQUAL "ON") #upgrading old options
+	set(FREETYPE SYSTEM CACHE STRING "Enable FreeType font support" FORCE)
+endif()
+if(NOT FREETYPE IN_LIST gorgon_external_options)
+    message(FATAL_ERROR "FREETYPE should be set to one of ${gorgon_external_options}")
+endif()
+set_property(CACHE FREETYPE PROPERTY STRINGS ${gorgon_external_options})
 
 OPTION(FORCE_32_BIT "Force 32 bit compilation" OFF)
 
@@ -83,7 +96,10 @@ if(AUDIO)
     string(APPEND ADDITIONAL_CLIENT_FLAGS " -DAUDIO_${AUDIOLIB}")
 endif()
 
-if(FREETYPE)
+if(FREETYPE EQUAL "SYSTEM")
+    add_definitions("-DFREETYPE")
+    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DFREETYPE")
+elsif(FREETYPE EQUAL "BUILTIN")
     add_definitions("-DFREETYPE")
     string(APPEND ADDITIONAL_CLIENT_FLAGS " -DFREETYPE")
 endif()
@@ -209,6 +225,13 @@ if(${FLAC_SUPPORT})
 	add_definitions("-DFLAC_SUPPORT")
 	
 	target_link_libraries(Gorgon flac)
+endif()
+if(FREETYPE STREQUAL "BUILTIN")
+	add_subdirectory(Source/External/freetype)
+	
+	include_directories(Source/External/freetype/include)
+	
+	target_link_libraries(Gorgon freetype)
 endif()
 
 if(WIN32)
