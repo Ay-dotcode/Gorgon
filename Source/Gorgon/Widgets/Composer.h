@@ -17,6 +17,7 @@ namespace Gorgon { namespace Widgets {
      * you may place a panel in it to have that functionality.
      */
     class Composer : public UI::Widget, protected UI::WidgetContainer {
+        friend class UI::WidgetContainer;
     public:
         ~Composer() { }
         
@@ -155,8 +156,11 @@ namespace Gorgon { namespace Widgets {
         virtual Geometry::Size GetInteriorSize() const override {
             return base.GetSize();
         }
+
+        virtual bool IsWidget() const override { return true; }
         
-    protected:
+        virtual Widget &AsWidget() override { return *this; }
+
         virtual void parentboundschanged () override {
             distributeparentboundschanged();
         }

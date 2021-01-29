@@ -415,6 +415,14 @@ namespace Gorgon { namespace UI {
         /// not on the container. This should be overloaded by scrollable containers.
         virtual bool IsInPartialView(const Widget &widget) const;
         
+        /// Returns if this container is a widget. If it is, it can be converted using AsWidget 
+        /// function
+        virtual bool IsWidget() const { return false; }
+        
+        /// If this container is a widget, this function will return it; if not, it will throw.
+        /// This system allows container widgets that have multiple indirection levels.
+        virtual Widget &AsWidget() { throw std::runtime_error("This container is not a widget"); }
+        
         /// This function will return a container that will act as an extender.
         virtual ExtenderRequestResponse RequestExtender(const Gorgon::Layer &self) = 0;
     

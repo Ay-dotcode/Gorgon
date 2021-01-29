@@ -1,4 +1,5 @@
 #include "WidgetContainer.h"
+#include "../Widgets/Composer.h"
 
 namespace Gorgon { namespace UI {
     
@@ -203,13 +204,13 @@ namespace Gorgon { namespace UI {
         //if this container is top level focus will rollover
 
         // if this container is a widget
-        if(dynamic_cast<Widget*>(this)) {
-            auto w = dynamic_cast<Widget*>(this);
+        if(IsWidget()) {
+            auto &w = AsWidget();
 
             // that has a parent
-            if(w->HasParent()) {
+            if(w.HasParent()) {
                 //try to focus previous widget
-                if(w->GetParent().FocusNext()) {
+                if(w.GetParent().FocusNext()) {
                     focusindex = -1;
 
                     return true;
@@ -264,6 +265,13 @@ namespace Gorgon { namespace UI {
                     dynamic_cast<WidgetContainer*>(&widgets[i])->FocusLast();
                 }
 
+                //composer is a special case
+                if(dynamic_cast<Widgets::Composer*>(&widgets[i]) && widgets[i].IsFocused()) {
+                    //when focusing previous, if a container is encountered it should focus its last widget
+                    //instead of its first.
+                    dynamic_cast<Widgets::Composer*>(&widgets[i])->FocusLast();
+                }
+
                 focuschanged();
         
                 EnsureVisible(widgets[i]);
@@ -275,19 +283,26 @@ namespace Gorgon { namespace UI {
         //if this container is top level focus will rollover
         
         // if this container is a widget
-        if(dynamic_cast<Widget*>(this)) {
-            auto w = dynamic_cast<Widget*>(this);
+        if(IsWidget()) {
+            auto &w = AsWidget();
             
             // that has a parent
-            if(w->HasParent()) {
+            if(w.HasParent()) {
                 //try to focus previous widget
-                if(w->GetParent().FocusPrevious()) {
+                if(w.GetParent().FocusPrevious()) {
                     focusindex = -1;
 
-                    if(dynamic_cast<WidgetContainer*>(&w->GetParent()) && w->IsFocused()) {
+                    if(dynamic_cast<WidgetContainer*>(&w.GetParent()) && w.IsFocused()) {
                         //when focusing previous, if a container is encountered it should focus its last widget
                         //instead of its first.
-                        dynamic_cast<WidgetContainer*>(&w->GetParent())->FocusLast();
+                        dynamic_cast<WidgetContainer*>(&w.GetParent())->FocusLast();
+                    }
+
+                    //composer is a special case
+                    if(dynamic_cast<Widgets::Composer*>(&w.GetParent()) && w.IsFocused()) {
+                        //when focusing previous, if a container is encountered it should focus its last widget
+                        //instead of its first.
+                        dynamic_cast<Widgets::Composer*>(&w.GetParent())->FocusLast();
                     }
 
                     return true;
@@ -313,6 +328,13 @@ namespace Gorgon { namespace UI {
                     //when focusing previous, if a container is encountered it should focus its last widget
                     //instead of its first.
                     dynamic_cast<WidgetContainer*>(&widgets[i])->FocusLast();
+                }
+
+                //composer is a special case
+                if(dynamic_cast<Widgets::Composer*>(&widgets[i].GetParent()) && widgets[i].IsFocused()) {
+                    //when focusing previous, if a container is encountered it should focus its last widget
+                    //instead of its first.
+                    dynamic_cast<Widgets::Composer*>(&widgets[i].GetParent())->FocusLast();
                 }
 
                 focuschanged();

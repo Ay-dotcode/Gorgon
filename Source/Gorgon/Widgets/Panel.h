@@ -246,6 +246,10 @@ namespace Gorgon { namespace Widgets {
             return wbounds.Bottom > 0 && wbounds.Right > 0 && wbounds.Top < sz.Height && wbounds.Left < sz.Width;
         }
 
+        virtual bool IsWidget() const override { return true; }
+        
+        virtual Widget &AsWidget() override { return *this; }
+
         /// Report mouse scroll. This function will be called automatically
         /// for regular mouse events. This function will return false if the
         /// given mouse event is not consumed.
