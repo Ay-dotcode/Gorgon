@@ -122,6 +122,7 @@ namespace Gorgon { namespace Graphics {
 			return img;
 		}
 
+		/// Destroys the contained data, including the texture
 		void Destroy() {
 			Texture::Destroy();
 			delete data;
@@ -279,24 +280,14 @@ namespace Gorgon { namespace Graphics {
 		/// only on debug mode. Notice that changing a pixel does not prepare the new data to be drawn, a separate 
 		/// call to Prepare function is necessary.
 		Byte &operator()(const Geometry::Point &p, unsigned component=0) {
-#ifndef NDEBUG
-			if(!data) {
-				throw std::runtime_error("Data is not set");
-			}
-#endif
-
+			ASSERT(data, "Data is not set");
 			return (*data)(p, component);
 		}
 
 		/// Provides access to the given component in x and y coordinates. This
 		/// function performs bounds checking only on debug mode.
 		Byte operator()(const Geometry::Point &p, unsigned component=0) const {
-#ifndef NDEBUG
-			if(!data) {
-				throw std::runtime_error("Data is not set");
-			}
-#endif
-
+			ASSERT(data, "Data is not set");
 			return (*data)(p, component);
 		}
 
@@ -304,24 +295,14 @@ namespace Gorgon { namespace Graphics {
 		/// only on debug mode. Notice that changing a pixel does not prepare the new data to be drawn, a separate 
 		/// call to Prepare function is necessary.
 		Byte &operator()(int x, int y, unsigned component=0) {
-#ifndef NDEBUG
-			if(!data) {
-				throw std::runtime_error("Data is not set");
-			}
-#endif
-
+			ASSERT(data, "Data is not set");
 			return (*data)(x, y, component);
 		}
 
 		/// Provides access to the given component in x and y coordinates. This
 		/// function performs bounds checking only on debug mode.
 		Byte operator()(int x, int y, unsigned component=0) const {
-#ifndef NDEBUG
-			if(!data) {
-				throw std::runtime_error("Data is not set");
-			}
-#endif
-
+			ASSERT(data, "Data is not set");
 			return (*data)(x, y, component);
 		}
 
@@ -329,12 +310,7 @@ namespace Gorgon { namespace Graphics {
 		/// function returns 0 if the given coordinates are out of bounds. This
 		/// function works slower than the () operator.
 		Byte Get(const Geometry::Point &p, unsigned component = 0) const {
-#ifndef NDEBUG
-			if (!data) {
-				throw std::runtime_error("Data is not set");
-			}
-#endif
-
+			ASSERT(data, "Data is not set");
 			return data->Get(p, component);
 		}
 
@@ -342,12 +318,7 @@ namespace Gorgon { namespace Graphics {
 		/// function returns 0 if the given coordinates are out of bounds. This
 		/// function works slower than the () operator.
 		Byte Get(const Geometry::Point &p, Byte def, unsigned component = 0) const {
-#ifndef NDEBUG
-			if (!data) {
-				throw std::runtime_error("Data is not set");
-			}
-#endif
-
+			ASSERT(data, "Data is not set");
 			return data->Get(p, def, component);
 		}
 
@@ -355,12 +326,7 @@ namespace Gorgon { namespace Graphics {
 		/// this function will return 0. If there is no alpha channel, image is assumed
 		/// to be opaque.
 		Byte GetAlphaAt(int x, int y) const {
-#ifndef NDEBUG
-			if(!data) {
-				throw std::runtime_error("Bitmap data is not set");
-			}
-#endif
-			return data->GetAlphaAt(x, y);
+			ASSERT(data, "Data is not set");			return data->GetAlphaAt(x, y);
 		}
 		
 		/// Returns the alpha at the given location. If the given location does not exits
@@ -374,12 +340,7 @@ namespace Gorgon { namespace Graphics {
 		/// this function will return 0. If there is no alpha channel, image is assumed
 		/// to be opaque.
 		RGBA GetRGBAAt(int x, int y) const {
-#ifndef NDEBUG
-			if(!data) {
-				throw std::runtime_error("Bitmap data is not set");
-			}
-#endif
-            
+			ASSERT(data, "Data is not set");            
             return data->GetRGBAAt(x, y);
 		}
 
@@ -393,12 +354,7 @@ namespace Gorgon { namespace Graphics {
         ///Sets the color at the given location to the specified RGBA value. If pixel does not
         ///exists, the call will be ignored.
         void SetRGBAAt(int x, int y, RGBA color) {
-#ifndef NDEBUG
-			if(!data) {
-				throw std::runtime_error("Bitmap data is not set");
-			}
-#endif
-            
+			ASSERT(data, "Data is not set");            
             data->SetRGBAAt(x, y, color);
         }
         
@@ -410,12 +366,7 @@ namespace Gorgon { namespace Graphics {
         
 		/// Returns the bytes occupied by a single pixel of this image
 		int GetChannelsPerPixel() const {
-#ifndef NDEBUG
-			if(!data) {
-				throw std::runtime_error("Bitmap data is not set");
-			}
-#endif
-			return data->GetChannelsPerPixel();
+			ASSERT(data, "Data is not set");			return data->GetChannelsPerPixel();
 		}
 
 		/// Returns the color mode of the image
@@ -423,12 +374,7 @@ namespace Gorgon { namespace Graphics {
 			if(Graphics::Texture::id!=0) {
 				return Graphics::Texture::GetMode();
 			}
-#ifndef NDEBUG
-			if(!data) {
-				throw std::runtime_error("Bitmap data is not set");
-			}
-#endif
-			return data->GetMode();
+			ASSERT(data, "Data is not set");			return data->GetMode();
 		}
 
 		/// Returns the size of this image resource. It is possible for an image to become unsynchronized due to
@@ -451,23 +397,13 @@ namespace Gorgon { namespace Graphics {
 
 		/// Returns if this image has alpha channel
 		bool HasAlpha() const {
-#ifndef NDEBUG
-			if(!data) {
-				throw std::runtime_error("Bitmap data is not set");
-			}
-#endif
-
+			ASSERT(data, "Data is not set");
 			return data->HasAlpha();
 		}
 
 		/// Returns the index of alpha channel. Value of -1 denotes no alpha channel
 		int GetAlphaIndex() const {
-#ifndef NDEBUG
-			if(!data) {
-				throw std::runtime_error("Bitmap data is not set");
-			}
-#endif
-
+			ASSERT(data, "Data is not set");
 			return data->GetAlphaIndex();
 		}
 

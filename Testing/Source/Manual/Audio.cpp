@@ -1,45 +1,21 @@
 #include <typeinfo>
 
 #include <Gorgon/Window.h>
-#include <Gorgon/WindowManager.h>
-#include <Gorgon/OS.h>
-#include <Gorgon/Resource/File.h>
-#include <Gorgon/Resource/Image.h>
-#include <Gorgon/Resource/Data.h>
-#include <Gorgon/Resource/Blob.h>
-#include <Gorgon/Resource/Animation.h>
-#include <Gorgon/Graphics/Layer.h>
 #include <Gorgon/Main.h>
-#include <Gorgon/Network/HTTP.h>
-#include <Gorgon/Struct.h>
 #include <Gorgon/Audio.h>
 #include <Gorgon/Containers/Wave.h>
-#include <Gorgon/Encoding/URI.h>
+#include <Gorgon/Multimedia/Wave.h>
 #include <Gorgon/Audio/Controllers.h>
 #include <Gorgon/Encoding/FLAC.h>
 #include <Gorgon/Geometry/Transform3D.h>
-#include "Gorgon/Audio/Environment.h"
-#include "Gorgon/Resource/Sound.h"
-#include "Gorgon/Graphics/Bitmap.h"
+#include <Gorgon/Audio/Environment.h>
+#include <Gorgon/Resource/Sound.h>
 
 using namespace Gorgon; 
 
-struct teststruct {
-	int a;
-	int b;
-	
-	Resource::Image *j;
-	
-	void f(int c) {}
-	
-	DefineStructMembers(teststruct, a, b, j);
-};
-
-int main() {
-try {
-	Audio::Log.InitializeConsole();
-	Initialize("Generic-Test");
-
+void TestDevices() {
+    std::cout << "*** Device Listing: " << std::endl;
+    
 	auto &devices = Audio::Device::Devices();
 	for(auto dev : devices) {
 		std::cout<<dev.GetName()<<std::endl;
@@ -52,8 +28,9 @@ try {
 	std::cout<<std::endl<<"*** Default device ***"<<std::endl;
 	std::cout<<Audio::Device::Default().GetName()<<std::endl;
 	std::cout<<"Audio available: "<<Audio::IsAvailable()<<std::endl;
+}
 
-	int freq = 400;
+auto MakeSine(int freq = 400) {
 	int rate = 12000;
 	float duration = 2;
 	float amp = 0.5;
@@ -71,29 +48,50 @@ try {
 			freq++;*/
 	}
 	
+	return wave;
+}
+
+auto TestExportImport() {
+
 	//Encoding::Flac.Encode(wave, "out.flac", 24);
     
-    std::vector<Byte> data;
-	std::ifstream ifile("test.flac", std::ios::binary);
-
-    char chr;
-    while(ifile.read(&chr, 1)) {
-        data.push_back(chr);
-        
-        if(ifile.eof()) break;
-    }
-
-	ifile.close();
-
-	wave.ExportWav("test.wav", 8);
+    //std::vector<Byte> data;
+    //std::ifstream ifile("test.flac", std::ios::binary);
+    //
+    //char chr;
+    //while(ifile.read(&chr, 1)) {
+    //    data.push_back(chr);
+    //    
+    //    if(ifile.eof()) break;
+    //}
+    //
+	//ifile.close();
     
-	Containers::Wave wave2;
-    std::cout<<"Load file: "<<wave2.ImportWav("test.wav")<<std::endl;
-
-
 	/*std::ofstream ofile("out.flac", std::ios::binary);
 	Encoding::Flac.Encode(wave2, ofile);
 	ofile.close();*/
+    
+    auto wave = MakeSine();
+    
+	Encoding::Flac.Encode(wave, "test.flac", 16);
+    //wave.ExportWav("test.wav", 16);
+    
+	Multimedia::Wave wave2;
+    //std::cout<<"Load file: " << wave2.ImportWav("test.wav")<<std::endl;
+	wave2.Import("test.flac");
+
+    return wave2;
+}
+
+int main() {
+try {
+	Audio::Log.InitializeConsole();
+	Initialize("Audio");
+    
+    TestDevices();
+
+    
+    auto wave = TestExportImport();
 	
 	Audio::BasicController c(wave);
 	//c.Loop();
@@ -106,19 +104,19 @@ try {
     
     c2.Move(loc);
 	
-    unsigned left = 2000;
+    unsigned left = 10;
     
     Geometry::Point3D orn(0, 1, 0);
     Geometry::Transform3D rot30;
     
-    rot30.Rotate(0,0,PI/2);
+    rot30.Rotate(0,0,PI/256);
 	
 	while(1) {
 		NextFrame();
         
         if(left<Time::DeltaTime()) {
             //if(left) {
-                left = 2000;
+                left = 10;
                 orn = rot30 * orn;
                 Audio::Environment::Current.GetListener().SetOrientation(orn);
             //}

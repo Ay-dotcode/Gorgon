@@ -81,6 +81,11 @@ namespace Gorgon { namespace Widgets {
         Layer &GetLayer();
         
         virtual bool Activate() override { return false; }
+        
+        /// Forces layerbox to be refreshed, ensuring contained layers are properly resized.
+        void Refresh() {
+            stack.Refresh();
+        }
 
         TextualProperty<Layerbox, std::string, &Layerbox::GetText, &Layerbox::SetText> Text;
 

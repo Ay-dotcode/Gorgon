@@ -18,10 +18,8 @@ namespace Gorgon { namespace Graphics {
 	}
 
 	void Bitmap::Discard() {
-		if(data) {
-			delete data;
-			data=nullptr;
-		}
+		delete data;
+		data=nullptr;
 	}
 
 	bool Bitmap::Import(const std::string &filename) {
@@ -61,7 +59,7 @@ namespace Gorgon { namespace Graphics {
 			return ImportBMP(filename);
 		}
 
-		throw std::runtime_error("Unsuppoted file format");
+		throw std::runtime_error("Unsupported file format");
 	}
 
 	bool Bitmap::Import(std::istream &file) {
@@ -84,7 +82,7 @@ namespace Gorgon { namespace Graphics {
 			return ImportBMP(file);
 		}
 
-		throw std::runtime_error("Unsuppoted file format");
+		throw std::runtime_error("Unsupported file format");
 	}
 
 	bool Bitmap::ImportPNG(const std::string &filename) {

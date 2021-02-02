@@ -1,103 +1,202 @@
 #include "Wave.h"
+#include "../Encoding/FLAC.h"
 
-#include "../External/OpenAL/alc.h"
-#include "../External/OpenAL/al.h"
+namespace Gorgon { namespace Multimedia {
+    
+    Wave::Wave(Containers::Wave &data, bool own) {
+        if(own)
+            Assume(data);
+        else
+            Assign(data);
+    }
+    
+    void Wave::Destroy() {
+        if(own) {
+            delete data;
+        }
+        
+        data = nullptr;
+    }
+   
+    void Wave::Assign(Containers::Wave &wave) {
+        Destroy();
+        
+        data = &wave;
+        own  = false;
+    }
+    
+    void Wave::Assign(float *d, unsigned long size) {
+        if(!data) {
+            data = new Containers::Wave;
+            own = true;
+        }
+        
+        data->Assign(d, size);
+    }
+    
+    void Wave::Assign(float *d, unsigned long size, std::vector<Audio::Channel> channels) {
+        if(!data) {
+            data = new Containers::Wave;
+            own = true;
+        }
+        
+        data->Assign(d, size, std::move(channels));
+    }
+    
+   
+    void Wave::Assume(Containers::Wave &wave) {
+        Destroy();
+        
+        data = &wave;
+        own  = true;
+    }
+    
+    void Wave::Assume(float *d, unsigned long size) {
+        if(!data) {
+            data = new Containers::Wave;
+            own = true;
+        }
+        
+        data->Assume(d, size);
+    }
+    
+    void Wave::Assume(float *d, unsigned long size, std::vector<Audio::Channel> channels) {
+        if(!data) {
+            data = new Containers::Wave;
+            own = true;
+        }
+        
+        data->Assume(d, size, std::move(channels));
+    }
+    
 
-using namespace gge::utils;
+    Containers::Wave &Wave::ReleaseData() {
+        ASSERT(data, "Data is not set");
 
-namespace gge { namespace sound {
+        own = false;
+        auto
+        d = data;
+        data = nullptr;
 
-	namespace system {
-		////For garbage collection
-		static utils::Collection<Wave> Waves;
-		void InitWaveGarbageCollect(GGEMain &main) {
-			main.AfterRenderEvent.Register(CollectWaveGarbage);
-		}
+        return *d;
+    }
 
-		void CollectWaveGarbage() {
-			for(Collection<Wave>::Iterator wave=Waves.First();wave.IsValid();wave.Next()) {
-				if(!wave->isPlaying()) {
-					if(wave->AutoDestruct) {
-						wave.Delete();
-					} else {
-						if(wave->finished) wave->finished(*wave);
-					}
-				}
-			}
-		}
-	}
 
-	Wave::Wave() {
-		buffer=0;
-		isavailable=false;
-		AutoDestruct=true;
-		finished=NULL;
-		finishedstateisknown=0;
+    Wave Wave::Duplicate()const {
+        Multimedia::Wave n;
+        
+        if(data) {
+            n.Assume(data->Duplicate());
+        }
+        
+        return n;
+    }
+            
+    bool Wave::Import(const std::string &filename) {
+        auto dotpos = filename.find_last_of('.');
 
-		system::Waves.Add(this);
-	}
+        if(dotpos != -1) {
+            auto ext = filename.substr(dotpos+1);
 
-	Wave::Wave(system::SoundBufferHandle buffer, float maxWaveDistance) {
-		buffer=buffer;
-		isavailable=false;
-		AutoDestruct=true;
-		finished=NULL;
-		finishedstateisknown=0;
+            if(String::ToLower(ext) == "wav") {
+                return ImportWave(filename);
+            }
+#ifdef FLAC_SUPPORT
+            else if(String::ToLower(ext) == "flac") {
+                return ImportFLAC(filename);
+            }
+#endif
+        }
 
-		if(maxWaveDistance)
-			isavailable= (source=system::Create3DSoundController(buffer, maxWaveDistance)) != 0;
-		else
-			isavailable= (source=system::CreateSoundController(buffer)) != 0;
+        std::ifstream file(filename, std::ios::binary);
 
-		system::Waves.Add(this);
-	}
+        static const uint32_t wavsig  = 0x46464952;
+        static const uint32_t flacsig = 0x43614c66;
 
-	Wave& Wave::Play() {
-		finishedstateisknown=0;
+        uint32_t sig = IO::ReadUInt32(file);
 
-		alSourcei(source,AL_LOOPING,0);
-		alSourcePlay(source);
-		return *this;
-	}
+        file.close();
 
-	Wave::~Wave() {
-		_destroy();
-	}
+        if(sig == wavsig) {
+            return ImportWave(filename);
+        }
+#ifdef FLAC_SUPPORT
+        else if(sig == flacsig) {
+            return ImportFLAC(filename);
+        }
+#endif
 
-	Wave& Wave::Loop() {
-		finishedstateisknown=0;
-		alSourcei(source, AL_LOOPING, 1);
-		alSourcePlay(source);
-		return *this;
-	}
+        throw std::runtime_error("Unsupported file format");
+    }
+    
+    bool Wave::ImportWave(const std::string &filename) {
+        if(!data) {
+            data = new Containers::Wave;
+            own = true;
+        }
+        
+        return data->ImportWav(filename);
+    }
+    
+    bool Wave::Export(const std::string &filename) {
+        auto dotpos = filename.find_last_of('.');
 
-	Wave& Wave::SetVolume(float Volume) {
-		alSourcef(source, AL_GAIN, Volume);
+        if(dotpos != -1) {
+            auto ext = filename.substr(dotpos+1);
 
-		return *this;
-	}
+            if(String::ToLower(ext) == "wav") {
+                return ImportWave(filename);
+            }
+#ifdef FLAC_SUPPORT
+            else if(String::ToLower(ext) == "flac") {
+                return ImportFLAC(filename);
+            }
+#endif
+        }
+        
+        return false;
+    }
 
-	Wave& Wave::Set3DPosition(float x,float y,float z) {
-		alSource3f(source, AL_POSITION, x, y, z);
-
-		return *this;
-	}
-
-	Wave& Wave::Stop() {
-		alSourceStop(source);
-		return *this;
-	}
-
-	void Wave::_destroy() {
-		isavailable=false;
-		alDeleteSources(1,&source);
-		source=0;
-	}
-
-	bool Wave::isPlaying() {
-		int status=0;
-		alGetSourcei(source,AL_SOURCE_STATE,&status);
-		return status==AL_PLAYING;
-	}
+    
+    bool Wave::ExportWave(const std::string &filename) {
+        ASSERT(data, "Data is not set");
+        
+        return data->ExportWav(filename);
+    }
+    
+#ifdef FLAC_SUPPORT
+    bool Wave::ImportFLAC(const std::string &filename) {
+        if(!data) {
+            data = new Containers::Wave;
+            own = true;
+        }
+        
+        std::ifstream file(filename, std::ios::binary);
+        
+        if(!file.is_open())
+            return false;
+        
+        Encoding::Flac.Decode(file, *data);
+        
+        return true;
+    }
+    
+    bool Wave::ExportFLAC(const std::string &filename, int bps) {
+        if(!data) {
+            data = new Containers::Wave;
+            own = true;
+        }
+        
+        std::ofstream file(filename, std::ios::binary);
+        
+        if(!file.is_open())
+            return false;
+        
+        Encoding::Flac.Encode(*data, file, bps);
+        
+        return true;
+    }
+#endif
+        
 
 } }

@@ -11,6 +11,7 @@ SET(Local
 	Input
 	IO
 	Network
+	Multimedia
 	OS
 	Resource
 	String

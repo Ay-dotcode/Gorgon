@@ -5,6 +5,7 @@
 #include "../Audio.h"
 
 #include "Controllers.h"
+#include "../Multimedia/Wave.h"
 	
 #ifdef AUDIO_PULSE
 #	include "PulseAudio.inc.h"
@@ -127,36 +128,48 @@ namespace Audio {
                 }
             };
             
-            auto interpolate_basic = [&outofbounds](BasicController &basic, int ch) {
-                
-                auto wavedata = basic.wavedata;
-                
-            recalculate:
-                float pos     = basic.position * wavedata->GetSampleRate();
-                
-                int x1 = (int)pos      ;
-                int x2 = (int)(pos + 1);
-                
-                if(x1 >= (int)wavedata->GetSize()) {
-                    if(outofbounds(basic)) goto recalculate;
-                    else return 0.f;
-                }
+            auto interpolate_wave = [](const Multimedia::Wave *wavedata, float pos, int ch, bool looping) {
+                long int x1 = (long int)pos      ;
+                long int x2 = (long int)(pos + 1);
                 
                 float x1r = x2 - pos;
                 float x2r = 1  - x1r;
                 
                 float val;
                 
-                if(x2 >= (int)wavedata->GetSize()) {
+                if(x2 >= (long int)wavedata->GetSize()) {
                     // multiplication with basic.looping is for branch elimination. Basically, if the audio is not looping
-                    // last few values will not be interpolated but faded out.
-                    val = ( x1r * wavedata->Get(x1, ch) + basic.looping * x2r * wavedata->Get(0, ch));
+                    // last few values will not be long interpolated but faded out.
+                    val = ( x1r * wavedata->Get(x1, ch) + looping * x2r * wavedata->Get(0, ch));
                 }
                 else {
                     val = ( x1r * wavedata->Get(x1, ch) + x2r * wavedata->Get(x2, ch));
                 }
                 
                 return val;
+            };
+            
+            auto interpolate_basic = [&outofbounds, &interpolate_wave](BasicController &basic, int ch) {
+                
+                auto source = basic.wavedata;
+                
+                float pos     = basic.position * source->GetSampleRate();
+                
+                if((long int)pos >= (long int)source->GetSize()) {
+                    if(!outofbounds(basic)) 
+                        return 0.f;
+                    else
+                        pos     = basic.position * source->GetSampleRate();
+                }
+                
+                auto wave = dynamic_cast<const Multimedia::Wave*>(source);
+                if(wave) {
+                    return interpolate_wave(wave, pos, ch, basic.IsLooping());
+                }
+                
+                Log << "Unknown source";
+                
+                return 0.f;
            };
             
             //optimization might be necessary, this function may cause cache misses for many to many mapping
@@ -334,7 +347,7 @@ namespace Audio {
                     
                     
                     //headphones
-                    if(Current.IsHeadphones()) {                        
+                    if(Current.IsHeadphones()) {
                         auto &env = Environment::Current;
                         auto &lis = env.listener;
                         

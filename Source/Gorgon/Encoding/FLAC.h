@@ -38,7 +38,7 @@ namespace Gorgon { namespace Encoding {
 		void Encode(const Containers::Wave &input, std::vector<Byte> &output, int bps = 16);
 
 		/// Decodes given %FLAC compressed data and fills a wave container.
-		void Decode(std::istream &input, Containers::Wave &wave);
+		void Decode(std::istream &input, Containers::Wave &wave, size_t len = -1);
 
 		/// Decodes given %FLAC compressed data and fills a wave container.
 		void Decode(const std::vector<Byte> &input, Containers::Wave &wave);
@@ -73,7 +73,6 @@ namespace Gorgon { namespace Encoding {
 		void Read();
 
 		void Seek(std::size_t destination);
-
 
 	};
 

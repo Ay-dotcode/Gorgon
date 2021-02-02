@@ -12,8 +12,7 @@ namespace Gorgon {
 		class File;
 		class Reader;
 
-		////This is sound resource. It may contain 22kHz or 44kHz mono or stereo wave files.
-		/// Also supports LZMA compression. No native sound compression is supported.
+		/// This is sound resource. Supports 
 		class Sound : public Base {
 		public:
 

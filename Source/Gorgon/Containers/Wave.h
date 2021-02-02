@@ -4,9 +4,10 @@
 #include <fstream>
 #include <string>
 
-#include "../Types.h"
 #include "../Audio/Basic.h"
 #include "../IO/Stream.h"
+#include "../Types.h"
+#include "../Utils/Assert.h"
 
 namespace Gorgon {
 	namespace Containers {
@@ -26,21 +27,13 @@ namespace Gorgon {
 				Sample() { }
 				
 				float &Channel(unsigned channel) { 
-#ifndef NDEBUG
-					if(channel >= channels) {
-						throw std::runtime_error("Index out of bounds");
-					}
-#endif
+                    ASSERT(channel < channels, "Index out of bounds");
 
 					return current[channel]; 
 				}
 				
 				float Channel(unsigned channel) const { 
-#ifndef NDEBUG
-					if(channel >= channels) {
-						throw std::runtime_error("Index out of bounds");
-					}
-#endif
+                    ASSERT(channel < channels, "Index out of bounds");
 
 					return current[channel];
 				}
@@ -54,10 +47,16 @@ namespace Gorgon {
 				}
 				
 			private:
-				Sample(float *current, unsigned channels) : current(current), channels(channels) { }
+				Sample(float *current, unsigned channels) : current(current)
+#ifndef NDEBUG
+                , channels(channels) 
+#endif
+                { }
 				
 				float *current = nullptr;
+#ifndef NDEBUG
 				unsigned channels = 0;
+#endif
 			};
 		
 			/**
@@ -182,7 +181,7 @@ namespace Gorgon {
 
 			/// Constructs a new wave data with the given number of samples and channels. This constructor 
 			/// does not initialize data inside the wave
-			explicit Wave(unsigned long size, unsigned samplerate, std::vector<Audio::Channel> channels = {Audio::Channel::Mono}): size(size), samplerate(samplerate), channels(channels) {
+			explicit Wave(unsigned long size, unsigned samplerate, std::vector<Audio::Channel> channels = {Audio::Channel::Mono}): size(size), channels(channels), samplerate(samplerate) {
 				data = (float*)malloc(size * channels.size() * sizeof(float));
 			}
 
@@ -373,35 +372,26 @@ namespace Gorgon {
 
 			/// Allows access to individual members
 			float &operator()(unsigned long p, unsigned ch) {
-#ifndef NDEBUG
-				if(p >= size || ch >= channels.size()) {
-					throw std::runtime_error("Index out of bounds");
-				}
-#endif
+                ASSERT(p < size && ch < channels.size(), "Index out of bounds");
+                
 				return data[p*channels.size()+ch];
 			}
 
 			/// Allows access to individual members
 			float operator()(unsigned long p, unsigned ch) const {
-#ifndef NDEBUG
-				if(p >= size || ch >= channels.size()) {
-					throw std::runtime_error("Index out of bounds");
-				}
-#endif
+                ASSERT(p < size && ch < channels.size(), "Index out of bounds");
+                
 				return data[p*channels.size()+ch];
 			}
 
 			/// Allows access to individual members
 			float Get(unsigned long p, unsigned ch) const {
-#ifndef NDEBUG
-				if(p >= size || ch >= channels.size()) {
-					throw std::runtime_error("Index out of bounds");
-				}
-#endif
+                ASSERT(p < size && ch < channels.size(), "Index out of bounds");
+                
 				return data[p*channels.size() + ch];
 			}
 
-			/// Returns the size of the wave
+			/// Returns the size of the wave in number of samples
 			unsigned long GetSize() const {
 				return size;
 			}
@@ -569,7 +559,7 @@ namespace Gorgon {
 				WriteInt16(file, GetChannelCount());
 				WriteInt32(file, GetSampleRate());
 				WriteInt32(file, GetSampleRate() * bits * GetChannelCount() / 8);
-				WriteInt16(file, bits * GetChannelCount());
+				WriteInt16(file, bits * GetChannelCount() / 8);
 				WriteInt16(file, bits);
 
 				WriteString(file, "data");

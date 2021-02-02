@@ -1,26 +1,27 @@
 #pragma once
 
-#include <mutex>
+#include "Source.h"
 
 #include "../Containers/Wave.h"
 #include "../Containers/Collection.h"
 
 #include "../Geometry/Point3D.h"
 
+#include <mutex>
 
 namespace Gorgon { namespace Audio {
 		
     /**
-        * Identifies controller types. 
-        */
+    * Identifies controller types. 
+    */
     enum class ControllerType {
         Basic,
         Positional
     };
     
     /**
-        * This is the base class for all controllers. All controller use fluent interface.
-        */
+    * This is the base class for all controllers. All controller use fluent interface.
+    */
     class Controller {
         friend void AudioLoop();
     public:
@@ -36,8 +37,8 @@ namespace Gorgon { namespace Audio {
     };
     
     /**
-        * Basic controller, allows non-positional playback of data buffer. Timing is stored in seconds.
-        */
+    * Basic controller, allows non-positional playback of data buffer. Timing is stored in seconds.
+    */
     class BasicController : public Controller {
         friend void AudioLoop();
     public:
@@ -46,7 +47,7 @@ namespace Gorgon { namespace Audio {
         BasicController() = default;
         
         /// Filling constructor
-        BasicController(const Containers::Wave &wavedata) : wavedata(&wavedata) { 
+        BasicController(const Source &wavedata) : wavedata(&wavedata) { 
             datachanged();
         }
         
@@ -60,7 +61,7 @@ namespace Gorgon { namespace Audio {
         /// when an audio data is swapped with another, playback position can be moved. Additionally,
         /// if the timing is stored in seconds, swapping wavedata might cause playback to stop
         /// or loop to the start immediately.
-        void SetData(const Containers::Wave &wavedata);
+        void SetData(const Source &wavedata);
         
         /// Plays this sound. When called, this function will unset looping flag. If there is no 
         /// wavedata associated with this controller, nothing happens until the data is set, after
@@ -116,7 +117,7 @@ namespace Gorgon { namespace Audio {
         
     protected:
         /// Contains the data for this controller
-        const Containers::Wave *wavedata = nullptr;
+        const Source *wavedata = nullptr;
 
         /// Override this function to detect changes in the wave data. It will be called if
         /// the constructor sets wavedata
@@ -130,13 +131,13 @@ namespace Gorgon { namespace Audio {
     };
     
     /**
-        * Positional controller allows sounds to be played at a specific location. This helps user to identify to location of the sound source.
-        * However, in games, it would be a better idea to consider advanced positional controller as it enables sound lag due to distance
-        * and doppler shift. These would add to the realism of the sound. If there is mono channel in the audio data, this controller will
-        * exclusively use mono data and optionally low frequency data. If mono channel does not exists, this controller will mix all channels
-        * except low frequency and playback the mixed data. If there is no low frequency speaker in the config, low frequency data will be mixed
-        * into the output data.
-        */
+    * Positional controller allows sounds to be played at a specific location. This helps user to identify to location of the sound source.
+    * However, in games, it would be a better idea to consider advanced positional controller as it enables sound lag due to distance
+    * and doppler shift. These would add to the realism of the sound. If there is mono channel in the audio data, this controller will
+    * exclusively use mono data and optionally low frequency data. If mono channel does not exists, this controller will mix all channels
+    * except low frequency and playback the mixed data. If there is no low frequency speaker in the config, low frequency data will be mixed
+    * into the output data.
+    */
     class PositionalController : public BasicController {
         friend void AudioLoop();
     public:
@@ -145,7 +146,7 @@ namespace Gorgon { namespace Audio {
         PositionalController() = default;
         
         /// Filling constructor
-        PositionalController(const Containers::Wave &wavedata) : BasicController(wavedata) { }
+        PositionalController(const Source &wavedata) : BasicController(wavedata) { }
         
         void Move(const Geometry::Point3D &target) {
             location = target;

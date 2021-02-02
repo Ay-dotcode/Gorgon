@@ -475,6 +475,12 @@ namespace Gorgon { namespace UI {
             Update();
         }
         
+        void Refresh() {
+            //update needed?
+            if(updaterequired)
+                update();
+        }
+        
         /// Returns the autosize mode of the stack
         std::pair<Autosize, Autosize> GetAutosize() const {
             return autosize;

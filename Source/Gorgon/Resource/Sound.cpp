@@ -34,7 +34,6 @@ namespace Gorgon { namespace Resource {
 		return true;
 	}
 
-
 	bool Sound::load(std::shared_ptr<Reader> reader, unsigned long totalsize, bool forceload) {
 		bool load=false;
 

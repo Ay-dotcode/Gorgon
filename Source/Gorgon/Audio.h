@@ -39,7 +39,7 @@ namespace Audio {
 		Device() = default;
 		
 		Device(const std::string &id, const std::string &name, int rate, Format format, bool headphones, const std::vector<Channel> &channels) : 
-		name(name), id(id), rate(rate), format(format), headphones(headphones), channels(channels) 
+		id(id), name(name), headphones(headphones), rate(rate), format(format), channels(channels) 
 		{ }
 		
 		/// Returns the ID of this device

@@ -1,79 +1,229 @@
 #pragma once
 
-#include "../Engine/GGEMain.h"
-#include "../Engine/Sound.h"
-#include "../Utils/Collection.h"
+#include "../Containers/Wave.h"
+#include "../Utils/Assert.h"
+#include "../Audio/Source.h"
 
-namespace gge { namespace sound {
+namespace Gorgon { 
+    
+namespace Resource {
+    class Sound;
+}
+    
+namespace Multimedia {
+    
+    /**
+     * This class manages wave data. It could import and export the data.
+     */
+    class Wave : public Audio::Source {
+    public:
+        
+        /// Empty constructor
+        Wave() = default;
+        
+        /// Constructor assigns or assumes given data
+        Wave(Containers::Wave &data, bool own = false);
+        
+        /// Copy constructor is disabled for accidental copying. Use Duplicate.
+        Wave(const Wave &) = delete;
+        
+        /// Move is allowed
+        Wave(Wave &&) = default;
+        
+        /// Destructor
+        ~Wave() {
+            Destroy();
+        }
+        
+        /// Duplicates this object along with its data
+        Wave Duplicate() const;
+        
+        /// Returns if this object has a wave container. Even if this function returns true, the
+        /// container could be empty.
+        bool HasData() const {
+            return data != nullptr;
+        }
+        
+        /// Returns the container stored in this object. If this object does not have a wave 
+        /// container, this function will cause a crash.
+        Containers::Wave &GetData() {
+            ASSERT(data, "Data is not set");
+            
+            return *data;
+        }
+        
+        /// Returns the container stored in this object. If this object does not have a wave 
+        /// container, this function will cause a crash.
+        const Containers::Wave &GetData() const {
+            ASSERT(data, "Data is not set");
+            
+            return *data;
+        }
+        
+        /// Destroys the container in this object.
+        void Destroy();
+        
+        /// Releases the container data without destroying it
+        Containers::Wave &ReleaseData();
+        
+        
+        /// Allows access to individual members
+        float Get(unsigned long p, unsigned ch) const {
+            ASSERT(data, "Data is not set");
+            
+            return data->Get(p, ch);
+        }
+        
+        virtual unsigned long GetSize() const override final {
+            ASSERT(data, "Data is not set");
+            
+            return data->GetSize();
+        }
+        
+        /// Returns the size of the wave in bytes
+        unsigned long GetBytes() const {
+            ASSERT(data, "Data is not set");
+            
+            return data->GetBytes();
+        }
+        
+        /// Returns the length of the wave data in seconds
+        virtual float GetLength() const override final {
+            ASSERT(data, "Data is not set");
+            
+            return data->GetLength();
+        }
+        
+        /// Returns the number of channels that this wave data has.
+        virtual unsigned GetChannelCount() const override final {
+            ASSERT(data, "Data is not set");
+            
+            return data->GetChannelCount();
+        }
+        
+        /// Returns the type of the channel at the given index
+        virtual Audio::Channel GetChannelType(int channel) const override final {
+            ASSERT(data, "Data is not set");
+            
+            return data->GetChannelType(channel);
+        }
+        
+        /// Returns the index of the given channel. If the given channel does not exists, this function returns -1
+        virtual int FindChannel(Audio::Channel channel) const override final {
+            ASSERT(data, "Data is not set");
+            
+            return data->FindChannel(channel);
+        }
+        
+        /// Returns the number of samples per second
+        virtual unsigned GetSampleRate() const override final {
+            ASSERT(data, "Data is not set");
+            
+            return data->GetSampleRate();
+        }
+        
+        /// Sets the number samples per second
+        void SetSampleRate(unsigned rate) {
+            ASSERT(data, "Data is not set");
+            
+            return data->SetSampleRate(rate);
+        }
+        
+        
+        /// Assigns the given wave container as the data for this object. Ownership of the wave
+        /// container is not transferred. Data is not copied, thus it should be alive as long as this
+        /// object is alive.
+        void Assign(Containers::Wave &wave);
 
-	class Wave;
+        /// Uses the supplied data for this object. Ownership of the wave data is not transferred.
+        void Assign(float *data, unsigned long size);
+        
+        /// Uses the supplied data for this object. Ownership of the wave data is not transferred.
+        void Assign(float *data, unsigned long size, std::vector<Audio::Channel> channels);
+        
+        
+        /// Assumes the ownership of the given wave container as the data for this object.
+        void Assume(Containers::Wave &wave);
+        
+        /// Assumes the ownership of the given wave container as the data for this object.
+        void Assume(Containers::Wave &&wave) {
+            Assume(*new Containers::Wave(std::move(wave)));
+        }
+        
+        /// Assumes the ownership of the given wave data as the data for this object.
+        void Assume(float *data, unsigned long size);
+        
+        /// Assumes the ownership of the given wave data as the data for this object.
+        void Assume(float *data, unsigned long size, std::vector<Audio::Channel> channels);
+        
 
-	namespace system {
-		////This function initializes garbage collection subsystem
-		void InitWaveGarbageCollect(GGEMain *gge);
+        
+        /// Imports the given file. File type will be determined automatically from the extension or
+        /// from the file content. Returns false if the file cannot be imported. This function might
+        /// throw if there is a problem with the file.
+        bool Import(const std::string &filename);
+        
+        /// Imports the given wav file. Returns false if the file cannot be imported.
+        bool ImportWave(const std::string &filename);
+        
+        
+        /// Export the data to the given file. File type will be determined automatically from the 
+        /// extension. Returns false if the file cannot be saved.
+        bool Export(const std::string &filename);
+        
+        /// Export the data to the given wav file. Returns false if the file cannot be saved.
+        bool ExportWave(const std::string &filename);
+        
+#ifdef FLAC_SUPPORT
+        /// Imports the given FLAC file. Returns false if the file cannot be imported.
+        bool ImportFLAC(const std::string &filename);
+        
+        /// Export the data to the given FLAC file. Returns false if the file cannot be saved.
+        bool ExportFLAC(const std::string &filename, int bps = 16);
+#endif
+        
+        
+        /// For iteration
+        auto begin() {
+            ASSERT(data, "Data is not set");
+            
+            return data->begin();
+        }
+        
+        /// For iteration
+        auto end() {
+            ASSERT(data, "Data is not set");
+            
+            return data->end();
+        }
+        
+        virtual SeekResult StartSeeking(unsigned long) override final {
+            return Done;
+        }
+    
+        virtual bool IsSeeking() override final {
+            return false;
+        }
+        
+        virtual bool IsSeekComplete() override final {
+            return true;
+        }
+        
+        virtual unsigned long SeekTarget() override final {
+            return 0;
+        }
+        
+        virtual void SeekingDone() override final {
+        }
 
-		////This function checks finished waves that are marked as
-		/// garbage collectable and destroys them.
-		void CollectWaveGarbage();
-	}
-
-	////This is function definition required to signal
-	/// when a wave finishes its execution
-	typedef void(*wavefinish)(Wave &wave);
-
-
-
-	////Class to control wave-type sounds, this class handles
-	/// the creation of controller and supports 3D positioning
-	/// looping sounds, auto destruction, volume adjustment
-	/// and an event handler to be run when finished
-	class Wave {
-	public:
-		////default constructor requires buffer handle.
-		///@maxWaveDistance	: if specified the generated sound controller
-		/// will have 3D properties
-		Wave(system::SoundBufferHandle Buffer, float maxWaveDistance=0.0f);
-		////This will create non functioning wave
-		Wave();
-		////Plays this sound once
-		Wave& Play();
-		////Plays this sound continuously until stopped
-		Wave& Loop();
-		////Stops the sound
-		Wave& Stop();
-		////Used to adjust the volume, it can decrease or increase the
-		/// output, 1.0 is volume at 100% while 0.25 is at 25%
-		Wave& SetVolume(float Volume);
-		////Adjusts 3D position of the current sound source allowing
-		/// attuniation to take place.
-		Wave& Set3DPosition(float x,float y,float z);
-
-		////Used to check if sound is being played
-		bool isPlaying();
-
-		////Whether this sound should free itself when it is finished
-		bool AutoDestruct;
-
-		////This event is fired when sound buffer is played.
-		/// This event is fired by GGEMain while sound is being
-		/// examined for auto destruction.
-		wavefinish finished;
-
-		////Default destroyer used to free resources
-		~Wave();
-		////Destroys the controller that this class is bound to
-		void _destroy();
-
-	protected:
-		////Whether finished event is fired or not
-		bool finishedstateisknown;
-		////The wave buffer
-		system::SoundBufferHandle	buffer;
-		////The controller
-		system::SoundControlHandle	source;
-		////Whether this sound is available to be played
-		bool isavailable;
-	};
-
-
+    private:
+        bool own = true;
+        Containers::Wave *data = nullptr;
+        bool streaming = false;
+        
+        //stream buffers, wave data is treated as three buffers
+        unsigned long bufferstarts[3] = {};
+        bool streamwritefirst = false;
+    };
+    
 } }
