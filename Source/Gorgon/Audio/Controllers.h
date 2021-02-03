@@ -124,9 +124,9 @@ namespace Gorgon { namespace Audio {
         virtual void datachanged() { }    
     private:
         float volume   = 1;
-        float position = 0; //in seconds
+        float position = std::numeric_limits<float>::max(); //in seconds
         
-        bool playing = false; 
+        bool playing = false;
         bool looping = false;
     };
     

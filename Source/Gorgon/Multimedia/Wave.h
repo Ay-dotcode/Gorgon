@@ -163,20 +163,33 @@ namespace Multimedia {
         /// throw if there is a problem with the file.
         bool Import(const std::string &filename);
         
-        /// Imports the given wav file. Returns false if the file cannot be imported.
-        bool ImportWave(const std::string &filename);
+        /// Imports the given file. File type will be determined automatically from the extension or
+        /// from the file content. Returns false if the file cannot be imported. This function might
+        /// throw if there is a problem with the file.
+        bool Import(std::istream &stream);
         
         
         /// Export the data to the given file. File type will be determined automatically from the 
         /// extension. Returns false if the file cannot be saved.
         bool Export(const std::string &filename);
         
+        
+        /// Imports the given wav file. Returns false if the file cannot be imported.
+        bool ImportWav(std::istream &stream);
+        
+        /// Imports the given wav file. Returns false if the file cannot be imported.
+        bool ImportWav(const std::string &filename);
+        
+        
         /// Export the data to the given wav file. Returns false if the file cannot be saved.
-        bool ExportWave(const std::string &filename);
+        bool ExportWav(const std::string &filename);
         
 #ifdef FLAC_SUPPORT
         /// Imports the given FLAC file. Returns false if the file cannot be imported.
         bool ImportFLAC(const std::string &filename);
+        
+        /// Imports the given FLAC file. Returns false if the file cannot be imported.
+        bool ImportFLAC(std::istream &stream);
         
         /// Export the data to the given FLAC file. Returns false if the file cannot be saved.
         bool ExportFLAC(const std::string &filename, int bps = 16);
@@ -219,11 +232,6 @@ namespace Multimedia {
     private:
         bool own = true;
         Containers::Wave *data = nullptr;
-        bool streaming = false;
-        
-        //stream buffers, wave data is treated as three buffers
-        unsigned long bufferstarts[3] = {};
-        bool streamwritefirst = false;
     };
     
 } }

@@ -1811,11 +1811,19 @@ namespace Gorgon { namespace Widgets {
         bool FitHeight(int maxpixels) {
             int curh = GetInteriorSize().Height;
             int overhead = GetHeight() - curh;
-            int expected = int( std::ceil( (this->GetCount()+overscroll) * (curh/maxdisplay) ) ) + overhead;
+            int defh = stack.GetTemplate().GetUnitWidth();
+            
+            auto li = stack.GetTemplate(UI::ComponentTemplate::ItemTag);
+            if(li)
+                defh = li->GetHeight();
+            
+            int expected = int( std::ceil( (this->GetCount()+overscroll) * (maxdisplay == 0 ? defh : curh/maxdisplay) ) ) + overhead;
             bool smalldone = false;
             
             //will possibly fit
             if(expected < maxpixels) {
+                
+                int tried = 0;
                 
                 do {
                     SetHeight(expected);
@@ -1825,7 +1833,7 @@ namespace Gorgon { namespace Widgets {
                     auto diff = maxdisplay - (this->GetCount()+overscroll);
                     
                     //it fits everything, might not be tightest but that's ok. We can also eat up a bit of overscroll
-                    if(diff < 1 && diff >= -overscroll/2)
+                    if((diff < 1 && diff >= -overscroll/2) || maxdisplay == 0)
                         return true;
                     
                     curh = GetInteriorSize().Height;
@@ -1842,7 +1850,8 @@ namespace Gorgon { namespace Widgets {
                         smalldone = true;
                     }
                     expected = curexpected;
-                } while(expected < maxpixels);
+                    tried++;
+                } while(expected < maxpixels && tried < 5);
                 
             }
             

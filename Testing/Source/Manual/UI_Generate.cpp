@@ -204,9 +204,9 @@ int main() {
     list.Add("9");
     list.Add("Hello");
     list.Add("World");
-    for(int i=0; i<10; i++)
+    /*for(int i=0; i<10; i++)
         list.Add("Welcome", "to", "the", "wonderful", "Gorgon", "Library", "!");
-    list.Add("World");
+    list.Add("World");*/
     list.AddToSelection(3);
     list.AddToSelection(1, 4);
     list.InvertSelection();
@@ -229,6 +229,8 @@ int main() {
     });
     list.EnsureVisible(11);
     list.EnsureVisible(1);
+    list.Clear();
+    list.FitHeight(list.GetHeight());
     
     Widgets::DropdownList<DaysOfWeek> dlist(begin(Enumerate<DaysOfWeek>()), end(Enumerate<DaysOfWeek>()));
     dlist.List.SetSelectedIndex(1);

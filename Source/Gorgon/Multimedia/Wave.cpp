@@ -91,7 +91,7 @@ namespace Gorgon { namespace Multimedia {
         
         return n;
     }
-            
+    
     bool Wave::Import(const std::string &filename) {
         auto dotpos = filename.find_last_of('.');
 
@@ -99,7 +99,7 @@ namespace Gorgon { namespace Multimedia {
             auto ext = filename.substr(dotpos+1);
 
             if(String::ToLower(ext) == "wav") {
-                return ImportWave(filename);
+                return ImportWav(filename);
             }
 #ifdef FLAC_SUPPORT
             else if(String::ToLower(ext) == "flac") {
@@ -110,32 +110,47 @@ namespace Gorgon { namespace Multimedia {
 
         std::ifstream file(filename, std::ios::binary);
 
+        if(file.is_open())
+            return Import(file);
+        else
+            return false;
+    }
+    
+    bool Wave::Import(std::istream &file) {
         static const uint32_t wavsig  = 0x46464952;
         static const uint32_t flacsig = 0x43614c66;
 
         uint32_t sig = IO::ReadUInt32(file);
-
-        file.close();
+        file.seekg(0, std::ios::beg);
 
         if(sig == wavsig) {
-            return ImportWave(filename);
+            return ImportWav(file);
         }
 #ifdef FLAC_SUPPORT
         else if(sig == flacsig) {
-            return ImportFLAC(filename);
+            return ImportFLAC(file);
         }
 #endif
 
         throw std::runtime_error("Unsupported file format");
     }
     
-    bool Wave::ImportWave(const std::string &filename) {
+    bool Wave::ImportWav(const std::string &filename) {
+        std::ifstream file(filename, std::ios::binary);
+        
+        if(!file.is_open())
+            return false;
+        
+        return ImportWav(file);
+    }
+    
+    bool Wave::ImportWav(std::istream &stream) {
         if(!data) {
             data = new Containers::Wave;
             own = true;
         }
         
-        return data->ImportWav(filename);
+        return data->ImportWav(stream);
     }
     
     bool Wave::Export(const std::string &filename) {
@@ -145,7 +160,7 @@ namespace Gorgon { namespace Multimedia {
             auto ext = filename.substr(dotpos+1);
 
             if(String::ToLower(ext) == "wav") {
-                return ImportWave(filename);
+                return ImportWav(filename);
             }
 #ifdef FLAC_SUPPORT
             else if(String::ToLower(ext) == "flac") {
@@ -156,9 +171,8 @@ namespace Gorgon { namespace Multimedia {
         
         return false;
     }
-
     
-    bool Wave::ExportWave(const std::string &filename) {
+    bool Wave::ExportWav(const std::string &filename) {
         ASSERT(data, "Data is not set");
         
         return data->ExportWav(filename);
@@ -166,15 +180,19 @@ namespace Gorgon { namespace Multimedia {
     
 #ifdef FLAC_SUPPORT
     bool Wave::ImportFLAC(const std::string &filename) {
-        if(!data) {
-            data = new Containers::Wave;
-            own = true;
-        }
-        
         std::ifstream file(filename, std::ios::binary);
         
         if(!file.is_open())
             return false;
+        
+        return ImportFLAC(file);
+    }
+    
+    bool Wave::ImportFLAC(std::istream &file) {
+        if(!data) {
+            data = new Containers::Wave;
+            own = true;
+        }
         
         Encoding::Flac.Decode(file, *data);
         

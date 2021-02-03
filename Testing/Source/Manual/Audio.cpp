@@ -73,12 +73,12 @@ auto TestExportImport() {
     
     auto wave = MakeSine();
     
-	Encoding::Flac.Encode(wave, "test.flac", 16);
-    //wave.ExportWav("test.wav", 16);
+	Encoding::Flac.Encode(wave, "test.sound", 16);
+    //wave.ExportWav("test.sound", 16);
     
 	Multimedia::Wave wave2;
     //std::cout<<"Load file: " << wave2.ImportWav("test.wav")<<std::endl;
-	wave2.Import("test.flac");
+	wave2.Import("test.sound");
 
     return wave2;
 }

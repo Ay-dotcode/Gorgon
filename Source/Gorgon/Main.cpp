@@ -68,8 +68,15 @@ namespace Gorgon {
 	namespace Animation {
 		void Animate();
 	}
+	
+	void gorgon_exit() {
+        exiting = true;
+    }
 
 	void Initialize(const std::string &name) {
+        
+		atexit(&gorgon_exit);
+
 		internal::systemname=name;
 		
 		Filesystem::Initialize();

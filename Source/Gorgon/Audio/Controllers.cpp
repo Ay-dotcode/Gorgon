@@ -25,18 +25,25 @@ namespace Gorgon { namespace Audio {
         std::lock_guard<std::mutex> guard(internal::ControllerMtx);
         
         this->wavedata = &wavedata;
+        
+        if(position >= wavedata.GetLength()) {
+            Seek(0);
+        }
+        else {
+            Seek(position);
+        }
+        
         datachanged();
     }
     
     BasicController &BasicController::Play() {
         if(wavedata) {
             if(position >= wavedata->GetLength()) {
-                //this ok as stream sources are required to load start for looping
-                position = 0;
+                Seek(0);
             }
         }
         else {
-            position = 0;
+            Seek(0);
         }
         
         playing = true;
@@ -46,7 +53,7 @@ namespace Gorgon { namespace Audio {
     }
 
     BasicController &BasicController::Loop() {
-        playing = true;
+        Play();
         looping = true;
         
         return *this;
