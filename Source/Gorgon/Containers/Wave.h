@@ -348,6 +348,7 @@ namespace Gorgon {
                     data = nullptr;
                 }
                 size = 0;
+                channels = {};
             }
 
             /// Swaps this wave with another. This function is used to implement move semantics.
@@ -457,21 +458,22 @@ namespace Gorgon {
             }
             
             /// Imports a PCM based wav file. Leave channels empty to determine them automatically.
-            bool ImportWav(const std::string &filename, bool loaddata, unsigned long &size, std::vector<Audio::Channel> channels = {}) {
+            bool ImportWav(const std::string &filename, bool loaddata, unsigned long &size, int &samplesize, int &blocksize, std::vector<Audio::Channel> channels = {}) {
                 std::ifstream file(filename, std::ios::binary);
                 
                 if(!file.is_open()) return false;
 
-                return ImportWav(file, loaddata, size, std::move(channels));
+                return ImportWav(file, loaddata, size, samplesize, blocksize, std::move(channels));
             }
             
             bool ImportWav(std::istream &file, std::vector<Audio::Channel> channels = {}) {
                 unsigned long size;
+                int samplesize, blocksize;
                 
-                return ImportWav(file, true, size, std::move(channels));
+                return ImportWav(file, true, size, samplesize, blocksize, std::move(channels));
             }
 
-            bool ImportWav(std::istream &file, bool loaddata, unsigned long &size, std::vector<Audio::Channel> channels = {}) {
+            bool ImportWav(std::istream &file, bool loaddata, unsigned long &size, int &samplesize, int &blocksize, std::vector<Audio::Channel> channels = {}) {
                 
                 if(IO::ReadString(file, 4) != "RIFF") return false;
                 
@@ -481,15 +483,20 @@ namespace Gorgon {
             
                 if(IO::ReadString(file, 4) != "fmt ") return false;
                 
-                if(IO::ReadInt32(file) != 16) return false;
+                auto fmtsize = IO::ReadInt32(file);
+                
+                if(fmtsize < 16) return false;
                 
                 if(IO::ReadInt16(file) != 1) return false; //must be PCM
                 
                 int channelcnt = IO::ReadInt16(file);
                 samplerate     = IO::ReadInt32(file);                
                 int byterate   = IO::ReadInt32(file);                
-                int blocksize  = IO::ReadInt16(file);                
-                int samplesize = IO::ReadInt16(file);
+                    blocksize  = IO::ReadInt16(file);                
+                    samplesize = IO::ReadInt16(file);
+                
+                if(fmtsize != 16)
+                    file.seekg(fmtsize-16, std::ios::cur);
                 
                 if(samplesize != 8 && samplesize !=16) return false;
                 
@@ -510,8 +517,10 @@ namespace Gorgon {
                 auto fsize = IO::ReadUInt32(file);
                 size = fsize / blocksize;
                 
-                if(!loaddata)
+                if(!loaddata) {
+                    this->channels = std::move(channels);
                     return true;
+                }
 
                 Resize(size, channels);
                 

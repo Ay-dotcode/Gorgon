@@ -10,7 +10,13 @@
 #include <mutex>
 
 namespace Gorgon { namespace Audio {
-		
+    
+namespace internal {
+    
+    class Loop;
+    
+}
+
     /**
     * Identifies controller types. 
     */
@@ -41,6 +47,7 @@ namespace Gorgon { namespace Audio {
     */
     class BasicController : public Controller {
         friend void AudioLoop();
+        friend class internal::Loop;
     public:
         
         /// Default constructor
@@ -140,6 +147,7 @@ namespace Gorgon { namespace Audio {
     */
     class PositionalController : public BasicController {
         friend void AudioLoop();
+        friend class internal::Loop;
     public:
         
         /// Default constructor

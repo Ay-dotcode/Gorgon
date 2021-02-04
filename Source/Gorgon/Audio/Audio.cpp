@@ -6,7 +6,8 @@
 
 #include "Controllers.h"
 #include "../Multimedia/Wave.h"
-	
+#include "../Multimedia/AudioStream.h"
+    
 #ifdef AUDIO_PULSE
 #	include "PulseAudio.inc.h"
 #endif
@@ -15,103 +16,154 @@
 #endif
 
 namespace Gorgon { 
-	extern bool exiting;
+    extern bool exiting;
 
 namespace Audio {
-	
-	Utils::Logger Log("Audio");
-	
-	std::vector<Device> Device::devices;
-	Device Current;
-	
-	Device Device::def;
-	
-	namespace internal {
-		std::thread audiothread;
-		
-		float BufferDuration = 0.030f; //in seconds
-		int   BufferSize     = 0; //if left 0, filled by audio loop
-		
-		float mastervolume = 1;
-		std::vector<float> volume = {1.f, 1.f};
-
-		void exitfn() {
-			audiothread.join();
-		}
-	}
-	
-	void SetVolume(float volume) {
-		internal::mastervolume = volume;
-	}
-
-	void SetVolume(Channel channel, float volume) {
-		for(int i=0;i<Current.GetChannelCount(); i++) {
-			if(Current.GetChannel(i) == channel) {
-				internal::volume[i] = volume;
-				return;
-			}
-		}
-		
-		if(channel == Channel::Mono) {
-			for(int i=0;i<Current.GetChannelCount(); i++) {
-				internal::volume[i] = volume;
-			}
-		}
-	}
-	
-	float GetVolume() {
-		return internal::mastervolume;
-	}
-
-	float GetVolume(Channel channel) {
-		for(int i=0;i<Current.GetChannelCount(); i++) {
-			if(Current.GetChannel(i) == channel)
-				return internal::volume[i];
-		}
-		
-		return 0;
-	}
-	
-	void AudioLoop() {
-		Log << "Audio loop started";
-		std::atexit(&internal::exitfn);
-
-		int   freq 		   = Current.GetSampleRate();
-		float secpersample = 1.0f / freq;
-		int channels       = Current.GetChannelCount();
+    
+    Utils::Logger Log("Audio");
+    
+    std::vector<Device> Device::devices;
+    Device Current;
+    
+    Device Device::def;
+    
+    namespace internal {
+        std::thread audiothread;
         
-        Environment::Current.init();
-
-        if(internal::BufferSize == 0)
-            internal::BufferSize = int(freq * internal::BufferDuration);
-
-		int datasize = channels * internal::BufferSize;
-		
-		std::vector<float> data(datasize*sizeof(float));
+        float BufferDuration = 0.030f; //in seconds
+        int   BufferSize     = 0; //if left 0, filled by audio loop
         
-        std::vector<float> temp(internal::BufferSize);
+        float mastervolume = 1;
+        std::vector<float> volume = {1.f, 1.f};
 
-		//std::ofstream test("test.csv");
-		
-		while(!exiting) {
-			int maxsize, size;
+        void exitfn() {
+            audiothread.join();
+        }
+    }
+    
+    void SetVolume(float volume) {
+        internal::mastervolume = volume;
+    }
 
-			maxsize = (int)GetWritableSize(channels);
-			size    = maxsize;
-			size    = std::min(size, internal::BufferSize);
+    void SetVolume(Channel channel, float volume) {
+        for(int i=0;i<Current.GetChannelCount(); i++) {
+            if(Current.GetChannel(i) == channel) {
+                internal::volume[i] = volume;
+                return;
+            }
+        }
+        
+        if(channel == Channel::Mono) {
+            for(int i=0;i<Current.GetChannelCount(); i++) {
+                internal::volume[i] = volume;
+            }
+        }
+    }
+    
+    float GetVolume() {
+        return internal::mastervolume;
+    }
 
-			if(!size) {
-				SkipFrame();
-				std::this_thread::yield();
-				continue;
-			}
-			
-			//zero out before starting
-			std::memset(&data[0], 0, sizeof(float) * size * channels);
-			
-			internal::ControllerMtx.lock();
-					
-            auto outofbounds = [](BasicController &basic) {
+    float GetVolume(Channel channel) {
+        for(int i=0;i<Current.GetChannelCount(); i++) {
+            if(Current.GetChannel(i) == channel)
+                return internal::volume[i];
+        }
+        
+        return 0;
+    }
+    
+    namespace internal {
+        class Loop {
+        public:
+            
+            Loop() {
+                Environment::Current.init();
+
+                if(internal::BufferSize == 0)
+                    internal::BufferSize = int(freq * internal::BufferDuration);
+
+                int datasize = channels * internal::BufferSize;
+                
+                data.resize(datasize*sizeof(float));
+                
+                temp.resize(internal::BufferSize);
+            }
+            
+            bool operator()() {
+                int maxsize;
+
+                maxsize = (int)GetWritableSize(channels);
+                size    = maxsize;
+                size    = std::min(size, internal::BufferSize);
+
+                if(!size)
+                    return false;
+                
+                //zero out before starting
+                std::memset(&data[0], 0, sizeof(float) * size * channels);
+                
+                std::lock_guard<std::mutex> g(internal::ControllerMtx);
+                
+                
+                for(auto &controller : internal::Controllers) {
+                    if(controller.Type() == ControllerType::Basic) {
+                        auto &basic = static_cast<BasicController&>(controller);
+                        
+                        if(!basic.playing) continue;
+                    
+                        if(!basic.wavedata) continue;
+                        
+                        auto wave = dynamic_cast<const Multimedia::Wave*>(basic.wavedata);
+                        auto stream = dynamic_cast<const Multimedia::AudioStream*>(basic.wavedata);
+
+                        if(wave)
+                            perform(basic, wave);
+                        else if(stream)
+                            perform(basic, stream);
+                        else {
+                            basic.wavedata = nullptr;
+                            basic.datachanged();
+                            Log << "Unknown source type";
+                        }
+                    }
+                    else if(controller.Type() == ControllerType::Positional) {
+                        auto &positional = static_cast<PositionalController&>(controller);
+                        
+                        if(!positional.playing) continue;
+                        
+                        if(!positional.wavedata) continue;
+                        
+                        auto wave = dynamic_cast<const Multimedia::Wave*>(positional.wavedata);
+
+                        if(wave)
+                            perform(positional, wave);
+                        else {
+                            positional.wavedata = nullptr;
+                            positional.datachanged();
+                            Log << "Unknown source type";
+                        }
+                    }
+                }
+                
+                
+                return true;
+            }
+            
+            const std::vector<float> &GetData() const {
+                return data;
+            }
+            
+            int GetSize() const {
+                return size;
+            }
+            
+            int GetChannelCount() const {
+                return channels;
+            }
+            
+        private:
+            bool outofbounds(BasicController &basic) {
                 //reached to the end of the stream
                 if(basic.looping) {
                     basic.position = basic.position - basic.GetDuration();
@@ -126,372 +178,395 @@ namespace Audio {
                 }
             };
             
-            auto interpolate_wave = [](const Multimedia::Wave *wavedata, float pos, int ch, bool looping) {
+            template<class S_>
+            void perform(BasicController &basic, S_ *src) {
+                auto wavedata = basic.wavedata;
+                
+                auto org = basic.position;
+                
+                for(unsigned ch = 0; ch <wavedata->GetChannelCount(); ch++) {
+                    auto channel = wavedata->GetChannelType(ch);
+
+                    if(channel == Channel::Mono) { //* Mono is distributed to all channels
+                        distributetoall(basic, src, org, ch);
+                    }
+                    else {
+                        int ind = Current.FindChannel(wavedata->GetChannelType(ch));
+                        
+                        if(channel == Channel::FrontLeft) {
+                            if(ind!=-1) sendto(basic, src, org, ch, ind);
+                            
+                            ind = Current.FindChannel(Channel::BackLeft);
+                            
+                            if(ind!=-1 && !wavedata->FindChannel(Channel::BackLeft)) sendto(basic, src, org, ch, ind);
+                        }                            
+                        else if(channel == Channel::FrontRight) {
+                            if(ind!=-1) sendto(basic, src, org, ch, ind);
+                            
+                            ind = Current.FindChannel(Channel::BackRight);
+                            
+                            if(ind!=-1 && !wavedata->FindChannel(Channel::BackRight)) sendto(basic, src, org, ch, ind);
+                        }
+                        else if(channel == Channel::Center) {
+                            if(ind!=-1) {
+                                sendto(basic, src, org, ch, ind);
+                            }
+                            else {
+                                ind = Current.FindChannel(Channel::FrontLeft);
+                                
+                                if(ind!=-1) sendto(basic, src, org, ch, ind);
+                                
+                                ind = Current.FindChannel(Channel::FrontRight);
+                                
+                                if(ind!=-1) sendto(basic, src, org, ch, ind);
+                            }
+                        }
+                        else if(channel == Channel::BackLeft) {
+                            if(ind!=-1) {
+                                sendto(basic, src, org, ch, ind);
+                            }
+                            else {
+                                ind = Current.FindChannel(Channel::FrontLeft);
+                                
+                                if(ind!=-1) sendto(basic, src, org, ch, ind);
+                            }
+                        }
+                        else if(channel == Channel::BackRight) {
+                            if(ind!=-1) {
+                                sendto(basic, src, org, ch, ind);
+                            }
+                            else {
+                                ind = Current.FindChannel(Channel::FrontRight);
+                                
+                                if(ind!=-1) sendto(basic, src, org, ch, ind);
+                            }
+                        }
+                        else if(channel == Channel::LowFreq) {
+                            if(ind!=-1) {
+                                sendto(basic, src, org, ch, ind);
+                            }
+                            else {
+                                distributetoall(basic, src, org, ch);
+                            }
+                        }
+                        else {
+                            Log << "Unknown channel type: " << String::From(channel);
+                        }
+                    }
+                }
+            }
+            
+            template<class S_>
+            void perform(PositionalController &positional, S_ *src) {
+                auto org = positional.position;
+                
+                //collect data
+                if(src->FindChannel(Channel::Mono) != -1) { //preferred way, no additional cost
+                    int ind = src->FindChannel(Channel::Mono);
+                    
+                    for(int s=0; s<size; s++) {                            
+                        float val = internal::mastervolume * positional.volume * interpolate(positional, src, ind);
+                        
+                        temp[s] = val;
+                        
+                        positional.position += secpersample;
+                    }
+                }
+                else {
+                    for(int s=0; s<size; s++) {
+                        float val = 0;
+                        
+                        for(int ch =0; ch <(int)src->GetChannelCount(); ch++) {
+                            if(src->GetChannelType(ch) != Channel::LowFreq) {
+                                val += internal::mastervolume * positional.volume * interpolate(positional, src, ch);
+                            }
+                        }
+                        
+                        temp[s] = val;
+                        
+                        positional.position += secpersample;
+                    }
+                }
+                
+                //handle low frequency if it exists
+                if(src->FindChannel(Channel::LowFreq) != -1) {
+                    //we have a low frequency target, simply copy data
+                    if(Current.FindChannel(Channel::LowFreq) != -1) {
+                        auto factor = std::exp(
+                            -Environment::Current.attuniationfactor * 
+                            (positional.location - Environment::Current.listener.location).Distance()
+                        );
+                        
+                        sendto(
+                            positional, src, org, 
+                            src->FindChannel(Channel::LowFreq), Current.FindChannel(Channel::LowFreq), 
+                            factor
+                        );
+                    }
+                    else { //otherwise add it to the rest of the channels
+                        int ind = src->FindChannel(Channel::LowFreq);
+                        positional.position = org;
+                        
+                        for(int s=0; s<size; s++) {                            
+                            float val = internal::mastervolume * positional.volume * interpolate(positional, src, ind);
+                            
+                            temp[s] += val;
+                            
+                            positional.position += secpersample;
+                        }
+                    }
+                }
+                
+                //Distribute collected data
+
+                //distribute to headphones
+                if(Current.IsHeadphones()) {
+                    auto &env = Environment::Current;
+                    auto &lis = env.listener;
+                    
+                    float leftvol, rightvol;
+                    
+                    auto loc  = positional.location;
+                    
+                    auto leftvec  = (loc - lis.leftpos);
+                    auto rightvec = (loc - lis.rightpos);
+                    
+                    leftvol = leftvec.Normalize() * env.left;
+                    leftvol += 1;
+                    leftvol /= 2;
+                    //leftvol *= leftvol;
+                    
+                    rightvol = rightvec.Normalize() * env.right;
+                    rightvol += 1;
+                    rightvol /= 2;
+                    //rightvol *= rightvol;
+                    
+                    auto total = (leftvol + rightvol);
+                    
+                    leftvol  /= total;
+                    rightvol /= total;
+
+                    auto mult = std::exp(-env.attuniationfactor * leftvec.Distance());
+
+                    leftvol = (leftvol * (1 - Environment::Current.nonblocked) + Environment::Current.nonblocked) * mult;
+                    
+                    mult = std::exp(-env.attuniationfactor * rightvec.Distance());
+
+                    rightvol = (rightvol * (1 - Environment::Current.nonblocked) + Environment::Current.nonblocked) * mult;
+                    
+                    int leftind  = Current.FindChannel(Channel::FrontLeft);
+                    int rightind = Current.FindChannel(Channel::FrontRight);
+                    
+                    //std::cout<<leftvol<< " : " <<rightvol<<std::endl;
+                    
+                    for(int s=0; s<size; s++) {
+                        data[s*channels+leftind]  +=  leftvol * temp[s];
+                        data[s*channels+rightind] += rightvol * temp[s];
+                    }
+                }
+                
+                //stereo
+                else if(Current.FindChannel(Channel::BackLeft) == -1) {                        
+                    auto &env = Environment::Current;
+                    auto &lis = env.listener;
+                    
+                    float leftvol, rightvol;
+                    
+                    auto diff = positional.location - lis.location;;
+                    auto w = diff.Normalize();
+                    
+                    leftvol  = w * env.speaker_vectors[0];                        
+                    rightvol = w * env.speaker_vectors[1];
+                    
+                    leftvol += 1;
+                    leftvol /= 2;
+                    
+                    rightvol += 1;
+                    rightvol /= 2;
+                    
+                    auto total = leftvol + rightvol;
+                    leftvol /= total;
+                    rightvol /= total;
+                    
+                    leftvol  *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[0]));
+                    rightvol *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[1]));
+                    
+                    int leftind  = Current.FindChannel(Channel::FrontLeft);
+                    int rightind = Current.FindChannel(Channel::FrontRight);
+                
+                    //std::cout<<leftvol<< " : " <<rightvol<<std::endl;
+                    
+                    for(int s=0; s<size; s++) {
+                        data[s*channels+leftind]  +=  leftvol * temp[s];
+                        data[s*channels+rightind] += rightvol * temp[s];
+                    }
+                }
+                
+                //surround
+                else {                        
+                    auto &env = Environment::Current;
+                    auto &lis = env.listener;
+                    
+                    float fl, fr, bl, br;
+                    
+                    auto diff = positional.location - lis.location;;
+                    auto w = diff.Normalize();
+                    
+                    fl = w * env.speaker_vectors[0];                        
+                    fr = w * env.speaker_vectors[1];                     
+                    bl = w * env.speaker_vectors[2];                     
+                    br = w * env.speaker_vectors[3];
+                    
+                    if(fl<0) fl = 0;
+                    
+                    if(fr<0) fr = 0;
+                
+                    if(bl<0) bl = 0;
+                    
+                    if(br<0) br = 0;
+                    
+                    auto total = fl + fr + bl + br;
+                    fl /= total;
+                    fr /= total;
+                    bl /= total;
+                    br /= total;
+                    
+                    fl *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[0]));
+                    fr *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[1]));
+                
+                    bl *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[2]));
+                    br *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[3]));
+                    
+                    int flind = Current.FindChannel(Channel::FrontLeft);
+                    int frind = Current.FindChannel(Channel::FrontRight);
+                    
+                    int blind = Current.FindChannel(Channel::BackLeft);
+                    int brind = Current.FindChannel(Channel::BackRight);
+                
+                    //std::cout<<fl<< " : " <<fr<<" | "<<bl<< " : " <<br<<std::endl;
+                    
+                    for(int s=0; s<size; s++) {
+                        data[s*channels+flind]  +=  fl * temp[s];
+                        data[s*channels+frind]  +=  fr * temp[s];
+                        data[s*channels+blind]  +=  bl * temp[s];
+                        data[s*channels+brind]  +=  br * temp[s];
+                    }
+                }
+                
+                
+            }
+                
+            float get(const Multimedia::Wave *src, long int sample, int ch) {
+                return src->Get(sample, ch);
+            }
+                
+            float get(const Multimedia::AudioStream *src, long int sample, int ch) {
+                int bufferind = -1;
+                for(int i=0; i<src->buffers.size(); i++) {
+                    int j = (src->currentbuffer+i)%src->buffers.size();
+                    auto &cur = src->buffers[j];
+                    
+                    if(sample >= cur.beg && sample < cur.end) {
+                        bufferind = j;
+                        break;
+                    }
+                }
+                
+                if(bufferind == -1) {
+                    return 0.f;
+                }
+                else {
+                    src->lastsample = sample;
+                    
+                    auto &cur = src->buffers[bufferind];
+                    return cur.buffer.Get(sample-cur.beg, ch);
+                }
+            }
+            
+            //using templates to avoid virtual function calls allowing functions to be inlined
+            template<class S_> 
+            float interpolate(BasicController &basic, S_ *source, int ch) {
+                float pos = basic.position * source->GetSampleRate();
+                
+                if((long int)pos >= (long int)source->GetSize()) {
+                    if(!outofbounds(basic)) 
+                        return 0.f;
+                    else
+                        pos = basic.position * source->GetSampleRate();
+                }
+                
                 long int x1 = (long int)pos      ;
                 long int x2 = (long int)(pos + 1);
                 
                 float x1r = x2 - pos;
                 float x2r = 1  - x1r;
                 
-                float val;
-                
-                if(x2 >= (long int)wavedata->GetSize()) {
-                    // multiplication with basic.looping is for branch elimination. Basically, if the audio is not looping
-                    // last few values will not be long interpolated but faded out.
-                    val = ( x1r * wavedata->Get(x1, ch) + looping * x2r * wavedata->Get(0, ch));
+                if(x2 >= (long int)source->GetSize()) {
+                    return ( x1r * get(source, x1, ch) + basic.looping * x2r * get(source, 0, ch));
                 }
                 else {
-                    val = ( x1r * wavedata->Get(x1, ch) + x2r * wavedata->Get(x2, ch));
+                    return ( x1r * get(source, x1, ch) + x2r * get(source, x2, ch));
                 }
-                
-                return val;
-            };
+            }
             
-            auto interpolate_basic = [&outofbounds, &interpolate_wave](BasicController &basic, int ch) {
-                
-                auto source = basic.wavedata;
-                
-                float pos     = basic.position * source->GetSampleRate();
-                
-                if((long int)pos >= (long int)source->GetSize()) {
-                    if(!outofbounds(basic)) 
-                        return 0.f;
-                    else
-                        pos     = basic.position * source->GetSampleRate();
-                }
-                
-                auto wave = dynamic_cast<const Multimedia::Wave*>(source);
-                if(wave) {
-                    return interpolate_wave(wave, pos, ch, basic.IsLooping());
-                }
-                
-                Log << "Unknown source";
-                
-                return 0.f;
-           };
+            template<class S_>
+            void distributetoall(BasicController &basic, S_ *src, float org, int ch) {
+                basic.position = org;
+                for(int s=0; s<size; s++) {                            
+                    float val = internal::mastervolume * basic.volume * interpolate(basic, src, ch);
             
+                    if(basic.position == basic.GetDuration()) break;
+                    
+                    for(int c = 0; c<channels; c++) {
+                        data[s*channels+c] += internal::volume[c] * val;
+                    }
+                    
+                    basic.position += secpersample;
+                }
+            }
+                
+
             //optimization might be necessary, this function may cause cache misses for many to many mapping
-            auto sendto = [&](BasicController &basic, float org, int src, int dest, float vol = 1.f) {
+            template<class S_>
+            void sendto(BasicController &basic, S_ *src, float org, int src_ch, int dest_ch, float vol = 1.f) {
                 basic.position = org;
                 
                 for(int s=0; s<size; s++) {
-                    data[s*channels+dest] += vol * internal::mastervolume * basic.volume * internal::volume[dest] * interpolate_basic(basic, src);
+                    data[s*channels + dest_ch] += vol * internal::mastervolume * basic.volume * internal::volume[dest_ch] * interpolate(basic, src, src_ch);
                     
-                    if(basic.position == basic.GetDuration()) break;
+                    if(basic.position == basic.GetDuration()) return;
                     
                     basic.position += secpersample;
                 }
             };
-			
-			//For cache optimization we would do vertical sampling
-			for(auto &controller : internal::Controllers) {
-				if(controller.Type() == ControllerType::Basic) {
-					auto &basic = static_cast<BasicController&>(controller);
-					
-					//std::cout<<"Playing.."<<std::endl;
-					
-					if(!basic.playing) continue;
-					
-					if(!basic.wavedata) continue;
-					
-					auto wavedata = basic.wavedata;
-					
-                    auto org = basic.position;
-                    
-                    auto distributetoall = [&](int ind) {
-                        basic.position = org;
-                        
-                        for(int s=0; s<size; s++) {                            
-                            float val = internal::mastervolume * basic.volume * interpolate_basic(basic, ind);
-                    
-                            if(basic.position == basic.GetDuration()) break;
-                            
-                            for(int c = 0; c<channels; c++) {
-                                data[s*channels+c] += internal::volume[c] * val;
-                            }
-                            
-                            basic.position += secpersample;
-                        }
-                    };
-                    
-                    for(unsigned c = 0; c<wavedata->GetChannelCount(); c++) {
-                        auto channel = wavedata->GetChannelType(c);
+            
+            int   size;
+            int   freq         = Current.GetSampleRate();
+            float secpersample = 1.0f / freq;
+            int   channels     = Current.GetChannelCount();
+            std::vector<float> data, temp;
+        };
+        
+    }
+    
+    void AudioLoop() {
+        Log << "Audio loop started";
+        std::atexit(&internal::exitfn);
+        
+        internal::Loop loop;
+        
+        while(!exiting) {
 
-                        if(channel == Channel::Mono) { //* Mono is distributed to all channels
-                            distributetoall(c);
-                        }
-                        else {
-                            int ind = Current.FindChannel(wavedata->GetChannelType(c));
-                            
-                            if(channel == Channel::FrontLeft) {
-                                if(ind!=-1) sendto(basic, org, c, ind);
-                                
-                                ind = Current.FindChannel(Channel::BackLeft);
-                                
-                                if(ind!=-1 && !wavedata->FindChannel(Channel::BackLeft)) sendto(basic, org, c, ind);
-                            }                            
-                            else if(channel == Channel::FrontRight) {
-                                if(ind!=-1) sendto(basic, org, c, ind);
-                                
-                                ind = Current.FindChannel(Channel::BackRight);
-                                
-                                if(ind!=-1 && !wavedata->FindChannel(Channel::BackRight)) sendto(basic, org, c, ind);
-                            }
-                            else if(channel == Channel::Center) {
-                                if(ind!=-1) {
-                                    sendto(basic, org, c, ind);
-                                }
-                                else {
-                                    ind = Current.FindChannel(Channel::FrontLeft);
-                                    
-                                    if(ind!=-1) sendto(basic, org, c, ind);
-                                    
-                                    ind = Current.FindChannel(Channel::FrontRight);
-                                    
-                                    if(ind!=-1) sendto(basic, org, c, ind);
-                                }
-                            }
-                            else if(channel == Channel::BackLeft) {
-                                if(ind!=-1) {
-                                    sendto(basic, org, c, ind);
-                                }
-                                else {
-                                    ind = Current.FindChannel(Channel::FrontLeft);
-                                    
-                                    if(ind!=-1) sendto(basic, org, c, ind);
-                                }
-                            }
-                            else if(channel == Channel::BackRight) {
-                                if(ind!=-1) {
-                                    sendto(basic, org, c, ind);
-                                }
-                                else {
-                                    ind = Current.FindChannel(Channel::FrontRight);
-                                    
-                                    if(ind!=-1) sendto(basic, org, c, ind);
-                                }
-                            }
-                            else if(channel == Channel::LowFreq) {
-                                if(ind!=-1) {
-                                    sendto(basic, org, c, ind);
-                                }
-                                else {
-                                    distributetoall(c);
-                                }
-                            }
-                            else {
-                                Log << "Unknown channel type: " << String::From(channel);
-                            }
-                        }
-                    }
-				}
-				else if(controller.Type() == ControllerType::Positional) {
-                    auto &positional = static_cast<PositionalController&>(controller);
-					
-					if(!positional.playing) continue;
-					
-					if(!positional.wavedata) continue;
-					
-					auto wavedata = positional.wavedata;
-					
-                    auto org = positional.position;
-                    
-                    //prefered way
-                    if(wavedata->FindChannel(Channel::Mono) != -1) {
-                        int ind = wavedata->FindChannel(Channel::Mono);
-                        
-                        for(int s=0; s<size; s++) {                            
-                            float val = internal::mastervolume * positional.volume * interpolate_basic(positional, ind);
-                            
-                            temp[s] = val;
-                            
-                            positional.position += secpersample;
-                       }
-                    }
-                    else {
-                        for(int s=0; s<size; s++) {
-                            float val = 0;
-                            
-                            for(int c=0; c<(int)wavedata->GetChannelCount(); c++) {
-                                if(wavedata->GetChannelType(c) != Channel::LowFreq) {
-                                    val += internal::mastervolume * positional.volume * interpolate_basic(positional, c);
-                                }
-                            }
-                            
-                            temp[s] = val;
-                            
-                            positional.position += secpersample;
-                       }
-                    }
-                    
-                    if(wavedata->FindChannel(Channel::LowFreq) != -1) {
-                        if(Current.FindChannel(Channel::LowFreq) != -1) {
-                            sendto(positional, org, wavedata->FindChannel(Channel::LowFreq), Current.FindChannel(Channel::LowFreq), 
-                                   std::exp(-Environment::Current.attuniationfactor * (positional.location - Environment::Current.listener.location).Distance()));
-                        }
-                        else {
-                            int ind = wavedata->FindChannel(Channel::LowFreq);
-                            positional.position = org;
-                            
-                            for(int s=0; s<size; s++) {                            
-                                float val = internal::mastervolume * positional.volume * interpolate_basic(positional, ind);
-                                
-                                temp[s] = val;
-                                
-                                positional.position += secpersample;
-                            }
-                        }
-                    }
-                    
-                    
-                    //headphones
-                    if(Current.IsHeadphones()) {
-                        auto &env = Environment::Current;
-                        auto &lis = env.listener;
-                        
-                        float leftvol, rightvol;
-                        
-                        auto loc  = positional.location;
-                        
-                        auto leftvec  = (loc - lis.leftpos);
-                        auto rightvec = (loc - lis.rightpos);
-                        
-                        leftvol = leftvec.Normalize() * env.left;
-                        leftvol += 1;
-                        leftvol /= 2;
-                        //leftvol *= leftvol;
-                        
-                        rightvol = rightvec.Normalize() * env.right;
-                        rightvol += 1;
-                        rightvol /= 2;
-                        //rightvol *= rightvol;
-                        
-                        auto total = (leftvol + rightvol);
-                        
-                        leftvol  /= total;
-                        rightvol /= total;
-
-                        auto mult = std::exp(-env.attuniationfactor * leftvec.Distance());
-
-                        leftvol = (leftvol * (1 - Environment::Current.nonblocked) + Environment::Current.nonblocked) * mult;
-                        
-                        mult = std::exp(-env.attuniationfactor * rightvec.Distance());
-
-                        rightvol = (rightvol * (1 - Environment::Current.nonblocked) + Environment::Current.nonblocked) * mult;
-                        
-                        int leftind  = Current.FindChannel(Channel::FrontLeft);
-                        int rightind = Current.FindChannel(Channel::FrontRight);
-                        
-                        //std::cout<<leftvol<< " : " <<rightvol<<std::endl;
-                        
-                        for(int s=0; s<size; s++) {
-                            data[s*channels+leftind]  +=  leftvol * temp[s];
-                            data[s*channels+rightind] += rightvol * temp[s];
-                        }
-                    }
-                    
-                    //stereo
-                    else if(Current.FindChannel(Channel::BackLeft) == -1) {                        
-                        auto &env = Environment::Current;
-                        auto &lis = env.listener;
-                        
-                        float leftvol, rightvol;
-                        
-                        auto diff = positional.location - lis.location;;
-                        auto w = diff.Normalize();
-                        
-                        leftvol  = w * env.speaker_vectors[0];                        
-                        rightvol = w * env.speaker_vectors[1];
-                        
-                        leftvol += 1;
-                        leftvol /= 2;
-                        
-                        rightvol += 1;
-                        rightvol /= 2;
-                        
-                        auto total = leftvol + rightvol;
-                        leftvol /= total;
-                        rightvol /= total;
-                        
-                        leftvol  *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[0]));
-                        rightvol *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[1]));
-                         
-                        int leftind  = Current.FindChannel(Channel::FrontLeft);
-                        int rightind = Current.FindChannel(Channel::FrontRight);
-                       
-                        //std::cout<<leftvol<< " : " <<rightvol<<std::endl;
-                        
-                        for(int s=0; s<size; s++) {
-                            data[s*channels+leftind]  +=  leftvol * temp[s];
-                            data[s*channels+rightind] += rightvol * temp[s];
-                        }
-                    }
-                    
-                    //surround
-                    else {                        
-                        auto &env = Environment::Current;
-                        auto &lis = env.listener;
-                        
-                        float fl, fr, bl, br;
-                        
-                        auto diff = positional.location - lis.location;;
-                        auto w = diff.Normalize();
-                        
-                        fl = w * env.speaker_vectors[0];                        
-                        fr = w * env.speaker_vectors[1];                     
-                        bl = w * env.speaker_vectors[2];                     
-                        br = w * env.speaker_vectors[3];
-                        
-                        if(fl<0) fl = 0;
-                        
-                        if(fr<0) fr = 0;
-                       
-                        if(bl<0) bl = 0;
-                        
-                        if(br<0) br = 0;
-                        
-                        auto total = fl + fr + bl + br;
-                        fl /= total;
-                        fr /= total;
-                        bl /= total;
-                        br /= total;
-                        
-                        fl *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[0]));
-                        fr *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[1]));
-                       
-                        bl *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[2]));
-                        br *= std::exp(-env.attuniationfactor * (diff.Distance()-env.speaker_boost[3]));
-                         
-                        int flind = Current.FindChannel(Channel::FrontLeft);
-                        int frind = Current.FindChannel(Channel::FrontRight);
-                         
-                        int blind = Current.FindChannel(Channel::BackLeft);
-                        int brind = Current.FindChannel(Channel::BackRight);
-                       
-                        //std::cout<<fl<< " : " <<fr<<" | "<<bl<< " : " <<br<<std::endl;
-                        
-                        for(int s=0; s<size; s++) {
-                            data[s*channels+flind]  +=  fl * temp[s];
-                            data[s*channels+frind]  +=  fr * temp[s];
-                            data[s*channels+blind]  +=  bl * temp[s];
-                            data[s*channels+brind]  +=  br * temp[s];
-                        }
-                    }
-                } //controller type
-                
-			}
-			
-			internal::ControllerMtx.unlock();
-
-			
-// 			for(int i=0; i<size; i++) {
-// 				test<<data[i*channels]<<"\n";
-// 			}
-			//std::cout<<"Done.."<<std::endl;
-			PostData(&data[0], size, channels);
-			std::this_thread::yield();
-		}
-	}
-	
-	Environment Environment::Current;
+            if(!loop()) {
+                SkipFrame();
+                std::this_thread::yield();
+                continue;
+            }
+            
+            PostData(&loop.GetData()[0], loop.GetSize(), loop.GetChannelCount());
+            std::this_thread::yield();
+        }
+    }
+    
+    Environment Environment::Current;
 } }

@@ -5,6 +5,8 @@
 #include "../Audio/Source.h"
 #include "../Utils/Assert.h"
 
+#include "Stream.h"
+
 #include <thread>
 
 namespace Gorgon { 
@@ -12,6 +14,9 @@ namespace Gorgon {
 namespace Resource {
     class Sound;
 }
+namespace Audio { namespace internal {
+    class Loop;
+} }
 
 namespace Multimedia {
     
@@ -22,6 +27,8 @@ namespace Multimedia {
         class AudioStreamer {
         public:
             
+            virtual ~AudioStreamer() { }
+            
             /// This functions loads all necessary information to wave container without actually
             /// loading any data. Returns the total number of samples in the stream source.
             virtual unsigned long Init(Containers::Wave &target) = 0;
@@ -29,7 +36,7 @@ namespace Multimedia {
             /// This function should check if there is data to be loaded. If there is, streamer
             /// should decode and pass data to audiostream. If there is any extra data that is 
             /// decoded, it should stay with the streamer.
-            virtual void LoadData() = 0;
+            virtual void LoadData(unsigned long samplestart, Containers::Wave &target) = 0;
         };
         
         /// Currently active streamers
@@ -51,18 +58,13 @@ namespace Multimedia {
      * seek operation will actually be performed. Audio will continue to play during seek operation
      * from the old location.
      */
-    class AudioStream : public Audio::Source {
+    class AudioStream : public Audio::Source, public Stream {
+        friend class Audio::internal::Loop;
     public:
         
-        AudioStream(unsigned long buffersize = 32*1024);
-        
-        /// Starts seeking the stream to the given point. Only one buffer will start loading. The 
-        /// other two buffers will continue playing from the old point. Once the data is started
-        /// streaming from this new location, other buffers will be loaded as well.
-        
-        
-        /// Returns if the streaming system is ready to seek to given location.
-        
+        /// Constructor
+        explicit AudioStream(unsigned long buffersize = 8*1024) : buffersize(buffersize) 
+        { }
         
         /// Starts streaming the given file. File type will be determined automatically from the 
         /// extension. Only a portion of the file will be loaded immediately and it will be loaded
@@ -80,7 +82,7 @@ namespace Multimedia {
         /// @warning  Streaming works if this object is only used by a single
         /// controller. Multiple controllers will cause stream to switch back and forth causing 
         /// issues.
-        bool Stream(std::istream &stream);
+        bool Stream(std::istream &stream, bool ownstream = false);
         
         /// Starts streaming the given resource. Only a portion of the resource will be loaded 
         /// immediately and it will be loaded automatically as necessary. Returns false if the 
@@ -107,7 +109,7 @@ namespace Multimedia {
         /// @warning  Streaming works if this object is only used by a single
         /// controller. Multiple controllers will cause stream to switch back and forth causing 
         /// issues.
-        bool StreamWav(std::istream &stream);
+        bool StreamWav(std::istream &stream, bool ownstream = false);
         
 #ifdef FLAC_SUPPORT
         /// Starts streaming the given FLAC file. Only a portion of the file will be loaded 
@@ -128,17 +130,90 @@ namespace Multimedia {
         /// issues.
         bool StreamFLAC(std::istream &stream);
 #endif
+        
+        /// This function will fill the buffer of the stream. This function should only be called
+        /// from stream thread.
+        void FillBuffer() override;
     
+        
+        virtual unsigned long GetSize() const override final {
+            return totalsize;
+        }
+        
+        /// Returns the length of the wave data in seconds
+        virtual float GetLength() const override final {
+            return float((double)totalsize/GetSampleRate());
+        }
+        
+        /// Returns the number of channels that this wave data has.
+        virtual unsigned GetChannelCount() const override final {
+            return buffers[0].buffer.GetChannelCount();
+        }
+        
+        /// Returns the type of the channel at the given index
+        virtual Audio::Channel GetChannelType(int channel) const override final {
+            return buffers[0].buffer.GetChannelType(channel);
+        }
+        
+        /// Returns the index of the given channel. If the given channel does not exists, this function returns -1
+        virtual int FindChannel(Audio::Channel channel) const override final {
+            return buffers[0].buffer.FindChannel(channel);
+        }
+        
+        /// Returns the number of samples per second
+        virtual unsigned GetSampleRate() const override final {
+            return buffers[0].buffer.GetSampleRate();
+        }
+        
+        
+        /// Starts seeking the stream to the given point. Only one buffer will start loading. The 
+        /// other two buffers will continue playing from the old point. Once the data is started
+        /// streaming from this new location, other buffers will be loaded as well.
+        virtual SeekResult StartSeeking(unsigned long) override final;
+    
+        virtual bool IsSeeking() override final {
+            return isseeking;
+        }
+        
+        virtual bool IsSeekComplete() override final {
+            return seekcomplete;
+        }
+        
+        virtual unsigned long SeekTarget() override final {
+            return seektarget;
+        }
+        
+        virtual void SeekingDone() override final {
+            isseeking = false;
+        }
+        
+        
     private:
-        class bufferdata {
+         class bufferdata {
+        public:
             Containers::Wave buffer;
             unsigned long beg = 0;
             unsigned long end = 0; //+1 last item
         };
         
+        void loadbuffer(bufferdata &buffer, unsigned long startoff);
+        
+        internal::AudioStreamer *streamer = nullptr;
+        
         /// Only the first buffer will contain valid information
         std::array<bufferdata, 3> buffers;
         
+        /// Last sample accessed by audio loop
+        mutable unsigned long lastsample = 0;
+        unsigned long seektarget = 0;
+        unsigned long totalsize  = 0;
+        bool isseeking    = false;
+        bool seekcomplete = false;
+        
+        unsigned long buffersize;
+        
+        //internally used by audio loop
+        int currentbuffer = 0;
     };
     
 } }

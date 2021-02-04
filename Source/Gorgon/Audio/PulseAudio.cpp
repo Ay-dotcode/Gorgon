@@ -292,7 +292,7 @@ namespace Gorgon { namespace Audio {
 		
 		result=pthread_setschedparam(internal::audiothread.native_handle(), SCHED_FIFO, &sp);
 		if(result!=0) {
-			if(errno = EPERM) {
+			if(errno == EPERM) {
 				Log << "Access denied while setting thread priority, there might be glitches in the audio." << std::endl
 				    << "You might want to elevate current user to allow changing process scheduling.";
 			}

@@ -5,6 +5,9 @@
 
 
 namespace Gorgon { namespace Audio {
+namespace internal {
+    class Loop;
+}
     
     class Environment;
     
@@ -17,6 +20,7 @@ namespace Gorgon { namespace Audio {
     class Listener {
         friend void AudioLoop();
         friend class Environment;
+        friend class internal::Loop;
     public:
         
         Listener(Environment &env) : env(&env) { 
@@ -79,6 +83,7 @@ namespace Gorgon { namespace Audio {
     class Environment {
         friend void AudioLoop();
         friend class Listener;
+        friend class internal::Loop;
     public:
         Environment() : listener(*this) {
             init();

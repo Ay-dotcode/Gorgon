@@ -5,6 +5,7 @@
 #include <Gorgon/Audio.h>
 #include <Gorgon/Containers/Wave.h>
 #include <Gorgon/Multimedia/Wave.h>
+#include <Gorgon/Multimedia/AudioStream.h>
 #include <Gorgon/Audio/Controllers.h>
 #include <Gorgon/Encoding/FLAC.h>
 #include <Gorgon/Geometry/Transform3D.h>
@@ -31,7 +32,7 @@ void TestDevices() {
 }
 
 auto MakeSine(int freq = 400) {
-	int rate = 12000;
+	int rate = 24000;
 	float duration = 2;
 	float amp = 0.5;
 	float pi = 3.1415f;
@@ -73,12 +74,12 @@ auto TestExportImport() {
     
     auto wave = MakeSine();
     
-	Encoding::Flac.Encode(wave, "test.sound", 16);
-    //wave.ExportWav("test.sound", 16);
+	//Encoding::Flac.Encode(wave, "test.sound", 16);
+    wave.ExportWav("test.sound", 16);
     
-	Multimedia::Wave wave2;
+	Multimedia::AudioStream wave2;
     //std::cout<<"Load file: " << wave2.ImportWav("test.wav")<<std::endl;
-	wave2.Import("test.sound");
+	wave2.Stream("test.sound");
 
     return wave2;
 }
@@ -94,9 +95,9 @@ try {
     auto wave = TestExportImport();
 	
 	Audio::BasicController c(wave);
-	//c.Loop();
+	c.Loop();
 
-	Audio::PositionalController c2(wave);
+	/*Audio::PositionalController c2(wave);
     c2.SetVolume(0.2f);
 	c2.Loop();
     
@@ -109,12 +110,12 @@ try {
     Geometry::Point3D orn(0, 1, 0);
     Geometry::Transform3D rot30;
     
-    rot30.Rotate(0,0,PI/256);
+    rot30.Rotate(0,0,PI/256);*/
 	
 	while(1) {
 		NextFrame();
         
-        if(left<Time::DeltaTime()) {
+        /*if(left<Time::DeltaTime()) {
             //if(left) {
                 left = 10;
                 orn = rot30 * orn;
@@ -122,7 +123,7 @@ try {
             //}
         }
         else
-            left -= Time::DeltaTime();
+            left -= Time::DeltaTime();*/
         
         //loc = loc - Geometry::Point3D(Time::DeltaTime()/1000.f, 0,0);
         //std::cout<<loc.X<<std::endl;

@@ -10,6 +10,7 @@
 #include "Animation.h"
 #include "Resource.h"
 #include "Audio.h"
+#include "Multimedia.h"
 #include "Graphics.h"
 
 #ifdef SCRIPTING
@@ -88,6 +89,7 @@ namespace Gorgon {
 #ifdef AUDIO
 		Audio::Initialize();
 #endif
+        Multimedia::Initialize();
 		Resource::Initialize();
 	}
 
