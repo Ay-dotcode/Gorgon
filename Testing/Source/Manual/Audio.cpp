@@ -33,7 +33,7 @@ void TestDevices() {
 
 auto MakeSine(int freq = 400) {
 	int rate = 24000;
-	float duration = 2;
+	float duration = 1;
 	float amp = 0.5;
 	float pi = 3.1415f;
 	
@@ -74,8 +74,8 @@ auto TestExportImport() {
     
     auto wave = MakeSine();
     
-	//Encoding::Flac.Encode(wave, "test.sound", 16);
-    wave.ExportWav("test.sound", 16);
+	Encoding::Flac.Encode(wave, "test.sound", 16);
+    //wave.ExportWav("test.sound", 16);
     
 	Multimedia::AudioStream wave2;
     //std::cout<<"Load file: " << wave2.ImportWav("test.wav")<<std::endl;

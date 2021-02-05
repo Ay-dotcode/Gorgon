@@ -8,6 +8,7 @@
 #include "Stream.h"
 
 #include <thread>
+#include <mutex>
 
 namespace Gorgon { 
     
@@ -65,6 +66,8 @@ namespace Multimedia {
         /// Constructor
         explicit AudioStream(unsigned long buffersize = 8*1024) : buffersize(buffersize) 
         { }
+        
+        AudioStream(AudioStream &&other);
         
         /// Starts streaming the given file. File type will be determined automatically from the 
         /// extension. Only a portion of the file will be loaded immediately and it will be loaded
@@ -128,7 +131,7 @@ namespace Multimedia {
         /// @warning  Streaming works if this object is only used by a single
         /// controller. Multiple controllers will cause stream to switch back and forth causing 
         /// issues.
-        bool StreamFLAC(std::istream &stream);
+        bool StreamFLAC(std::istream &stream, bool ownstream = false);
 #endif
         
         /// This function will fill the buffer of the stream. This function should only be called
@@ -189,7 +192,7 @@ namespace Multimedia {
         
         
     private:
-         class bufferdata {
+        class bufferdata {
         public:
             Containers::Wave buffer;
             unsigned long beg = 0;
@@ -212,8 +215,12 @@ namespace Multimedia {
         
         unsigned long buffersize;
         
+        std::mutex guard;
+        
         //internally used by audio loop
         int currentbuffer = 0;
+        
+        //Move constructor!
     };
     
 } }

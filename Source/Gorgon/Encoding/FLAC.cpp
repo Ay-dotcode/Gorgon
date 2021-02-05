@@ -2,395 +2,422 @@
 
 #include "FLAC/stream_encoder.h"
 
+#include "../Utils/Logging.h"
 #include <memory>
 
-namespace Gorgon { namespace Encoding {
+namespace Gorgon { 
+namespace Audio {
+    extern Utils::Logger Log;
+}
+    
+namespace Encoding {
 
-	namespace flac {
-		struct vectorio {
-			std::vector<Byte> *vector;
+    namespace flac {
+        struct vectorio {
+            std::vector<Byte> *vector;
 
-			std::size_t current;
-		};
+            std::size_t current;
+        };
         
         class streamdata {
         public:
- 			streamdata() {
-				data = (float*)malloc(sizeof(float));
-				datasize = 0;
-			}
+            streamdata() {
+                data = (float*)malloc(sizeof(float));
+                datasize = 0;
+            }
 
-			virtual ~streamdata() {
-				if(data)
-					free(data);
-			}
-			
-			void allocateupto(std::size_t size) {
-				auto newsize = currentpos + size;
-				if(newsize <= datasize)
-					return;
+            virtual ~streamdata() {
+                if(data)
+                    free(data);
+            }
+            
+            void allocateupto(std::size_t size) {
+                auto newsize = currentpos + size;
+                if(newsize <= datasize)
+                    return;
 
-				datasize = newsize;
+                datasize = newsize;
 
-				auto ndata = (float*)realloc(data, datasize * sizeof(float));
+                auto ndata = (float*)realloc(data, datasize * sizeof(float));
                 if(ndata)
                     data = ndata;
                 else {
                     free(data);
                     throw std::bad_alloc();
                 }
-			}
+            }
 
 
-			void allocate(std::size_t size) {
-				datasize = size;
-				auto ndata = (float*)realloc(data, datasize * sizeof(float));
+            void allocate(std::size_t size) {
+                datasize = size;
+                auto ndata = (float*)realloc(data, datasize * sizeof(float));
                 if(ndata)
                     data = ndata;
                 else {
                     free(data);
                     throw std::bad_alloc();
                 }
-			}
- 
-			float *data;
+            }
 
-			std::size_t datasize;
+            float *data;
 
-			int currentpos = 0;
+            std::size_t datasize;
 
-			int channels = 0;
+            int currentpos = 0;
 
-			int rate = 0;
+            int channels = 0;
+
+            int rate = 0;
+            
+            bool autoalloc = true;
         };
 
-		struct streamwrite {
-			streamwrite(std::ostream &output, std::streampos &maxpos) : output(output), maxpos(maxpos)  { }
-			std::ostream &output;
-			std::streampos &maxpos;
-		};
+        struct streamwrite {
+            streamwrite(std::ostream &output, std::streampos &maxpos) : output(output), maxpos(maxpos)  { }
+            std::ostream &output;
+            std::streampos &maxpos;
+        };
 
-		class streamread : public streamdata {
-		public:
-			streamread(std::istream &stream, size_t len) : stream(stream), len(len) {
-			}
+        class streamread : public streamdata {
+        public:
+            streamread(std::istream &stream, size_t len) : stream(stream), len(len) {
+                if(len == -1) {
+                    auto pos = stream.tellg();
+                    stream.seekg(0, std::ios::end);
+                    len = stream.tellg();
+                    stream.seekg(pos, std::ios::beg);
+                }
+            }
 
-			std::istream &stream;
+            std::istream &stream;
             size_t len;
-		};
+        };
         
-		class vectorread : public streamdata {
-		public:
-			vectorread(const std::vector<Byte> &input) : input(input) {
-			}
+        class vectorread : public streamdata {
+        public:
+            vectorread(const std::vector<Byte> &input) : input(input) {
+            }
 
-			const std::vector<Byte> &input;
+            const std::vector<Byte> &input;
             
             size_t readpos = 0;
-		};
-	}
+        };
+    }
 
-	FLAC__StreamEncoderWriteStatus stream_encode_write(
-		const FLAC__StreamEncoder * /*encoder*/, const FLAC__byte buffer[],
-		size_t bytes, unsigned /*samples*/, unsigned /*current_frame*/, void *client_data) {
+    FLAC__StreamEncoderWriteStatus stream_encode_write(
+        const FLAC__StreamEncoder * /*encoder*/, const FLAC__byte buffer[],
+        size_t bytes, unsigned /*samples*/, unsigned /*current_frame*/, void *client_data) {
 
-		std::ostream &output = ((flac::streamwrite*)client_data)->output;
+        std::ostream &output = ((flac::streamwrite*)client_data)->output;
 
-		output.write((const char*)buffer, bytes);
+        output.write((const char*)buffer, bytes);
 
-		return (output.good() ? FLAC__STREAM_ENCODER_WRITE_STATUS_OK : FLAC__STREAM_ENCODER_WRITE_STATUS_FATAL_ERROR);
-	}
+        return (output.good() ? FLAC__STREAM_ENCODER_WRITE_STATUS_OK : FLAC__STREAM_ENCODER_WRITE_STATUS_FATAL_ERROR);
+    }
 
-	FLAC__StreamEncoderSeekStatus stream_encode_seek(
-		const FLAC__StreamEncoder * /*encoder*/, FLAC__uint64 absolute_byte_offset, void *client_data) {
+    FLAC__StreamEncoderSeekStatus stream_encode_seek(
+        const FLAC__StreamEncoder * /*encoder*/, FLAC__uint64 absolute_byte_offset, void *client_data) {
 
-		std::ostream &output = ((flac::streamwrite*)client_data)->output;
+        std::ostream &output = ((flac::streamwrite*)client_data)->output;
 
-		auto p = output.tellp();
-		if(((flac::streamwrite*)client_data)->maxpos < p)
-			((flac::streamwrite*)client_data)->maxpos = p;
+        auto p = output.tellp();
+        if(((flac::streamwrite*)client_data)->maxpos < p)
+            ((flac::streamwrite*)client_data)->maxpos = p;
 
-		output.seekp((std::streamoff)absolute_byte_offset, std::ios::beg);
+        output.seekp((std::streamoff)absolute_byte_offset, std::ios::beg);
 
-		return (output.good() ? FLAC__STREAM_ENCODER_SEEK_STATUS_OK : FLAC__STREAM_ENCODER_SEEK_STATUS_ERROR);
-	}
+        return (output.good() ? FLAC__STREAM_ENCODER_SEEK_STATUS_OK : FLAC__STREAM_ENCODER_SEEK_STATUS_ERROR);
+    }
 
-	FLAC__StreamEncoderTellStatus stream_encode_tell(
-		const FLAC__StreamEncoder * /*encoder*/, FLAC__uint64 *absolute_byte_offset, void *client_data) {
+    FLAC__StreamEncoderTellStatus stream_encode_tell(
+        const FLAC__StreamEncoder * /*encoder*/, FLAC__uint64 *absolute_byte_offset, void *client_data) {
 
-		std::ostream &output = ((flac::streamwrite*)client_data)->output;
+        std::ostream &output = ((flac::streamwrite*)client_data)->output;
 
-		*absolute_byte_offset = output.tellp();
+        *absolute_byte_offset = output.tellp();
 
-		return (output.good() ? FLAC__STREAM_ENCODER_TELL_STATUS_OK : FLAC__STREAM_ENCODER_TELL_STATUS_ERROR);
-	}
+        return (output.good() ? FLAC__STREAM_ENCODER_TELL_STATUS_OK : FLAC__STREAM_ENCODER_TELL_STATUS_ERROR);
+    }
 
-	FLAC__StreamEncoderWriteStatus vector_encode_write(
-		const FLAC__StreamEncoder * /*encoder*/, const FLAC__byte buffer[],
-		size_t bytes, unsigned /*samples*/, unsigned /*current_frame*/, void *client_data) {
+    FLAC__StreamEncoderWriteStatus vector_encode_write(
+        const FLAC__StreamEncoder * /*encoder*/, const FLAC__byte buffer[],
+        size_t bytes, unsigned /*samples*/, unsigned /*current_frame*/, void *client_data) {
 
-		auto &output = *(flac::vectorio*)client_data;
+        auto &output = *(flac::vectorio*)client_data;
 
-		output.vector->resize(output.vector->size() + bytes);
-		std::memcpy(&(*output.vector)[output.current], buffer, bytes);
-		output.current += bytes;
+        output.vector->resize(output.vector->size() + bytes);
+        std::memcpy(&(*output.vector)[output.current], buffer, bytes);
+        output.current += bytes;
 
-		return FLAC__STREAM_ENCODER_WRITE_STATUS_OK;
-	}
+        return FLAC__STREAM_ENCODER_WRITE_STATUS_OK;
+    }
 
-	FLAC__StreamEncoderSeekStatus vector_encode_seek(
-		const FLAC__StreamEncoder * /*encoder*/, FLAC__uint64 absolute_byte_offset, void *client_data) {
+    FLAC__StreamEncoderSeekStatus vector_encode_seek(
+        const FLAC__StreamEncoder * /*encoder*/, FLAC__uint64 absolute_byte_offset, void *client_data) {
 
-		auto &output = *(flac::vectorio*)client_data;
+        auto &output = *(flac::vectorio*)client_data;
 
-		if(absolute_byte_offset >= output.vector->size())
-			return FLAC__STREAM_ENCODER_SEEK_STATUS_ERROR;
+        if(absolute_byte_offset >= output.vector->size())
+            return FLAC__STREAM_ENCODER_SEEK_STATUS_ERROR;
 
-		output.current=(size_t)absolute_byte_offset;
+        output.current=(size_t)absolute_byte_offset;
 
-		return FLAC__STREAM_ENCODER_SEEK_STATUS_OK;
-	}
+        return FLAC__STREAM_ENCODER_SEEK_STATUS_OK;
+    }
 
-	FLAC__StreamEncoderTellStatus vector_encode_tell(
-		const FLAC__StreamEncoder * /*encoder*/, FLAC__uint64 *absolute_byte_offset, void *client_data) {
+    FLAC__StreamEncoderTellStatus vector_encode_tell(
+        const FLAC__StreamEncoder * /*encoder*/, FLAC__uint64 *absolute_byte_offset, void *client_data) {
 
-		auto &output = *(flac::vectorio*)client_data;
+        auto &output = *(flac::vectorio*)client_data;
 
-		*absolute_byte_offset = output.current;
+        *absolute_byte_offset = output.current;
 
-		return FLAC__STREAM_ENCODER_TELL_STATUS_OK;
-	}
+        return FLAC__STREAM_ENCODER_TELL_STATUS_OK;
+    }
 
-	FLAC__StreamDecoderReadStatus stream_decode_read(
-		const FLAC__StreamDecoder * /*decoder*/, FLAC__byte buffer[], 
-		size_t *bytes, void *client_data) {
+    FLAC__StreamDecoderReadStatus stream_decode_read(
+        const FLAC__StreamDecoder * /*decoder*/, FLAC__byte buffer[], 
+        size_t *bytes, void *client_data) {
 
-		auto &input = ((flac::streamread*)client_data)->stream;
+        auto &input = ((flac::streamread*)client_data)->stream;
 
-		input.read((char*)buffer, *bytes);
+        input.read((char*)buffer, *bytes);
 
-		*bytes = (size_t)input.gcount();
+        *bytes = (size_t)input.gcount();
 
-		if(input.eof())
-			return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
+        if(input.eof())
+            return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
 
-		return (input.good() ? FLAC__STREAM_DECODER_READ_STATUS_CONTINUE : FLAC__STREAM_DECODER_READ_STATUS_ABORT);
-	}
+        return (input.good() ? FLAC__STREAM_DECODER_READ_STATUS_CONTINUE : FLAC__STREAM_DECODER_READ_STATUS_ABORT);
+    }
 
-	FLAC__StreamDecoderSeekStatus stream_decode_seek(
-		const FLAC__StreamDecoder * , FLAC__uint64 absolute_byte_offset, void *client_data) {
+    FLAC__StreamDecoderSeekStatus stream_decode_seek(
+        const FLAC__StreamDecoder * , FLAC__uint64 absolute_byte_offset, void *client_data) {
 
-		auto &input = ((flac::streamread*)client_data)->stream;
+        auto &input = ((flac::streamread*)client_data)->stream;
         
-		auto p = input.tellg();
-		if(((flac::streamwrite*)client_data)->maxpos < p)
-			((flac::streamwrite*)client_data)->maxpos = p;
+        if(!input.eof()) {
+            auto p = input.tellg();
+            if(((flac::streamwrite*)client_data)->maxpos < p)
+                ((flac::streamwrite*)client_data)->maxpos = p;
+        }
+        
+        input.clear();
+        input.seekg((std::streamoff)absolute_byte_offset, std::ios::beg);
 
-		input.seekg((std::streamoff)absolute_byte_offset, std::ios::beg);
+        if(input.good())
+            return FLAC__STREAM_DECODER_SEEK_STATUS_OK;
+        else
+            return FLAC__STREAM_DECODER_SEEK_STATUS_ERROR;
+    }
 
-		return (input.good() ? FLAC__STREAM_DECODER_SEEK_STATUS_OK : FLAC__STREAM_DECODER_SEEK_STATUS_ERROR);
-	}
+    FLAC__StreamDecoderTellStatus stream_decode_tell(
+        const FLAC__StreamDecoder *, FLAC__uint64 *absolute_byte_offset, void *client_data) {
 
-	FLAC__StreamDecoderTellStatus stream_decode_tell(
-		const FLAC__StreamDecoder *, FLAC__uint64 *absolute_byte_offset, void *client_data) {
+        auto &input = ((flac::streamread*)client_data)->stream;
 
-		auto &input = ((flac::streamread*)client_data)->stream;
+        *absolute_byte_offset = input.tellg();
 
-		*absolute_byte_offset = input.tellg();
+        return (input.good() ? FLAC__STREAM_DECODER_TELL_STATUS_OK : FLAC__STREAM_DECODER_TELL_STATUS_ERROR);
+    }
 
-		return (input.good() ? FLAC__STREAM_DECODER_TELL_STATUS_OK : FLAC__STREAM_DECODER_TELL_STATUS_ERROR);
-	}
+    FLAC__StreamDecoderLengthStatus stream_decode_length(
+        const FLAC__StreamDecoder *, FLAC__uint64 *stream_length, void *client_data) {
 
-	FLAC__StreamDecoderLengthStatus stream_decode_length(
-		const FLAC__StreamDecoder *, FLAC__uint64 *stream_length, void *client_data) {
+        *stream_length = ((flac::streamread*)client_data)->len;
+        auto &input = ((flac::streamread*)client_data)->stream;
 
-		*stream_length = ((flac::streamread*)client_data)->len;
-		auto &input = ((flac::streamread*)client_data)->stream;
+        
 
-		
+        return FLAC__STREAM_DECODER_LENGTH_STATUS_OK;
+    }
 
-		return (input.good() ? FLAC__STREAM_DECODER_LENGTH_STATUS_OK : FLAC__STREAM_DECODER_LENGTH_STATUS_ERROR);
-	}
+    FLAC__bool stream_decode_eof(
+        const FLAC__StreamDecoder *decoder, void *client_data) {
 
-	FLAC__bool stream_decode_eof(
-		const FLAC__StreamDecoder *decoder, void *client_data) {
+        auto &input = ((flac::streamread*)client_data)->stream;
 
-		auto &input = ((flac::streamread*)client_data)->stream;
+        
 
-		
+        return input.eof();
+    }
 
-		return input.eof();
-	}
+    FLAC__StreamDecoderReadStatus vector_decode_read(
+        const FLAC__StreamDecoder * /*decoder*/, FLAC__byte buffer[], 
+        size_t *bytes, void *client_data) {
 
-	FLAC__StreamDecoderReadStatus vector_decode_read(
-		const FLAC__StreamDecoder * /*decoder*/, FLAC__byte buffer[], 
-		size_t *bytes, void *client_data) {
-
-		auto &input = *((flac::vectorread*)client_data);
+        auto &input = *((flac::vectorread*)client_data);
 
         auto bytestoread = *bytes;
         if(input.input.size()-input.readpos<bytestoread)
             bytestoread = input.input.size()-input.readpos;
         
-		memcpy(buffer, &input.input[input.readpos], bytestoread);
+        memcpy(buffer, &input.input[input.readpos], bytestoread);
         
         input.readpos += bytestoread;
 
-		*bytes = bytestoread;
+        *bytes = bytestoread;
 
-		if(input.input.size() == input.readpos)
-			return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
+        if(input.input.size() == input.readpos)
+            return FLAC__STREAM_DECODER_READ_STATUS_END_OF_STREAM;
 
-		return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
-	}
+        return FLAC__STREAM_DECODER_READ_STATUS_CONTINUE;
+    }
 
-	FLAC__StreamDecoderWriteStatus decode_write(
-		const FLAC__StreamDecoder * /*decoder*/, const FLAC__Frame *frame, 
-		const FLAC__int32 *const buffer[], void *client_data) {
+    FLAC__StreamDecoderWriteStatus decode_write(
+        const FLAC__StreamDecoder * /*decoder*/, const FLAC__Frame *frame, 
+        const FLAC__int32 *const buffer[], void *client_data) {
 
-		auto &reader = *((flac::streamdata*)client_data);
+        auto &reader = *((flac::streamdata*)client_data);
 
-		reader.allocateupto(frame->header.blocksize * frame->header.channels);
+        if(reader.autoalloc)
+            reader.allocateupto(frame->header.blocksize * frame->header.channels);
 
-		if(reader.channels == 0) {
-			reader.channels = frame->header.channels;
-			reader.rate     = frame->header.sample_rate;
-		}
+        if(reader.channels == 0) {
+            reader.channels = frame->header.channels;
+            reader.rate     = frame->header.sample_rate;
+        }
 
-		if(reader.channels != frame->header.channels) {
-			throw std::runtime_error("Channels should be fixed in the FLAC file.");
-		}
+        if(reader.channels != frame->header.channels) {
+            throw std::runtime_error("Channels should be fixed in the FLAC file.");
+        }
 
-		const int size     = frame->header.blocksize;
-		const int channels = frame->header.channels;
+        const int size     = frame->header.blocksize;
+        const int channels = frame->header.channels;
 
-		float multiplier = 1.f / ((1<<(frame->header.bits_per_sample-1))-1);
+        float multiplier = 1.f / ((1<<(frame->header.bits_per_sample-1))-1);
 
-		for(int i=0; i<size; i++)
-			for(int c=0; c<channels; c++)
-				reader.data[reader.currentpos++] = buffer[c][i] * multiplier;
+        for(int i=0; i<size; i++) {
+            if(reader.currentpos >= reader.datasize)
+                break;
 
-		return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
-	}
+            for(int c=0; c<channels; c++)
+                reader.data[reader.currentpos++] = buffer[c][i] * multiplier;
+        }
+        
 
-	void decode_error(const FLAC__StreamDecoder * /*decoder*/, FLAC__StreamDecoderErrorStatus /*status*/, void * /*client_data*/) {
-		throw std::runtime_error("Invalid FLAC file");
-	}
+        return FLAC__STREAM_DECODER_WRITE_STATUS_CONTINUE;
+    }
 
-	void *FLAC::prepencode(const Containers::Wave &input, int bps) {
-		auto encoder = FLAC__stream_encoder_new();
-
-		FLAC__bool ok = true;
-
-		ok &= FLAC__stream_encoder_set_verify(encoder, true);
-		ok &= FLAC__stream_encoder_set_channels(encoder, input.GetChannelCount());
-		ok &= FLAC__stream_encoder_set_bits_per_sample(encoder, bps);
-		ok &= FLAC__stream_encoder_set_sample_rate(encoder, input.GetSampleRate());
-		ok &= FLAC__stream_encoder_set_compression_level(encoder, 5);
-		ok &= FLAC__stream_encoder_set_total_samples_estimate(encoder, input.GetSize());
-
-		if(!ok)
-			throw std::runtime_error("A problem with the FLAC settings occurred.");
-
-		return encoder;
-	}
+    void decode_error(const FLAC__StreamDecoder * /*decoder*/, FLAC__StreamDecoderErrorStatus status, void * /*client_data*/) {
+        throw std::runtime_error(std::string("Invalid FLAC file: ") + FLAC__StreamDecoderErrorStatusString[status]);
+    }
 
 
-	void FLAC::encode(void *enc, const Containers::Wave &input, int bps) {
-		auto encoder = (FLAC__StreamEncoder *)enc;
+    void *FLAC::prepencode(const Containers::Wave &input, int bps) {
+        auto encoder = FLAC__stream_encoder_new();
 
-		unsigned long i = 0;
-		const auto size = input.GetSize();
-		const int channels = input.GetChannelCount();
-		int32_t multiplier = (1<<(bps-1))-1;
+        FLAC__bool ok = true;
 
-		while(i < size) {
-			int tobeenc = std::min(buffersize, (int)(size - i) * channels) / channels;
+        ok &= FLAC__stream_encoder_set_verify(encoder, true);
+        ok &= FLAC__stream_encoder_set_channels(encoder, input.GetChannelCount());
+        ok &= FLAC__stream_encoder_set_bits_per_sample(encoder, bps);
+        ok &= FLAC__stream_encoder_set_sample_rate(encoder, input.GetSampleRate());
+        ok &= FLAC__stream_encoder_set_compression_level(encoder, 5);
+        ok &= FLAC__stream_encoder_set_total_samples_estimate(encoder, input.GetSize());
 
-			
-			for(int j=0; j<tobeenc; j++) {
-				for(int c=0; c<channels; c++) {
-					buffer[j * channels + c] = (int32_t)( std::round(multiplier * input(i + j, c)) );
-				}
-			}
+        if(!ok)
+            throw std::runtime_error("A problem with the FLAC settings occurred.");
 
-			i += tobeenc;
+        return encoder;
+    }
 
-			FLAC__stream_encoder_process_interleaved(encoder, &buffer[0], tobeenc);
-		}
-		
 
-		FLAC__stream_encoder_finish(encoder);
-	}
+    void FLAC::encode(void *enc, const Containers::Wave &input, int bps) {
+        auto encoder = (FLAC__StreamEncoder *)enc;
 
-	void *FLAC::prepdecode() {
-		return FLAC__stream_decoder_new();
-	}
+        unsigned long i = 0;
+        const auto size = input.GetSize();
+        const int channels = input.GetChannelCount();
+        int32_t multiplier = (1<<(bps-1))-1;
 
-	FLAC::FLAC(int buffersize) : buffersize(buffersize) {
-		buffer.resize(buffersize);
-	}
+        while(i < size) {
+            int tobeenc = std::min(buffersize, (int)(size - i) * channels) / channels;
 
-	FLAC::~FLAC() {
-	}
+            
+            for(int j=0; j<tobeenc; j++) {
+                for(int c=0; c<channels; c++) {
+                    buffer[j * channels + c] = (int32_t)( std::round(multiplier * input(i + j, c)) );
+                }
+            }
 
-	void FLAC::Encode(const Containers::Wave &input, std::ostream &output, int bps) {
-		auto enc = (FLAC__StreamEncoder *)prepencode(input, bps);
-		std::shared_ptr<FLAC__StreamEncoder> enc_guard(enc, &FLAC__stream_encoder_delete);
+            i += tobeenc;
 
-		if(!enc)
-			throw std::runtime_error("Cannot initialize FLAC encoding.");
+            FLAC__stream_encoder_process_interleaved(encoder, &buffer[0], tobeenc);
+        }
+        
 
-		flac::streamwrite s{output, this->maxpos};
+        FLAC__stream_encoder_finish(encoder);
+    }
 
-		auto res = FLAC__stream_encoder_init_stream(
-			enc,
-			&stream_encode_write,
-			&stream_encode_seek,
-			&stream_encode_tell,
-			nullptr, &s
-		);
+    void *FLAC::prepdecode() {
+        return FLAC__stream_decoder_new();
+    }
 
-		if(res != FLAC__STREAM_ENCODER_INIT_STATUS_OK)
-			throw std::runtime_error("Cannot start FLAC encoder stream");
+    FLAC::FLAC(int buffersize) : buffersize(buffersize) {
+        buffer.resize(buffersize);
+    }
 
-		maxpos = 0;
-		encode(enc, input, bps);
+    FLAC::~FLAC() {
+    }
 
-		if((int)maxpos != 0) {
-			output.seekp(maxpos, std::ios::beg);
-		}
-	}
+    void FLAC::Encode(const Containers::Wave &input, std::ostream &output, int bps) {
+        auto enc = (FLAC__StreamEncoder *)prepencode(input, bps);
+        std::shared_ptr<FLAC__StreamEncoder> enc_guard(enc, &FLAC__stream_encoder_delete);
 
-	void FLAC::Encode(const Containers::Wave &input, std::vector<Byte> &output, int bps) {
-		auto enc = (FLAC__StreamEncoder *)prepencode(input, bps);
-		std::shared_ptr<FLAC__StreamEncoder> enc_guard(enc, &FLAC__stream_encoder_delete);
+        if(!enc)
+            throw std::runtime_error("Cannot initialize FLAC encoding.");
 
-		flac::vectorio vect = {&output, 0};
+        flac::streamwrite s{output, this->maxpos};
 
-		if(!enc)
-			throw std::runtime_error("Cannot initialize FLAC encoding.");
+        auto res = FLAC__stream_encoder_init_stream(
+            enc,
+            &stream_encode_write,
+            &stream_encode_seek,
+            &stream_encode_tell,
+            nullptr, &s
+        );
 
-		auto res = FLAC__stream_encoder_init_stream(
-			enc,
-			&vector_encode_write,
-			&vector_encode_seek,
-			&vector_encode_tell,
-			nullptr, &vect
-		);
+        if(res != FLAC__STREAM_ENCODER_INIT_STATUS_OK)
+            throw std::runtime_error("Cannot start FLAC encoder stream");
 
-		if(res != FLAC__STREAM_ENCODER_INIT_STATUS_OK)
-			throw std::runtime_error("Cannot start FLAC encoder stream");
+        maxpos = 0;
+        encode(enc, input, bps);
 
-		encode(enc, input, bps);
-	}
+        if((int)maxpos != 0) {
+            output.seekp(maxpos, std::ios::beg);
+        }
+    }
 
-	void FLAC::Decode(std::istream &input, Containers::Wave &wave, size_t len) {
-		auto dec = (FLAC__StreamDecoder *)prepdecode();
-		std::shared_ptr<FLAC__StreamDecoder> dec_guard(dec, &FLAC__stream_decoder_delete);
+    void FLAC::Encode(const Containers::Wave &input, std::vector<Byte> &output, int bps) {
+        auto enc = (FLAC__StreamEncoder *)prepencode(input, bps);
+        std::shared_ptr<FLAC__StreamEncoder> enc_guard(enc, &FLAC__stream_encoder_delete);
 
-		if(!dec)
-			throw std::runtime_error("Cannot initialize FLAC decoding.");
+        flac::vectorio vect = {&output, 0};
+
+        if(!enc)
+            throw std::runtime_error("Cannot initialize FLAC encoding.");
+
+        auto res = FLAC__stream_encoder_init_stream(
+            enc,
+            &vector_encode_write,
+            &vector_encode_seek,
+            &vector_encode_tell,
+            nullptr, &vect
+        );
+
+        if(res != FLAC__STREAM_ENCODER_INIT_STATUS_OK)
+            throw std::runtime_error("Cannot start FLAC encoder stream");
+
+        encode(enc, input, bps);
+    }
+
+    void FLAC::Decode(std::istream &input, Containers::Wave &wave, size_t len) {
+        auto dec = (FLAC__StreamDecoder *)prepdecode();
+        std::shared_ptr<FLAC__StreamDecoder> dec_guard(dec, &FLAC__stream_decoder_delete);
+
+        if(!dec)
+            throw std::runtime_error("Cannot initialize FLAC decoding.");
         
         if(len == -1) {
             auto pos = input.tellg();
@@ -399,73 +426,214 @@ namespace Gorgon { namespace Encoding {
             input.seekg(pos);
         }
 
-		flac::streamread stream(input, len);
+        flac::streamread stream(input, -1);
 
-		auto res = FLAC__stream_decoder_init_stream(
-			dec,
-			&stream_decode_read,
-			stream_decode_seek, stream_decode_tell, 
+        auto res = FLAC__stream_decoder_init_stream(
+            dec,
+            &stream_decode_read,
+            stream_decode_seek, stream_decode_tell, 
             stream_decode_length, stream_decode_eof,
-			&decode_write, 
-			nullptr, &decode_error,
-			&stream
-		);
+            &decode_write, 
+            nullptr, &decode_error,
+            &stream
+        );
 
-		if(res != FLAC__STREAM_DECODER_INIT_STATUS_OK)
-			throw std::runtime_error("Cannot start FLAC encoder stream");
+        if(res != FLAC__STREAM_DECODER_INIT_STATUS_OK)
+            throw std::runtime_error("Cannot start FLAC encoder stream");
 
-		FLAC__stream_decoder_process_until_end_of_metadata(dec);
+        FLAC__stream_decoder_process_until_end_of_metadata(dec);
+        FLAC__stream_decoder_process_single(dec); //get channel count
 
-		auto total = FLAC__stream_decoder_get_total_samples(dec) * FLAC__stream_decoder_get_channels(dec);
-		if(total != 0) {
-			stream.allocate(std::size_t(total));
-		}
+        auto total = FLAC__stream_decoder_get_total_samples(dec) * FLAC__stream_decoder_get_channels(dec);
+        if(total != 0) {
+            stream.allocate(std::size_t(total));
+        }
 
-		FLAC__stream_decoder_process_until_end_of_stream(dec);
+        FLAC__stream_decoder_process_until_end_of_stream(dec);
 
 
-		wave.Assume(stream.data, stream.currentpos / stream.channels, Audio::StandardChannels(stream.channels));
-		wave.SetSampleRate(stream.rate);
+        wave.Assume(stream.data, stream.currentpos / stream.channels, Audio::StandardChannels(stream.channels));
+        wave.SetSampleRate(stream.rate);
 
-		stream.data=nullptr;
-	}
+        stream.data=nullptr;
+    }
 
-	void FLAC::Decode(const std::vector<Byte> &input, Containers::Wave &wave) {
-		auto dec = (FLAC__StreamDecoder *)prepdecode();
-		std::shared_ptr<FLAC__StreamDecoder> dec_guard(dec, &FLAC__stream_decoder_delete);
+    void FLAC::Decode(const std::vector<Byte> &input, Containers::Wave &wave) {
+        auto dec = (FLAC__StreamDecoder *)prepdecode();
+        std::shared_ptr<FLAC__StreamDecoder> dec_guard(dec, &FLAC__stream_decoder_delete);
 
-		if(!dec)
-			throw std::runtime_error("Cannot initialize FLAC decoding.");
+        if(!dec)
+            throw std::runtime_error("Cannot initialize FLAC decoding.");
 
-		flac::vectorread vector(input);
+        flac::vectorread vector(input);
 
-		auto res = FLAC__stream_decoder_init_stream(
-			dec,
-			&vector_decode_read,
-			nullptr, nullptr, nullptr, nullptr,
-			&decode_write, 
-			nullptr, &decode_error,
-			&vector
-		);
+        auto res = FLAC__stream_decoder_init_stream(
+            dec,
+            &vector_decode_read,
+            nullptr, nullptr, nullptr, nullptr,
+            &decode_write, 
+            nullptr, &decode_error,
+            &vector
+        );
 
-		if(res != FLAC__STREAM_DECODER_INIT_STATUS_OK)
-			throw std::runtime_error("Cannot start FLAC encoder stream");
+        if(res != FLAC__STREAM_DECODER_INIT_STATUS_OK)
+            throw std::runtime_error("Cannot start FLAC encoder stream");
 
-		FLAC__stream_decoder_process_until_end_of_metadata(dec);
+        FLAC__stream_decoder_process_until_end_of_metadata(dec);
+        FLAC__stream_decoder_process_single(dec); //get channel count
 
-		auto total = FLAC__stream_decoder_get_total_samples(dec) * FLAC__stream_decoder_get_channels(dec);
-		if(total != 0) {
-			vector.allocate(std::size_t(total));
-		}
+        auto total = FLAC__stream_decoder_get_total_samples(dec) * FLAC__stream_decoder_get_channels(dec);
+        if(total != 0) {
+            vector.allocate(std::size_t(total));
+        }
         
-		FLAC__stream_decoder_process_until_end_of_stream(dec);
+        FLAC__stream_decoder_process_until_end_of_stream(dec);
 
-		wave.Assume(vector.data, vector.currentpos / vector.channels, Audio::StandardChannels(vector.channels));
-		wave.SetSampleRate(vector.rate);
+        wave.Assume(vector.data, vector.currentpos / vector.channels, Audio::StandardChannels(vector.channels));
+        wave.SetSampleRate(vector.rate);
 
-		vector.data=nullptr;
-	}
+        vector.data=nullptr;
+    }
+    
+    FLACStream::FLACStream() {
+        decoder = FLAC__stream_decoder_new();
+    }
+    
+    FLACStream::~FLACStream() {
+        delete streamer;
+        delete stream;
+        FLAC__stream_decoder_delete((FLAC__StreamDecoder *)decoder);
+    }
+    
+    unsigned long FLACStream::DecodeSome(Containers::Wave &wave, unsigned long start) {
+        ASSERT(streamer, "Stream decoding is not initialized");
+        
+        if(!streamer)
+            return 0;
+        
+        auto bail = [this](auto section) {
+            streamer->data = nullptr;
+            Audio::Log << "Flac " << section << " failed";
+            
+            //nothing is read no point in trying again
+            if(streamer->currentpos == 0) {
+                delete streamer;
+                streamer = nullptr;
+                
+                delete stream;
+                stream = nullptr;
+            }
+        };
+        
+        auto dec = (FLAC__StreamDecoder *)decoder;
+        
+        streamer->data       = wave.RawData();
+        streamer->datasize   = wave.GetSize() * wave.GetChannelCount();
+        streamer->currentpos = 0;
+        streamer->channels   = wave.GetChannelCount();
+        
+        unsigned long target = wave.GetSize();
+        
+        if(start + target > total)
+            target = total - start;
+        
+        Audio::Log << "Seeking to " << start;
+        
+        if(!FLAC__stream_decoder_seek_absolute(dec, start)) {
+            //retry after reset
+            if(!FLAC__stream_decoder_reset(dec)) {
+                bail("reset");
+                
+                return 0;
+            }
+            
+            if(!FLAC__stream_decoder_seek_absolute(dec, start)) {
+                bail("seek");
+                
+                return 0;
+            }
+        }
+        
+        while(streamer->currentpos < target) {
+            if(!FLAC__stream_decoder_process_single(dec)) {
+                bail("decoding");
+                
+                return 0;
+            }
+        }
 
-	FLAC Flac;
+        streamer->data = nullptr;
+        
+        return streamer->currentpos;
+    }
+
+    Audio::AudioDataInfo FLACStream::DecodeStart(const std::string &filename) {
+        delete stream;
+        stream = new std::ifstream(filename, std::ios::binary);
+
+        if(!stream->is_open()) {
+            delete stream;
+            stream = nullptr;
+            throw std::runtime_error("Cannot open file");
+        }
+
+        return DecodeStart(*stream);
+    }
+
+    Audio::AudioDataInfo FLACStream::DecodeStart(std::istream &input, size_t len) {
+        auto dec = (FLAC__StreamDecoder *)decoder;
+
+        if(!dec) {
+            delete stream;
+            stream = nullptr;
+            
+            throw std::runtime_error("Cannot initialize FLAC decoding.");
+        }
+        
+        if(len == -1) {
+            auto pos = input.tellg();
+            input.seekg(0, std::ios::end);
+            len = input.tellg() - pos;
+            input.seekg(pos);
+        }
+
+        streamer = new flac::streamread(input, -1);
+        streamer->autoalloc = false;
+        Audio::AudioDataInfo ret;
+
+        auto res = FLAC__stream_decoder_init_stream(
+            dec,
+            &stream_decode_read,
+            stream_decode_seek, stream_decode_tell, 
+            stream_decode_length, stream_decode_eof,
+            &decode_write, 
+            nullptr, &decode_error,
+            streamer
+        );
+
+        if(res != FLAC__STREAM_DECODER_INIT_STATUS_OK) {
+            delete streamer;
+            streamer = nullptr;
+            delete stream;
+            stream = nullptr;
+            delete dec;
+            decoder = nullptr;
+            
+            throw std::runtime_error("Cannot start FLAC encoder stream");
+        }
+
+        FLAC__stream_decoder_process_until_end_of_metadata(dec);
+        FLAC__stream_decoder_process_single(dec); //get channel count
+
+        ret.Samples    = FLAC__stream_decoder_get_total_samples(dec);
+        ret.SampleRate = FLAC__stream_decoder_get_sample_rate(dec);
+        ret.Channels   = Audio::StandardChannels(FLAC__stream_decoder_get_channels(dec));
+        
+        total = ret.Samples;
+        
+        return ret;
+    }
+
+    FLAC Flac;
 
 } }

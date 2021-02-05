@@ -76,7 +76,7 @@ namespace Gorgon {
 
 			/// Index notation
 			T_ &operator [](D_ ind) const {
-				return *this+ind;
+				return *(this+ind);
 			}
 
 			/// Compares two iterators if they point to the same item

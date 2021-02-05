@@ -2,6 +2,7 @@
 
 #include "../Resource/Sound.h"
 #include "../Audio.h"
+#include "../Encoding/FLAC.h"
 
 
 namespace Gorgon { 
@@ -14,14 +15,14 @@ namespace Multimedia {
     
     namespace internal {
         
-        class WaveStreamStreamer : public AudioStreamer {
+        class WavStreamStreamer : public AudioStreamer {
         public:
             /// Creates a wave stream streamer. Stream location should be at the start of the data.
-            WaveStreamStreamer(std::istream &stream, bool ownstream) :
+            WavStreamStreamer(std::istream &stream, bool ownstream) :
                 stream(stream), ownstream(ownstream)
             { }
             
-            ~WaveStreamStreamer() {
+            ~WavStreamStreamer() {
                 if(ownstream)
                     delete &stream;
             }
@@ -37,7 +38,7 @@ namespace Multimedia {
             }
             
             virtual void LoadData(unsigned long samplestart, Containers::Wave &target) override {
-                stream.clear(stream.eofbit);
+                stream.clear();
                 stream.seekg(startoffset + samplestart * blocksize, std::ios::beg);
                 
                 for(auto sample : target) {
@@ -64,6 +65,36 @@ namespace Multimedia {
             int samplesize, blocksize;
             int channels;
         };
+        
+        class FLACStreamStreamer : public AudioStreamer {
+        public:
+            /// Creates a wave stream streamer. Stream location should be at the start of the data.
+            FLACStreamStreamer(std::istream &stream, bool ownstream) :
+                stream(stream), ownstream(ownstream)
+            { }
+            
+            ~FLACStreamStreamer() {
+                if(ownstream)
+                    delete &stream;
+            }
+            
+            unsigned long Init(Containers::Wave &target) override {
+                auto info = flac.DecodeStart(stream);
+                target.SetSampleRate(info.SampleRate);
+                target.SetChannels(info.Channels);
+                
+                return info.Samples;
+            }
+            
+            virtual void LoadData(unsigned long samplestart, Containers::Wave &target) override {
+                flac.DecodeSome(target, samplestart);
+            }
+            
+        private:
+            std::istream &stream;
+            bool ownstream;
+            Encoding::FLACStream flac;
+        };
     }
 
     bool AudioStream::Stream(const std::string &filename) {
@@ -75,11 +106,11 @@ namespace Multimedia {
             if(String::ToLower(ext) == "wav") {
                 return StreamWav(filename);
             }
-/*#ifdef FLAC_SUPPORT
+#ifdef FLAC_SUPPORT
             else if(String::ToLower(ext) == "flac") {
                 return StreamFLAC(filename);
             }
-#endif*/
+#endif
         }
         
         auto &file = *new std::ifstream(filename, std::ios::binary);
@@ -103,11 +134,11 @@ namespace Multimedia {
         if(sig == wavsig) {
             return StreamWav(file, ownstream);
         }
-/*#ifdef FLAC_SUPPORT
+#ifdef FLAC_SUPPORT
         else if(sig == flacsig) {
-            return ImportFLAC(file);
+            return StreamFLAC(file);
         }
-#endif*/
+#endif
 
         throw std::runtime_error("Unsupported file format");
     }
@@ -124,10 +155,12 @@ namespace Multimedia {
     }
     
     bool AudioStream::StreamWav(std::istream &file, bool ownstream) {
+        std::lock_guard<std::mutex> g(guard);
+
         delete streamer;
         
         try {
-            streamer = new internal::WaveStreamStreamer(file, ownstream);
+            streamer = new internal::WavStreamStreamer(file, ownstream);
         }
         catch(...) {
             if(ownstream)
@@ -155,9 +188,57 @@ namespace Multimedia {
         return true;
     }
     
+    bool AudioStream::StreamFLAC(const std::string &filename) {
+        auto &file = *new std::ifstream(filename, std::ios::binary);
+        
+        if(file.is_open())
+            return StreamFLAC(file, true);
+        else {
+            delete &file;
+            return false;
+        }
+    }
+    
+    bool AudioStream::StreamFLAC(std::istream &file, bool ownstream) {
+        std::lock_guard<std::mutex> g(guard);
+
+        delete streamer;
+        
+        try {
+            streamer = new internal::FLACStreamStreamer(file, ownstream);
+        }
+        catch(...) {
+            if(ownstream)
+                delete &file;
+            throw;
+        }
+        
+        //clean up
+        buffers[0].buffer.Destroy();
+        
+        ///load metadata 
+        totalsize = streamer->Init(buffers[0].buffer);
+        
+        //overwrite it to other buffers 
+        for(int i=1; i<buffers.size(); i++)
+            buffers[i].buffer = buffers[0].buffer.Duplicate();
+        
+        if(totalsize == 0)
+            return false;
+        
+        for(int i=0; i<buffers.size(); i++)
+            buffers[i].buffer.Resize(buffersize);
+        
+        
+        return true;
+    }
+    
+    
     void AudioStream::FillBuffer() {
         if(!streamer)
             return;
+        
+        std::lock_guard<std::mutex> g(guard);
         
         int lastsample = this->lastsample;//local copy
         
@@ -260,6 +341,37 @@ namespace Multimedia {
         seektarget = target;
 
         return Pending;
+    }
+
+
+    AudioStream::AudioStream(Multimedia::AudioStream &&other) 
+    {
+        std::lock_guard<std::mutex> g1(guard);
+        std::lock_guard<std::mutex> g2(other.guard);
+        
+        streamer = other.streamer;
+        other.streamer = nullptr;
+        buffers  = std::move(other.buffers);
+        
+        lastsample = other.lastsample;
+        other.lastsample = 0;
+
+        seektarget = other.seektarget;
+        other.seektarget = 0;
+
+        totalsize = other.totalsize;
+        other.totalsize = 0;
+
+        isseeking = other.isseeking;
+        other.isseeking = false;
+
+        seekcomplete = other.seekcomplete;
+        other.seekcomplete = false;
+
+        currentbuffer = other.currentbuffer;
+        other.currentbuffer = 0;
+
+        buffersize = other.buffersize;
     }
 
 } }
