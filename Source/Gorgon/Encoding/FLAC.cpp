@@ -618,11 +618,12 @@ namespace Encoding {
 
         FLAC__stream_decoder_process_until_end_of_metadata(dec);
         FLAC__stream_decoder_process_single(dec); //get channel count
-        //FLAC__stream_decoder_reset(dec);
 
         ret.Samples    = (unsigned long)FLAC__stream_decoder_get_total_samples(dec);
         ret.SampleRate = FLAC__stream_decoder_get_sample_rate(dec);
         ret.Channels   = Audio::StandardChannels(FLAC__stream_decoder_get_channels(dec));
+
+        FLAC__stream_decoder_reset(dec);
         
         total = ret.Samples;
         

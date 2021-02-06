@@ -16,12 +16,12 @@ namespace Gorgon { namespace Resource {
     void Font::SetRenderer(Graphics::GlyphRenderer& renderer) {
         if(isowner)
             delete data;
-        
-        ASSERT(dynamic_cast<Graphics::BitmapFont*>(&renderer)
+        bool ok = dynamic_cast<Graphics::BitmapFont *>(&renderer);
 #ifdef FREETYPE_SUPPORT
-            || dynamic_cast<Graphics::FreeType*>(&renderer)
+        ok = ok || dynamic_cast<Graphics::FreeType *>(&renderer);
 #endif
-            , "Font resource can only be a bitmapfont or freetype font");
+
+        ASSERT(ok, "Font resource can only be a bitmapfont or freetype font");
         
 #ifndef NDEBUG
         auto br = dynamic_cast<Graphics::BitmapFont*>(&renderer);

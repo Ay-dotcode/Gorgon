@@ -266,6 +266,10 @@ if(VORBIS STREQUAL "BUILTIN")
 	include_directories(Source/External/vorbis/include)
 	
 	target_link_libraries(Gorgon vorbis)
+	
+	add_subdirectory(Source/External/ogg)
+	
+	include_directories(Source/External/ogg/include)
 endif()
 
 if(WIN32)
