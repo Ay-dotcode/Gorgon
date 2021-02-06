@@ -91,7 +91,6 @@ auto TestExportImport() {
 }
 
 int main() {
-try {
     Audio::Log.InitializeConsole();
     Initialize("Audio");
     
@@ -139,9 +138,4 @@ try {
     }
     
     return 0;
-}
-catch(const std::runtime_error &err) {
-    std::cout<<"!!!"<<err.what()<<std::endl;
-    throw;
-}
 }

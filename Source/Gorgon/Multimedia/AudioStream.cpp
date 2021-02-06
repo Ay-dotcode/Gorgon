@@ -190,6 +190,7 @@ namespace internal {
         return true;
     }
     
+#ifdef FLAC_SUPPORT
     bool AudioStream::StreamFLAC(const std::string &filename) {
         auto &file = *new std::ifstream(filename, std::ios::binary);
         
@@ -234,7 +235,8 @@ namespace internal {
         
         return true;
     }
-    
+#endif
+
     void AudioStream::FillBuffer() {
         if(!streamer)
             return;

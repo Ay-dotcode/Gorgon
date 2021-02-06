@@ -40,7 +40,19 @@ option(DOCUMENTATION_GRAPHS "Enable graphs in documentation." OFF)
 
 option(TESTS "Enable compiling of test applications." OFF)
 
-option(FLAC_SUPPORT "Enable FLAC decoding and streaming." ON)
+if(WIN32)
+	set(FLAC BUILTIN CACHE STRING "Enable FLAC decoding and streaming.")
+else()
+	set(FLAC SYSTEM CACHE STRING "Enable FLAC decoding and streaming.")
+endif()
+if("${FLAC}" STREQUAL "ON") #upgrading old options
+	set(FLAC SYSTEM CACHE STRING "Enable FLAC decoding and streaming." FORCE)
+endif()
+if(NOT FLAC IN_LIST gorgon_external_options)
+    message(FATAL_ERROR "FLAC should be set to one of ${gorgon_external_options}")
+endif()
+set_property(CACHE FLAC PROPERTY STRINGS ${gorgon_external_options})
+
 
 option(UI "Enable UI subsystem." ON)
 
@@ -96,12 +108,14 @@ if(AUDIO)
     string(APPEND ADDITIONAL_CLIENT_FLAGS " -DAUDIO_${AUDIOLIB}")
 endif()
 
-if(FREETYPE EQUAL "SYSTEM")
-    add_definitions("-DFREETYPE")
-    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DFREETYPE")
-elsif(FREETYPE EQUAL "BUILTIN")
-    add_definitions("-DFREETYPE")
-    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DFREETYPE")
+if(FREETYPE STREQUAL "SYSTEM" OR FREETYPE STREQUAL "BUILTIN")
+    add_definitions("-DFREETYPE_SUPPORT")
+    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DFREETYPE_SUPPORT")
+endif()
+
+if(FLAC STREQUAL "SYSTEM" OR FLAC STREQUAL "BUILTIN")
+    add_definitions("-DFLAC_SUPPORT")
+    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DFLAC_SUPPORT")
 endif()
 
 if(SCRIPTING)
@@ -216,16 +230,16 @@ install(TARGETS Gorgon
 export(TARGETS Gorgon FILE "${PROJECT_PACKAGE_DIR}/GorgonTargets.cmake")
 export(PACKAGE Gorgon)
 
-if(${FLAC_SUPPORT}) 
+if(FLAC STREQUAL "BUILTIN") 
 	add_subdirectory(Source/External/flac)
 	
 	include_directories(Source/External/flac/include)
 
 	add_definitions("-DFLAC__NO_DLL")
-	add_definitions("-DFLAC_SUPPORT")
 	
 	target_link_libraries(Gorgon flac)
 endif()
+
 if(FREETYPE STREQUAL "BUILTIN")
 	add_subdirectory(Source/External/freetype)
 	

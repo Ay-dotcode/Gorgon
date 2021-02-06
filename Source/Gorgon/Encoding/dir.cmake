@@ -9,9 +9,22 @@ SET(Local
 	JPEG.cpp
 )
 
-IF(${FLAC_SUPPORT})
+IF(FLAC STREQUAL "BUILTIN")
 	list(APPEND Local 
 		FLAC.h 
 		FLAC.cpp
 	)
 ENDIF()
+
+if(FLAC STREQUAL "SYSTEM")
+	list(APPEND Local 
+		FLAC.h 
+		FLAC.cpp
+	)
+	
+    INCLUDE(${CMAKE_CURRENT_LIST_DIR}/FindFLAC.cmake)
+
+	list(APPEND Libs ${FLAC_LIBRARIES})
+	
+	include_directories(${FLAC_INCLUDE_DIRS})
+endif()

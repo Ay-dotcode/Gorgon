@@ -162,7 +162,7 @@ namespace Gorgon { namespace Multimedia {
             if(String::ToLower(ext) == "wav") {
                 return ImportWav(filename);
             }
-#ifdef FLAC_SUPPORT
+#ifdef FLAC_SUPPORT_SUPPORT
             else if(String::ToLower(ext) == "flac") {
                 return ImportFLAC(filename);
             }

@@ -2,7 +2,9 @@
 #include "File.h"
 
 #include "../Graphics/BitmapFont.h"
+#ifdef FREETYPE_SUPPORT
 #include "../Graphics/FreeType.h"
+#endif
 
 namespace Gorgon { namespace Resource {
 
@@ -15,7 +17,11 @@ namespace Gorgon { namespace Resource {
         if(isowner)
             delete data;
         
-        ASSERT(dynamic_cast<Graphics::BitmapFont*>(&renderer) || dynamic_cast<Graphics::FreeType*>(&renderer), "Font resource can only be a bitmapfont or freetype font");
+        ASSERT(dynamic_cast<Graphics::BitmapFont*>(&renderer)
+#ifdef FREETYPE_SUPPORT
+            || dynamic_cast<Graphics::FreeType*>(&renderer)
+#endif
+            , "Font resource can only be a bitmapfont or freetype font");
         
 #ifndef NDEBUG
         auto br = dynamic_cast<Graphics::BitmapFont*>(&renderer);
@@ -25,9 +31,11 @@ namespace Gorgon { namespace Resource {
                 if(dynamic_cast<const Graphics::Bitmap*>(p.second.image)) {
                     ASSERT(dynamic_cast<const Graphics::Bitmap*>(p.second.image)->HasData(), "You shouldn't discard bitmap data for Font resource to work.");
                 }
+#ifdef FREETYPE_SUPPORT
 				else if(dynamic_cast<Graphics::FreeType*>(&renderer)) {
 					//nothing to check right now
 				}
+#endif
                 else
                     Utils::ASSERT_FALSE("Bitmap resource images should be bitmaps.");
             }
@@ -42,7 +50,9 @@ namespace Gorgon { namespace Resource {
         auto start = writer.WriteObjectStart(this);
 
 		auto bf = dynamic_cast<Graphics::BitmapFont*>(data);
+#ifdef FREETYPE_SUPPORT
 		auto ft = dynamic_cast<Graphics::FreeType*>(data);
+#endif
         
         if(bf) {            
             auto propstart = writer.WriteChunkStart(GID::Font_BitmapProps);
@@ -95,6 +105,7 @@ namespace Gorgon { namespace Resource {
                 Image::SaveThis(writer, *bmp);
             }
         }
+#ifdef FREETYPE_SUPPORT
 		else if(ft) {
 			writer.WriteChunkHeader(GID::Font_FreeTypeProps, 4);
 			writer.WriteFloat(ft->size);
@@ -106,6 +117,7 @@ namespace Gorgon { namespace Resource {
 
 			writer.WriteEnd(datastart);
 		}
+#endif
         else if(data) {
             Utils::ASSERT_FALSE("Unrecognized font type to save");
         }
@@ -122,7 +134,9 @@ namespace Gorgon { namespace Resource {
 		float sz = 0;
 
 		Graphics::BitmapFont *bf = nullptr;
+#ifdef FREETYPE_SUPPORT
 		Graphics::FreeType *ft = nullptr;
+#endif
 
         Containers::Collection<Graphics::Bitmap> glyphs;
         std::map<Graphics::Glyph, Graphics::BitmapFont::GlyphDescriptor> descs;
@@ -143,6 +157,7 @@ namespace Gorgon { namespace Resource {
                 
                 recalc = true;
             }
+#ifdef FREETYPE_SUPPORT
 			else if(gid == GID::Font_FreeTypeData) {
 				ft = new Graphics::FreeType();
 				font->AssumeRenderer(*ft);
@@ -159,6 +174,7 @@ namespace Gorgon { namespace Resource {
 			else if(gid == GID::Font_FreeTypeProps) {
 				sz = reader->ReadFloat();
 			}
+#endif
             else if(gid == GID::Font_BitmapProps) {
                 bf = new Graphics::BitmapFont;
                 
