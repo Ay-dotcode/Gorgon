@@ -590,15 +590,8 @@ namespace Encoding {
             
             throw std::runtime_error("Cannot initialize FLAC decoding.");
         }
-        
-        if(len == -1) {
-            auto pos = input.tellg();
-            input.seekg(0, std::ios::end);
-            len = input.tellg() - pos;
-            input.seekg(pos);
-        }
 
-        streamer = new flac::streamread(input, -1);
+        streamer = new flac::streamread(input, len);
         streamer->autoalloc = false;
         Audio::AudioDataInfo ret;
 
@@ -620,7 +613,7 @@ namespace Encoding {
             delete dec;
             decoder = nullptr;
             
-            throw std::runtime_error("Cannot start FLAC encoder stream");
+            throw std::runtime_error("Cannot start FLAC decoder stream");
         }
 
         FLAC__stream_decoder_process_until_end_of_metadata(dec);

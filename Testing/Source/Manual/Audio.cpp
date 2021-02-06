@@ -84,7 +84,7 @@ auto TestExportImport() {
     Multimedia::AudioStream wave2;
     //std::cout<<"Load file: " << wave2.ImportWav("test.wav")<<std::endl;
     //wave2.Stream("out.wav");
-    wave2.Stream("test.sound");
+    wave2.Stream("Example.ogg");
     //wave2.ExportWav("out.wav");
     
     return wave2;
@@ -102,7 +102,6 @@ int main() {
     Audio::BasicController c(wave);
     c.Loop();
     std::this_thread::sleep_for(0.7s);
-    c.Seek(120);
 
     /*Audio::PositionalController c2(wave);
     c2.SetVolume(0.2f);

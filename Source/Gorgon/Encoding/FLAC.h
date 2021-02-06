@@ -99,7 +99,6 @@ namespace flac {
         void *decoder = nullptr;
         unsigned long total = 0;
         unsigned long last = 0;
-        
     };
 
 } }

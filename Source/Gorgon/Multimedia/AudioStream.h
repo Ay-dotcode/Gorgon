@@ -135,6 +135,26 @@ namespace Multimedia {
         bool StreamFLAC(std::istream &stream, bool ownstream = false);
 #endif
         
+#ifdef VORBIS_SUPPORT
+        /// Starts streaming the given Vorbis file. Only a portion of the file will be loaded 
+        /// immediately and it will be loaded automatically as necessary. Returns false if the file
+        /// cannot be read.
+        ///
+        /// @warning  Streaming works if this object is only used by a single
+        /// controller. Multiple controllers will cause stream to switch back and forth causing 
+        /// issues.
+        bool StreamVorbis(const std::string &filename);
+        
+        /// Starts streaming the given Vorbis file. Only a portion of the file will be loaded 
+        /// immediately and it will be loaded automatically as necessary. Returns false if the file
+        /// cannot be read.
+        ///
+        /// @warning  Streaming works if this object is only used by a single
+        /// controller. Multiple controllers will cause stream to switch back and forth causing 
+        /// issues.
+        bool StreamVorbis(std::istream &stream, bool ownstream = false);
+#endif
+        
         /// This function will fill the buffer of the stream. This function should only be called
         /// from stream thread.
         void FillBuffer() override;

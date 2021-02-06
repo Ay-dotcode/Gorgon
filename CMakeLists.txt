@@ -45,9 +45,6 @@ if(WIN32)
 else()
 	set(FLAC SYSTEM CACHE STRING "Enable FLAC decoding and streaming.")
 endif()
-if("${FLAC}" STREQUAL "ON") #upgrading old options
-	set(FLAC SYSTEM CACHE STRING "Enable FLAC decoding and streaming." FORCE)
-endif()
 if(NOT FLAC IN_LIST gorgon_external_options)
     message(FATAL_ERROR "FLAC should be set to one of ${gorgon_external_options}")
 endif()
@@ -68,6 +65,16 @@ if(NOT FREETYPE IN_LIST gorgon_external_options)
     message(FATAL_ERROR "FREETYPE should be set to one of ${gorgon_external_options}")
 endif()
 set_property(CACHE FREETYPE PROPERTY STRINGS ${gorgon_external_options})
+
+if(WIN32)
+	set(VORBIS BUILTIN CACHE STRING "Enable FreeType font support")
+else()
+	set(VORBIS SYSTEM CACHE STRING "Enable FreeType font support")
+endif()
+if(NOT VORBIS IN_LIST gorgon_external_options)
+    message(FATAL_ERROR "VORBIS should be set to one of ${gorgon_external_options}")
+endif()
+set_property(CACHE VORBIS PROPERTY STRINGS ${gorgon_external_options})
 
 OPTION(FORCE_32_BIT "Force 32 bit compilation" OFF)
 
@@ -116,6 +123,11 @@ endif()
 if(FLAC STREQUAL "SYSTEM" OR FLAC STREQUAL "BUILTIN")
     add_definitions("-DFLAC_SUPPORT")
     string(APPEND ADDITIONAL_CLIENT_FLAGS " -DFLAC_SUPPORT")
+endif()
+
+if(VORBIS STREQUAL "SYSTEM" OR VORBIS STREQUAL "BUILTIN")
+    add_definitions("-DVORBIS_SUPPORT")
+    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DVORBIS_SUPPORT")
 endif()
 
 if(SCRIPTING)
@@ -246,6 +258,14 @@ if(FREETYPE STREQUAL "BUILTIN")
 	include_directories(Source/External/freetype/include)
 	
 	target_link_libraries(Gorgon freetype)
+endif()
+
+if(VORBIS STREQUAL "BUILTIN")
+	add_subdirectory(Source/External/vorbis)
+	
+	include_directories(Source/External/vorbis/include)
+	
+	target_link_libraries(Gorgon vorbis)
 endif()
 
 if(WIN32)

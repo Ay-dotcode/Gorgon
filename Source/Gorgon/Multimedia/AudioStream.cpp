@@ -2,8 +2,14 @@
 
 #include "../Resource/Sound.h"
 #include "../Audio.h"
-#include "../Encoding/FLAC.h"
 
+#ifdef FLAC_SUPPORT
+#include "../Encoding/FLAC.h"
+#endif
+
+#ifdef VORBIS_SUPPORT
+#include "../Encoding/Vorbis.h"
+#endif
 
 namespace Gorgon { 
     
@@ -68,20 +74,21 @@ namespace internal {
         int channels;
     };
     
-    class FLACStreamStreamer : public AudioStreamer {
+    template<class D_>
+    class DecoderStreamer : public AudioStreamer {
     public:
         /// Creates a wave stream streamer. Stream location should be at the start of the data.
-        FLACStreamStreamer(std::istream &stream, bool ownstream) :
+        DecoderStreamer(std::istream &stream, bool ownstream) :
             stream(stream), ownstream(ownstream)
         { }
         
-        ~FLACStreamStreamer() {
+        ~DecoderStreamer() {
             if(ownstream)
                 delete &stream;
         }
         
         unsigned long Init(Containers::Wave &target) override {
-            auto info = flac.DecodeStart(stream);
+            auto info = decoder.DecodeStart(stream);
             target.SetSampleRate(info.SampleRate);
             target.SetChannels(info.Channels);
             
@@ -89,14 +96,21 @@ namespace internal {
         }
         
         virtual unsigned long LoadData(unsigned long samplestart, Containers::Wave &target) override {
-            return flac.DecodeSome(target, samplestart);
+            return decoder.DecodeSome(target, samplestart);
         }
         
     private:
         std::istream &stream;
         bool ownstream;
-        Encoding::FLACStream flac;
+        D_ decoder;
     };
+    
+#ifdef FLAC_SUPPORT
+    using FLACStreamStreamer = DecoderStreamer<Encoding::FLACStream>;
+#endif
+#ifdef VORBIS_SUPPORT
+    using VorbisStreamStreamer = DecoderStreamer<Encoding::VorbisStream>;
+#endif
 }
 
     bool AudioStream::Stream(const std::string &filename) {
@@ -111,6 +125,11 @@ namespace internal {
 #ifdef FLAC_SUPPORT
             else if(String::ToLower(ext) == "flac") {
                 return StreamFLAC(filename);
+            }
+#endif
+#ifdef VORBIS_SUPPORT
+            else if(String::ToLower(ext) == "ogg") {
+                return StreamVorbis(filename);
             }
 #endif
         }
@@ -129,6 +148,7 @@ namespace internal {
     bool AudioStream::Stream(std::istream &file, bool ownstream) {
         static const uint32_t wavsig  = 0x46464952;
         static const uint32_t flacsig = 0x43614c66;
+        static const uint32_t oggsig  = 0x5367674F;
 
         uint32_t sig = IO::ReadUInt32(file);
         file.seekg(0, std::ios::beg);
@@ -139,6 +159,11 @@ namespace internal {
 #ifdef FLAC_SUPPORT
         else if(sig == flacsig) {
             return StreamFLAC(file);
+        }
+#endif
+#ifdef VORBIS_SUPPORT
+        else if(sig == oggsig) {
+            return StreamVorbis(file);
         }
 #endif
 
@@ -209,6 +234,54 @@ namespace internal {
         
         try {
             streamer = new internal::FLACStreamStreamer(file, ownstream);
+        }
+        catch(...) {
+            if(ownstream)
+                delete &file;
+            throw;
+        }
+        
+        //clean up
+        buffers[0].buffer.Destroy();
+        
+        ///load metadata 
+        totalsize = streamer->Init(buffers[0].buffer);
+        
+        //overwrite it to other buffers 
+        for(int i=1; i<buffers.size(); i++)
+            buffers[i].buffer = buffers[0].buffer.Duplicate();
+        
+        if(totalsize == 0)
+            return false;
+        
+        for(int i=0; i<buffers.size(); i++)
+            buffers[i].buffer.Resize(buffersize);
+        
+        
+        return true;
+    }
+#endif
+
+    
+#ifdef VORBIS_SUPPORT
+    bool AudioStream::StreamVorbis(const std::string &filename) {
+        auto &file = *new std::ifstream(filename, std::ios::binary);
+        
+        if(file.is_open())
+            return StreamVorbis(file, true);
+        else {
+            delete &file;
+            return false;
+        }
+    }
+    
+    bool AudioStream::StreamVorbis(std::istream &file, bool ownstream) {
+        std::lock_guard<std::mutex> g(guard);
+
+        delete streamer;
+        
+        try {
+            streamer = new internal::VorbisStreamStreamer(file, ownstream);
         }
         catch(...) {
             if(ownstream)
