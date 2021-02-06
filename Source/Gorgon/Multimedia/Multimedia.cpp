@@ -1,5 +1,6 @@
 #include "../Multimedia.h"
 #include "Stream.h"
+#include "../Audio.h"
 
 #include <cstdlib>
 
@@ -29,7 +30,12 @@ namespace internal {
         
         while(!exiting) {
             for(auto &stream : Stream::streams) {
-                stream.FillBuffer();
+                try {
+                    stream.FillBuffer();
+                }
+                catch(const std::exception &ex) {
+                    Audio::Log << ex.what();
+                }
             }
             
             std::this_thread::sleep_for(1ms);

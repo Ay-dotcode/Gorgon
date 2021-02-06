@@ -1,6 +1,6 @@
-/* libFLAC - Free Lossless Audio Codec
- * Copyright (C) 2004-2009  Josh Coalson
- * Copyright (C) 2011-2014  Xiph.Org Foundation
+/* libFLAC - Free Lossless Audio Codec library
+ * Copyright (C) 2001-2009  Josh Coalson
+ * Copyright (C) 2011-2016  Xiph.Org Foundation
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,35 +30,29 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLAC__PRIVATE__OGG_MAPPING_H
-#define FLAC__PRIVATE__OGG_MAPPING_H
+#ifndef FLAC__PRIVATE__MEMORY_H
+#define FLAC__PRIVATE__MEMORY_H
 
-#include "FLAC/ordinals.h"
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
-/** The length of the packet type field in bytes. */
-#define FLAC__OGG_MAPPING_PACKET_TYPE_LENGTH (1u)
+#include <stdlib.h> /* for size_t */
 
-extern const unsigned FLAC__OGG_MAPPING_PACKET_TYPE_LEN; /* = 8 bits */
+#include "private/float.h"
+#include "FLAC/ordinals.h" /* for FLAC__bool */
 
-extern const FLAC__byte FLAC__OGG_MAPPING_FIRST_HEADER_PACKET_TYPE; /* = 0x7f */
-
-/** The length of the 'FLAC' magic in bytes. */
-#define FLAC__OGG_MAPPING_MAGIC_LENGTH (4u)
-
-extern const FLAC__byte * const FLAC__OGG_MAPPING_MAGIC; /* = "FLAC" */
-
-extern const unsigned FLAC__OGG_MAPPING_VERSION_MAJOR_LEN; /* = 8 bits */
-extern const unsigned FLAC__OGG_MAPPING_VERSION_MINOR_LEN; /* = 8 bits */
-
-/** The length of the Ogg FLAC mapping major version number in bytes. */
-#define FLAC__OGG_MAPPING_VERSION_MAJOR_LENGTH (1u)
-
-/** The length of the Ogg FLAC mapping minor version number in bytes. */
-#define FLAC__OGG_MAPPING_VERSION_MINOR_LENGTH (1u)
-
-extern const unsigned FLAC__OGG_MAPPING_NUM_HEADERS_LEN; /* = 16 bits */
-
-/** The length of the #-of-header-packets number bytes. */
-#define FLAC__OGG_MAPPING_NUM_HEADERS_LENGTH (2u)
+/* Returns the unaligned address returned by malloc.
+ * Use free() on this address to deallocate.
+ */
+void *FLAC__memory_alloc_aligned(size_t bytes, void **aligned_address);
+FLAC__bool FLAC__memory_alloc_aligned_int32_array(size_t elements, FLAC__int32 **unaligned_pointer, FLAC__int32 **aligned_pointer);
+FLAC__bool FLAC__memory_alloc_aligned_uint32_array(size_t elements, FLAC__uint32 **unaligned_pointer, FLAC__uint32 **aligned_pointer);
+FLAC__bool FLAC__memory_alloc_aligned_uint64_array(size_t elements, FLAC__uint64 **unaligned_pointer, FLAC__uint64 **aligned_pointer);
+FLAC__bool FLAC__memory_alloc_aligned_unsigned_array(size_t elements, uint32_t **unaligned_pointer, uint32_t **aligned_pointer);
+#ifndef FLAC__INTEGER_ONLY_LIBRARY
+FLAC__bool FLAC__memory_alloc_aligned_real_array(size_t elements, FLAC__real **unaligned_pointer, FLAC__real **aligned_pointer);
+#endif
+void *safe_malloc_mul_2op_p(size_t size1, size_t size2);
 
 #endif

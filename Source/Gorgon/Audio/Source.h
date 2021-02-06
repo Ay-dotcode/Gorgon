@@ -46,25 +46,25 @@ namespace Gorgon { namespace Audio {
         /// If return value is pending, IsSeeking and IsSeekComplete will be used to complete seek
         /// operation. Seeking to a new location while seeking could be allowed depending on the 
         /// source. If not supported, Failed should be returned.
-        virtual SeekResult StartSeeking(unsigned long target) = 0;
+        virtual SeekResult StartSeeking(unsigned long target) const = 0;
         
         /// Returns if source is currently seeking. Even if the seek operation is completed, this
         /// function should return true from StartSeeking to SeekingDone. However, if seek operation
         /// fails, then this function should return false before IsSeekComplete ever returns true.
         /// Even if seek operation is immediately Done, this function could return false 
         /// permanently.
-        virtual bool IsSeeking() = 0;
+        virtual bool IsSeeking() const = 0;
         
         /// If the current seek operation is completed. Should return true if not seeking or seeking
         /// is immediate.
-        virtual bool IsSeekComplete() = 0;
+        virtual bool IsSeekComplete() const = 0;
         
         /// Should return current target that the stream is seeking towards. Should return 0 if not
         /// seeking or seeking is immediate.
-        virtual unsigned long SeekTarget() = 0;
+        virtual unsigned long SeekTarget() const = 0;
         
         /// Marks seeking operation as finished. After this call, IsSeeking should be false.
-        virtual void SeekingDone() = 0;
+        virtual void SeekingDone() const = 0;
     };
     
     

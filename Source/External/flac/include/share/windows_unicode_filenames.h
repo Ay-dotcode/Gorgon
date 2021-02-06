@@ -1,6 +1,5 @@
 /* libFLAC - Free Lossless Audio Codec library
- * Copyright (C) 2001-2009  Josh Coalson
- * Copyright (C) 2011-2014  Xiph.Org Foundation
+ * Copyright (C) 2013-2016  Xiph.Org Foundation
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,29 +29,38 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLAC__PRIVATE__MEMORY_H
-#define FLAC__PRIVATE__MEMORY_H
+#ifdef _WIN32
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
+#ifndef flac__windows_unicode_filenames_h
+#define flac__windows_unicode_filenames_h
+
+#include <stdio.h>
+#include <sys/stat.h>
+#include <sys/utime.h>
+#include "FLAC/ordinals.h"
+
+/***** FIXME: KLUDGE: export these syms for flac.exe, metaflac.exe, etc. *****/
+#include "FLAC/export.h"
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#include <stdlib.h> /* for size_t */
+FLAC_API void flac_internal_set_utf8_filenames(FLAC__bool flag);
+FLAC_API FLAC__bool flac_internal_get_utf8_filenames(void);
+#define flac_set_utf8_filenames flac_internal_set_utf8_filenames
+#define flac_get_utf8_filenames flac_internal_get_utf8_filenames
 
-#include "private/float.h"
-#include "FLAC/ordinals.h" /* for FLAC__bool */
+FLAC_API FILE* flac_internal_fopen_utf8(const char *filename, const char *mode);
+FLAC_API int flac_internal_stat64_utf8(const char *path, struct __stat64 *buffer);
+FLAC_API int flac_internal_chmod_utf8(const char *filename, int pmode);
+FLAC_API int flac_internal_utime_utf8(const char *filename, struct utimbuf *times);
+FLAC_API int flac_internal_unlink_utf8(const char *filename);
+FLAC_API int flac_internal_rename_utf8(const char *oldname, const char *newname);
 
-/* Returns the unaligned address returned by malloc.
- * Use free() on this address to deallocate.
- */
-void *FLAC__memory_alloc_aligned(size_t bytes, void **aligned_address);
-FLAC__bool FLAC__memory_alloc_aligned_int32_array(size_t elements, FLAC__int32 **unaligned_pointer, FLAC__int32 **aligned_pointer);
-FLAC__bool FLAC__memory_alloc_aligned_uint32_array(size_t elements, FLAC__uint32 **unaligned_pointer, FLAC__uint32 **aligned_pointer);
-FLAC__bool FLAC__memory_alloc_aligned_uint64_array(size_t elements, FLAC__uint64 **unaligned_pointer, FLAC__uint64 **aligned_pointer);
-FLAC__bool FLAC__memory_alloc_aligned_unsigned_array(size_t elements, unsigned **unaligned_pointer, unsigned **aligned_pointer);
-#ifndef FLAC__INTEGER_ONLY_LIBRARY
-FLAC__bool FLAC__memory_alloc_aligned_real_array(size_t elements, FLAC__real **unaligned_pointer, FLAC__real **aligned_pointer);
+#ifdef __cplusplus
+} /* extern "C" */
 #endif
-void *safe_malloc_mul_2op_p(size_t size1, size_t size2);
 
+#endif
 #endif

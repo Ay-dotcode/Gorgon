@@ -50,7 +50,8 @@ namespace flac {
         void Decode(const std::string &filename, Containers::Wave &wave) {
             std::ifstream stream(filename, std::ios::binary);
             if(!stream.is_open()) throw std::runtime_error("Cannot open file");
-            return Decode(stream, wave);
+            
+            Decode(stream, wave);
         }
 
     private:
@@ -97,6 +98,7 @@ namespace flac {
         std::ifstream *stream = nullptr;
         void *decoder = nullptr;
         unsigned long total = 0;
+        unsigned long last = 0;
         
     };
 

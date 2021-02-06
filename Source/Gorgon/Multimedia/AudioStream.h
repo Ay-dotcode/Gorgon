@@ -9,6 +9,7 @@
 
 #include <thread>
 #include <mutex>
+#include <array>
 
 namespace Gorgon { 
     
@@ -37,7 +38,7 @@ namespace Multimedia {
             /// This function should check if there is data to be loaded. If there is, streamer
             /// should decode and pass data to audiostream. If there is any extra data that is 
             /// decoded, it should stay with the streamer.
-            virtual void LoadData(unsigned long samplestart, Containers::Wave &target) = 0;
+            virtual unsigned long LoadData(unsigned long samplestart, Containers::Wave &target) = 0;
         };
         
         /// Currently active streamers
@@ -172,21 +173,21 @@ namespace Multimedia {
         /// Starts seeking the stream to the given point. Only one buffer will start loading. The 
         /// other two buffers will continue playing from the old point. Once the data is started
         /// streaming from this new location, other buffers will be loaded as well.
-        virtual SeekResult StartSeeking(unsigned long) override final;
+        virtual SeekResult StartSeeking(unsigned long) const override final;
     
-        virtual bool IsSeeking() override final {
+        virtual bool IsSeeking() const override final {
             return isseeking;
         }
         
-        virtual bool IsSeekComplete() override final {
+        virtual bool IsSeekComplete() const override final {
             return seekcomplete;
         }
         
-        virtual unsigned long SeekTarget() override final {
+        virtual unsigned long SeekTarget() const override final {
             return seektarget;
         }
         
-        virtual void SeekingDone() override final {
+        virtual void SeekingDone() const override final {
             isseeking = false;
         }
         
@@ -206,16 +207,18 @@ namespace Multimedia {
         /// Only the first buffer will contain valid information
         std::array<bufferdata, 3> buffers;
         
+        unsigned long totalsize  = 0;
         /// Last sample accessed by audio loop
         mutable unsigned long lastsample = 0;
-        unsigned long seektarget = 0;
-        unsigned long totalsize  = 0;
-        bool isseeking    = false;
-        bool seekcomplete = false;
+        
+        // Seek operation is not considered as modifying
+        mutable unsigned long seektarget = 0;
+        mutable bool          isseeking    = false;
+        mutable bool          seekcomplete = false;
         
         unsigned long buffersize;
         
-        std::mutex guard;
+        mutable std::mutex guard;
         
         //internally used by audio loop
         int currentbuffer = 0;

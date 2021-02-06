@@ -210,23 +210,23 @@ namespace Multimedia {
             return data->end();
         }
         
-        virtual SeekResult StartSeeking(unsigned long) override final {
+        virtual SeekResult StartSeeking(unsigned long) const override final {
             return Done;
         }
     
-        virtual bool IsSeeking() override final {
+        virtual bool IsSeeking() const override final {
             return false;
         }
         
-        virtual bool IsSeekComplete() override final {
+        virtual bool IsSeekComplete() const override final {
             return true;
         }
         
-        virtual unsigned long SeekTarget() override final {
+        virtual unsigned long SeekTarget() const override final {
             return 0;
         }
         
-        virtual void SeekingDone() override final {
+        virtual void SeekingDone() const override final {
         }
 
     private:

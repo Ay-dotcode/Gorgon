@@ -131,7 +131,7 @@ namespace internal {
         virtual void datachanged() { }    
     private:
         float volume   = 1;
-        float position = std::numeric_limits<float>::max(); //in seconds
+        double position = std::numeric_limits<double>::max(); //in seconds
         
         bool playing = false;
         bool looping = false;

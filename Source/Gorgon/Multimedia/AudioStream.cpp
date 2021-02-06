@@ -13,89 +13,91 @@ namespace Audio { namespace internal {
     
 namespace Multimedia {
     
-    namespace internal {
+namespace internal {
+    
+    class WavStreamStreamer : public AudioStreamer {
+    public:
+        /// Creates a wave stream streamer. Stream location should be at the start of the data.
+        WavStreamStreamer(std::istream &stream, bool ownstream) :
+            stream(stream), ownstream(ownstream)
+        { }
         
-        class WavStreamStreamer : public AudioStreamer {
-        public:
-            /// Creates a wave stream streamer. Stream location should be at the start of the data.
-            WavStreamStreamer(std::istream &stream, bool ownstream) :
-                stream(stream), ownstream(ownstream)
-            { }
+        ~WavStreamStreamer() {
+            if(ownstream)
+                delete &stream;
+        }
+        
+        unsigned long Init(Containers::Wave &target) override {
+            unsigned long size;
             
-            ~WavStreamStreamer() {
-                if(ownstream)
-                    delete &stream;
-            }
+            target.ImportWav(stream, false, size, samplesize, blocksize);
+            startoffset = stream.tellg();
+            channels = target.GetChannelCount();
             
-            unsigned long Init(Containers::Wave &target) override {
-                unsigned long size;
-                
-                target.ImportWav(stream, false, size, samplesize, blocksize);
-                startoffset = stream.tellg();
-                channels = target.GetChannelCount();
-                
-                return size;
-            }
+            return size;
+        }
+        
+        virtual unsigned long LoadData(unsigned long samplestart, Containers::Wave &target) override {
+            stream.clear();
+            stream.seekg(startoffset + samplestart * blocksize, std::ios::beg);
             
-            virtual void LoadData(unsigned long samplestart, Containers::Wave &target) override {
-                stream.clear();
-                stream.seekg(startoffset + samplestart * blocksize, std::ios::beg);
-                
-                for(auto sample : target) {
-                    for(int c=0; c<channels; c++) {
-                        if(stream.eof()) {
-                            sample[c] = 0;
+            for(auto sample : target) {
+                for(int c=0; c<channels; c++) {
+                    if(stream.eof()) {
+                        sample[c] = 0;
+                    }
+                    else {
+                        if(samplesize == 8) {
+                            sample[c] = (IO::ReadUInt8(stream) / 255.f) * 2.f - 1.f;
                         }
                         else {
-                            if(samplesize == 8) {
-                                sample[c] = (IO::ReadUInt8(stream) / 255.f) * 2.f - 1.f;
-                            }
-                            else {
-                                sample[c] = IO::ReadInt16(stream) / 32767.f;
-                            }
+                            sample[c] = IO::ReadInt16(stream) / 32767.f;
                         }
                     }
                 }
             }
             
-        private:
-            std::istream &stream;
-            bool ownstream;
-            std::size_t startoffset;
-            int samplesize, blocksize;
-            int channels;
-        };
+            return target.GetSize();
+        }
         
-        class FLACStreamStreamer : public AudioStreamer {
-        public:
-            /// Creates a wave stream streamer. Stream location should be at the start of the data.
-            FLACStreamStreamer(std::istream &stream, bool ownstream) :
-                stream(stream), ownstream(ownstream)
-            { }
+    private:
+        std::istream &stream;
+        bool ownstream;
+        std::size_t startoffset;
+        int samplesize, blocksize;
+        int channels;
+    };
+    
+    class FLACStreamStreamer : public AudioStreamer {
+    public:
+        /// Creates a wave stream streamer. Stream location should be at the start of the data.
+        FLACStreamStreamer(std::istream &stream, bool ownstream) :
+            stream(stream), ownstream(ownstream)
+        { }
+        
+        ~FLACStreamStreamer() {
+            if(ownstream)
+                delete &stream;
+        }
+        
+        unsigned long Init(Containers::Wave &target) override {
+            auto info = flac.DecodeStart(stream);
+            target.SetSampleRate(info.SampleRate);
+            target.SetChannels(info.Channels);
             
-            ~FLACStreamStreamer() {
-                if(ownstream)
-                    delete &stream;
-            }
-            
-            unsigned long Init(Containers::Wave &target) override {
-                auto info = flac.DecodeStart(stream);
-                target.SetSampleRate(info.SampleRate);
-                target.SetChannels(info.Channels);
-                
-                return info.Samples;
-            }
-            
-            virtual void LoadData(unsigned long samplestart, Containers::Wave &target) override {
-                flac.DecodeSome(target, samplestart);
-            }
-            
-        private:
-            std::istream &stream;
-            bool ownstream;
-            Encoding::FLACStream flac;
-        };
-    }
+            return info.Samples;
+        }
+        
+        virtual unsigned long LoadData(unsigned long samplestart, Containers::Wave &target) override {
+            return flac.DecodeSome(target, samplestart);
+        }
+        
+    private:
+        std::istream &stream;
+        bool ownstream;
+        Encoding::FLACStream flac;
+    };
+}
 
     bool AudioStream::Stream(const std::string &filename) {
         auto dotpos = filename.find_last_of('.');
@@ -233,20 +235,21 @@ namespace Multimedia {
         return true;
     }
     
-    
     void AudioStream::FillBuffer() {
         if(!streamer)
             return;
         
         std::lock_guard<std::mutex> g(guard);
         
-        int lastsample = this->lastsample;//local copy
+        auto lastsample = this->lastsample;//local copy
         
         if(isseeking && !seekcomplete) {
+            Audio::Log << "Seek detected: " << seektarget << " currently at " << lastsample;
             
             //find the last sample in the buffers
             for(int i=0; i<buffers.size(); i++) {
                 if(seektarget >= buffers[i].beg  && seektarget < buffers[i].end) {
+                    Audio::Log << "Seek done immediately";
                     seekcomplete = true;
                     return;
                 }
@@ -257,19 +260,25 @@ namespace Multimedia {
             
             //find the last sample in the buffers
             for(int i=0; i<buffers.size(); i++) {
-                if(lastsample >= buffers[i].beg  && lastsample < buffers[i].end)
+                if(lastsample >= buffers[i].beg  && lastsample < buffers[i].end) {
                     sampleind = i;
+                    break;
+                }
             }
             
             int loadbuffer = 0;
             
             if(sampleind != -1) {
-                sampleind = (sampleind + 2) % buffers.size();
+                loadbuffer = (sampleind + 2) % buffers.size();
             }
             
             
             auto &loading = buffers[loadbuffer];
             this->loadbuffer(loading, seektarget);
+            Audio::Log << "Stream buffer " << loadbuffer << " loaded from " << loading.beg << " to " << loading.end;
+            Audio::Log << "Seek done";
+            seekcomplete = true;
+            
             return;
         }
         
@@ -288,7 +297,7 @@ namespace Multimedia {
         }
         else {
             for(int i=1; i<buffers.size(); i++) {
-                auto cur = (sampleind + i)%buffers.size();
+                auto cur = int((sampleind + i)%buffers.size());
                 auto prev = (cur + buffers.size() - 1) % buffers.size();
                 auto p = buffers[prev].end;
                 if(p == totalsize)
@@ -320,29 +329,36 @@ namespace Multimedia {
         this->loadbuffer(loading, startoff);
         
         
-        Audio::Log << "Stream buffer " << loadbuffer << " loaded from " << loading.beg << " to " << loading.end/* << " including: " << loading.buffer(0, 0) << ", " << loading.buffer(1, 0) << ", " << loading.buffer(2, 0)*/;
+        Audio::Log << "Stream buffer " << loadbuffer << " loaded from " << loading.beg << " to " << loading.end;
     }
     
     void AudioStream::loadbuffer(bufferdata &buffer, unsigned long startoff) {
-        //TODO check filesize
-        streamer->LoadData(startoff, buffer.buffer);
-        
+        auto loaded = streamer->LoadData(startoff, buffer.buffer);
         
         std::lock_guard<std::mutex> g(Audio::internal::ControllerMtx);
         
         buffer.beg = startoff;
-        buffer.end = std::min(totalsize, startoff + buffer.buffer.GetSize());
+        
+        if(loaded == 0) {
+            buffer.end = std::min(totalsize, startoff + buffer.buffer.GetSize());
+            buffer.buffer.Clear();
+        }
+        else {
+            buffer.end = std::min(totalsize, startoff + loaded);
+        }
     }
 
-    AudioStream::SeekResult AudioStream::StartSeeking(long unsigned int target) {
-        std::lock_guard<std::mutex> g(Audio::internal::ControllerMtx);
+    AudioStream::SeekResult AudioStream::StartSeeking(long unsigned int target) const {
+        std::lock_guard<std::mutex> g(guard);
         
-        isseeking  = true;
-        seektarget = target;
+        Audio::Log << "Seek to " << target;
+        
+        isseeking    = true;
+        seektarget   = target;
+        seekcomplete = false;
 
         return Pending;
     }
-
 
     AudioStream::AudioStream(Multimedia::AudioStream &&other) 
     {

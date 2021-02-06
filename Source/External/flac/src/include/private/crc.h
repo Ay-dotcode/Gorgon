@@ -1,6 +1,6 @@
 /* libFLAC - Free Lossless Audio Codec library
  * Copyright (C) 2000-2009  Josh Coalson
- * Copyright (C) 2011-2014  Xiph.Org Foundation
+ * Copyright (C) 2011-2018  Xiph.Org Foundation
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,31 +30,31 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLAC__PROTECTED__STREAM_DECODER_H
-#define FLAC__PROTECTED__STREAM_DECODER_H
+#ifndef FLAC__PRIVATE__CRC_H
+#define FLAC__PRIVATE__CRC_H
 
-#include "FLAC/stream_decoder.h"
-#if FLAC__HAS_OGG
-#include "private/ogg_decoder_aspect.h"
+#include "FLAC/ordinals.h"
+
+/* 8 bit CRC generator, MSB shifted first
+** polynomial = x^8 + x^2 + x^1 + x^0
+** init = 0
+*/
+FLAC__uint8 FLAC__crc8(const FLAC__byte *data, uint32_t len);
+
+/* 16 bit CRC generator, MSB shifted first
+** polynomial = x^16 + x^15 + x^2 + x^0
+** init = 0
+*/
+extern FLAC__uint16 const FLAC__crc16_table[8][256];
+
+#define FLAC__CRC16_UPDATE(data, crc) ((((crc)<<8) & 0xffff) ^ FLAC__crc16_table[0][((crc)>>8) ^ (data)])
+/* this alternate may be faster on some systems/compilers */
+#if 0
+#define FLAC__CRC16_UPDATE(data, crc) ((((crc)<<8) ^ FLAC__crc16_table[0][((crc)>>8) ^ (data)]) & 0xffff)
 #endif
 
-typedef struct FLAC__StreamDecoderProtected {
-	FLAC__StreamDecoderState state;
-	FLAC__StreamDecoderInitStatus initstate;
-	unsigned channels;
-	FLAC__ChannelAssignment channel_assignment;
-	unsigned bits_per_sample;
-	unsigned sample_rate; /* in Hz */
-	unsigned blocksize; /* in samples (per channel) */
-	FLAC__bool md5_checking; /* if true, generate MD5 signature of decoded data and compare against signature in the STREAMINFO metadata block */
-#if FLAC__HAS_OGG
-	FLAC__OggDecoderAspect ogg_decoder_aspect;
-#endif
-} FLAC__StreamDecoderProtected;
-
-/*
- * return the number of input bytes consumed
- */
-unsigned FLAC__stream_decoder_get_input_bytes_unconsumed(const FLAC__StreamDecoder *decoder);
+FLAC__uint16 FLAC__crc16(const FLAC__byte *data, uint32_t len);
+FLAC__uint16 FLAC__crc16_update_words32(const FLAC__uint32 *words, uint32_t len, FLAC__uint16 crc);
+FLAC__uint16 FLAC__crc16_update_words64(const FLAC__uint64 *words, uint32_t len, FLAC__uint16 crc);
 
 #endif

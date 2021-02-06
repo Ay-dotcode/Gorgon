@@ -1,5 +1,5 @@
 /* libFLAC - Free Lossless Audio Codec library
- * Copyright (C) 2013-2016  Xiph.org Foundation
+ * Copyright (C) 2017  Xiph.org Foundation
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,17 +29,25 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FLAC__SHARE__PRIVATE_H
-#define FLAC__SHARE__PRIVATE_H
-
-/*
- * Unpublished debug routines from libFLAC. This should not be used from any
- * client code other than code shipped with the FLAC sources.
+/* This header file defines integer [u]intNN_t types.
+ * It is auto-included in all files via "Force Includes" (/FI)
+ * option in all *.vcproj files (Visual Studio 2005, 2008)
  */
-FLAC_API FLAC__bool FLAC__stream_encoder_disable_constant_subframes(FLAC__StreamEncoder *encoder, FLAC__bool value);
-FLAC_API FLAC__bool FLAC__stream_encoder_disable_fixed_subframes(FLAC__StreamEncoder *encoder, FLAC__bool value);
-FLAC_API FLAC__bool FLAC__stream_encoder_disable_verbatim_subframes(FLAC__StreamEncoder *encoder, FLAC__bool value);
-FLAC_API FLAC__bool FLAC__stream_encoder_set_do_md5(FLAC__StreamEncoder *encoder, FLAC__bool value);
-FLAC_API FLAC__bool FLAC__stream_encoder_get_do_md5(const FLAC__StreamEncoder *encoder);
 
-#endif /* FLAC__SHARE__PRIVATE_H */
+#ifndef FLAC__SHARE__MSVC2005_INT_H
+#define FLAC__SHARE__MSVC2005_INT_H
+
+#if defined _MSC_VER && _MSC_VER < 1600
+
+typedef signed __int8 int8_t;
+typedef signed __int16 int16_t;
+typedef signed __int32 int32_t;
+typedef signed __int64 int64_t;
+typedef unsigned __int8 uint8_t;
+typedef unsigned __int16 uint16_t;
+typedef unsigned __int32 uint32_t;
+typedef unsigned __int64 uint64_t;
+
+#endif
+
+#endif /* FLAC__SHARE__MSVC2005_INT_H */
