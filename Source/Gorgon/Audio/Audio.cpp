@@ -37,6 +37,7 @@ namespace Audio {
         std::vector<float> volume = {1.f, 1.f};
 
         void exitfn() {
+            exiting = true;
             audiothread.join();
         }
     }

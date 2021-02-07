@@ -75,7 +75,6 @@ namespace Gorgon {
     }
 
 	void Initialize(const std::string &name) {
-        
 		atexit(&gorgon_exit);
 
 		internal::systemname=name;

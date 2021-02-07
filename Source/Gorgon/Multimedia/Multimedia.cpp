@@ -19,6 +19,7 @@ namespace internal {
     std::thread streamthread;
     
     void exitfn() {
+        exiting = true;
         streamthread.join();
     }
     
