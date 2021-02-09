@@ -488,6 +488,8 @@ namespace Gorgon { namespace UI {
         /// This widget that is owned by the container is being deleted.
         virtual void deleted(Widget *widget);
 
+        Containers::Collection<const Widget> owned;
+        
     private:
         bool isenabled              = true;
         bool tabswitch              = true;
@@ -497,7 +499,6 @@ namespace Gorgon { namespace UI {
         int focusindex	            = -1;
         Organizers::Base *organizer = nullptr;
         bool ownorganizer           = false;
-        Containers::Collection<const Widget> owned;
 
         FocusStrategy focusmode = Inherit;
     };

@@ -93,17 +93,17 @@ int main() {
     basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
 
     ///Blank Panel & elements with Registry & Regulars
-    /*Widgets::SimpleGenerator generator;
-    generator.Density = 5;
-    generator.Init(16, "freesans");
-    generator.UpdateBorders();
-    generator.Border.Width = 2;
-    generator.Border.Radius = 4;
-    generator.Border.Divisions = 0;
-    generator.UpdateDimensions();
-    generator.Activate();*/
+//     Widgets::SimpleGenerator generator;
+//     generator.Density = 5;
+//     generator.Init(16, "freesans");
+//     generator.UpdateBorders();
+//     generator.Border.Width = 2;
+//     generator.Border.Radius = 4;
+//     generator.Border.Divisions = 0;
+//     generator.UpdateDimensions();
+//     generator.Activate();
 
-    Widgets::Window blank/*(Gorgon::Widgets::Registry::Panel_Blank)*/;
+    Widgets::Window blank;
     blank.Move(5, 50);
     blank.SetHeight(300);
     auto icon = Triangle(5, 10);
@@ -204,9 +204,9 @@ int main() {
     list.Add("9");
     list.Add("Hello");
     list.Add("World");
-    /*for(int i=0; i<10; i++)
-        list.Add("Welcome", "to", "the", "wonderful", "Gorgon", "Library", "!");
-    list.Add("World");*/
+//     for(int i=0; i<10; i++)
+//         list.Add("Welcome", "to", "the", "wonderful", "Gorgon", "Library", "!");
+//     list.Add("World");
     list.AddToSelection(3);
     list.AddToSelection(1, 4);
     list.InvertSelection();
@@ -275,10 +275,11 @@ int main() {
     
     
     auto &org = blank.CreateOrganizer<UI::Organizers::Flow>();
+    //org.SetAlignment(org.Center);
     
     org << std::endl << 2 << "Label" << Coffee << l2
-        << btn
         << list << org.Break << UI::Organizers::Flow::Break
+        << org.Right
         << icnbtn2 << dlist
         << icnbtn3 << radio << icnbtn << 5 << "Hello"
         << chk << chk2 << chkbutton
@@ -286,8 +287,8 @@ int main() {
         << bar
         << scroll1 << scroll2
         << sizef
-        << org.Action("Ok", [&]() { std::cout << "Ok clicked" << std::endl; })
     ;
+    org << org.Action("Ok", [&]() { std::cout << "Ok clicked" << std::endl; });
     btn.SetHorizonalAutosize(Gorgon::UI::Autosize::Unit);
     
     Widgets::DialogWindow wind("My window", {200, 300});

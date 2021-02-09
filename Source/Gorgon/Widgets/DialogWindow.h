@@ -67,6 +67,16 @@ namespace Gorgon { namespace Widgets {
         /// Removes a widget from the buttons area 
         void RemoveButton(Widget &w) {
             buttonsarea.Remove(w);
+            owned.Delete(w);
+        }
+        
+        using Window::Resize;
+        
+        virtual void Resize(const Geometry::Size &size) override {
+            Window::Resize(size);
+            
+            stack.Refresh();
+            btnorg.Reorganize();
         }
         
     protected:

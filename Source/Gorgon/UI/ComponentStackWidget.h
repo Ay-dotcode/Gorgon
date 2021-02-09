@@ -153,18 +153,24 @@ namespace Gorgon { namespace UI {
         /// text width so that it will flow to next line.
         void SetAutosize(UI::Autosize hor, UI::Autosize ver) {
             stack.SetAutosize(hor, ver);
+            stack.Refresh();
+            boundschanged();
         }
         
         /// Adjusts autosizing of the widget. In autosize mode, set width is used to limit
         /// text width so that it will flow to next line.
         void SetHorizonalAutosize(UI::Autosize value) {
             stack.SetAutosize(value, stack.GetAutosize().second);
+            stack.Refresh();
+            boundschanged();
         }
         
         /// Adjusts autosizing of the widget. In autosize mode, set width is used to limit
         /// text width so that it will flow to next line.
         void SetVerticalAutosize(UI::Autosize value) {
             stack.SetAutosize(stack.GetAutosize().first, value);
+            stack.Refresh();
+            boundschanged();
         }
         
         /// Returns the horizontal autosize mode of the widget

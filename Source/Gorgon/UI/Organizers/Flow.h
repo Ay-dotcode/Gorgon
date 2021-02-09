@@ -1,9 +1,11 @@
 #pragma once
 
 #include "Base.h"
+#include "../../Graphics.h"
 
 #include <iosfwd>
 #include <unordered_set>
+#include <unordered_map>
 #include <utility>
 #include <functional>
 
@@ -35,6 +37,7 @@ namespace Organizers {
      */
     class Flow : public Base {
     public:
+        /// Is used to mark line breaks
         class BreakTag {
         };
         
@@ -72,7 +75,7 @@ namespace Organizers {
         /// Returns the spacing between the lines
         int GetSpacing() const;
         
-        /// Sets tight arrangement
+        /// Sets tight arrangement, not working yet
         void SetTight(bool value) {
             if(value == tight)
                 return;
@@ -81,6 +84,15 @@ namespace Organizers {
             
             if(IsAttached())
                 reorganize();
+        }
+        
+        /// Changes the default alignment of the widgets. Alignment of a specific line can be altered
+        /// by streaming Flow::Left, Center and Right.
+        void SetAlignment(Graphics::TextAlignment value);
+        
+        /// Returns the default alignment of the widgets.
+        Graphics::TextAlignment GetAlignment() const {
+            return defaultalign;
         }
         
         /// Inserts a line break after the last widget. Reordering
@@ -135,12 +147,15 @@ namespace Organizers {
         /// When supplied with std::endl, inserts a line break.
         Flow &operator << (std::ostream &(*fn)(std::ostream &));
         
-        /// When supplied with std::endl, inserts a line break.
+        /// Inserts a line break.
         Flow &operator << (BreakTag) {
             InsertBreak();
             
             return *this;
         }
+        
+        /// Changes the alignment of the widgets if the line is not full
+        Flow &operator << (Graphics::TextAlignment alignment);
         
         /// Sets the size of the next widget in unit sizes
         Flow &operator << (int unitsize) {
@@ -169,8 +184,8 @@ namespace Organizers {
             return std::make_pair(text, std::bind(fn, obj));
         }
         
-        
         static BreakTag Break;
+        static Graphics::TextAlignment Left, Center, Right;
         
     protected:
         virtual void reorganize() override;
@@ -180,6 +195,8 @@ namespace Organizers {
         bool tight = false;
         int nextsize = -1;
         std::unordered_multiset<int> breaks;
+        std::unordered_map<int, Graphics::TextAlignment> aligns;
+        Graphics::TextAlignment defaultalign = Graphics::TextAlignment::Left;
     };
     
 } } }

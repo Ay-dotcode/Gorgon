@@ -44,6 +44,7 @@ namespace Gorgon { namespace Widgets {
             buttonsarea.SetLayer(stack.GetLayerOf(ind));
             buttonsarea.SetFocusStrategy(Deny);
             btnorg.AttachTo(buttonsarea);
+            btnorg.SetAlignment(Graphics::TextAlignment::Right);
             buttonsarea.AutomaticUnitSize(temp.GetSpacing());
         }
     }

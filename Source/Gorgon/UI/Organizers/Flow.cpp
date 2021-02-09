@@ -24,15 +24,51 @@ namespace Gorgon { namespace UI { namespace Organizers {
             int rowc = 0;
             int ind = -1;
             int breaks = BreakCount(-1);
+            auto align = defaultalign;
+            auto nextalign = defaultalign;
             
             //to valign
             Containers::Collection<Widget> row;
+            
+            auto dorow = [&]{
+                if(maxy == 0)
+                    maxy = uw;
+                
+                y += maxy + s;
+                
+                if(breaks > 0)
+                    y += (breaks-1) * (uw + s);
+                
+                int w = 0;
+                if(row.GetCount())
+                    w = row.Last()->GetBounds().Right;
+                
+                int off = 0;
+                
+                if(align == Graphics::TextAlignment::Center) {
+                    off = (width - w) / 2;
+                }
+                else if(align == Graphics::TextAlignment::Right) {
+                    off = width - w;
+                }
+                
+                for(auto &cell : row) {
+                    cell.Move(
+                        cell.GetLocation() + 
+                        Geometry::Point{off, (maxy - cell.GetHeight())/2}
+                    );
+                }
+                
+                x = 0;
+                rowc = 0;
+                maxy = 0;
+                row.Clear();
+            };
             
             for(auto &widget : att)  {
                 ind++;
                 
                 if(!widget.IsVisible() || widget.IsFloating()) {
-                    //breaks = 0;
                     continue;
                 }
                 
@@ -42,25 +78,12 @@ namespace Gorgon { namespace UI { namespace Organizers {
                     breaks = 1;
                 
                 if(breaks) {
-                    if(maxy == 0)
-                        maxy = uw;
-                    
-                    y += maxy + s;
-                    
-                    if(breaks > 0)
-                        y += (breaks-1) * (uw + s);
-                    
-                    for(auto &cell : row) {
-                        if(maxy - cell.GetHeight() > 0)
-                            cell.Move(cell.GetLocation() + Geometry::Point{0, (maxy - cell.GetHeight())/2});
-                    }
-                    
-                    x = 0;
-                    rowc = 0;
-                    maxy = 0;
-                    row.Clear();
+                    dorow();
                 }
-                
+                            
+                //skip previous row
+                align = nextalign;
+
                 int h = widget.GetHeight();
                 if(h > maxy) {
                     maxy = h;
@@ -70,8 +93,14 @@ namespace Gorgon { namespace UI { namespace Organizers {
                 x += w + s;
                 rowc++;
                 breaks = BreakCount(ind);
+                
+                if(aligns.count(ind)) {
+                    nextalign = aligns[ind];
+                }
+                
                 row.Push(widget);
             }
+            dorow();
         }
     }
     
@@ -88,7 +117,13 @@ namespace Gorgon { namespace UI { namespace Organizers {
             return spacing;
         }
     }
-
+    
+    void Flow::SetAlignment(Graphics::TextAlignment value) {
+        defaultalign = value;
+        
+        Reorganize();
+    }
+    
     void Flow::InsertBreak() {
         if(!IsAttached()) {
             throw std::runtime_error("Organizer is not attached.");
@@ -98,7 +133,7 @@ namespace Gorgon { namespace UI { namespace Organizers {
         
         InsertBreak(order);
     }
-
+    
     void Flow::InsertBreak(const Widget &widget) {
         if(!IsAttached()) {
             throw std::runtime_error("Organizer is not attached.");
@@ -120,7 +155,15 @@ namespace Gorgon { namespace UI { namespace Organizers {
         
         return *this;
     }
-
+    
+    Flow &Flow::operator << (Graphics::TextAlignment alignment) {
+        aligns[GetAttached().GetCount() - 1] = alignment;
+        
+        Reorganize();
+        
+        return *this;
+    }
+    
     Organizers::Flow &Flow::operator<< (Widget &widget) {
         Base::operator << (widget);
 
@@ -143,13 +186,12 @@ namespace Gorgon { namespace UI { namespace Organizers {
         GetAttached().Own(b);
 
         return *this;
-
-        
-        return *this;
     }
     
     Flow::BreakTag Flow::Break;
-
-
-
+    
+    Graphics::TextAlignment Flow::Left   = Graphics::TextAlignment::Left;
+    Graphics::TextAlignment Flow::Center = Graphics::TextAlignment::Center;
+    Graphics::TextAlignment Flow::Right  = Graphics::TextAlignment::Right;
+    
 } } }
