@@ -299,11 +299,11 @@ namespace Gorgon { namespace Widgets {
                 focusonly = value;
             }
             
-            operator T_() {
+            operator T_&() {
                 return GetSelectedItem();
             }
             
-            operator T_() const {
+            operator T_&() const {
                 return GetSelectedItem();
             }
             
