@@ -102,8 +102,23 @@ namespace Gorgon {
 		expandedenumtraits() {
 			T_ prev=traits.mapping.begin()->first;
 			listing.push_back(prev);
+            
+            if(traits.mapping.empty()) {
+                min = T_{};
+                max = T_{};
+            }
+            else {
+                min = traits.mapping.begin()->first;
+                max = traits.mapping.begin()->first;
+            }
+                
 			for(auto p : traits.mapping) {
 				for(auto &c : p.second) c=tolower(c);
+                
+                if(min > p.first)
+                    min = p.first;
+                if(max < p.first)
+                    max = p.first;
 				
 				reversemapping.insert(std::make_pair(p.second, p.first));
 				if(p.first!=prev) {
@@ -139,10 +154,19 @@ namespace Gorgon {
 			return listing.end();
 		}
 		
+		T_ getmin() const {
+            return min;
+        }
+        
+        T_ getmax() const {
+            return max;
+        }
+		
 	private:
 		const decltype(gorgon__enum_tr_loc(T_())) traits;
 		std::map<std::string, T_> reversemapping;
 		std::vector<T_> listing;
+        T_ min, max;
 	};
 
 	/// This class performs instanced member to static conversion
