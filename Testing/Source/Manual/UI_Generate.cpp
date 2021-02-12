@@ -190,10 +190,11 @@ int main() {
     scroll2.Range = 20;
     //scroll2.SetValue(200, false);
 
-    Gorgon::Widgets::Sizefbox sizef;
-    sizef.ChangedEvent.Register([&] {
-        std::cout << "size f changed " << sizef.GetText();
+    Gorgon::Widgets::Inputbox<Graphics::RGBA> colorin;
+    colorin.ChangedEvent.Register([&] {
+        std::cout << "size f changed " << colorin.GetText();
     });
+    colorin.AutoSelectAll = true;
     
     Widgets::MultiListbox<std::string> list;
     //list.SetSelectionMethod(list.UseCtrl);
@@ -286,7 +287,7 @@ int main() {
         << input
         << bar
         << scroll1 << scroll2
-        << sizef
+        << colorin
     ;
     org << org.Action("Ok", [&]() { std::cout << "Ok clicked" << std::endl; });
     btn.SetHorizonalAutosize(Gorgon::UI::Autosize::Unit);

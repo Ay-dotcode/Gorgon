@@ -161,6 +161,9 @@ namespace Gorgon { namespace Graphics {
 
 			R=G=B=Byte(lum*255);
 		}
+		
+		/// From string
+		explicit RGBA(const std::string &color);
 
 		/// Conversion to integer
 		operator int() const {
@@ -290,12 +293,7 @@ namespace Gorgon { namespace Graphics {
         }
 
 		/// Converts this color to a hex representation of this color
-		operator std::string() const {
-			std::stringstream str;
-			str<<std::fixed<<std::setw(8)<<std::setfill('0')<<std::hex<<((const uint32_t)(*this));
-
-			return str.str();
-		}
+		operator std::string() const;
 
 
 
@@ -324,34 +322,7 @@ namespace Gorgon { namespace Graphics {
 
 	/// Reads a color from the stream. This color can either be in full HTML format with # in front or
 	/// a hex representation of the color with an optional 0x in front.
-	inline std::istream &operator>>(std::istream &in, RGBA &color) {
-		while(isspace(in.peek())) in.ignore();
-
-		if(in.peek()=='#') {
-			color.A=255;
-			in.ignore(1);
-
-			auto flags=in.flags();
-			in>>std::hex>>color.R>>color.G>>color.B;
-			in.flags(flags);
-		}
-		else {
-			if(in.peek()=='0') {
-				in.ignore();
-				if(in.peek()=='x') {
-					in.ignore();
-				}
-				else {
-					in.clear();
-				}
-			}
-
-			auto flags=in.flags();
-			in>>std::hex>>(*(unsigned int*)&color);
-			in.flags(flags);
-		}
-		return in;
-	}
+	std::istream &operator>>(std::istream &in, RGBA &color);
 	
 	/// Blends two colors together, you do not need to use namespace if
 	/// calling on an RGBA object
@@ -615,6 +586,7 @@ namespace Gorgon { namespace Graphics {
 	/// Contains commonly used colors identified by XKCD survey containing 140000 people.
 	/// List is truncated to 300 most popular entries and cleaned up.
 	namespace Color {
+		constexpr RGBA Transparent	= 0x0;
 		constexpr RGBA Purple	= 0xff9c1e7e;
 		constexpr RGBA Green	= 0xff1ab015;
 		constexpr RGBA Blue	= 0xffdf4303;
@@ -901,296 +873,10 @@ namespace Gorgon { namespace Graphics {
 		constexpr RGBA Cinnamon	= 0xff064fac;
 		constexpr RGBA CloudyBlue	= 0xffd9c2ac;
         
-        inline const std::vector<std::pair<std::string, RGBA>> &Names() {
-            static std::vector<std::pair<std::string, RGBA>> names = {
-                {"Purple", Purple},
-                {"Green", Green},
-                {"Blue", Blue},
-                {"Pink", Pink},
-                {"Brown", Brown},
-                {"Red", Red},
-                {"Light Blue", LightBlue},
-                {"Teal", Teal},
-                {"Orange", Orange},
-                {"Light Green", LightGreen},
-                {"Magenta", Magenta},
-                {"Yellow", Yellow},
-                {"Sky Blue", SkyBlue},
-                {"Grey", Grey},
-                {"SemiDarkGrey", SemiDarkGrey},
-                {"Lime Green", LimeGreen},
-                {"Light Purple", LightPurple},
-                {"Violet", Violet},
-                {"Dark Green", DarkGreen},
-                {"Turquoise", Turquoise},
-                {"Lavender", Lavender},
-                {"Dark Blue", DarkBlue},
-                {"Tan", Tan},
-                {"Cyan", Cyan},
-                {"Aqua", Aqua},
-                {"Forest Green", ForestGreen},
-                {"Mauve", Mauve},
-                {"Dark Purple", DarkPurple},
-                {"Bright Green", BrightGreen},
-                {"Maroon", Maroon},
-                {"Olive", Olive},
-                {"Salmon", Salmon},
-                {"Beige", Beige},
-                {"Royal Blue", RoyalBlue},
-                {"Navy Blue", NavyBlue},
-                {"Lilac", Lilac},
-                {"Black", Black},
-                {"Hot Pink", HotPink},
-                {"Light Brown", LightBrown},
-                {"Pale Green", PaleGreen},
-                {"Peach", Peach},
-                {"Olive Green", OliveGreen},
-                {"Dark Pink", DarkPink},
-                {"Periwinkle", Periwinkle},
-                {"Sea Green", SeaGreen},
-                {"Lime", Lime},
-                {"Indigo", Indigo},
-                {"Mustard", Mustard},
-                {"Light Pink", LightPink},
-                {"Rose", Rose},
-                {"Bright Blue", BrightBlue},
-                {"Neon Green", NeonGreen},
-                {"Burnt Orange", BurntOrange},
-                {"Aquamarine", Aquamarine},
-                {"Navy", Navy},
-                {"Grass Green", GrassGreen},
-                {"Pale Blue", PaleBlue},
-                {"Dark Red", DarkRed},
-                {"Bright Purple", BrightPurple},
-                {"Yellow Green", YellowGreen},
-                {"Baby Blue", BabyBlue},
-                {"Gold", Gold},
-                {"Mint Green", MintGreen},
-                {"Plum", Plum},
-                {"Royal Purple", RoyalPurple},
-                {"Brick Red", BrickRed},
-                {"Dark Teal", DarkTeal},
-                {"Burgundy", Burgundy},
-                {"Khaki", Khaki},
-                {"Blue Green", BlueGreen},
-                {"Seafoam Green", SeafoamGreen},
-                {"Pea Green", PeaGreen},
-                {"Taupe", Taupe},
-                {"Dark Brown", DarkBrown},
-                {"Deep Purple", DeepPurple},
-                {"Chartreuse", Chartreuse},
-                {"Bright Pink", BrightPink},
-                {"Light Orange", LightOrange},
-                {"Mint", Mint},
-                {"Pastel Green", PastelGreen},
-                {"Sand", Sand},
-                {"Dark Orange", DarkOrange},
-                {"Spring Green", SpringGreen},
-                {"Puce", Puce},
-                {"Seafoam", Seafoam},
-                {"Grey Blue", GreyBlue},
-                {"Army Green", ArmyGreen},
-                {"Dark Grey", DarkGrey},
-                {"Dark Yellow", DarkYellow},
-                {"Goldenrod", Goldenrod},
-                {"Slate", Slate},
-                {"Light Teal", LightTeal},
-                {"Rust", Rust},
-                {"Deep Blue", DeepBlue},
-                {"Pale Pink", PalePink},
-                {"Cerulean", Cerulean},
-                {"Light Red", LightRed},
-                {"Mustard Yellow", MustardYellow},
-                {"Ochre", Ochre},
-                {"Pale Yellow", PaleYellow},
-                {"Crimson", Crimson},
-                {"Fuchsia", Fuchsia},
-                {"Hunter Green", HunterGreen},
-                {"Blue Grey", BlueGrey},
-                {"Slate Blue", SlateBlue},
-                {"Pale Purple", PalePurple},
-                {"Sea Blue", SeaBlue},
-                {"Pinkish Purple", PinkishPurple},
-                {"Light Grey", LightGrey},
-                {"Leaf Green", LeafGreen},
-                {"Light Yellow", LightYellow},
-                {"Eggplant", Eggplant},
-                {"Steel Blue", SteelBlue},
-                {"Moss Green", MossGreen},
-                {"White", White},
-                {"Grey Green", GreyGreen},
-                {"Sage", Sage},
-                {"Brick", Brick},
-                {"Burnt Sienna", BurntSienna},
-                {"Reddish Brown", ReddishBrown},
-                {"Cream", Cream},
-                {"Coral", Coral},
-                {"Ocean Blue", OceanBlue},
-                {"Greenish", Greenish},
-                {"Dark Magenta", DarkMagenta},
-                {"Red Orange", RedOrange},
-                {"Bluish Purple", BluishPurple},
-                {"Midnight Blue", MidnightBlue},
-                {"Light Violet", LightViolet},
-                {"Dusty Rose", DustyRose},
-                {"Greenish Yellow", GreenishYellow},
-                {"Yellowish Green", YellowishGreen},
-                {"Purplish Blue", PurplishBlue},
-                {"Greyish Blue", GreyishBlue},
-                {"Grape", Grape},
-                {"Light Olive", LightOlive},
-                {"Cornflower Blue", CornflowerBlue},
-                {"Pinkish Red", PinkishRed},
-                {"Bright Red", BrightRed},
-                {"Azure", Azure},
-                {"Blue Purple", BluePurple},
-                {"Dark Turquoise", DarkTurquoise},
-                {"Electric Blue", ElectricBlue},
-                {"Off White", OffWhite},
-                {"Powder Blue", PowderBlue},
-                {"Wine", Wine},
-                {"Dull Green", DullGreen},
-                {"Apple Green", AppleGreen},
-                {"Light Turquoise", LightTurquoise},
-                {"Neon Purple", NeonPurple},
-                {"Cobalt", Cobalt},
-                {"Pinkish", Pinkish},
-                {"Olive Drab", OliveDrab},
-                {"Dark Cyan", DarkCyan},
-                {"Purple Blue", PurpleBlue},
-                {"Dark Violet", DarkViolet},
-                {"Dark Lavender", DarkLavender},
-                {"Forrest Green", ForrestGreen},
-                {"Pale Orange", PaleOrange},
-                {"Greenish Blue", GreenishBlue},
-                {"Dark Tan", DarkTan},
-                {"Green Blue", GreenBlue},
-                {"Bluish Green", BluishGreen},
-                {"Pastel Blue", PastelBlue},
-                {"Moss", Moss},
-                {"Grass", Grass},
-                {"Deep Pink", DeepPink},
-                {"Blood Red", BloodRed},
-                {"Sage Green", SageGreen},
-                {"Aqua Blue", AquaBlue},
-                {"Terracotta", Terracotta},
-                {"Pastel Purple", PastelPurple},
-                {"Sienna", Sienna},
-                {"Dark Olive", DarkOlive},
-                {"Green Yellow", GreenYellow},
-                {"Scarlet", Scarlet},
-                {"Greyish Green", GreyishGreen},
-                {"Chocolate", Chocolate},
-                {"Blue Violet", BlueViolet},
-                {"Baby Pink", BabyPink},
-                {"Charcoal", Charcoal},
-                {"Pine Green", PineGreen},
-                {"Pumpkin", Pumpkin},
-                {"Greenish Brown", GreenishBrown},
-                {"Red Brown", RedBrown},
-                {"Brownish Green", BrownishGreen},
-                {"Tangerine", Tangerine},
-                {"Salmon Pink", SalmonPink},
-                {"Aqua Green", AquaGreen},
-                {"Raspberry", Raspberry},
-                {"Greyish Purple", GreyishPurple},
-                {"Rose Pink", RosePink},
-                {"Neon Pink", NeonPink},
-                {"Cobalt Blue", CobaltBlue},
-                {"Orange Brown", OrangeBrown},
-                {"Deep Red", DeepRed},
-                {"Orange Red", OrangeRed},
-                {"Dirty Yellow", DirtyYellow},
-                {"Orchid", Orchid},
-                {"Reddish Pink", ReddishPink},
-                {"Reddish Purple", ReddishPurple},
-                {"Yellow Orange", YellowOrange},
-                {"Light Cyan", LightCyan},
-                {"Sky", Sky},
-                {"Light Magenta", LightMagenta},
-                {"Pale Red", PaleRed},
-                {"Emerald", Emerald},
-                {"Dark Beige", DarkBeige},
-                {"Jade", Jade},
-                {"Greenish Grey", GreenishGrey},
-                {"Dark Salmon", DarkSalmon},
-                {"Purplish Pink", PurplishPink},
-                {"Dark Aqua", DarkAqua},
-                {"Brownish Orange", BrownishOrange},
-                {"Light Olive Green", LightOliveGreen},
-                {"Light Aqua", LightAqua},
-                {"Clay", Clay},
-                {"Burnt Umber", BurntUmber},
-                {"Dull Blue", DullBlue},
-                {"Pale Brown", PaleBrown},
-                {"Emerald Green", EmeraldGreen},
-                {"Brownish", Brownish},
-                {"Mud", Mud},
-                {"Dark Rose", DarkRose},
-                {"Brownish Red", BrownishRed},
-                {"Pink Purple", PinkPurple},
-                {"Pinky Purple", PinkyPurple},
-                {"Camo Green", CamoGreen},
-                {"Faded Green", FadedGreen},
-                {"Dusty Pink", DustyPink},
-                {"Purple Pink", PurplePink},
-                {"Deep Green", DeepGreen},
-                {"Reddish Orange", ReddishOrange},
-                {"Mahogany", Mahogany},
-                {"Aubergine", Aubergine},
-                {"Dull Pink", DullPink},
-                {"Evergreen", Evergreen},
-                {"Dark Sky Blue", DarkSkyBlue},
-                {"Ice Blue", IceBlue},
-                {"Light Tan", LightTan},
-                {"Dirty Green", DirtyGreen},
-                {"Neon Blue", NeonBlue},
-                {"Denim", Denim},
-                {"Eggshell", Eggshell},
-                {"Jungle Green", JungleGreen},
-                {"Dark Peach", DarkPeach},
-                {"Umber", Umber},
-                {"Bright Yellow", BrightYellow},
-                {"Dusty Blue", DustyBlue},
-                {"Electric Green", ElectricGreen},
-                {"Lighter Green", LighterGreen},
-                {"Slate Grey", SlateGrey},
-                {"Teal Green", TealGreen},
-                {"Marine Blue", MarineBlue},
-                {"Avocado", Avocado},
-                {"Forest", Forest},
-                {"Pea Soup", PeaSoup},
-                {"Lemon", Lemon},
-                {"Muddy Green", MuddyGreen},
-                {"Marigold", Marigold},
-                {"Ocean", Ocean},
-                {"Light Mauve", LightMauve},
-                {"Bordeaux", Bordeaux},
-                {"Pistachio", Pistachio},
-                {"Lemon Yellow", LemonYellow},
-                {"Red Violet", RedViolet},
-                {"Dusky Pink", DuskyPink},
-                {"Dirt", Dirt},
-                {"Pine", Pine},
-                {"Vermillion", Vermillion},
-                {"Amber", Amber},
-                {"Silver", Silver},
-                {"Coffee", Coffee},
-                {"Sepia", Sepia},
-                {"Faded Red", FadedRed},
-                {"Canary Yellow", CanaryYellow},
-                {"Cherry Red", CherryRed},
-                {"Ocre", Ocre},
-                {"Ivory", Ivory},
-                {"Copper", Copper},
-                {"Dark Lime", DarkLime},
-                {"Strawberry", Strawberry},
-                {"Dark Navy", DarkNavy},
-                {"Cinnamon", Cinnamon},
-                {"Cloudy Blue", CloudyBlue},
-            };
-            
-            return names;
-        }
+        /// Returns the list of all named colors
+        const std::vector<std::pair<std::string, RGBA>> &Names();
+        
+        /// Returns the color of a named color. Returns transparent if the color does not exist.
+        Gorgon::Graphics::RGBA GetNamedColor(std::string name);
 	}
 } }

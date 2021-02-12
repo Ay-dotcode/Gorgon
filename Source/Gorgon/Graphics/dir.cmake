@@ -5,6 +5,7 @@ SET(Local
 	Bitmap.cpp
 	BlankImage.h
 	Color.h
+	Color.cpp
 	Drawables.h
 	EmptyImage.h
 	Font.h

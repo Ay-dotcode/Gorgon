@@ -5,20 +5,18 @@
 
 namespace Gorgon { namespace Widgets {
     Panel::Panel(const UI::Template &temp) : 
-    UI::ComponentStackWidget(temp, {
-        { UI::ComponentTemplate::VScrollTag, 
-            std::bind(&Panel::createvscroll, this, std::placeholders::_1)
-        },
-        { UI::ComponentTemplate::HScrollTag, 
-            std::bind(&Panel::createhscroll, this, std::placeholders::_1)
-        },
-        { UI::ComponentTemplate::ButtonTag, { } },
-    }) 
+    UI::ComponentStackWidget(temp) 
     {
         stack.HandleMouse();
         stack.SetOtherMouseEvent([this](UI::ComponentTemplate::Tag, Input::Mouse::EventType type, Geometry::Point location, float amount) {
             return MouseScroll(type, location, amount);
         });
+        
+        stack.AddGenerator(UI::ComponentTemplate::VScrollTag, 
+                           std::bind(&Panel::createvscroll, this, std::placeholders::_1));
+        
+        stack.AddGenerator(UI::ComponentTemplate::HScrollTag, 
+                           std::bind(&Panel::createhscroll, this, std::placeholders::_1));
         
         
         repeater.Register(Input::Keyboard::Keycodes::Up);

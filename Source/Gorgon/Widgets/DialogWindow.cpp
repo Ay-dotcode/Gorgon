@@ -8,6 +8,8 @@ namespace Gorgon { namespace Widgets {
     DialogWindow::DialogWindow(const UI::Template &temp, const std::string &title, AutoplaceTarget autoplace) : 
         Window(temp, title, false)
     {
+        stack.AddGenerator(UI::ComponentTemplate::ButtonTag, {});
+        
         if(autoplace != None) {
             bool done = false;
             for(auto &w : Gorgon::Window::Windows) {

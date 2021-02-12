@@ -485,6 +485,15 @@ namespace Gorgon { namespace UI {
         std::pair<Autosize, Autosize> GetAutosize() const {
             return autosize;
         }
+        
+        /// Adds or replaces a generator for a specific tag
+        void AddGenerator(ComponentTemplate::Tag tag, std::function<Widget *(const Template &)> fn);
+        
+        /// Removes the generator for a specific tag
+        void RemoveGenerator(ComponentTemplate::Tag tag) {
+            widgetgenerators.erase(tag);
+            Update();
+        }
 
         /** @name Events
          * These are events that can be handled

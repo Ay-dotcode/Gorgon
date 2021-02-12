@@ -16,7 +16,7 @@ namespace Gorgon { namespace Widgets {
      * in widgets in the composer. This object does not support scrolling, however,
      * you may place a panel in it to have that functionality.
      */
-    class Composer : public UI::Widget, protected UI::WidgetContainer {
+    class Composer : virtual public UI::Widget, protected UI::WidgetContainer {
         friend class UI::WidgetContainer;
     public:
         ~Composer() { }

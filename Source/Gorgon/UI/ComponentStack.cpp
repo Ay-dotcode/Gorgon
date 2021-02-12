@@ -2333,6 +2333,17 @@ namespace Gorgon { namespace UI {
         else
             return std::max(l, r);
     }
+
+    void ComponentStack::AddGenerator(ComponentTemplate::Tag tag, std::function<Widget *(const Template &)> fn) {
+        for(auto it=substacks.begin(); it.IsValid(); it.Next()) {
+            if(it.Current().first->GetTag() == tag)
+                it.Delete();
+        }
+
+        widgetgenerators[tag] = fn;
+        Update();
+    }
+
     
     //location depends on the container location
     void ComponentStack::update(Component &parent, const std::array<float, 4> &value, int ind, int textwidth, bool autosize) {
