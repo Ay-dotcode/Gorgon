@@ -6,6 +6,8 @@ SET(Local
 	BlankImage.h
 	Color.h
 	Color.cpp
+	ColorSpaces.h
+	ColorSpaces.cpp
 	Drawables.h
 	EmptyImage.h
 	Font.h
