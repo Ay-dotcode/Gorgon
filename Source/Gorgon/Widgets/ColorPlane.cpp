@@ -140,6 +140,11 @@ namespace Gorgon { namespace Widgets {
         }
         
         if(found && color != this->color) {
+            color.R = std::round(color.R*1000) / 1000;
+            color.G = std::round(color.G*1000) / 1000;
+            color.B = std::round(color.B*1000) / 1000;
+            color.A = std::round(color.A*1000) / 1000;
+
             this->color = color;
             Refresh();
             ChangedEvent(color);
@@ -210,6 +215,10 @@ namespace Gorgon { namespace Widgets {
         }
         
         auto drawrect = [&](ColorType color) {
+            color.R = std::round(color.R*1000) / 1000;
+            color.G = std::round(color.G*1000) / 1000;
+            color.B = std::round(color.B*1000) / 1000;
+            
             CGI::Rectangle(display, {x, y, w, h}, CGI::SolidFill<>(color));
             
             if(color == basecolor) {
@@ -277,7 +286,7 @@ namespace Gorgon { namespace Widgets {
             alphaoffset = {x, y};
             for(int a=0; a<huetable.size(); a++) {
                 auto c = this->color;
-                c.A = 1.f/(huetable.size()-1) * a;
+                c.A = std::round(1000.f/(huetable.size()-1) * a) / 1000;
                 CGI::Rectangle(display, {x, y, w, h}, CGI::SolidFill<>(c));
                 
                 if(this->color.A == c.A) {
