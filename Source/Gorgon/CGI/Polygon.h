@@ -566,4 +566,22 @@ namespace Gorgon { namespace CGI {
             Polyfill<S_>(target.GetData(), points, fill);
     }
     
+    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    void Rectangle(Containers::Image &target, const Geometry::basic_Rectangle<typename P_::BaseType> &rect, F_ fill = SolidFill<>{Graphics::Color::Black}) {
+        Geometry::PointList<P_> points = {
+            rect.TopLeft(),
+            rect.BottomLeft(),
+            rect.BottomRight(),
+            rect.TopRight()
+        };
+        
+        Polyfill<S_>(target, points, fill);
+    }
+    
+    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    void Rectangle(Graphics::Bitmap &target, const Geometry::basic_Rectangle<typename P_::BaseType> &rect, F_ fill = SolidFill<>{Graphics::Color::Black}) {
+        if(target.HasData())
+            Rectangle<S_>(target.GetData(), rect, fill);
+    }
+  
 } }

@@ -56,6 +56,8 @@ namespace Gorgon { namespace Widgets {
             
             Dropdown_Regular,
             
+            ColorPlane_Regular,
+            
             
             ///Do not use this value
             Max 

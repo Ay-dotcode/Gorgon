@@ -169,34 +169,34 @@ namespace Gorgon { namespace Graphics {
         return c;
     }
 
-    LChAf LuvToLCh(LuvAf color) {
-        LChAf c;
-        
+    HCLAf LuvToLCh(LuvAf color) {
+        HCLAf c;
+    
         c.A = color.A;
-        c.h = std::atan2(color.v, color.u) / PI * 180.f;
+        c.H = std::atan2(color.v, color.u) / PI * 180.f;
         c.L = color.L;
         c.C = std::sqrt(color.u * color.u + color.v * color.v);
         
-        if(c.h < 0)
-            c.h += 360;
+        if(c.H < 0)
+            c.H += 360;
         
         return c;
     }
 
-    LuvAf LChToLuv(LChAf color) {
+    LuvAf LChToLuv(HCLAf color) {
         LuvAf c;
         
         c.A = color.A;
         c.L = color.L;
         
-        c.u = std::cos(color.h * PI / 180) * color.C;
-        c.v = std::sin(color.h * PI / 180) * color.C;
+        c.u = std::cos(color.H * PI / 180) * color.C;
+        c.v = std::sin(color.H * PI / 180) * color.C;
         
         return c;
     }
 
-    LChAf_ab LabToLCh(LabAf color) {
-        LChAf_ab c;
+    LChAf LabToLCh(LabAf color) {
+        LChAf c;
         
         c.A = color.A;
         c.h = std::atan2(color.b, color.a) / PI * 180.f;
@@ -209,7 +209,7 @@ namespace Gorgon { namespace Graphics {
         return c;
     }
 
-    LabAf LChToLab(LChAf_ab color) {
+    LabAf LChToLab(LChAf color) {
         LabAf c;
         
         c.A = color.A;
@@ -246,27 +246,27 @@ namespace Gorgon { namespace Graphics {
         return XYZToRGB(*this);
     }
 
-    LChAf::LChAf(RGBAf other) {
+        HCLAf::HCLAf(RGBAf other) {
         (*this) = LuvToLCh(other);
     }
 
-    LChAf::LChAf(XYZAf other) {
+        HCLAf::HCLAf(XYZAf other) {
         (*this) = LuvToLCh(other);
     }
 
-    LChAf::LChAf(LuvAf other) {
+        HCLAf::HCLAf(LuvAf other) {
         (*this) = LuvToLCh(other);
     }
 
-    LChAf::operator LuvAf() const {
+        HCLAf::operator LuvAf() const {
         return LChToLuv(*this);
     }
 
-    LChAf::operator XYZAf() const {
+        HCLAf::operator XYZAf() const {
         return LuvToXYZ(*this);
     }
 
-    LChAf::operator RGBAf() const {
+        HCLAf::operator RGBAf() const {
         return XYZToRGB(*this);
     }
 
@@ -286,27 +286,27 @@ namespace Gorgon { namespace Graphics {
         return LabToXYZ(*this);
     }
 
-    LChAf_ab::LChAf_ab(RGBAf other) {
+    LChAf::LChAf(RGBAf other) {
         (*this) = LabToLCh(other);
     }
 
-    LChAf_ab::LChAf_ab(XYZAf other) {
+    LChAf::LChAf(XYZAf other) {
         (*this) = LabToLCh(other);
     }
 
-    LChAf_ab::LChAf_ab(LabAf other) {
+    LChAf::LChAf(LabAf other) {
         (*this) = LabToLCh(other);
     }
 
-    LChAf_ab::operator LabAf() const {
+    LChAf::operator LabAf() const {
         return LChToLab(*this);
     }
 
-    LChAf_ab::operator XYZAf() const {
+    LChAf::operator XYZAf() const {
         return LabToXYZ(*this);
     }
 
-    LChAf_ab::operator RGBAf() const {
+    LChAf::operator RGBAf() const {
         return XYZToRGB(*this);
     }
 

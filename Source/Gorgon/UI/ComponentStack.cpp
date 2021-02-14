@@ -1371,8 +1371,9 @@ namespace Gorgon { namespace UI {
         if(storage[&get(ind).GetTemplate()]->layer == nullptr) {
             //create a new one
             storage[&get(ind).GetTemplate()]->layer = new Graphics::Layer;
-            update();
         }
+        
+        Refresh();
 
         //return the layer for the requested component
         return *storage[&get(ind).GetTemplate()]->layer;

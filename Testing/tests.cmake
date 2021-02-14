@@ -17,6 +17,7 @@ SET(ManualTests
 	HTMLRenderer
 	UI_Component
 	UI_Generate
+	UI_WidgetTest
 )
 
 SET(UnitTests

@@ -120,4 +120,111 @@ namespace Gorgon { namespace Widgets {
         SetWidth(w * n + s * (n - 1));
     }
 
+    
+    bool ComponentStackComposer::Activate() {
+        if(!Focus())
+            return false;
+
+        FocusFirst();
+
+        return true;
+    }
+
+    bool ComponentStackComposer::allowfocus() const {
+        if(CurrentFocusStrategy() == Deny)
+            return false;
+
+        for(auto &w : widgets) {
+            if(w.AllowFocus()) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    void ComponentStackComposer::focused() {
+        if(!HasFocusedWidget())
+            FocusFirst();
+        Widget::focused();
+    }
+    
+    void ComponentStackComposer::focuslost() {
+        RemoveFocus();
+        Widget::focuslost();
+    }
+
+    void ComponentStackComposer::focuschanged() { 
+        if(HasFocusedWidget() && !IsFocused())
+            Focus();
+        else if(!HasFocusedWidget() && IsFocused())
+            RemoveFocus();
+    }
+
+    void ComponentStackComposer::Resize(const Geometry::Size &size) {
+        ComponentStackWidget::Resize(size);
+        
+        if(HasOrganizer())
+            GetOrganizer().Reorganize();
+        
+        childboundschanged(nullptr);
+        distributeparentboundschanged();
+    }
+    
+    void ComponentStackComposer::Move(const Geometry::Point &location) {
+        ComponentStackWidget::Move(location);
+        
+        distributeparentboundschanged();
+    }
+
+    UI::ExtenderRequestResponse ComponentStackComposer::RequestExtender(const Layer &self) {
+        if(HasParent()) {
+            auto
+            ans = GetParent().RequestExtender(self);
+
+            if(ans.Extender) {
+                if(!ans.Transformed)
+                    ans.CoordinatesInExtender += GetLocation();
+
+                return ans;
+            }
+        }
+
+        return {
+            false, this, self.GetLocation()};
+    }
+
+    int ComponentStackComposer::GetSpacing() const {
+        if(issizesset) {
+            return spacing;
+        }
+        else {
+            return Widgets::Registry::Active().GetSpacing();
+        }
+    }
+
+    int ComponentStackComposer::GetUnitWidth() const {
+        if(issizesset) {
+            return unitwidth;
+        }
+        else {
+            return Widgets::Registry::Active().GetUnitWidth();
+        }
+    }
+
+    void ComponentStackComposer::SetWidthInUnits(int n) {
+        int w, s;
+
+        if(HasParent()) {
+            w = GetParent().GetUnitWidth();
+            s = GetParent().GetSpacing();
+        }
+        else {
+            w = Registry::Active().GetUnitWidth();
+            s = Registry::Active().GetSpacing();
+        }
+
+        SetWidth(w * n + s * (n - 1));
+    }
+
 } }

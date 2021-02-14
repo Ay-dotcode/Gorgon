@@ -164,7 +164,11 @@ namespace Gorgon { namespace Widgets {
     }
     
     Gorgon::Layer &Panel::getlayer() {
-        return stack.GetLayerOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag));
+        int ind = stack.IndexOfTag(UI::ComponentTemplate::ContentsTag);
+        if(ind == -1)
+            return stack;
+        else
+            return stack.GetLayerOf(ind);
     }
 
     void Panel::focuschanged() { 

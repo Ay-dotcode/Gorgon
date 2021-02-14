@@ -2346,4 +2346,13 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
+    UI::Template SimpleGenerator::ColorPlane() {
+        auto temp = Layerbox();
+        auto w = BorderedWidgetHeight * 6 + Spacing * 5;
+        auto h = (w-26)/12*9 + 22;
+        temp.SetSize(w, h);
+        
+        return temp;
+    }
+    
 }}

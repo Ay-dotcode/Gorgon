@@ -6,6 +6,9 @@ SET(Local
 	Checkbox.cpp
 	Common.h
 	
+	ColorPlane.h
+	ColorPlane.cpp
+	
 	Composer.h
 	Composer.cpp
 	

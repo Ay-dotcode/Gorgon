@@ -423,14 +423,9 @@ namespace Gorgon { namespace Graphics {
             return *this;
         }
 
-        /// Converts this color to RGBA without overflow checking
-        operator RGBA() const {
-            return{Byte(R*255), Byte(G*255), Byte(B*255), Byte(A*255)};
-        }
-
         /// Conversion to integer
         explicit operator int() const {
-            return int(this->operator RGBA());
+            return int(RGBA(*this));
         }
 
         operator std::string() const {
@@ -582,7 +577,7 @@ namespace Gorgon { namespace Graphics {
     };
     
     inline RGBA::RGBA(RGBAf color) {
-        (*this) = color.operator RGBA();
+        (*this) = {Byte(color.R*255), Byte(color.G*255), Byte(color.B*255), Byte(color.A*255)};
     }
     
     /// Prints the given color to the stream

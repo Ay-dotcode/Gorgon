@@ -16,6 +16,7 @@
 #include <Gorgon/Widgets/Composer.h>
 #include <Gorgon/Widgets/Listbox.h>
 #include <Gorgon/Widgets/ListItem.h>
+#include <Gorgon/Widgets/ColorPlane.h>
 #include <Gorgon/UI/RadioControl.h>
 #include <Gorgon/UI/Organizers/List.h>
 #include <Gorgon/UI/Organizers/Flow.h>
@@ -278,7 +279,10 @@ int main() {
     auto &org = blank.CreateOrganizer<UI::Organizers::Flow>();
     //org.SetAlignment(org.Center);
     
-    org << std::endl << 2 << "Label" << Coffee << l2
+    Widgets::ColorPlane plane;
+    
+    org << 9 << plane << org.Break
+        << 2 << "Label" << Coffee << l2
         << list << org.Break << UI::Organizers::Flow::Break
         << org.Right
         << icnbtn2 << dlist

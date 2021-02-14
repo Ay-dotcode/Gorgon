@@ -143,26 +143,26 @@ namespace Gorgon { namespace Graphics {
     * (saturation) and hue. Far better than HSL or HSV color system. Linear and hue does not effect
     * perceived lightness.
     */
-    class LChAf {
+    class HCLAf {
     public:
         /// Data type for each channel
         typedef float ChannelType;
 
 
         /// Default constructor zero initializes the color except for alpha which is set to 1.
-        LChAf() { }
+        HCLAf () { }
         
         /// Fills all channels
-        LChAf(float l, float c, float h, float a = 1.f) : 
-            L(l), C(c),
-            h(h), A(a)
+        HCLAf (float h, float c, float l, float a = 1.f) : 
+            H(h), C(c),
+            L(l), A(a)
         { }
         
-        LChAf(LuvAf other);
+        HCLAf (LuvAf other);
         
-        LChAf(XYZAf other);
+        HCLAf (XYZAf other);
         
-        LChAf(RGBAf other);
+        HCLAf (RGBAf other);
         
         operator LuvAf() const;
         
@@ -170,21 +170,22 @@ namespace Gorgon { namespace Graphics {
         
         operator RGBAf() const;
         
-        /// Luminance color channel
-        float L = 0.0f;
+        
+        /// hue channel
+        float H = 0.0f;
         
         /// Chromacity channel
         float C = 0.0f;
         
-        /// hue channel
-        float h = 0.0f;
+        /// Luminance color channel
+        float L = 0.0f;
         
         /// Alpha color channel
         float A = 0.0f;
     };
 
-    inline std::ostream &operator <<(std::ostream &out, const LChAf &color) {
-        out << "LCh(" << color.L << ", " << color.C << ", " << color.h << "°)";
+    inline std::ostream &operator <<(std::ostream &out, const HCLAf &color) {
+        out << "LCh(" << color.H << "°, " << color.C << ", " << color.L << "%)";
         
         return out;
     }
@@ -194,26 +195,26 @@ namespace Gorgon { namespace Graphics {
     * (saturation) and hue. Far better than HSL or HSV color system. Linear and hue does not effect
     * perceived lightness.
     */
-    class LChAf_ab {
+    class LChAf {
     public:
         /// Data type for each channel
         typedef float ChannelType;
 
 
         /// Default constructor zero initializes the color except for alpha which is set to 1.
-        LChAf_ab() { }
+        LChAf () { }
         
         /// Fills all channels
-        LChAf_ab(float l, float c, float h, float a = 1.f) : 
+        LChAf (float l, float c, float h, float a = 1.f) : 
             L(l), C(c),
             h(h), A(a)
         { }
         
-        LChAf_ab(LabAf other);
+        LChAf (LabAf other);
         
-        LChAf_ab(XYZAf other);
+        LChAf (XYZAf other);
         
-        LChAf_ab(RGBAf other);
+        LChAf (RGBAf other);
         
         operator LabAf() const;
         
@@ -234,8 +235,8 @@ namespace Gorgon { namespace Graphics {
         float A = 0.0f;
     };
 
-    inline std::ostream &operator <<(std::ostream &out, const LChAf_ab &color) {
-        out << "LCh_ab(" << color.L << ", " << color.C << ", " << color.h << "°)";
+    inline std::ostream &operator <<(std::ostream &out, const LChAf &color) {
+        out << "LCh_ab(" << color.L << "%, " << color.C << ", " << color.h << "°)";
         
         return out;
     }
@@ -259,15 +260,15 @@ namespace Gorgon { namespace Graphics {
     XYZAf LabToXYZ(LabAf color);
     
     /// Converts a color in CIE Luv color space to CIE LCh_uv color space.
-    LChAf LuvToLCh(LuvAf color);
+    HCLAf LuvToLCh(LuvAf color);
     
     /// Converts a color in CIE LCh_uv color space to CUE Luv color space.
-    LuvAf LChToLuv(LChAf color);
+    LuvAf LChToLuv(HCLAf color);
     
     /// Converts a color in CIE Lab color space to CIE LCh_ab color space.
-    LChAf_ab LabToLCh(LabAf color);
+    LChAf LabToLCh(LabAf color);
     
     /// Converts a color in CIE LCh_ab color space to CUE Lab color space.
-    LabAf LChToLab(LChAf_ab color);
+    LabAf LChToLab(LChAf color);
     
 } }

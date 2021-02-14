@@ -87,6 +87,9 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template DialogWindow() = 0;
         
+        
+        virtual UI::Template ColorPlane() = 0;
+        
     protected:
         
         virtual UI::Template &generate(Gorgon::Widgets::Registry::TemplateType type) override {
@@ -147,6 +150,8 @@ namespace Gorgon { namespace Widgets {
                 return *new UI::Template(Window());
             case Window_Dialog:
                 return *new UI::Template(DialogWindow());
+            case ColorPlane_Regular:
+                return *new UI::Template(ColorPlane());
             default:
                 return *new UI::Template();
             }
@@ -242,6 +247,9 @@ namespace Gorgon { namespace Widgets {
         virtual UI::Template Window() override;
         
         virtual UI::Template DialogWindow() override;
+        
+        
+        virtual UI::Template ColorPlane() override;
         
 
         virtual int GetSpacing() const override {
