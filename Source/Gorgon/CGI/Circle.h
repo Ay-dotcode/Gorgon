@@ -8,6 +8,14 @@
 
 #include <cmath>
 
+#ifndef GORGON_DEFAULT_SUBDIVISIONS
+#   ifdef NDEBUG
+#       define GORGON_DEFAULT_SUBDIVISIONS 8
+#   else
+#       define GORGON_DEFAULT_SUBDIVISIONS 4
+#   endif
+#endif
+
 
 namespace Gorgon { namespace CGI {
     
@@ -15,7 +23,7 @@ namespace Gorgon { namespace CGI {
      * Draws a filled circle with the specified radius to the given target. This
      * function is very fast but is not very accurate. Any S_ value > 1 will enable AA.
      */
-    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void Circle(Containers::Image &target, P_ location, Float radius, F_ fill = SolidFill<>(Graphics::Color::Black)) {
         
         int minx = std::max((int)floor(float(location.X) - radius), 0);
@@ -69,7 +77,7 @@ namespace Gorgon { namespace CGI {
         }
     }
     
-    template<int S_ = 8, class P_ = Geometry::Pointf, class F_ = SolidFill<>>
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, class P_ = Geometry::Pointf, class F_ = SolidFill<>>
     void Circle(Graphics::Bitmap &target, P_ location, Float radius, F_ fill = SolidFill<>(Graphics::Color::Black)) {
         if(target.HasData())
             Circle<S_, P_, F_>(target.GetData(), location, radius, fill);
@@ -81,7 +89,7 @@ namespace Gorgon { namespace CGI {
      * function is very fast but is not very accurate. Radius is the inner radius
      * of the circle. Any S_ value > 1 will enable AA.
      */
-    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void Circle(Containers::Image &target, P_ location, Float radius, Float border, F_ fill = SolidFill<>(Graphics::Color::Black)) {
         
         auto inner = radius;
@@ -151,7 +159,7 @@ namespace Gorgon { namespace CGI {
         }
     }
     
-    template<int S_ = 8, class P_ = Geometry::Pointf, class F_ = SolidFill<>>
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, class P_ = Geometry::Pointf, class F_ = SolidFill<>>
     void Circle(Graphics::Bitmap &target, P_ location, Float radius, Float border, F_ fill = SolidFill<>(Graphics::Color::Black)) {
         if(target.HasData())
             Circle<S_, P_, F_>(target.GetData(), location, radius, border, fill);

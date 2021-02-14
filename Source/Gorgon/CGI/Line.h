@@ -15,7 +15,7 @@ namespace Gorgon { namespace CGI {
     /**
      * Returns the polygon to draw a list of lines.
      */
-    template<int S_ = 8, class P_= Geometry::Pointf>
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, class P_= Geometry::Pointf>
     std::vector<Geometry::PointList<P_>> LinesToPolygons(const Geometry::PointList<P_> &p, StrokeSettings settings = 1.0) {
         if(p.GetSize() == 0) return {};
         
@@ -178,7 +178,7 @@ namespace Gorgon { namespace CGI {
     /**
      * Draw a point list as a list of lines. 
      */
-    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void DrawLines(Containers::Image &target, const Geometry::PointList<P_> &p, StrokeSettings settings = 1.0, F_ stroke = SolidFill<>{Graphics::Color::Black}) {
         auto points = LinesToPolygons<S_, P_>(p, settings);
         
@@ -188,7 +188,7 @@ namespace Gorgon { namespace CGI {
     /**
      * Draw a point list as a list of lines. 
      */
-    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void DrawLines(Graphics::Bitmap &target, const Geometry::PointList<P_> &p, StrokeSettings settings = 1.0, F_ stroke = SolidFill<>{Graphics::Color::Black}) {
         auto points = LinesToPolygons<S_, P_>(p, settings);
         
@@ -198,7 +198,7 @@ namespace Gorgon { namespace CGI {
     /**
      * Draw a point list as a list of lines. 
      */
-    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void DrawLines(Containers::Image &target, const std::vector<Geometry::PointList<P_>> &pnts, StrokeSettings settings = 1.0, F_ stroke = SolidFill<>{Graphics::Color::Black}) {
         std::vector<Geometry::PointList<P_>> points;
         for(auto &p : pnts) {
@@ -217,7 +217,7 @@ namespace Gorgon { namespace CGI {
     /**
      * Draw a point list as a list of lines. 
      */
-    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void DrawLines(Graphics::Bitmap &target, const std::vector<Geometry::PointList<P_>> &pnts, StrokeSettings settings = 1.0, F_ stroke = SolidFill<>{Graphics::Color::Black}) {
         std::vector<Geometry::PointList<P_>> points;
         for(auto &p : pnts) {

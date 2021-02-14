@@ -11,6 +11,13 @@
 
 #include <cmath>
 
+#ifndef GORGON_DEFAULT_SUBDIVISIONS
+#   ifdef NDEBUG
+#       define GORGON_DEFAULT_SUBDIVISIONS 8
+#   else
+#       define GORGON_DEFAULT_SUBDIVISIONS 4
+#   endif
+#endif
 
 namespace Gorgon { namespace CGI {
    
@@ -160,7 +167,7 @@ namespace Gorgon { namespace CGI {
      * improve speed. S_ should be a power of two for this algorithm to work properly. W_ is
      * winding, 1 is odd, 0 is non-zero.
      */
-    template<int S_ = 8, int W_ = 1, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, int W_ = 1, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void Polyfill(Containers::Image &target, const std::vector<Geometry::PointList<P_>> &p, F_ fill = SolidFill<>{Graphics::Color::Black}) {
         if(p.size() < 1) return;
         
@@ -367,7 +374,7 @@ namespace Gorgon { namespace CGI {
      * This function fills the given point list as a polygon. List is treated as closed
      * where last pixel connects to the first. 
      */
-    template<int S_ = 8, int W_ = 1, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, int W_ = 1, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void Polyfill(Graphics::Bitmap &target, const std::vector<Geometry::PointList<P_>> &points, F_ fill = SolidFill<>{Graphics::Color::Black}) {
         if(target.HasData())
             Polyfill<S_, W_, P_, F_>(target.GetData(), points, fill);
@@ -378,7 +385,7 @@ namespace Gorgon { namespace CGI {
      * where last pixel connects to the first. S_ is the number of subdivision for subpixel
      * accuracy.
      */
-    template<int S_ = 8, int W_ = 1, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, int W_ = 1, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void Polyfill(Containers::Image &target, const Geometry::PointList<P_> &p, F_ fill = SolidFill<>{Graphics::Color::Black}) {
         if(p.GetSize() <= 1) return;
 
@@ -560,13 +567,13 @@ namespace Gorgon { namespace CGI {
      * This function fills the given point list as a polygon. List is treated as closed
      * where last pixel connects to the first. 
      */
-    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void Polyfill(Graphics::Bitmap &target, const Geometry::PointList<P_> &points, F_ fill = SolidFill<>{Graphics::Color::Black}) {
         if(target.HasData())
             Polyfill<S_>(target.GetData(), points, fill);
     }
     
-    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void Rectangle(Containers::Image &target, const Geometry::basic_Rectangle<typename P_::BaseType> &rect, F_ fill = SolidFill<>{Graphics::Color::Black}) {
         Geometry::PointList<P_> points = {
             rect.TopLeft(),
@@ -578,7 +585,7 @@ namespace Gorgon { namespace CGI {
         Polyfill<S_>(target, points, fill);
     }
     
-    template<int S_ = 8, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void Rectangle(Graphics::Bitmap &target, const Geometry::basic_Rectangle<typename P_::BaseType> &rect, F_ fill = SolidFill<>{Graphics::Color::Black}) {
         if(target.HasData())
             Rectangle<S_>(target.GetData(), rect, fill);
