@@ -26,10 +26,11 @@ int main() {
     });
     
     Widgets::ColorPlane wgt2;
-    wgt2.SetWidthInUnits(8);
+    wgt2.SetWidthInUnits(7);
     wgt2.ChangedEvent.Register([](Graphics::RGBAf color) {
         std::cout << color << std::endl;
     });
+    wgt2.Alpha = true;
     wgt2.HueDensity = wgt2.High;
     
     Widgets::ColorPlane wgt3;
@@ -48,9 +49,11 @@ int main() {
 
     Widgets::ColorPlane wgt5;
     wgt5.SetWidthInUnits(9);
+    wgt5.SetHeight(Widgets::Registry::Active().GetUnitWidth(6));
     wgt5.ChangedEvent.Register([](Graphics::RGBAf color) {
         std::cout << color << std::endl;
     });
+    wgt5.Alpha = true;
     wgt5.HueDensity = wgt5.VeryHigh;
     wgt5.LCDensity  = wgt5.High;
 

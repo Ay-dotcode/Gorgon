@@ -221,7 +221,7 @@ namespace Gorgon {
 			/// Divides this point to a scalar value. This is effectively
 			/// scales the point
 			template <class O_>
-			basic_Point operator / (O_ value) const {
+			typename std::enable_if<std::is_fundamental<O_>::value, basic_Point>::type operator / (O_ value) const {
 				return{T_(X/value), T_(Y/value)};
 			}
 

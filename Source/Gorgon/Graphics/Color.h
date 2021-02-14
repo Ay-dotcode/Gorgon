@@ -150,7 +150,7 @@ namespace Gorgon { namespace Graphics {
         }
 
         /// Conversion from float. Assumes the given float value is a 0 to 1 luminance. Sets alpha to 255
-        explicit RGBA(float lum) : A(255) {
+        RGBA(float lum) : A(255) {
             if(lum<0) lum=0;
             if(lum>1) lum=1;
 

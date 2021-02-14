@@ -44,7 +44,17 @@ namespace Gorgon { namespace Widgets {
         bool found = false;
         ColorType color;
         
-        if(location.Y > halftableoffset.Y) {
+        if(alpha && (location.Y > alphaoffset.Y)) {
+            location -= alphaoffset;
+            l = Round(location) / stride;
+            
+            if(l.Y == 0 && l.X < huetable.size()) {
+                found = true;
+                color = this->color;
+                color.A = 1.f / (huetable.size()-1) * l.X;
+            }
+        }
+        else if(location.Y > halftableoffset.Y) {
             location -= halftableoffset;
             
             l = Round(location) / stride;
@@ -100,6 +110,9 @@ namespace Gorgon { namespace Widgets {
             default:
                 found = false;
             }
+            
+            if(alpha) 
+                color.A = this->color.A;
         }
         else if(location.Y > colortableoffset.Y) {
             location -= colortableoffset;
@@ -109,6 +122,9 @@ namespace Gorgon { namespace Widgets {
                 found = true;
                 color = Graphics::LChAf(lctable[l.Y].first, lctable[l.Y].second, huetable[l.X]);
             }
+            
+            if(alpha) 
+                color.A = this->color.A;
         }
         else if(location.Y > grayscaleoffset.Y) {
             location -= grayscaleoffset;
@@ -118,6 +134,9 @@ namespace Gorgon { namespace Widgets {
                 found = true;
                 color = Graphics::LChAf(100.f/(huetable.size()-1) * l.X, 0, 0);
             }
+            
+            if(alpha) 
+                color.A = this->color.A;
         }
         
         if(found && color != this->color) {
@@ -159,19 +178,41 @@ namespace Gorgon { namespace Widgets {
         display.ForAllValues([](auto &c) { c = 255; });
         
         sz.Width  -= huetable.size()*2 + 2;
-        sz.Height -= lctable.size()*2  + 8 + (lctable.size()>8)*2; //extra space between grayscale and other colors
+        sz.Height -= lctable.size()*2  + 8 + (lctable.size()>8)*2 + alpha*4; //extra space between grayscale and other colors
         
         float w = (float)sz.Width / huetable.size();
-        float h = (float)sz.Height/ (lctable.size() + 2 + (lctable.size()>8));
+        float h = (float)sz.Height/ (lctable.size() + 2 + (lctable.size()>8) + alpha);
         
         stride = {w + 2, h + 2};
         
         float x = 2, y = 2;
         
+        auto basecolor = this->color;
+        basecolor.A = 1.f;
+        
+        if(alpha) {
+            int sw = (h+4)/4+1;
+            bool state = false;
+            bool sstate = false;
+            for(int yy=display.GetHeight()-(int)h-4; yy<display.GetHeight(); yy++) {
+                if((yy-display.GetHeight()+(int)h+4)%sw == sw-1)
+                    sstate = !sstate;
+                
+                state = sstate;
+                
+                for(int xx=0; xx<display.GetWidth(); xx++) {
+                    display.SetRGBAAt(xx, yy, state ? 0.8f : 0.5f);
+                    
+                    if(xx%sw == sw-1)
+                        state = !state;
+                }
+            }
+        }
+        
         auto drawrect = [&](ColorType color) {
             CGI::Rectangle(display, {x, y, w, h}, CGI::SolidFill<>(color));
             
-            if(color == this->color) {
+            if(color == basecolor) {
                 selected = true;
                 selectioncoords = {x, y};
             }
@@ -228,6 +269,25 @@ namespace Gorgon { namespace Widgets {
             {  0.75f, h+2.25f}, {  0.75f,   1.75f},
             {  1.75f,   0.75f}
         };
+        
+        //alpha
+        if(alpha) {
+            y += 2;
+            x = 2;
+            alphaoffset = {x, y};
+            for(int a=0; a<huetable.size(); a++) {
+                auto c = this->color;
+                c.A = 1.f/(huetable.size()-1) * a;
+                CGI::Rectangle(display, {x, y, w, h}, CGI::SolidFill<>(c));
+                
+                if(this->color.A == c.A) {
+                    CGI::DrawLines(display, selectionlines + Geometry::Pointf(x, y) - Geometry::Pointf(2, 2), 1.5f, 
+                                CGI::SolidFill<>(Graphics::Color::Black));
+                }
+                
+                x += w + 2;
+            }
+        }
         
         if(selected) {
             CGI::DrawLines(display, selectionlines + selectioncoords - Geometry::Pointf(2, 2), 1.5f, 

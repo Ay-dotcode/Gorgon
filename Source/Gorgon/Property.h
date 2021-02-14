@@ -873,7 +873,7 @@ public: \
 /// If property is there to call Update every time the value is changed, this mapper can handle this situation.
 /// Names the member variable as m_name. For proptype use the prefix part of the property name: Numeric for 
 /// NumericProperty
-#define PROPERTY_UPDATE_VN(cls, proptype, type, name, varname, def) \
+#define PROPERTY_UPDATE_VN(cls, proptype, type, name, varname) \
 public: \
     type Get##name() const { return varname; } \
     void Set##name(const type &value) { this->varname=value; Update(); } \
@@ -895,7 +895,7 @@ public: \
 /// If property is there to call Refresh every time the value is changed, this mapper can handle this situation.
 /// Names the member variable as m_name. For proptype use the prefix part of the property name: Numeric for 
 /// NumericProperty
-#define PROPERTY_REFRESH_VN(cls, proptype, type, name, varname, def) \
+#define PROPERTY_REFRESH_VN(cls, proptype, type, name, varname) \
 public: \
     type Get##name() const { return varname; } \
     void Set##name(const type &value) { this->varname=value; Refresh(); } \

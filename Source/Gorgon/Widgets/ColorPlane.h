@@ -89,18 +89,23 @@ namespace Gorgon { namespace Widgets {
         Event<ColorPlane> ClickedEvent = Event<ColorPlane>{*this};
         
         /// Huedensity changes the number of different hue values displayed
-        PROPERTY_REFRESH_VN(ColorPlane, , Density, HueDensity, huedensity, Medium);
+        PROPERTY_REFRESH_VN(ColorPlane, , Density, HueDensity, huedensity);
         
         /// LCDensity changes the number of different luminance chromacity pairs displayed
-        PROPERTY_REFRESH_VN(ColorPlane, , Density, LCDensity, lcdensity, Medium);
+        PROPERTY_REFRESH_VN(ColorPlane, , Density, LCDensity, lcdensity);
+        
+        /// Controls whether alpha channel will be displayed
+        PROPERTY_REFRESH_VN(ColorPlane, Boolean, bool, Alpha, alpha);
         
     private:
         Density lcdensity  = Medium;
         Density huedensity = Medium;
+        bool alpha = false;
         
         Geometry::Pointf grayscaleoffset = {0, 0};
         Geometry::Pointf colortableoffset = {0, 0};
         Geometry::Pointf halftableoffset = {0, 0};
+        Geometry::Pointf alphaoffset = {0, 0};
         Geometry::Sizef  stride = {0, 0};
         
         const std::vector<int> *htbl = nullptr;
@@ -113,7 +118,7 @@ namespace Gorgon { namespace Widgets {
         
         Layerbox layerbox;
         
-        ColorType color = Graphics::Color::Transparent;
+        ColorType color = Graphics::Color::Black;
     
     protected:
         void click(Geometry::Point location);
