@@ -167,6 +167,10 @@ namespace Gorgon { namespace Graphics {
         
         /// From string
         explicit RGBA(const std::string &color);
+        /// From string
+        explicit RGBA(const char *color) :
+            RGBA(std::string(color))
+        { }
         
         RGBA(RGBAf color);
 
