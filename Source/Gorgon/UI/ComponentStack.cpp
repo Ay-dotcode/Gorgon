@@ -1364,13 +1364,14 @@ namespace Gorgon { namespace UI {
 
     Layer &ComponentStack::GetLayerOf(int ind) {
         //if component does not exit, return this as the layer
-        if(stacksizes[ind] == 0)
+        if(ind == -1 || stacksizes[ind] == 0)
             return *this;
 
         //if component does not have a layer
         if(storage[&get(ind).GetTemplate()]->layer == nullptr) {
             //create a new one
             storage[&get(ind).GetTemplate()]->layer = new Graphics::Layer;
+            updaterequired = true;
         }
         
         Refresh();

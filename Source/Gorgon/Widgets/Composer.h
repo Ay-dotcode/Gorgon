@@ -273,12 +273,7 @@ namespace Gorgon { namespace Widgets {
         virtual void focuslost() override;
 
         virtual Layer &getlayer() override {
-            int ind = stack.IndexOfTag(UI::ComponentTemplate::ContentsTag);
-            
-            if(ind == -1)
-                return stack;
-            else
-                return stack.GetLayerOf(ind);
+            return stack.GetLayerOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag));
         }
         
         void focuschanged() override;
@@ -320,12 +315,7 @@ namespace Gorgon { namespace Widgets {
         }
         
         virtual Geometry::Size GetInteriorSize() const override {
-            int ind = stack.IndexOfTag(UI::ComponentTemplate::ContentsTag);
-            
-            if(ind == -1)
-                return stack.GetSize();
-            else
-                return stack.GetLayerOf(ind).GetSize();
+            return stack.GetLayerOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag)).GetSize();
         }
 
         virtual bool IsWidget() const override { return true; }
