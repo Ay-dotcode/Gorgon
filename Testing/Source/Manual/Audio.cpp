@@ -84,7 +84,7 @@ auto TestExportImport() {
     Multimedia::AudioStream wave2;
     //std::cout<<"Load file: " << wave2.ImportWav("test.wav")<<std::endl;
     //wave2.Stream("out.wav");
-    wave2.Stream("test.sound");
+    wave2.Stream("music.ogg");
     //wave2.ExportWav("out.wav");
     
     return wave2;

@@ -40,6 +40,8 @@ namespace internal {
         virtual ControllerType Type() const = 0;
         
     protected:
+        
+        void RemoveMe();
     };
     
     /**
@@ -56,6 +58,10 @@ namespace internal {
         /// Filling constructor
         BasicController(const Source &wavedata) : wavedata(&wavedata) { 
             datachanged();
+        }
+        
+        ~BasicController() {
+            RemoveMe();        
         }
         
         /// Returns whether this controller has data
@@ -155,6 +161,10 @@ namespace internal {
         
         /// Filling constructor
         PositionalController(const Source &wavedata) : BasicController(wavedata) { }
+        
+        ~PositionalController() {
+            RemoveMe();        
+        }
         
         void Move(const Geometry::Point3D &target) {
             location = target;

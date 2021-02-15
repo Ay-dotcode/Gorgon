@@ -9,6 +9,10 @@ namespace Gorgon { namespace Audio {
     }
 
     Controller::~Controller() {
+        RemoveMe();
+    }
+    
+    void Controller::RemoveMe() {
         std::lock_guard<std::mutex> guard(internal::ControllerMtx);
         
         internal::Controllers.Remove(this);

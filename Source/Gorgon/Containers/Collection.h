@@ -693,7 +693,7 @@ namespace Gorgon {
 				return list[Index];
 			}
 
-			const T_ *get_(long Index) const {
+			T_ *get_(long Index) const {
 				if(Index<0 || Index>list.size())
 					return NULL;
 
