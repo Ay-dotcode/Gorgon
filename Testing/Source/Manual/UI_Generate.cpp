@@ -191,7 +191,7 @@ int main() {
     scroll2.Range = 20;
     //scroll2.SetValue(200, false);
 
-    Gorgon::Widgets::Inputbox<Graphics::RGBA> colorin;
+    Gorgon::Widgets::Inputbox<Graphics::RGBAf> colorin;
     colorin.ChangedEvent.Register([&] {
         std::cout << "size f changed " << colorin.GetText();
     });

@@ -69,7 +69,8 @@ int main() {
     org 
         << wgt1 << wgt2 << wgt3 << org.Break
         << wgt5 << wgt6;
-
+    
+    
     app.wind.Run();
 
     return 0;

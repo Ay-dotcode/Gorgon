@@ -74,12 +74,7 @@ namespace Gorgon { namespace Graphics {
         }
         
         if(color[0] == '0') {
-            if(color.length() == -1) {
-                (*this) = 0x0;
-                return;
-            }
-            
-            if(color[1] == 'x') {
+            if(color.length() > 1 && color[1] == 'x') {
                 (*this) = String::HexTo<uint32_t>(color);
                 return;
             }
@@ -92,7 +87,81 @@ namespace Gorgon { namespace Graphics {
             return;
         }
         
-        (*this) = String::HexTo<uint32_t>(color);
+        try {
+            (*this) = String::HexTo<uint32_t>(color);
+        }
+        catch(...) {
+            (*this) = 0x0;
+        }
+        
+        if(color.length() < 7)
+            A = 255;
+    }
+    
+    RGBAf::RGBAf(const std::string &c) {
+        auto color = String::Trim(c);
+        
+        if(color.empty()) {
+            (*this) = RGBA(0x0);
+            return;
+        }
+        
+        if(color[0] == '#') {
+            (*this) = RGBA(c);
+            return;
+        }
+        
+        if(color[0] == '0') {
+            if(color.length() > 1 && color[1] == 'x') {
+                (*this) = RGBA(color);
+                return;
+            }
+        }
+        
+        if(color[0] == '(') {
+            color = color.substr(1);
+        }
+        
+        if(color.find_first_of('.') != color.npos) { //float values
+            if(color.find_first_of(',') == color.npos) { //single float value: grayscale
+                try {
+                    (*this) = String::To<float>(color);
+                }
+                catch(...) {
+                    (*this) = RGBA(0x0);
+                }
+                
+                return;
+            }
+            else {
+                std::stringstream ss(color);
+                
+                R = 0;
+                G = 0;
+                B = 0;
+                A = 1;
+                
+                try {
+                    std::string str;
+                    
+                    if(std::getline(ss, str, ','))
+                        R = String::To<float>(str);
+                    if(std::getline(ss, str, ','))
+                        G = String::To<float>(str);
+                    if(std::getline(ss, str, ','))
+                        B = String::To<float>(str);
+                    if(std::getline(ss, str, ','))
+                        A = String::To<float>(str);
+                }
+                catch(...) {
+                    (*this) = RGBA(0x0);
+                }
+                
+                return;
+            }
+        }
+        
+        (*this) = RGBA(color);
     }
 
 
@@ -107,6 +176,30 @@ namespace Gorgon { namespace Graphics {
 
         return in;
     }
+
+    std::ostream &operator<< (std::ostream &stream, const RGBAf &color) {
+        stream << "(" 
+               << std::round(color.R*10000)/10000 << (std::round(color.R*10000) == 0 || std::round(color.R*10000) == 10000 ? ".0" : "") << ", " 
+               << std::round(color.G*10000)/10000 << (std::round(color.G*10000) == 0 || std::round(color.G*10000) == 10000 ? ".0" : "") << ", " 
+               << std::round(color.B*10000)/10000 << (std::round(color.B*10000) == 0 || std::round(color.B*10000) == 10000 ? ".0" : "") << ", " 
+               << std::round(color.A*10000)/10000 << (std::round(color.A*10000) == 0 || std::round(color.A*10000) == 10000 ? ".0" : "") << ")";
+
+        return stream;
+    }
+
+    RGBAf::operator std::string()const {
+        std::stringstream ss;
+
+        ss << "(" 
+           << std::round(R*10000)/10000 << (std::round(R*10000) == 0 || std::round(R*10000) == 10000 ? ".0" : "") << ", " 
+           << std::round(G*10000)/10000 << (std::round(G*10000) == 0 || std::round(G*10000) == 10000 ? ".0" : "") << ", " 
+           << std::round(B*10000)/10000 << (std::round(B*10000) == 0 || std::round(B*10000) == 10000 ? ".0" : "") << ", " 
+           << std::round(A*10000)/10000 << (std::round(A*10000) == 0 || std::round(A*10000) == 10000 ? ".0" : "") << ")";
+
+        return ss.str();
+    }
+
+
 
 namespace Color {
     const std::vector<std::pair<std::string, Gorgon::Graphics::RGBA>> &Names() {

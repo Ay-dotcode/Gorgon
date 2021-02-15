@@ -167,12 +167,15 @@ namespace Gorgon { namespace Graphics {
         
         /// From string
         explicit RGBA(const std::string &color);
+        
         /// From string
         explicit RGBA(const char *color) :
             RGBA(std::string(color))
         { }
         
         RGBA(RGBAf color);
+        
+        RGBA(bool) = delete;
 
         /// Conversion to integer
         operator int() const {
@@ -388,6 +391,14 @@ namespace Gorgon { namespace Graphics {
 
         /// Converts from an unsigned int
         RGBAf(bool) = delete;
+        
+        /// From string
+        explicit RGBAf(const std::string &color);
+        
+        /// From string
+        explicit RGBAf(const char *color) :
+            RGBAf(std::string(color))
+        { }
 
         /// Copy assignment
         RGBAf &operator = (const RGBAf &) = default;
@@ -432,13 +443,7 @@ namespace Gorgon { namespace Graphics {
             return int(RGBA(*this));
         }
 
-        operator std::string() const {
-            std::stringstream ss;
-
-            ss<<"("<<R<<", "<<G<<", "<<B<<", "<<A<<")";
-
-            return ss.str();
-        }
+        operator std::string() const;
         
         RGBAf operator *(const RGBAf &other) const {
             return {R * other.R, G * other.G, B * other.B, A * other.A};
@@ -585,11 +590,7 @@ namespace Gorgon { namespace Graphics {
     }
     
     /// Prints the given color to the stream
-    inline std::ostream &operator <<(std::ostream &stream, const RGBAf &color) {
-        stream<<(std::string)color;
-
-        return stream;
-    }
+    std::ostream &operator <<(std::ostream &stream, const RGBAf &color);
 
     /// Contains commonly used colors identified by XKCD survey containing 140000 people.
     /// List is truncated to 300 most popular entries and cleaned up.
