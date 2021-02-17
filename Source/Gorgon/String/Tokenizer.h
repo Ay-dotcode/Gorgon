@@ -94,6 +94,8 @@ namespace Gorgon { namespace String {
 			return st.position!=position || st.token != token;
 		}
 		
+		Tokenizer &begin() { return *this; }
+		
 		const Tokenizer end() const { return endit; }
 
 		/// Delimeters to be used in tokenization. Can be changed while tokenizing.
