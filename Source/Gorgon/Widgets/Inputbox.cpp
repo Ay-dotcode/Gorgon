@@ -268,11 +268,19 @@ namespace Gorgon { namespace Widgets { namespace internal {
             }
         }
         
-        if(state && !Input::Keyboard::CurrentModifier.IsModified() && key >= 0x20) {
+        bool relevant = false;
+        relevant = !Input::Keyboard::CurrentModifier.IsModified() && (
+            (key >= Keycodes::A && key <= Keycodes::Z) ||
+            (key >= Keycodes::Number_0 && key <= Keycodes::Number_9) ||
+            (key >= Keycodes::Numpad_0 && key <= Keycodes::Numpad_Minus) || 
+             key >= Keycodes::OSTransport || key == Keycodes::Space
+        );
+        
+        if(state && relevant) {
             Input::AllowCharEvent = true;
         }
 
-        return !Input::Keyboard::CurrentModifier.IsModified() && key >= 0x20;
+        return relevant;
     }
 
     bool Inputbox_base::CharacterPressed(Char c) {
