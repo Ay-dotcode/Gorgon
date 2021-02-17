@@ -423,13 +423,13 @@ namespace Gorgon { namespace UI {
 
         if((key == Keycodes::Enter || key == Keycodes::Numpad_Enter) && 
         (Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::Ctrl || Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::None)) {
-            if(def)
+            if(def && def->IsEnabled() &&  def->IsVisible())
                 return def->Activate();
             
             return false;
         }
         else if(key == Keycodes::Escape && Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::None) {
-            if(cancel)
+            if(cancel && cancel->IsEnabled() && cancel->IsVisible())
                 return cancel->Activate();
 
             return false;
