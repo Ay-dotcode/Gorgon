@@ -3,7 +3,7 @@
 #include <Gorgon/UI/ComponentStack.h>
 #include <Gorgon/Widgets/Generator.h>
 #include <Gorgon/UI/Window.h>
-#include <Gorgon/Widgets/ColorPlane.h>
+#include <Gorgon/Widgets/ColorPicker.h>
 #include <Gorgon/UI/Organizers/Flow.h>
 #include <Gorgon/Widgets/Window.h>
 #include <Gorgon/Widgets/DialogWindow.h>
@@ -20,55 +20,18 @@ int main() {
 
     auto &org = app.wind.CreateOrganizer<UI::Organizers::Flow>();
     
-    Widgets::ColorPlane wgt1;
+    Widgets::ColorPicker wgt1;
     wgt1.ChangedEvent.Register([](Graphics::RGBAf color) {
         std::cout << color << std::endl;
     });
+    wgt1.HueDensity = wgt1.High;
+    //wgt1.LCDensity  = wgt1.Medium;
+    //wgt1.Display    = wgt1.Hex;
+    wgt1.Alpha = true;
+    wgt1.PlaneSize.Height *= 1.2;
     
-    Widgets::ColorPlane wgt2;
-    wgt2.SetWidthInUnits(7);
-    wgt2.ChangedEvent.Register([](Graphics::RGBAf color) {
-        std::cout << color << std::endl;
-    });
-    wgt2.Alpha = true;
-    wgt2.HueDensity = wgt2.High;
-    
-    Widgets::ColorPlane wgt3;
-    wgt3.ChangedEvent.Register([](Graphics::RGBAf color) {
-        std::cout << color << std::endl;
-    });
-    wgt3.HueDensity = wgt3.Low;
-    wgt3.LCDensity  = wgt3.Low;
-
-    Widgets::ColorPlane wgt4;
-    wgt4.ChangedEvent.Register([](Graphics::RGBAf color) {
-        std::cout << color << std::endl;
-    });
-    wgt4.HueDensity = wgt4.High;
-    wgt4.LCDensity  = wgt4.High;
-
-    Widgets::ColorPlane wgt5;
-    wgt5.SetWidthInUnits(9);
-    wgt5.SetHeight(Widgets::Registry::Active().GetUnitWidth(6));
-    wgt5.ChangedEvent.Register([](Graphics::RGBAf color) {
-        std::cout << color << std::endl;
-    });
-    wgt5.Alpha = true;
-    wgt5.HueDensity = wgt5.VeryHigh;
-    wgt5.LCDensity  = wgt5.High;
-
-    Widgets::ColorPlane wgt6;
-    wgt6.SetWidthInUnits(10);
-    wgt6.SetHeight(Widgets::Registry::Active().GetUnitWidth(6));
-    wgt6.ChangedEvent.Register([](Graphics::RGBAf color) {
-        std::cout << color << std::endl;
-    });
-    wgt6.HueDensity = wgt6.VeryHigh;
-    wgt6.LCDensity  = wgt6.VeryHigh;
-
     org 
-        << wgt1 << wgt2 << wgt3 << org.Break
-        << wgt5 << wgt6;
+        << wgt1 ;
     
     
     app.wind.Run();

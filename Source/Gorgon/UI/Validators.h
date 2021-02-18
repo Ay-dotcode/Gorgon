@@ -2,6 +2,7 @@
 
 #include <string>
 #include "../String.h"
+#include "../Graphics/ColorSpaces.h"
 
 namespace Gorgon { namespace UI {
     
@@ -78,4 +79,60 @@ namespace Gorgon { namespace UI {
         
     };
     
+    /**
+     * This overload helps with displaying color
+     */
+    template<>
+    class ConversionValidator<Graphics::RGBAf> {
+    public:
+        using Type = Graphics::RGBAf;
+        
+        enum DisplayType {
+            Hex,
+            RGBAf,
+            HTML,
+            //LCh
+        };
+        
+        /// Checks if the given string is valid
+        bool IsValid(std::string) const {
+            return true;
+        }
+        
+        /// Checks if given string can be inserted between start and end
+        bool AllowInsert(std::string /*start*/, std::string /*insert*/, std::string /*end*/) const {
+            return true;
+        }
+        
+        /// Checks if given number of characters can be erased from before.
+        bool AllowErase(std::string /*before*/, int /*count*/, std::string /*after*/) const {
+            return true;
+        }
+        
+        /// Checks if given number of characters can be replace with insert at the end of before.
+        bool AllowReplace(std::string /*before*/, int /*count*/, std::string /*insert*/, std::string /*after*/) const {
+            return true;
+        }
+        
+        /// Converts the given string to the type. If input is not valid, return initial value
+        Type From(std::string text) const {
+            return String::To<Type>(text);
+        }
+        
+        /// Converts the given value to string.
+        std::string ToString(const Type &value) const {
+            switch(Display) {
+            case Hex:
+                return String::From((Graphics::RGBA)value);
+            case HTML:
+                return Graphics::RGBA(value).HTMLColor();
+            /*case LCh:
+                return String::From(Graphics::LChAf(value));*/
+            default:
+                return String::From(value);
+            }
+        }
+        
+        DisplayType Display = HTML;
+    };
 } }

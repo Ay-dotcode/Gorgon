@@ -2337,9 +2337,11 @@ namespace Gorgon { namespace UI {
     }
 
     void ComponentStack::AddGenerator(ComponentTemplate::Tag tag, std::function<Widget *(const Template &)> fn) {
-        for(auto it=substacks.begin(); it.IsValid(); it.Next()) {
+        for(auto it=substacks.begin(); it.IsValid(); ) {
             if(it.Current().first->GetTag() == tag)
                 it.Delete();
+            else
+                it.Next();
         }
 
         widgetgenerators[tag] = fn;

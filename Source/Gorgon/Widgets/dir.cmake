@@ -9,6 +9,9 @@ SET(Local
 	ColorPlane.h
 	ColorPlane.cpp
 	
+	ColorPicker.h
+	ColorPicker.cpp
+	
 	Composer.h
 	Composer.cpp
 	

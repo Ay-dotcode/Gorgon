@@ -265,7 +265,7 @@ namespace Gorgon { namespace Widgets {
             int scrolloffset = 0;
             
             bool ismousedown = false;
-            bool autoselectall = false;
+            bool autoselectall = true;
             bool blockenter = false;
             bool readonly = false;
             bool dirty = false;
@@ -450,10 +450,10 @@ namespace Gorgon { namespace Widgets {
         }
         
         
-    private:
         V_ validator;
         T_ value;
 
+    private:
         struct UI::internal::prophelper<Inputbox<T_, V_, P_>, T_> helper = UI::internal::prophelper<Inputbox<T_, V_, P_>, T_>(this);
     };
     

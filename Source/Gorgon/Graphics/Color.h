@@ -250,13 +250,7 @@ namespace Gorgon { namespace Graphics {
         }
 
         /// Returns a six nibble HTML color
-        std::string HTMLColor() const {
-            std::stringstream str;
-
-            str<<"#"<<std::fixed<<std::setfill('0')<<std::setw(2)<<R<<std::setw(2)<<G<<std::setw(2)<<B;
-
-            return str.str();
-        }
+        std::string HTMLColor() const;
 
         /// Blends the given color into this one. This operation performs regular alpha blending with the current
         /// color being blended over.

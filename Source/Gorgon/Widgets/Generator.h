@@ -90,6 +90,8 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template ColorPlane() = 0;
         
+        virtual UI::Template ColorPicker() = 0;
+        
     protected:
         
         virtual UI::Template &generate(Gorgon::Widgets::Registry::TemplateType type) override {
@@ -152,6 +154,8 @@ namespace Gorgon { namespace Widgets {
                 return *new UI::Template(DialogWindow());
             case ColorPlane_Regular:
                 return *new UI::Template(ColorPlane());
+            case ColorPicker_Regular:
+                return *new UI::Template(ColorPicker());
             default:
                 return *new UI::Template();
             }
@@ -251,6 +255,9 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template ColorPlane() override;
         
+        
+        virtual UI::Template ColorPicker() override;
+        
 
         virtual int GetSpacing() const override {
             return Spacing;
@@ -290,11 +297,16 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider &HoverBG(int missingedge = 0);
         Graphics::BitmapRectangleProvider &DownBG(int missingedge = 0);
         Graphics::BitmapRectangleProvider &DisabledBG(int missingedge = 0);
+        
+        Graphics::BitmapRectangleProvider &WhiteBG();
+        Graphics::BitmapRectangleProvider &CheckeredBG();
+
         Graphics::BitmapRectangleProvider &NormalStraightBG();
         Graphics::BitmapRectangleProvider &AltStraightBG();
         Graphics::BitmapRectangleProvider &HoverStraightBG();
         Graphics::BitmapRectangleProvider &DownStraightBG();
         Graphics::BitmapRectangleProvider &DisabledStraightBG();
+
         Graphics::BitmapRectangleProvider &NormalRBG();
         Graphics::BitmapRectangleProvider &HoverRBG();
         Graphics::BitmapRectangleProvider &DownRBG();
@@ -369,7 +381,7 @@ namespace Gorgon { namespace Widgets {
         } Forecolor;
         
         
-        /// This is the width of a one cell widget
+        /// This is the width of a three cell widget
         int WidgetWidth = 64;
         
         /// This is the height of a bordered widget
@@ -384,8 +396,11 @@ namespace Gorgon { namespace Widgets {
 
     private:
         Graphics::BitmapRectangleProvider *makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingedge = 0, int borderwidth = -1, int borderradius = -1);
+        Graphics::BitmapRectangleProvider *makecheckeredbg();
         Graphics::RectangleProvider *makefocusborder();
         UI::Template makepanel(int missingedge, bool scrollers);
+        Graphics::Bitmap *arrow(Graphics::RGBA color, bool upwards);
+        Graphics::Bitmap *cross(Graphics::RGBA color);
         
         UI::Template maketemplate();
         
@@ -427,6 +442,10 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider *hoverbg[5] = {};
         Graphics::BitmapRectangleProvider *downbg[5] = {};
         Graphics::BitmapRectangleProvider *disabledbg[5] = {};
+        
+        Graphics::BitmapRectangleProvider *white = nullptr;
+        Graphics::BitmapRectangleProvider *checkered = nullptr;
+        
         Graphics::BitmapRectangleProvider *normalstraight = nullptr;
         Graphics::BitmapRectangleProvider *altstraight = nullptr;
         Graphics::BitmapRectangleProvider *hoverstraight = nullptr;

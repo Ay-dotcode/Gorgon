@@ -18,11 +18,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
         stack.SetMouseUpEvent([this](auto tag, auto location, auto button) { mouseup(tag, location, button); });
         stack.SetMouseMoveEvent([this](auto tag, auto location) { mousemove(tag, location); });
         stack.SetMouseDownEvent([this](auto tag, auto location, auto button) { 
-            if(IsFocused())
-                mousedown(tag, location, button); 
-
-            if(allowfocus() && button == Input::Mouse::Button::Left)
-                Focus();
+            mousedown(tag, location, button); 
         });
         
         repeater.Register(Input::Keyboard::Keycodes::Left);
@@ -487,6 +483,9 @@ namespace Gorgon { namespace Widgets { namespace internal {
         sellen = {0,0};
         
         updateselection();
+        
+        if(allowfocus())
+            Focus();
     }
     
     void Inputbox_base::mousemove(UI::ComponentTemplate::Tag, Geometry::Point location) { 

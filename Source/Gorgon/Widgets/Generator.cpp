@@ -150,6 +150,9 @@ namespace Gorgon { namespace Widgets {
         delete innerobjectshape;
         delete groovebg;
         
+        delete white;
+        delete checkered;
+        
         DELETEALL(panelborders);
         DELETEALL(panelbgs);
     }
@@ -349,6 +352,20 @@ namespace Gorgon { namespace Widgets {
         }
 
         return *disabledbg[missingedge];
+    }
+
+    Graphics::BitmapRectangleProvider &SimpleGenerator::WhiteBG() {
+        if(!white)
+            white = makeborder(0x0, Graphics::Color::White);
+        
+        return *white;
+    }
+
+    Graphics::BitmapRectangleProvider &SimpleGenerator::CheckeredBG() {
+        if(!checkered)
+            checkered = makecheckeredbg();  
+        
+        return *checkered;
     }
 
     Graphics::BitmapRectangleProvider &SimpleGenerator::NormalStraightBG() {
@@ -578,6 +595,77 @@ namespace Gorgon { namespace Widgets {
         drawables.Add(bi);
         
 
+        auto ret = new Graphics::BitmapRectangleProvider(Graphics::Slice(bi, {
+            coff, 
+            coff, 
+            bsize-coff,
+            bsize-coff
+        }));
+        
+        ret->Prepare();
+        
+        return ret;
+    }
+    
+    
+    Graphics::BitmapRectangleProvider *SimpleGenerator::makecheckeredbg() {
+        auto r = Border.Radius;
+        
+        int coff = r;
+        int bsize = coff * 2 + 12;
+        float off = 0;
+        
+        auto &bi = *new Graphics::Bitmap({bsize, bsize}, Graphics::ColorMode::RGBA);
+        bi.Clear();
+        
+        if(r == 0) {
+            Geometry::PointList<Geometry::Pointf> list = {{off,off}, {off, bsize-off}, {bsize-off, bsize-off}, {bsize-off, off}};
+            
+            CGI::Polyfill(bi.GetData(), list, CGI::SolidFill<>(0.7f));
+        }
+        else {
+            Geometry::PointList<Geometry::Pointf> list;
+            
+            int div = Border.Divisions+1;
+            float angperdivision = -PI/2/div;
+            float angstart = -PI/2;
+            
+            for(int i=0; i<=div; i++) {
+                float ang = angstart + angperdivision*i;
+                list.Push(Geometry::Pointf::FromVector((float)r, ang, Geometry::Pointf{off+r, off+r}));
+            }
+            
+            angstart = PI;
+            for(int i=0; i<=div; i++) {
+                float ang = angstart + angperdivision*i;
+                list.Push(Geometry::Pointf::FromVector((float)r, ang, Geometry::Pointf{off+r, bsize-off-r}));
+            }
+            
+            angstart = PI/2;
+            for(int i=0; i<=div; i++) {
+                float ang = angstart + angperdivision*i;
+                list.Push(Geometry::Pointf::FromVector((float)r, ang, Geometry::Pointf{bsize-off-r, bsize-off-r}));
+            }
+            
+            angstart = 0;
+            for(int i=0; i<=div; i++) {
+                float ang = angstart + angperdivision*i;
+                list.Push(Geometry::Pointf::FromVector((float)r, ang, Geometry::Pointf{bsize-off-r, off+r}));
+            }
+            
+            CGI::Polyfill(bi.GetData(), list, CGI::SolidFill<>(0.7f));
+        }
+        
+        drawables.Add(bi);
+        
+        bi.ForAllPixels([&bi, this](int x, int y) {
+            if((x/6 + y/6) % 2) {
+                bi(x, y, 0) = 102; //0.4f
+                bi(x, y, 1) = 102; //0.4f
+                bi(x, y, 2) = 102; //0.4f
+            }
+        });
+        
         auto ret = new Graphics::BitmapRectangleProvider(Graphics::Slice(bi, {
             coff, 
             coff, 
@@ -2015,6 +2103,70 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
+    Graphics::Bitmap *SimpleGenerator::arrow(Graphics::RGBA color, bool upwards) {
+        auto icon = new Graphics::Bitmap({int(std::round(ObjectHeight*0.9f)), int(std::round(ObjectHeight*0.67f))});
+        
+        icon->Clear();
+        
+        Geometry::PointList<Geometry::Pointf> border;
+        float off = 0;
+        float w = (float)icon->GetWidth();
+        float h = (float)icon->GetHeight()-off;
+        
+        if(upwards) {   
+            border = {
+                {w/2.f, 0},
+                {w, h-off},
+                {0, h-off},
+            };
+        }
+        else {   
+            border = {
+                {w/2.f, h-off},
+                {0, 0},
+                {w, 0},
+            };
+        }
+        
+        CGI::Polyfill(*icon, border, CGI::SolidFill<>(color));
+        icon->Prepare();
+        drawables.Add(icon);
+        
+        return icon;
+    };
+    
+    Graphics::Bitmap *SimpleGenerator::cross(Graphics::RGBA color) {
+        auto icon = new Graphics::Bitmap({int(std::round(ObjectHeight*0.7)), int(std::round(ObjectHeight*0.7))});
+        
+        icon->Clear();
+        
+        float off = ObjectBorder/2.f;
+        float s = float(int(std::round(ObjectHeight*0.7)));
+        float mid = s/2.f;
+        
+        Geometry::PointList<Geometry::Pointf> border = {
+            {off, 0},
+            {mid,mid-off},
+            {s-off, 0},
+            {s, off},
+            {mid+off, mid},
+            {s, s-off},
+            {s-off, s},
+            {mid, mid+off},
+            {off, s},
+            {0, s-off},
+            {mid-off, mid},
+            {0, off},
+            {off, 0}
+        };
+        
+        CGI::Polyfill(*icon, border, CGI::SolidFill<>(color));
+        icon->Prepare();
+        drawables.Add(icon);
+        
+        return icon;
+    };
+        
     UI::Template SimpleGenerator::Dropdown() {
         Geometry::Size defsize = {BorderedWidgetHeight * 4 + Spacing * 3, BorderedWidgetHeight};
         
@@ -2050,70 +2202,6 @@ namespace Gorgon { namespace Widgets {
         boxed.SetPadding(std::max(Border.Radius / 2, Focus.Spacing));
         boxed.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         
-        
-        auto arrow = [&](auto color, bool upwards) {
-            auto icon = new Graphics::Bitmap({int(std::round(ObjectHeight*0.9f)), int(std::round(ObjectHeight*0.67f))});
-            
-            icon->Clear();
-            
-            Geometry::PointList<Geometry::Pointf> border;
-            float off = 0;
-            float w = (float)icon->GetWidth();
-            float h = (float)icon->GetHeight()-off;
-            
-            if(upwards) {   
-                border = {
-                    {w/2.f, 0},
-                    {w, h-off},
-                    {0, h-off},
-                };
-            }
-            else {   
-                border = {
-                    {w/2.f, h-off},
-                    {0, 0},
-                    {w, 0},
-                };
-            }
-            
-            CGI::Polyfill(*icon, border, CGI::SolidFill<>(color));
-            icon->Prepare();
-            drawables.Add(icon);
-            
-            return icon;
-        };
-        
-        auto cross = [&](auto color) {
-            auto icon = new Graphics::Bitmap({int(std::round(ObjectHeight*0.7)), int(std::round(ObjectHeight*0.7))});
-            
-            icon->Clear();
-            
-            float off = ObjectBorder/2.f;
-            float s = float(int(std::round(ObjectHeight*0.7)));
-            float mid = s/2.f;
-            
-            Geometry::PointList<Geometry::Pointf> border = {
-                {off, 0},
-                {mid,mid-off},
-                {s-off, 0},
-                {s, off},
-                {mid+off, mid},
-                {s, s-off},
-                {s-off, s},
-                {mid, mid+off},
-                {off, s},
-                {0, s-off},
-                {mid-off, mid},
-                {0, off},
-                {off, 0}
-            };
-            
-            CGI::Polyfill(*icon, border, CGI::SolidFill<>(color));
-            icon->Prepare();
-            drawables.Add(icon);
-            
-            return icon;
-        };
         
         auto makebutton = [&](auto color, int icon, UI::ComponentCondition cond) {
             auto &btn = temp.AddGraphics(3, cond);
@@ -2351,6 +2439,164 @@ namespace Gorgon { namespace Widgets {
         auto w = BorderedWidgetHeight * 6 + Spacing * 5;
         auto h = (w-26)/12*9 + 22;
         temp.SetSize(w, h);
+        
+        return temp;
+    }
+    
+    UI::Template SimpleGenerator::ColorPicker() {
+        Geometry::Size defsize = {BorderedWidgetHeight * 4 + Spacing * 3, BorderedWidgetHeight};
+        
+        UI::Template temp = maketemplate();
+        temp.SetSpacing(Spacing);
+        temp.SetSize(defsize);
+        
+        
+        temp.AddContainer(0, UI::ComponentCondition::Always)
+            .AddIndex(1) //border
+            .AddIndex(2) //boxed content
+            .AddIndex(9) //color display and button
+            .AddIndex(13) //picker
+        ;
+        
+        auto setupborder = [&](auto &anim, UI::ComponentCondition condition) {
+            auto &bg = temp.AddContainer(1, condition);
+            bg.Background.SetAnimation(anim);
+            bg.SetSize(100, 100, UI::Dimension::Percent);
+            bg.SetPositioning(UI::ComponentTemplate::Absolute);
+        };
+
+        setupborder(NormalEditBorder(), UI::ComponentCondition::Always);
+        setupborder(HoverEditBorder(), UI::ComponentCondition::Hover);
+        setupborder(NormalBorder(), UI::ComponentCondition::Readonly);
+        setupborder(DisabledBorder(), UI::ComponentCondition::Disabled);
+        
+        auto &boxed = temp.AddContainer(2, UI::ComponentCondition::Always)
+            .AddIndex(3) //clip
+            .AddIndex(4) //focus
+        ;
+        boxed.SetSize(100, 100, UI::Dimension::Percent);
+        boxed.SetBorderSize(Border.Width);
+        boxed.SetPadding(std::max(Border.Radius / 2, Focus.Spacing));
+        
+        auto &clip = temp.AddContainer(3, UI::ComponentCondition::Always)
+            .AddIndex(5)
+        ;
+        clip.SetClip(true);
+        clip.SetPadding(Focus.Spacing + Focus.Width);
+        clip.SetSize(100, 100, UI::Dimension::Percent);
+        clip.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        
+        //Contents
+        auto &content = temp.AddContainer(5, UI::ComponentCondition::Always)
+            .AddIndex(6) //text
+            .AddIndex(7) //selection
+            .AddIndex(8) //caret
+        ;
+        content.SetSize(100, 100, UI::Dimension::Percent);
+        content.SetPositioning(UI::ComponentTemplate::Absolute);
+        content.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
+        content.SetTag(UI::ComponentTemplate::ViewPortTag);
+        
+        
+        //Text
+        auto setuptext = [&](Graphics::RGBA color, UI::ComponentCondition condition) {
+            auto &txt = temp.AddTextholder(6, condition);
+            txt.SetRenderer(RegularFont);
+            txt.SetColor(color);
+            txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+            txt.SetDataEffect(UI::ComponentTemplate::Text);
+            txt.SetSize(100, 100, UI::Dimension::Percent);
+            txt.SetPositioning(UI::ComponentTemplate::Absolute);
+            txt.SetTag(UI::ComponentTemplate::ContentsTag);
+        };
+        
+        setuptext(Forecolor.Regular, UI::ComponentCondition::Always);
+        setuptext(Forecolor.Regular.BlendWith(Forecolor.Hover), UI::ComponentCondition::Hover);
+        setuptext(Forecolor.Regular.BlendWith(Forecolor.Down), UI::ComponentCondition::Down);
+        setuptext(Forecolor.Regular.BlendWith(Forecolor.Disabled), UI::ComponentCondition::Disabled);
+        
+        //Caret
+        {
+            auto &anim = *new Graphics::BitmapAnimationProvider();
+            auto &img = *new Graphics::Bitmap({std::min((int)std::round(Border.Width/2.f), 1), ObjectHeight});
+            img.ForAllPixels([&img, this](int x, int y) {
+                img(x, y, 0) = Border.Color.R;
+                img(x, y, 1) = Border.Color.G;
+                img(x, y, 2) = Border.Color.B;
+                img(x, y, 3) = /*(y >= (asciivsize.first - 1) && y <= (lettervsize.first + regularrenderer->GetBaseLine()+1)) **/ Border.Color.A;
+            });
+            drawables.Add(img);
+            img.Prepare();
+            auto &img2 = *new Graphics::Bitmap({std::min((int)std::round(Border.Width/2.f), 1), RegularFont.GetGlyphRenderer().GetHeight()});
+            img2.Clear();
+            img2.Prepare();
+            drawables.Add(img2);
+            
+            anim.Add(img, 700);
+            anim.Add(img2, 300);
+            providers.Add(anim);
+            
+            auto &caret = temp.AddGraphics(8, UI::ComponentCondition::Focused);
+            caret.Content.SetAnimation(anim);
+            caret.SetPosition(0, 0, UI::Dimension::Pixel);
+            caret.SetPositioning(caret.Absolute);
+            caret.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+            caret.SetTag(caret.CaretTag);
+            caret.SetSizing(caret.Fixed);
+            caret.SetSize(img.GetWidth(), img.GetHeight());
+        }
+        
+        //Selection
+        {
+            auto &img = *new Graphics::BlankImage(8, 8, Background.Selected);
+            drawables.Add(img);
+            
+            auto &selection = temp.AddGraphics(7, UI::ComponentCondition::Focused);
+            selection.Content.SetDrawable(img);
+            selection.SetPosition(0, 0, UI::Dimension::Pixel);
+            selection.SetPositioning(selection.Absolute);
+            selection.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+            selection.SetTag(selection.SelectionTag);
+            selection.SetSize(0, ObjectHeight);
+            selection.SetSizing(UI::ComponentTemplate::Fixed);
+        }
+        
+        auto &colorbtn = temp.AddContainer(9, UI::ComponentCondition::Always)
+            .AddIndex(10) //checkered
+            .AddIndex(11) //color
+            .AddIndex(12) //border
+        ;
+        colorbtn.SetSize(BorderedWidgetHeight, BorderedWidgetHeight - Border.Width*2 - Spacing*2);
+        colorbtn.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        colorbtn.SetMargin(0, 0, Border.Width+Spacing, 0);
+        
+        auto &checkered = temp.AddGraphics(10, UI::ComponentCondition::Always);
+        checkered.SetSize(100, 100, UI::Dimension::Percent);
+        checkered.SetSizing(UI::ComponentTemplate::Fixed);
+        checkered.Content.SetAnimation(CheckeredBG());
+        checkered.SetPositioning(UI::ComponentTemplate::Absolute);
+        
+        auto &color = temp.AddGraphics(11, UI::ComponentCondition::Always);
+        color.SetValueModification(UI::ComponentTemplate::ModifyColor, UI::ComponentTemplate::UseRGBA);
+        color.SetSize(100, 100, UI::Dimension::Percent);
+        color.SetSizing(UI::ComponentTemplate::Fixed);
+        color.Content.SetAnimation(WhiteBG());
+        color.SetPositioning(UI::ComponentTemplate::Absolute);
+        color.SetMargin(Spacing);
+        
+        auto &bord = temp.AddGraphics(12, UI::ComponentCondition::Always);
+        bord.SetSize(100, 100, UI::Dimension::Percent);
+        bord.SetSizing(UI::ComponentTemplate::Fixed);
+        bord.Content.SetAnimation(NormalEmptyBorder());
+        bord.SetPositioning(UI::ComponentTemplate::Absolute);
+        bord.SetTag(UI::ComponentTemplate::ButtonTag);
+        
+        auto &plane = temp.AddPlaceholder(13, UI::ComponentCondition::Always);
+        plane.SetTemplate((*this)[ColorPlane_Regular]);
+        plane.SetTag(UI::ComponentTemplate::ListTag);
+        plane.SetPositioning(UI::ComponentTemplate::Absolute);
+
+        setupfocus(temp.AddGraphics(4, UI::ComponentCondition::Focused));
         
         return temp;
     }

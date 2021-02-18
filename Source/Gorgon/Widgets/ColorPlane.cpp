@@ -38,6 +38,7 @@ namespace Gorgon { namespace Widgets {
     void ColorPlane::click(Geometry::Point l) {
         auto &huetable = *htbl;
         auto &lctable = *lctbl;
+        bool alphaclick = false;
         
         Geometry::Pointf location = l;
         
@@ -52,6 +53,7 @@ namespace Gorgon { namespace Widgets {
                 found = true;
                 color = this->color;
                 color.A = 1.f / (huetable.size()-1) * l.X;
+                alphaclick = true;
             }
         }
         else if(location.Y > halftableoffset.Y) {
@@ -89,8 +91,6 @@ namespace Gorgon { namespace Widgets {
                     halftablerow = 2;
                 }
             }
-            
-            std::cout << l.X << std::endl;
             
             found = true;
             switch(halftablerow) {
@@ -150,7 +150,7 @@ namespace Gorgon { namespace Widgets {
             ChangedEvent(color);
         }
         
-        ClickedEvent();
+        ClickedEvent(alphaclick);
     }
     
     void ColorPlane::Refresh() {
@@ -199,13 +199,15 @@ namespace Gorgon { namespace Widgets {
             int sw = (h+4)/4+1;
             bool state = false;
             bool sstate = false;
-            for(int yy=display.GetHeight()-(int)h-4; yy<display.GetHeight(); yy++) {
-                if((yy-display.GetHeight()+(int)h+4)%sw == sw-1)
+            int toth = display.GetData().GetHeight();
+            int totw = display.GetData().GetWidth();
+            for(int yy=toth-(int)h-4; yy<toth; yy++) {
+                if((yy-toth+(int)h+4)%sw == sw-1)
                     sstate = !sstate;
                 
                 state = sstate;
                 
-                for(int xx=0; xx<display.GetWidth(); xx++) {
+                for(int xx=0; xx<totw; xx++) {
                     display.SetRGBAAt(xx, yy, state ? 0.8f : 0.5f);
                     
                     if(xx%sw == sw-1)

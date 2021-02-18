@@ -57,6 +57,7 @@ namespace Gorgon { namespace Widgets {
             Dropdown_Regular,
             
             ColorPlane_Regular,
+            ColorPicker_Regular,
             
             
             ///Do not use this value

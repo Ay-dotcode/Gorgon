@@ -861,6 +861,12 @@ namespace Gorgon {
 /// If property is there to call Update every time the value is changed, this mapper can handle this situation.
 /// Names the member variable as m_name. For proptype use the prefix part of the property name: Numeric for 
 /// NumericProperty
+#define PROPERTY_GETSET(cls, proptype, type, name) \
+    Gorgon::proptype##Property<cls, type, &cls::Get##name, &cls::Set##name> name = Gorgon::proptype##Property<cls, type, &cls::Get##name, &cls::Set##name>{this}
+
+/// If property is there to call Update every time the value is changed, this mapper can handle this situation.
+/// Names the member variable as m_name. For proptype use the prefix part of the property name: Numeric for 
+/// NumericProperty
 #define PROPERTY_UPDATE(cls, proptype, type, name, def) \
 private: \
     type m_##name = def; \
@@ -888,7 +894,7 @@ private: \
     type m_##name = def; \
 public: \
     type Get##name() const { return m_##name; } \
-    void Set##name(const type &value) { m_##name=value; Refresh(); } \
+    void Set##name(const type &value) { if(m_##name==value) return;  m_##name=value; Refresh(); } \
     \
     Gorgon::proptype##Property<cls, type, &cls::Get##name, &cls::Set##name> name = Gorgon::proptype##Property<cls, type, &cls::Get##name, &cls::Set##name>{this}
 
@@ -898,7 +904,7 @@ public: \
 #define PROPERTY_REFRESH_VN(cls, proptype, type, name, varname) \
 public: \
     type Get##name() const { return varname; } \
-    void Set##name(const type &value) { this->varname=value; Refresh(); } \
+    void Set##name(const type &value) { if(this->varname==value) return; this->varname=value; Refresh(); } \
     \
     Gorgon::proptype##Property<cls, type, &cls::Get##name, &cls::Set##name> name = Gorgon::proptype##Property<cls, type, &cls::Get##name, &cls::Set##name>{this}
     

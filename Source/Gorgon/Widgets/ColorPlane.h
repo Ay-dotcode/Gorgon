@@ -86,7 +86,7 @@ namespace Gorgon { namespace Widgets {
         void Refresh();
         
         Event<ColorPlane, Graphics::RGBAf> ChangedEvent = Event<ColorPlane, Graphics::RGBAf>{*this};
-        Event<ColorPlane> ClickedEvent = Event<ColorPlane>{*this};
+        Event<ColorPlane, bool /*alpha*/> ClickedEvent = Event<ColorPlane, bool>{*this};
         
         /// Huedensity changes the number of different hue values displayed
         PROPERTY_REFRESH_VN(ColorPlane, , Density, HueDensity, huedensity);
