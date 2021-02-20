@@ -87,17 +87,17 @@ namespace Gorgon { namespace Widgets {
         /// Scrolls the contents of the panel so that the given location will
         /// be at the top.
         void ScrollTo(int y, bool clip = true) {
-            ScrollTo(ScrollOffset().X, y, clip);
+            ScrollTo(target.X, y, clip);
         }
 
         /// Scrolls the contents an additional amount.
         void ScrollBy(int y, bool clip = true) {
-            ScrollTo(ScrollOffset().X, ScrollOffset().Y + y, clip);
+            ScrollTo(target.X, target.Y + y, clip);
         }
 
         /// Scrolls the contents an additional amount.
         void ScrollBy(int x, int y, bool clip = true) {
-            ScrollTo(ScrollOffset().X + x, ScrollOffset().Y + y, clip);
+            ScrollTo(target.X + x, target.Y + y, clip);
         }
         
         /// Returns the current scroll offset
