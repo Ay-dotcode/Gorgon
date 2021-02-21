@@ -91,6 +91,8 @@ namespace Gorgon { namespace Widgets {
             if(opened)
                 return;
             
+            BeforeOpenEvent();
+            
             auto res = GetParent().RequestExtender(stack);
             
             if(!res.Extender)
@@ -176,6 +178,8 @@ namespace Gorgon { namespace Widgets {
             
             return false;
         }
+        
+        Event<DropdownBase> BeforeOpenEvent = Event<DropdownBase>{this};
         
     protected:
         virtual void boundschanged() override {
