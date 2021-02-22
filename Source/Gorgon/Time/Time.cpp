@@ -41,6 +41,18 @@ namespace Gorgon { namespace Time {
 		ret.Weekday	   =Date::WeekdayType(timeinfo.tm_wday);
 	}
 	
+	Date::Date(time_t systemtime) {
+        struct tm inf = *localtime(&systemtime);
+        fromtm(*this, inf);
+    }
+    
+    time_t Date::SystemTime() const {
+        auto t = totm(*this);
+        
+        return mktime(&t);
+    }
+
+	
 	bool Date::Parse(std::string isodate) {
 		isodate=String::Trim(isodate);
 		

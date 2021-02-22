@@ -55,7 +55,7 @@ namespace Gorgon {
 			
 			/// Default constructor, zero initializes the class, making it
 			/// an unset time.
-			Date() : Day(0), Month(Empty), Year(0), Hour(0), Minute(0),
+			Date() : Year(0), Month(Empty), Day(0), Hour(0), Minute(0),
 			Second(0), Millisecond(0), Weekday(Sunday), Timezone(LocalTimezone())
 			{ }
 			
@@ -65,7 +65,9 @@ namespace Gorgon {
 			
 			/// Reads a new date object from a binary stream. @see Save for details.
 			/// @throw std::runtime_error if checksum is wrong or data is not valid
-			Date(std::istream &source) { if(!Load(source)) throw std::runtime_error("Invalid date"); }
+			explicit Date(std::istream &source) { if(!Load(source)) throw std::runtime_error("Invalid date"); }
+			
+			Date(time_t systemtime);
 			
 			/// Writes date object to a binary stream. Format is given below.
 			/// numbers after names are number of bytes.
@@ -141,6 +143,8 @@ namespace Gorgon {
 			/// leading zeroes, MM is the minute in two digit format.
 			std::string Timezone_GMT() const;
 			
+			time_t SystemTime() const;
+			
 			/// Returns the system timezone in minutes. Might be negative.
 			static int LocalTimezone();
 			
@@ -203,9 +207,6 @@ namespace Gorgon {
 			
 			/// Day in month
 			unsigned int Day;
-
-			/// Day of the week, starts from sunday = 0
-			WeekdayType Weekday;
 			
 			/// Hour in 24 hour format
 			unsigned int Hour;
@@ -218,6 +219,9 @@ namespace Gorgon {
 			
 			/// This value is from the last second tick.
 			unsigned int Millisecond;
+
+			/// Day of the week, starts from sunday = 0
+			WeekdayType Weekday;
 			
 			/// Timezone in minutes, can be negative. Note that some time zones
 			/// has minute offset.

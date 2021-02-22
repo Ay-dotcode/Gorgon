@@ -7,6 +7,14 @@
 
 #include <sys/stat.h>
 
+#ifndef WIN32
+#   include <unistd.h>
+#endif
+
+#ifdef WIN32
+#   define stat _stat
+#endif
+
 namespace Gorgon { namespace Filesystem {
 	
 	static std::string startupdir;
@@ -24,8 +32,17 @@ namespace Gorgon { namespace Filesystem {
 		if(stat( filename.c_str(), &status )!=0) {
 			return 0;
 		}
-
+		
 		return (unsigned long long)status.st_size;
+	}
+	
+	time_t ModificationTime(const std::string &filename) {
+		struct stat status;
+		if(stat( filename.c_str(), &status )!=0) {
+			return 0;
+		}
+		
+		return status.st_mtime;
 	}
 		
 	bool Save(const std::string &filename, const std::string &data, bool append) {
