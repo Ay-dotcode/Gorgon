@@ -44,7 +44,16 @@ namespace Gorgon { namespace Filesystem {
 		
 		return status.st_mtime;
 	}
+    
+	time_t ChangeTime(const std::string &filename) {
+		struct stat status;
+		if(stat( filename.c_str(), &status )!=0) {
+			return 0;
+		}
 		
+		return status.st_ctime;
+	}
+    
 	bool Save(const std::string &filename, const std::string &data, bool append) {
 		std::ofstream file(filename, (append ? std::ios::binary | std::ios::app : std::ios::binary));
 		

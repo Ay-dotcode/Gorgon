@@ -306,6 +306,13 @@ namespace Gorgon {
 		/// @return size of the given file
 		unsigned long long Size(const std::string &filename);
 		
+		/// Returns the modification time of the given file. If file is not found 0 is returned.
+		time_t ModificationTime(const std::string &filename);
+		
+		/// Returns the change time of the given file. This should be preferred for change detection.
+        /// If file is not found 0 is returned.
+		time_t ChangeTime(const std::string &filename);
+        
 		/// Saves a given data into the filename. If the file exists, it will be appended
 		/// if append parameter is set to true. This function can handle binary data.
 		bool Save(const std::string &filename, const std::string &data, bool append=false);
