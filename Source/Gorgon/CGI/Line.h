@@ -30,8 +30,14 @@ namespace Gorgon { namespace CGI {
 		Geometry::Pointf prevoff;
 
 		//first point is special
+        int s = 0;
 		{
-			Geometry::Line<P_> l = p.GetLine(0);
+			Geometry::Line<P_> l;
+            do {
+                l = p.GetLine(s);
+                s++;
+            } while(s < p.GetSize() && l.Start == l.End);
+            
 			auto off = (Geometry::Pointf(l.End) - Geometry::Pointf(l.Start)).Perpendicular().Normalize() * w;
 
 			//if closed the first two points will be added last
@@ -54,7 +60,7 @@ namespace Gorgon { namespace CGI {
 		}
 
         
-        for(int i=1; i<p.GetSize()-1; i++) {
+        for(int i=s; i<p.GetSize()-1; i++) {
             Geometry::Line<P_> l = p.GetLine(i);
             
             if(l.Start == l.End)
@@ -113,7 +119,12 @@ namespace Gorgon { namespace CGI {
         //if closed, keep left/right polygons separate  
         if(p.Front() == p.Back()) {
 			//add start points of first line by checking the angle with the last line
-			Geometry::Line<P_> l = p.GetLine(0);
+			Geometry::Line<P_> l;
+            int st = 0;
+            do {
+                l = p.GetLine(st);
+                st++;
+            } while(st < p.GetSize() && l.Start == l.End);
 
 			auto off = (Geometry::Pointf(l.End) - Geometry::Pointf(l.Start)).Perpendicular().Normalize() * w;
 

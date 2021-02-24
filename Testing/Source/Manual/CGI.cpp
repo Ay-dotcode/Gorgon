@@ -20,7 +20,7 @@ std::string helptext =
 #endif
     
 int main() {
-    int zoom = 10;
+    int zoom = 20;
 	Application app("generictest", "Test", helptext, zoom);
 
 	Graphics::Layer l;
@@ -51,14 +51,19 @@ int main() {
     }*/
     
     
-	std::vector<Geometry::PointList<Geometry::Pointf>> points;
-    points.push_back({{27.4286f, 22.8571f}, {26.2857f, 22.8571f}, {26.2857f, 21.7143f}, {27.4286f, 20.5714f}, {28.5714f, 20.5714f}, {29.7143f, 21.7143f}, {29.7143f, 22.8571f} });
-    points.push_back({{35.f, 10.f}, {35.f, 30.f}});
+	/*std::vector<Geometry::PointList<Geometry::Pointf>> points;
+    points.push_back({{301.452,285.09}, {301.558,284.985}, {301.523,285.055}});
+    points.push_back({{295.091,285.09}, {294.775,285.266}, {294.318,285.301}, {295.091,284.774}, {295.162,284.985}, {295.091,285.09}});*/
     
-    points[0].Push(points[0].Front());
+    /*for(auto &pl : points) {
+        for(auto &p : pl) {
+            p -= Geometry::Pointf{290, 280};
+        }
+    }*/
+    /*points[0].Push(points[0].Front());
     points[0] -= Geometry::Pointf{15,15};
     //points[0] *= 0.4;
-    points[1] -= Geometry::Pointf{15,15};
+    points[1] -= Geometry::Pointf{15,15};*/
     //points[1] *= 0.4;
     
     //std::cout<<"Build time: "<<tm.Tick()<<std::endl;
@@ -77,9 +82,9 @@ int main() {
     tm.Start();
     //for(int i=0; i<100; i++)*/
     //for(auto &p : points)
-    CGI::DrawLines<1>(bmp.GetData(), points, 2, CGI::SolidFill<>(0xa0ffffff));
-    auto points2 = CGI::LinesToPolygons<1>(points[0], 2);
-    
+    /*CGI::DrawLines(bmp.GetData(), points, 1, CGI::SolidFill<>(0xffffffff));
+    auto points2 = CGI::LinesToPolygons(points[1], 1);*/
+    /*
     CGI::Circle<1>(bmp.GetData(), {30.f, 10.f}, 7, 2, CGI::SolidFill<>(Graphics::Color::ArmyGreen));
     
     CGI::Circle<>(bmp.GetData(), {30.f, 30.f}, 7, 2, CGI::SolidFill<>(Graphics::Color::White));
@@ -101,12 +106,26 @@ int main() {
     }
     
     
+    */
+    
+    std::vector<Geometry::PointList<Geometry::Pointf>> points;
+    points.push_back({{5,5.7}, {5.6,4.8}, {4,4.9}});
+    points.push_back({{11.8,5.4},  {11.1,4.7}}); 
+    for(auto &pl : points) {
+        for(auto &p : pl) {
+            p = (p-Geometry::Pointf(4, 4)) * 4;
+        }
+    }
+    
+    CGI::Polyfill<1>(bmp.GetData(), points, CGI::SolidFill<>(0xffffffff));
    /* std::cout<<"Draw time: "<<tm.Tick()<<std::endl;
     */
    auto bmp2 = bmp.ZoomMultiple(zoom);
    
-   /*CGI::DrawLines(bmp2, cp*zoom, 2, CGI::SolidFill<>(0xa0ffffff));
-   CGI::DrawLines(bmp2, cpo*zoom, 2, CGI::SolidFill<>(0xa0ffffff));*/
+   CGI::DrawLines(bmp2, points[0]*zoom, 1, CGI::SolidFill<>(0xa0ffffff));
+   CGI::DrawLines(bmp2, points[1]*zoom, 1, CGI::SolidFill<>(0xa0ffffff));
+   //CGI::DrawLines(bmp2, points[2]*zoom, 1, CGI::SolidFill<>(0xa0ffffff));
+   /*CGI::DrawLines(bmp2, cpo*zoom, 2, CGI::SolidFill<>(0xa0ffffff));*/
    
    
     for(auto &pts : points)
@@ -116,13 +135,18 @@ int main() {
         bmp2.SetRGBAAt(p*zoom+Geometry::Point{1,0}, Graphics::Color::Red);
         bmp2.SetRGBAAt(p*zoom+Geometry::Point{0,1}, Graphics::Color::Red);
     }
-    for(auto &pts : points2)
-    for(auto &p : pts) {
-        bmp2.SetRGBAAt(p*zoom, Graphics::Color::Green);
-        bmp2.SetRGBAAt(p*zoom+Geometry::Point{1,1}, Graphics::Color::Green);
-        bmp2.SetRGBAAt(p*zoom+Geometry::Point{1,0}, Graphics::Color::Green);
-        bmp2.SetRGBAAt(p*zoom+Geometry::Point{0,1}, Graphics::Color::Green);
-    }
+    
+    /*for(auto &pts : points2) {
+        for(auto &p : pts) {
+            bmp2.SetRGBAAt(p*zoom, Graphics::Color::Green);
+            bmp2.SetRGBAAt(p*zoom+Geometry::Point{1,1}, Graphics::Color::Green);
+            bmp2.SetRGBAAt(p*zoom+Geometry::Point{1,0}, Graphics::Color::Green);
+            bmp2.SetRGBAAt(p*zoom+Geometry::Point{0,1}, Graphics::Color::Green);
+        }
+        pts *= zoom;
+    }*/
+    
+    //CGI::Polyfill(bmp2.GetData(), points2, CGI::SolidFill<>(Graphics::Color::Blue));
     /*for(auto &p : points) {
         bmp2.SetRGBAAt(p*zoom, Graphics::Color::Red);
     }
@@ -135,9 +159,9 @@ int main() {
     }*/
     bmp2.Prepare();
     std::cout<<std::endl;
-        for(auto &p : points2[0]) {
+        /*for(auto &p : points2[0]) {
             std::cout<<"{"<<round(p.X*10)/10<<","<<round(p.Y*10)/10<<"}, ";
-        }
+        }*/
     std::cout<<std::endl;
     
     bmp2.Draw(l, 0,0);
