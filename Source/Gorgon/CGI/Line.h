@@ -78,7 +78,11 @@ namespace Gorgon { namespace CGI {
 				auto p = l.Start - off;
 				auto q = prev.Start - prevoff;
 
-                auto pos = ((q - p).CrossProduct(r) / r.CrossProduct(s));
+                float pos = 0;
+                
+                if(r != s)
+                    pos = ((q - p).CrossProduct(r) / r.CrossProduct(s));
+                
                 if(pos<0)
                     pos = 0;
                 if(pos>1)
@@ -97,7 +101,9 @@ namespace Gorgon { namespace CGI {
 				auto p = l.Start + off;
 				auto q = prev.Start + prevoff;
 
-                auto pos = ((q - p).CrossProduct(r) / r.CrossProduct(s));
+                float pos = 0;
+                if(r != s)
+                    pos = ((q - p).CrossProduct(r) / r.CrossProduct(s));
                 if(pos<0)
                     pos = 0;
                 if(pos>1)
@@ -138,7 +144,9 @@ namespace Gorgon { namespace CGI {
 				auto p = l.Start - off;
 				auto q = prev.Start - prevoff;
 
-				auto pos = ((q - p).CrossProduct(r) / r.CrossProduct(s));
+                float pos = 0;
+                if(r != s)
+                    pos = ((q - p).CrossProduct(r) / r.CrossProduct(s));
 				if(pos<0)
 					pos = 0;
 				if(pos>1)
@@ -156,7 +164,9 @@ namespace Gorgon { namespace CGI {
 				auto p = l.Start + off;
 				auto q = prev.Start + prevoff;
 
-				auto pos = ((q - p).CrossProduct(r) / r.CrossProduct(s));
+                float pos = 0;
+                if(r != s)
+                    pos = ((q - p).CrossProduct(r) / r.CrossProduct(s));
 				if(pos<0)
 					pos = 0;
 				if(pos>1)

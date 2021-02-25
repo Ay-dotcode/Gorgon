@@ -56,10 +56,9 @@ namespace Gorgon { namespace CGI {
                 while(off > -N) {
                     auto line = points.GetLine(off);
                     
-                    if(line.End.Y < nexty && line.End.Y > y) {
-                        off--;
-                    }
-                    else if(line.Start.Y < nexty && line.Start.Y > y) {
+                    if( (line.End.Y < nexty && line.End.Y > y) || 
+                        (line.Start.Y < nexty && line.Start.Y > y)) 
+                    {
                         off--;
                     }
                     else
@@ -74,6 +73,9 @@ namespace Gorgon { namespace CGI {
                 int firstdir = 0, lastdir = 0;
                 for(int i=off; i<N+off; i++) {
                     auto line = points.GetLine(i);
+                    
+                    if(line.Start == line.End)
+                        continue;
                     
                     if(line.MinY() < nexty && line.MaxY() > y) {
                         auto line = points.GetLine(i);
