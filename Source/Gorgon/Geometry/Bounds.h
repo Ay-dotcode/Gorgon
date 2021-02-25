@@ -70,12 +70,75 @@ namespace Gorgon { namespace Geometry {
 		}
 		
 		explicit basic_Bounds(const std::string &str) {
-			auto s=str.begin();
+			size_t p = 0, l = str.length();
 			
-			while(s!=str.end() && *s==' ')
-				s++;
-			
-            //todo finish parsing....
+            auto trim = [&] {
+                while(p < l && (str[p]==' '||str[p]=='\t'))
+                    p++;
+                return p < l;
+            };
+            
+            if(!trim()) return;
+            
+            if(p < l && str[p] == '[')
+                p++;
+            
+            if(p >= l)
+                return;
+            
+            T_ first, second, third, fourth;
+            
+            bool dash = false;
+            auto s = p;
+            p = str.find_first_of("-, ", s);
+
+            if(p == str.npos || p >= l || !trim())
+                return;
+            
+            dash = str[p] == '-';
+            
+            first = String::To<T_>(str.substr(s, p-s));
+            
+            p++;
+            if(!trim())
+                return;
+            
+            
+            s = p;
+            p = str.find_first_of(", ", s);
+
+            if(p == str.npos || p >= l || !trim())
+                return;
+            
+            
+            second = String::To<T_>(str.substr(s, p-s));
+            
+            p++;
+            if(!trim())
+                return;
+            
+            s = p;
+            p = str.find_first_of("-, ", s);
+
+            if(p == str.npos || p >= l || !trim())
+                return;
+            
+            third = String::To<T_>(str.substr(s, p-s));
+            
+            fourth = String::To<T_>(str.substr(p+1, str.find_first_of(']', p+1)));
+            
+            if(dash) {
+                Left = first;
+                Right = second;
+                Top = third;
+                Bottom = fourth;
+            }
+            else {
+                Left = first;
+                Top = second;
+                Right = third;
+                Bottom = fourth;
+            }
 		}
 		
 		explicit operator std::string() const {
@@ -413,7 +476,7 @@ namespace Gorgon { namespace Geometry {
 	/// [(l, t) - (r, b)]
 	template <class T_>
 	std::ostream &operator << (std::ostream &out, const basic_Bounds<T_> &bounds) {
-		out<<"[("<<bounds.Left<<", "<<bounds.Top<<") - ("<<bounds.Right<<", "<<bounds.Bottom<<")]";
+		out<<(std::string)bounds;
 
 		return out;
 	}
@@ -431,27 +494,57 @@ namespace Gorgon { namespace Geometry {
             par = true;
 		}
 		
-		decltype(bounds.TopLeft()) tl, br;
+            
+        T_ first, second, third, fourth;
 		
-		in>>tl;
+		in>>first;
 		
 		while(in.peek()==' ')
 			in.ignore(1);
 		
+        bool dash = false;
+        
+		if(in.peek()=='-') {
+			in.ignore(1);
+            dash = true;
+		}
+		else if(in.peek() == ',') {
+            in.ignore(1);
+        }
+		
+		in>>second;
+        
+        if(in.peek() == ',') {
+            in.ignore(1);
+        }
+        
+		in>>third;
+        
 		if(in.peek()=='-') {
 			in.ignore(1);
 		}
+		else if(in.peek() == ',') {
+            in.ignore(1);
+        }
 		
-		in>>br;
-		
+		in>>fourth;
+        
 		if(in.bad()) return in;
 		
-		bounds.Top   =tl.Y;
-		bounds.Left  =tl.X;
-		bounds.Bottom=br.Y;
-		bounds.Right =br.X;
-		
-		
+
+        if(dash) {
+            bounds.Left = first;
+            bounds.Right = second;
+            bounds.Top = third;
+            bounds.Bottom = fourth;
+        }
+        else {
+            bounds.Left = first;
+            bounds.Top = second;
+            bounds.Right = third;
+            bounds.Bottom = fourth;
+        }
+        
 		if(par) {
 			while(in.peek()==' ') {
 				in.ignore(1);

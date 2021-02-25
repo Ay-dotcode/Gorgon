@@ -8,26 +8,20 @@
 #include <Gorgon/Geometry/Point.h>
 #include <Gorgon/Filesystem/Iterator.h>
 #include <Gorgon/Filesystem.h>
-
-namespace Gorgon { namespace Geometry {
-	extern Scripting::Library LibGeometry;
-	void init_scripting();
-} }
+#include <Gorgon/Geometry.h>
 
 
 using namespace Gorgon::Scripting;
 using namespace Gorgon;
 using Gorgon::Geometry::Point;
-using Gorgon::Geometry::init_scripting;
 using Gorgon::Geometry::LibGeometry;
 
 int main (int argc, char * const argv[]) {
 	VirtualMachine vm;
 	vm.Activate();
 	
-	init_scripting();
+	Gorgon::Geometry::InitializeScripting();
 	
-	Gorgon::Geometry::init_scripting();
 	vm.AddLibrary(Gorgon::Geometry::LibGeometry);	
 
 	return Catch::Session().run( argc, argv );
