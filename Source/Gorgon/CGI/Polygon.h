@@ -59,7 +59,7 @@ namespace Gorgon { namespace CGI {
                     if(line.End.Y < nexty && line.End.Y > y) {
                         off--;
                     }
-                    if(line.Start.Y < nexty && line.Start.Y > y) {
+                    else if(line.Start.Y < nexty && line.Start.Y > y) {
                         off--;
                     }
                     else
@@ -140,7 +140,7 @@ namespace Gorgon { namespace CGI {
                 listind++;
             }
             
-            std::sort(xpoints.begin(), xpoints.end(), [](auto l, auto r) { return l.second < r.second; });
+            std::sort(xpoints.begin(), xpoints.end(), [](auto l, auto r) { return l.first < r.first; });
             
             //join overlapping x sections
             /*for(int i=0; i<(int)xpoints.size()-1; i++) {
@@ -238,7 +238,7 @@ namespace Gorgon { namespace CGI {
             std::vector<int> cnts(ew); //line buffer for counting
             int yminint = (int)floor(ymin*S_);
             
-            float a = 1.f / (S_ * S_);
+            float a = 1.f / (S_ * S_); //alpha per pixel hit
             
             internal::findpolylinestofill(points, yminint, (int)ceil(ymax*S_)+1, [&](float y, auto &xpoints) {
                 if(int(cy) != int(y/S_)) {
@@ -270,7 +270,6 @@ namespace Gorgon { namespace CGI {
                     if(wind == 0) continue;
                     
                     Float s = ceil(xpoints[i].second)/S_;
-                    std::sort(xpoints.begin() + i + 1, xpoints.end(), [](auto l, auto r) { return l.first < r.first; });
                     
                     while(true) {
                         i++;
@@ -307,9 +306,14 @@ namespace Gorgon { namespace CGI {
                         }
                     }
                     
-                    if(xpoints.begin() + i == xpoints.end()) continue;
-                    
-                    std::sort(xpoints.begin() + i + 1, xpoints.end(), [](auto l, auto r) { return l.second < r.second; });
+                    if(i < xpoints.size() - 1) {
+                        std::partial_sort(
+                            xpoints.begin() + i + 1, 
+                            xpoints.begin() + i + 2, 
+                            xpoints.end(), 
+                            [](auto l, auto r) { return l.second < r.second; }
+                        );
+                    }
                 }
             });
         }
@@ -325,7 +329,6 @@ namespace Gorgon { namespace CGI {
                     if(wind == 0) continue;
                     
                     int s = (int)ceil(xpoints[i].second);
-                    std::sort(xpoints.begin() + i + 1, xpoints.end(), [](auto l, auto r) { return l.first < r.first; });
                     
                     while(true) {
                         i++;
@@ -362,9 +365,14 @@ namespace Gorgon { namespace CGI {
                         }
                     }
                     
-                    if(xpoints.begin() + i == xpoints.end()) continue;
-                    
-                    std::sort(xpoints.begin() + i + 1, xpoints.end(), [](auto l, auto r) { return l.second < r.second; });
+                    if(i < xpoints.size() - 1) {
+                        std::partial_sort(
+                            xpoints.begin() + i + 1, 
+                            xpoints.begin() + i + 2, 
+                            xpoints.end(), 
+                            [](auto l, auto r) { return l.second < r.second; }
+                        );
+                    }
                 }
             });
         }

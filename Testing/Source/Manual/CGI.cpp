@@ -110,7 +110,7 @@ int main() {
     
     std::vector<Geometry::PointList<Geometry::Pointf>> points;
     points.push_back({{5,5.7}, {5.6,4.8}, {4,4.9}});
-    points.push_back({{11.8,5.4},  {11.1,4.7}}); 
+    points.push_back({{11.8,5.4},  {11.1,4.78}}); 
     for(auto &pl : points) {
         for(auto &p : pl) {
             p = (p-Geometry::Pointf(4, 4)) * 4;
