@@ -33,7 +33,7 @@ namespace Gorgon {
 			///         it will throw PathNotFoundError
 			/// @param  pattern wildcard pattern to match paths against
 			/// @throw  PathNotFoundError if the given directory does not exists
-			Iterator(const std::string &directory, const std::string &pattern="*");
+			explicit Iterator(const std::string &directory, const std::string &pattern="*");
 			
 			///
 			/// Move constructor
@@ -181,6 +181,26 @@ namespace Gorgon {
 			std::string current;
 		};
 		
+        /**
+         * Enables ranged based for loop of directory contents
+         */
+        class Iterate {
+        public:
+            explicit Iterate(const std::string &directory, const std::string &pattern="*") :
+                beg(directory, pattern)
+            { }
+            
+            Iterator begin() {
+                return beg;
+            }
+            
+            Iterator end() {
+                return {};
+            }
+            
+        private:
+            Iterator beg;
+        };
 
 		///
 		/// Swaps two iterators
