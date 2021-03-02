@@ -80,17 +80,18 @@ namespace Gorgon { namespace CGI {
 
                 float pos = 0;
                 
-                if(r != s)
+                if(r.CrossProduct(s) != 0) {
                     pos = ((q - p).CrossProduct(r) / r.CrossProduct(s));
                 
-                if(pos<0)
-                    pos = 0;
-                if(pos>1)
-                    pos = 1;
-				auto intersect = q + s * pos;
+                    if(pos<0)
+                        pos = 0;
+                    if(pos>1)
+                        pos = 1;
+                    auto intersect = q + s * pos;
 
-				points[1].Pop();
-				points[1].Push(intersect);
+                    points[1].Pop();
+                    points[1].Push(intersect);
+                }
 			}
 			else if(dotp != 0) {
 				points[1].Push(l.Start - off);
@@ -102,16 +103,17 @@ namespace Gorgon { namespace CGI {
 				auto q = prev.Start + prevoff;
 
                 float pos = 0;
-                if(r != s)
+                if(r.CrossProduct(s) != 0) {
                     pos = ((q - p).CrossProduct(r) / r.CrossProduct(s));
-                if(pos<0)
-                    pos = 0;
-                if(pos>1)
-                    pos = 1;
-				auto intersect = q + s * pos;
+                    if(pos<0)
+                        pos = 0;
+                    if(pos>1)
+                        pos = 1;
+                    auto intersect = q + s * pos;
 
-				points[0].Pop();
-				points[0].Push(intersect);
+                    points[0].Pop();
+                    points[0].Push(intersect);
+                }
 			}
 			else if(dotp != 0) {
 				points[0].Push(l.Start + off);
@@ -145,16 +147,17 @@ namespace Gorgon { namespace CGI {
 				auto q = prev.Start - prevoff;
 
                 float pos = 0;
-                if(r != s)
+                if(r.CrossProduct(s) != 0) {
                     pos = ((q - p).CrossProduct(r) / r.CrossProduct(s));
-				if(pos<0)
-					pos = 0;
-				if(pos>1)
-					pos = 1;
-				auto intersect = q + s * pos;
+                    if(pos<0)
+                        pos = 0;
+                    if(pos>1)
+                        pos = 1;
+                    auto intersect = q + s * pos;
 
-				points[1].Pop();
-				points[1].Push(intersect);
+                    points[1].Pop();
+                    points[1].Push(intersect);
+                }
 			}
 			else if(dotp != 0) {
 				points[1].Push(l.Start - off);
@@ -165,16 +168,17 @@ namespace Gorgon { namespace CGI {
 				auto q = prev.Start + prevoff;
 
                 float pos = 0;
-                if(r != s)
+                if(r.CrossProduct(s) != 0) {
                     pos = ((q - p).CrossProduct(r) / r.CrossProduct(s));
-				if(pos<0)
-					pos = 0;
-				if(pos>1)
-					pos = 1;
-				auto intersect = q + s * pos;
+                    if(pos<0)
+                        pos = 0;
+                    if(pos>1)
+                        pos = 1;
+                    auto intersect = q + s * pos;
 
-				points[0].Pop();
-				points[0].Push(intersect);
+                    points[0].Pop();
+                    points[0].Push(intersect);
+                }
 			}
 			else if(dotp != 0) {
 				points[0].Push(l.Start + off);
