@@ -28,10 +28,21 @@ namespace Gorgon { namespace UI { namespace Organizers {
         attachmentchanged();
     }
     
+    void Base::PauseReorganize() { 
+        paused = true;
+    }
+
+    void Base::StartReorganize() { 
+        if(!paused)
+            return;
+        
+        paused = false;
+        Reorganize();
+    }
 
     void Base::Reorganize(){
         //TODO queue organizing
-        if(organizing)
+        if(organizing || paused)
             return;
         
         if(IsAttached()) {
@@ -40,23 +51,21 @@ namespace Gorgon { namespace UI { namespace Organizers {
             organizing = false;
         }
     }
-    
-    
 
-    Base &Base::operator<< (Widget &widget) {
+    Base &Base::Add (Widget &widget) {
         GetAttached().Add(widget);
 
         return *this;
     }
 
-    Base &Base::operator<< (const std::string &title) {
+    Base &Base::Add (const std::string &title) {
         if(!IsAttached()) {
             throw std::runtime_error("This organizer is not attached to a container");
         }
         
         auto &l = *new Widgets::Label(title);
         
-        operator <<(l);
+        Add(l);
         GetAttached().Own(l);
 
         return *this;

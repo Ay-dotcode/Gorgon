@@ -311,8 +311,8 @@ int main() {
     enableclosebtn.ChangedEvent.Register([&] { wind.SetCloseButtonEnabled(bool(enableclosebtn)); });
     wind.Add(enableclosebtn);
     wind.CreateOrganizer<UI::Organizers::List>() 
-        << "Try resize"
-        << "Click close twice"
+        .Add("Try resize")
+        .Add("Click close twice")
     ;
     wind.AllowResize();
     std::vector<std::string> opts = {"Zero", "One", "Two"};

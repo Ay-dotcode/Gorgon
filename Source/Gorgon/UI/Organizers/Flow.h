@@ -34,13 +34,101 @@ namespace Organizers {
      * 
      * Important: Flow organizer will work best if unit sizes are
      * used.
+     * 
+     * @warning Removing widgets will throw off modifiers and breaks.
+     * Instead of removing them, you may hide widgets.
      */
     class Flow : public Base {
+        //contains all alignments
+        class Modifier {
+        public:
+            enum Type {
+                Break,
+                Align,
+                Space
+            };
+        };
+        
     public:
         /// Is used to mark line breaks
         class BreakTag {
         };
         
+    private:
+        class Flower {
+            friend class Flow;
+        public:
+            
+            ~Flower() {
+                if(base)
+                    base->StartReorganize();
+            }
+            
+            /// Adds the given widget to the attached container.
+            virtual Flower &operator << (Widget &widget) {
+                base->flow(widget);
+                
+                return *this;
+            }
+            
+            /// Adds the given text as a label to the attached container
+            virtual Flower &operator << (const std::string &title) {
+                base->flow(title);
+                
+                return *this;
+            }
+            
+            /// When supplied with std::endl, inserts a line break.
+            Flower &operator << (std::ostream &(*fn)(std::ostream &)) {
+                base->flow(fn);
+                
+                return *this;
+            }
+            
+            /// Inserts a line break.
+            Flower &operator << (BreakTag tag) {
+                base->flow(tag);
+                
+                return *this;
+            }
+                    
+            /// Changes the alignment of the widgets if the line is not full
+            Flower &operator << (Graphics::TextAlignment alignment) {
+                base->flow(alignment);
+                
+                return *this;
+            }
+            
+            /// Sets the size of the next widget in unit sizes
+            Flower &operator << (int size) {
+                base->flow(size);
+                
+                return *this;
+            }
+            
+            /// Adds a button to the container
+            Flower &operator << (const std::pair<std::string, std::function<void()>> &action) {
+                base->flow(action);
+                
+                return *this;
+            }
+
+        private:
+            Flower(Flow *base) : base(base) { 
+                base->PauseReorganize();
+            }
+            
+            Flower(const Flower &) = delete;
+            
+            Flower(Flower &&other) : base(other.base) {
+                other.base = nullptr;
+            }
+
+            Flow *base = nullptr;
+        };
+        
+        friend class Flower;
+    public:
         /// Constructs a new flow organizer specifying spacing between widgets
         explicit Flow(int spacing) : usedefaultspacing(false), spacing(spacing) {
         }
@@ -134,38 +222,48 @@ namespace Organizers {
             Reorganize();
         }
         
-        /// Adds the given widget to the attached container.
-        virtual Flow &operator << (Widget &widget) override;
-        
-        /// Adds the given text as a label to the attached container
-        virtual Flow &operator << (const std::string &title) override {
-            Base::operator <<(title);
+        virtual Flow &Add(const std::string &title) override {
+            Base::Add(title);
             
             return *this;
+        }
+        
+        virtual Flow &Add(Widget &widget) override;
+        
+        /// Adds the given widget to the attached container.
+        Flower operator << (Widget &widget) {
+            return std::move(Flower(this) << widget);
+        }
+        
+        /// Adds the given text as a label to the attached container
+        Flower operator << (const std::string &title) {
+            return std::move(Flower(this) << title);
         }
         
         /// When supplied with std::endl, inserts a line break.
-        Flow &operator << (std::ostream &(*fn)(std::ostream &));
+        Flower operator << (std::ostream &(*fn)(std::ostream &)) {
+            return std::move(Flower(this) << fn);
+        }
         
         /// Inserts a line break.
-        Flow &operator << (BreakTag) {
-            InsertBreak();
-            
-            return *this;
+        Flower operator << (BreakTag tag) {
+            return std::move(Flower(this) << tag);
         }
         
         /// Changes the alignment of the widgets if the line is not full
-        Flow &operator << (Graphics::TextAlignment alignment);
+        Flower operator << (Graphics::TextAlignment alignment) {
+            return std::move(Flower(this) << alignment);
+        }
         
         /// Sets the size of the next widget in unit sizes
-        Flow &operator << (int unitsize) {
-            nextsize = unitsize;
-            
-            return *this;
+        Flower operator << (unsigned size) {
+            return std::move(Flower(this) << size);
         }
         
         /// Adds a button to the container
-        Flow &operator << (const std::pair<std::string, std::function<void()>> &action);
+        Flower operator << (const std::pair<std::string, std::function<void()>> &action) {
+            return std::move(Flower(this) << action);
+        }
         
         /// Creates an action, which when streamed to organizer will create a button
         std::pair<std::string, std::function<void()>> Action(const std::string &text, std::function<void()> fn) {
@@ -189,6 +287,30 @@ namespace Organizers {
         
     protected:
         virtual void reorganize() override;
+        
+        void flow(Widget &widget) {
+            Add(widget);
+        }
+        
+        void flow(const std::string &title) {
+            Add(title);
+        }
+        
+        void flow(Modifier modifier) {}
+        
+        void flow(BreakTag) {
+            InsertBreak();
+        }
+        
+        void flow(unsigned size) {
+            nextsize = size;
+        }
+        
+        void flow(std::ostream &(*fn)(std::ostream &));
+        
+        void flow(Graphics::TextAlignment alignment);
+        
+        void flow(const std::pair<std::string, std::function<void()>> &action);
         
         bool usedefaultspacing = true;
         int spacing = 0;

@@ -145,47 +145,41 @@ namespace Gorgon { namespace UI { namespace Organizers {
             InsertBreak(order);
     }
     
-    Flow &Flow::operator<< (std::ostream &(*fn)(std::ostream &)) {
+    Flow &Flow::Add(Widget &widget) {
+        if(nextsize != -1) {
+            widget.SetWidthInUnits(nextsize);
+            nextsize = -1;
+        }
+        
+        Base::Add(widget);
+        
+        return *this;
+    }
+    
+    void Flow::flow(std::ostream &(*fn)(std::ostream &)) {
         if(fn == &std::endl<char, std::char_traits<char>>) {
             InsertBreak();
         }
         else {
             throw std::runtime_error("Unsupported manipulator, only std::endl is supported");
         }
-        
-        return *this;
     }
     
-    Flow &Flow::operator << (Graphics::TextAlignment alignment) {
+    void Flow::flow(Graphics::TextAlignment alignment) {
         aligns[GetAttached().GetCount() - 1] = alignment;
         
         Reorganize();
-        
-        return *this;
     }
     
-    Organizers::Flow &Flow::operator<< (Widget &widget) {
-        Base::operator << (widget);
-
-        if(nextsize != -1) {
-            widget.SetWidthInUnits(nextsize);
-            nextsize = -1;
-        }
-
-        return *this;
-    }
-
-    Flow &Flow::operator << (const std::pair<std::string, std::function<void()>> &action) {
+    void Flow::flow(const std::pair<std::string, std::function<void()>> &action) {
         if(!IsAttached()) {
             throw std::runtime_error("This organizer is not attached to a container");
         }
         
         auto &b = *new Widgets::Button(action.first, action.second);
         
-        operator <<(b);
+        Add(b);
         GetAttached().Own(b);
-
-        return *this;
     }
     
     Flow::BreakTag Flow::Break;
@@ -194,4 +188,5 @@ namespace Gorgon { namespace UI { namespace Organizers {
     Graphics::TextAlignment Flow::Center = Graphics::TextAlignment::Center;
     Graphics::TextAlignment Flow::Right  = Graphics::TextAlignment::Right;
     
+
 } } }

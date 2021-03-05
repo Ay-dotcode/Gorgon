@@ -44,14 +44,21 @@ namespace Gorgon { namespace UI {
                 return *attachedto;
             }
             
+            /// Stops reorganizing. Even manual calls to reorganize will be ignored until 
+            /// StartReorganize is issued which will immediately reorganize everything.
+            void PauseReorganize();
+            
+            /// Starts reorganizing. If paused, this will also call Reorganize.
+            void StartReorganize();
+            
             /// Reorganizes the widgets that are organized by this organizer
             void Reorganize();
             
             /// Adds the given widget to the attached container.
-            virtual Base &operator << (Widget &widget);
+            virtual Base &Add (Widget &widget);
             
             /// Adds the given text as a label to the attached container
-            virtual Base &operator << (const std::string &title);
+            virtual Base &Add (const std::string &title);
         
         protected:
             /// Called when the attachment of the organizer is changed
@@ -64,6 +71,7 @@ namespace Gorgon { namespace UI {
         private:
             WidgetContainer *attachedto = nullptr;
             bool organizing = false;
+            bool paused = false;
         };
     }
 } }
