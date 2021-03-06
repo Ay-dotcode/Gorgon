@@ -282,10 +282,9 @@ int main() {
     Widgets::ColorPlane plane;
     
     org << 9 << plane << org.Break
-        << 2 << "Label" << Coffee << l2
-        << list << org.Break << UI::Organizers::Flow::Break
-        << org.Right
-        << icnbtn2 << dlist
+        << 2 << "Label" << 2 << "" << Coffee << l2
+        << list << 2 << org.Break
+        << icnbtn2 << 1 << "" << dlist
         << icnbtn3 << radio << icnbtn << 5 << "Hello"
         << chk << chk2 << chkbutton
         << input

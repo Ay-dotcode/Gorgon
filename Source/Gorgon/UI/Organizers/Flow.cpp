@@ -22,8 +22,9 @@ namespace Gorgon { namespace UI { namespace Organizers {
             int y = 0;
             int maxy = 0;
             int rowc = 0;
-            int ind = -1;
-            int breaks = BreakCount(-1);
+            int ind = 0;
+            int breaks = 0;
+            int xoff;
             auto align = defaultalign;
             auto nextalign = defaultalign;
             
@@ -66,6 +67,25 @@ namespace Gorgon { namespace UI { namespace Organizers {
             };
             
             for(auto &widget : att)  {
+                auto p = modifiers.equal_range(ind);
+                breaks = 0;
+                xoff   = 0;
+                for(auto it = p.first; it != p.second; it++) {
+                    switch(it->second.type) {
+                    case Flow::Modifier::Break:
+                        breaks++;
+                        break;
+                    case Flow::Modifier::Align:
+                        nextalign = it->second.align;
+                        break;
+                    case Flow::Modifier::HSpace:
+                        xoff = it->second.size * att.GetUnitWidth() + GetSpacing();
+                        break;
+                    case Flow::Modifier::VSpace:
+                        y += it->second.size * GetSpacing();
+                        break;
+                    }
+                }
                 ind++;
                 
                 if(!widget.IsVisible() || widget.IsFloating()) {
@@ -80,8 +100,9 @@ namespace Gorgon { namespace UI { namespace Organizers {
                 if(breaks) {
                     dorow();
                 }
-                            
+                
                 //skip previous row
+                x += xoff;
                 align = nextalign;
 
                 int h = widget.GetHeight();
@@ -92,11 +113,6 @@ namespace Gorgon { namespace UI { namespace Organizers {
                 widget.Move(x, y);
                 x += w + s;
                 rowc++;
-                breaks = BreakCount(ind);
-                
-                if(aligns.count(ind)) {
-                    nextalign = aligns[ind];
-                }
                 
                 row.Push(widget);
             }
@@ -129,7 +145,7 @@ namespace Gorgon { namespace UI { namespace Organizers {
             throw std::runtime_error("Organizer is not attached.");
         }
         
-        int order = GetAttached().GetCount() - 1;
+        int order = GetAttached().GetCount();
         
         InsertBreak(order);
     }
@@ -142,9 +158,14 @@ namespace Gorgon { namespace UI { namespace Organizers {
         int order = GetAttached().GetFocusOrder(widget);
         
         if(order != -1)
-            InsertBreak(order);
+            InsertBreak(order + 1);
     }
     
+    void Flow::InsertBreak(int index) {
+        modifiers.insert({index, Break});
+        Reorganize();
+    }
+
     Flow &Flow::Add(Widget &widget) {
         if(nextsize != -1) {
             widget.SetWidthInUnits(nextsize);
@@ -158,7 +179,7 @@ namespace Gorgon { namespace UI { namespace Organizers {
     
     void Flow::flow(std::ostream &(*fn)(std::ostream &)) {
         if(fn == &std::endl<char, std::char_traits<char>>) {
-            InsertBreak();
+            flow(Break);
         }
         else {
             throw std::runtime_error("Unsupported manipulator, only std::endl is supported");
@@ -166,9 +187,11 @@ namespace Gorgon { namespace UI { namespace Organizers {
     }
     
     void Flow::flow(Graphics::TextAlignment alignment) {
-        aligns[GetAttached().GetCount() - 1] = alignment;
-        
-        Reorganize();
+        flow(Modifier(alignment));
+    }
+    
+    void Flow::flow(Flow::Modifier mod) {
+        modifiers.insert({GetAttached().GetCount(), mod});
     }
     
     void Flow::flow(const std::pair<std::string, std::function<void()>> &action) {
@@ -182,11 +205,34 @@ namespace Gorgon { namespace UI { namespace Organizers {
         GetAttached().Own(b);
     }
     
+    void Flow::flow(BreakTag) {
+        InsertBreak();
+        
+        if(nextsize != -1) {
+            flow(Modifier(Flow::Modifier::VSpace, nextsize));
+            nextsize = -1;
+        }
+    }
+
+    void Flow::flow(const std::string& title) {
+        if(title.empty()) {
+            flow(Modifier(Flow::Modifier::HSpace, nextsize != -1 ? nextsize : 1));
+            nextsize = -1;
+        }
+        else {
+            Add(title);
+        }
+    }
+
     Flow::BreakTag Flow::Break;
     
     Graphics::TextAlignment Flow::Left   = Graphics::TextAlignment::Left;
     Graphics::TextAlignment Flow::Center = Graphics::TextAlignment::Center;
     Graphics::TextAlignment Flow::Right  = Graphics::TextAlignment::Right;
     
+
+
+
+
 
 } } }

@@ -38,23 +38,40 @@ namespace Organizers {
      * @warning Removing widgets will throw off modifiers and breaks.
      * Instead of removing them, you may hide widgets.
      */
-    class Flow : public Base {
-        //contains all alignments
-        class Modifier {
-        public:
-            enum Type {
-                Break,
-                Align,
-                Space
-            };
-        };
-        
+    class Flow : public Base { 
     public:
         /// Is used to mark line breaks
         class BreakTag {
         };
         
     private:
+        //contains all alignments
+        class Modifier {
+        public:
+            enum Type {
+                Break,
+                Align,
+                HSpace,
+                VSpace,
+            };
+            
+            Modifier(BreakTag) : type(Break) {
+                
+            }
+            
+            Modifier(Graphics::TextAlignment align) : type(Align), align(align) { }
+            
+            Modifier(Type type, int size) : type(type), size(size) { }
+            
+            Type type;
+            
+            union {
+                Graphics::TextAlignment align;
+                int size;
+            };
+            
+        };
+        
         class Flower {
             friend class Flow;
         public:
@@ -188,14 +205,11 @@ namespace Organizers {
         /// will leave unit width space between the lines.
         void InsertBreak();
         
-        /// Inserts a line break after the widget at the given index.
+        /// Inserts a line break before the widget at the given index.
         /// Reordering widgets do not automatically arrange breaks.
         /// Multiple breaks will leave unit width space between the lines.
         /// -1 will add a space at the front.
-        void InsertBreak(int index) {
-            breaks.insert(index);
-            Reorganize();
-        }
+        void InsertBreak(int index);
         
         /// Inserts a line break after the given widget. This only works
         /// if the widget is currently in the container.
@@ -203,23 +217,20 @@ namespace Organizers {
         /// Multiple breaks will leave unit width space between the lines.
         void InsertBreak(const Widget &widget);
         
-        /// Removes the break at the given index. If it does not exist,
-        /// nothing will be done. If there are multiple breaks at the
-        /// same point, all of them will be removed.
-        void RemoveBreak(int index) {
-            breaks.erase(index);
+        /// Removes all modifiers such as breaks in the organizer
+        void RemoveAllModifiers() {
+            modifiers.clear();
             Reorganize();
         }
         
-        /// Returns the number of breaks at the given index.
-        int BreakCount(int index) const {
-            return (int)breaks.count(index);
+        /// This will create a modifier object that should be inserted into ui stream
+        Modifier HSpace(int unitsize) {
+            return {Modifier::HSpace, unitsize};
         }
         
-        /// Removes all breaks in the organizer
-        void RemoveAllBreaks() {
-            breaks.clear();
-            Reorganize();
+        /// This will create a modifier object that should be inserted into ui stream
+        Modifier VSpace(int spaces) {
+            return {Modifier::VSpace, spaces};
         }
         
         virtual Flow &Add(const std::string &title) override {
@@ -292,15 +303,11 @@ namespace Organizers {
             Add(widget);
         }
         
-        void flow(const std::string &title) {
-            Add(title);
-        }
+        void flow(const std::string &title);
         
-        void flow(Modifier modifier) {}
+        void flow(Modifier modifier);
         
-        void flow(BreakTag) {
-            InsertBreak();
-        }
+        void flow(BreakTag);
         
         void flow(unsigned size) {
             nextsize = size;
@@ -316,8 +323,7 @@ namespace Organizers {
         int spacing = 0;
         bool tight = false;
         int nextsize = -1;
-        std::unordered_multiset<int> breaks;
-        std::unordered_map<int, Graphics::TextAlignment> aligns;
+        std::unordered_multimap<int, Modifier> modifiers;
         Graphics::TextAlignment defaultalign = Graphics::TextAlignment::Left;
     };
     
