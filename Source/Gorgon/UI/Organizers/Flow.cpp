@@ -23,6 +23,7 @@ namespace Gorgon { namespace UI { namespace Organizers {
             int maxy = 0;
             int rowc = 0;
             int ind = 0;
+            int indent = 0;
             int breaks = 0;
             int xoff;
             auto align = defaultalign;
@@ -70,6 +71,7 @@ namespace Gorgon { namespace UI { namespace Organizers {
                 auto p = modifiers.equal_range(ind);
                 breaks = 0;
                 xoff   = 0;
+                indent = 0;
                 for(auto it = p.first; it != p.second; it++) {
                     switch(it->second.type) {
                     case Flow::Modifier::Break:
@@ -83,6 +85,15 @@ namespace Gorgon { namespace UI { namespace Organizers {
                         break;
                     case Flow::Modifier::VSpace:
                         y += it->second.size * GetSpacing();
+                        break;
+                    case Flow::Modifier::Indent:
+                        indent += it->second.size;
+                        break;
+                    case Flow::Modifier::IndentUnits:
+                        indent += it->second.size * att.GetUnitWidth() + GetSpacing();
+                        break;
+                    case Flow::Modifier::IndentSpaces:
+                        indent += it->second.size * GetSpacing();
                         break;
                     }
                 }
@@ -102,6 +113,9 @@ namespace Gorgon { namespace UI { namespace Organizers {
                 }
                 
                 //skip previous row
+                if(rowc == 0)
+                    x = indent;
+                
                 x += xoff;
                 align = nextalign;
 

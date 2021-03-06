@@ -53,6 +53,9 @@ namespace Organizers {
                 Align,
                 HSpace,
                 VSpace,
+                Indent,
+                IndentUnits,
+                IndentSpaces,
             };
             
             Modifier(BreakTag) : type(Break) {
@@ -126,6 +129,13 @@ namespace Organizers {
             /// Adds a button to the container
             Flower &operator << (const std::pair<std::string, std::function<void()>> &action) {
                 base->flow(action);
+                
+                return *this;
+            }
+            
+            /// Appends a modifier to the flow organizer
+            Flower &operator << (Modifier mod) {
+                base->flow(mod);
                 
                 return *this;
             }
@@ -231,6 +241,21 @@ namespace Organizers {
         /// This will create a modifier object that should be inserted into ui stream
         Modifier VSpace(int spaces) {
             return {Modifier::VSpace, spaces};
+        }
+        
+        /// This will create a modifier object that should be inserted into ui stream
+        Modifier IndentPixels(int pixels) {
+            return {Modifier::Indent, pixels};
+        }
+        
+        /// This will create a modifier object that should be inserted into ui stream
+        Modifier IndentUnits(int unitsize) {
+            return {Modifier::IndentUnits, unitsize};
+        }
+        
+        /// This will create a modifier object that should be inserted into ui stream
+        Modifier IndentSpaces(int spaces) {
+            return {Modifier::IndentSpaces, spaces};
         }
         
         virtual Flow &Add(const std::string &title) override {
