@@ -105,7 +105,7 @@ namespace Gorgon { namespace Widgets {
         plane.LCDensity  = lcdensity;
         
         if(below < defaultsize.Height && above > below) {
-            plane.SetHeight(above);
+            plane.SetHeight(std::min(defaultsize.Height, above));
                 
             reversed = true;
         }

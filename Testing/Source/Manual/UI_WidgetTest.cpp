@@ -18,7 +18,7 @@ using namespace Gorgon;
 int main() {
     basic_Application<UI::Window> app("uitest", "UI Widget Test", helptext, 1, 0x80);
 
-    auto &org = app.wind.CreateOrganizer<UI::Organizers::Flow>();
+    //auto &org = app.wind.CreateOrganizer<UI::Organizers::Flow>();
     
     Widgets::ColorPicker wgt1;
     wgt1.ChangedEvent.Register([](Graphics::RGBAf color) {
@@ -29,9 +29,10 @@ int main() {
     //wgt1.Display    = wgt1.Hex;
     wgt1.Alpha = true;
     wgt1.PlaneSize.Height *= 1.2;
+    wgt1.Location.Y = 500;
     
-    org 
-        << wgt1 ;
+    //org 
+        app.wind.Add(wgt1);
     
     
     app.wind.Run();
