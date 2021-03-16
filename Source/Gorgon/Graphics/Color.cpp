@@ -63,16 +63,22 @@ namespace Gorgon { namespace Graphics {
                 G = hexchartoint(color[3]) * 16 + hexchartoint(color[4]);
                 B = hexchartoint(color[5]) * 17;
                 break;
-            case 8:
-                R = hexchartoint(color[1]) * 16 + hexchartoint(color[2]);
-                G = hexchartoint(color[3]) * 17 + hexchartoint(color[4]);
-                B = hexchartoint(color[5]) * 17 + hexchartoint(color[6]);
-                A = hexchartoint(color[7]) * 17 + hexchartoint(color[8]);
-                break;
             default:
                 R = hexchartoint(color[1]) * 16 + hexchartoint(color[2]);
-                G = hexchartoint(color[3]) * 17 + hexchartoint(color[4]);
-                B = hexchartoint(color[5]) * 17 + hexchartoint(color[6]);
+                G = hexchartoint(color[3]) * 16 + hexchartoint(color[4]);
+                B = hexchartoint(color[5]) * 16 + hexchartoint(color[6]);
+                break;
+            case 7:
+                R = hexchartoint(color[1]) * 16 + hexchartoint(color[2]);
+                G = hexchartoint(color[3]) * 16 + hexchartoint(color[4]);
+                B = hexchartoint(color[5]) * 16 + hexchartoint(color[6]);
+                A = hexchartoint(color[7]) * 17;
+                break;
+            case 8:
+                R = hexchartoint(color[1]) * 16 + hexchartoint(color[2]);
+                G = hexchartoint(color[3]) * 16 + hexchartoint(color[4]);
+                B = hexchartoint(color[5]) * 16 + hexchartoint(color[6]);
+                A = hexchartoint(color[7]) * 16 + hexchartoint(color[8]);
                 break;
             }
             
