@@ -23,7 +23,9 @@ namespace Gorgon { namespace UI {
                     w = stack.GetTemplate().GetUnitWidth();
                 }
                 return (s + w - 1) / w * w;
-            }); 
+            });
+            
+            stack.SetMouseEnterLeaveEvents(MouseEnterEvent, MouseLeaveEvent);
         }
         
         ComponentStackWidget(ComponentStackWidget &&) = default;

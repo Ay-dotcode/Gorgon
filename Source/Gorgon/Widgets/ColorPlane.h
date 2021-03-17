@@ -6,7 +6,6 @@
 #include "Layerbox.h"
 
 #include "Registry.h"
-#include "Composer.h"
 
 #include "../Graphics/Bitmap.h"
 
@@ -19,7 +18,7 @@ namespace Gorgon { namespace Widgets {
      * be displayed in the list. ColorPlane works with RGBAf, which can be substituted for RGBA when
      * needed.
      */
-    class ColorPlane : public ComponentStackComposer {
+    class ColorPlane : public UI::ComponentStackWidget {
     public:
         using ColorType = Graphics::RGBAf;
         
@@ -73,13 +72,15 @@ namespace Gorgon { namespace Widgets {
         
         //Get/Set/Property Mode
         
-        //Get/Set/Property Alpha
         
+        virtual bool Activate() override {
+            return Focus();
+        }
         
         
         //SetCellSize
         
-        using ComponentStackComposer::Resize;
+        using ComponentStackWidget::Resize;
         
         virtual void Resize(const Geometry::Size &size) override;
         
@@ -116,12 +117,19 @@ namespace Gorgon { namespace Widgets {
         Graphics::Bitmap display;
         Graphics::Bitmap selection;
         
-        Layerbox layerbox;
-        
         ColorType color = Graphics::Color::Black;
     
     protected:
         void click(Geometry::Point location);
+        
+        Gorgon::Layer &getlayer() const {
+            return stack.GetLayerOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag));
+        }
+        
+        Geometry::Size getinteriorsize() const {
+            return getlayer().GetSize();
+        }
+
         
         static const std::vector<std::pair<int, int>> lcpairs5;
         static const std::vector<std::pair<int, int>> lcpairs7;

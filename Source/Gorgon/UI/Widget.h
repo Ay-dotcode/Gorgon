@@ -185,6 +185,12 @@ namespace Gorgon { namespace UI {
         /// thus it is not advisable to remove all handlers from this event.
         Event<Widget> BoundsChangedEvent = Event<Widget>{*this};
         
+        /// This event will be fired when the mouse enters the widget area.
+        Event<Widget> MouseEnterEvent    = Event<Widget>{*this};
+        
+        /// This event will be fired when the mouse exits the widget area.
+        Event<Widget> MouseLeaveEvent    = Event<Widget>{*this};
+        
         Geometry::PointProperty<Widget, &Widget::getlocation, &Widget::move> Location;
         Geometry::SizeProperty<Widget, &Widget::getsize, &Widget::resize> Size;
         

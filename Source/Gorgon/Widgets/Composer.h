@@ -16,6 +16,8 @@ namespace Gorgon { namespace Widgets {
     * require any templates to build, however, you may request templates to use
     * in widgets in the composer. This object does not support scrolling, however,
     * you may place a panel in it to have that functionality.
+    * 
+    * Moving mouse over a subwidget will trigger a leave event from the Composer.
     */
     class Composer : virtual public UI::Widget, protected UI::WidgetContainer {
         friend class UI::WidgetContainer;
@@ -91,8 +93,7 @@ namespace Gorgon { namespace Widgets {
 
     protected:
         //ensure this object is derived
-        Composer() {
-        }
+        Composer();
         
         virtual bool allowfocus() const override;
         
@@ -166,6 +167,10 @@ namespace Gorgon { namespace Widgets {
             distributeparentboundschanged();
         }
         
+        virtual Input::Layer &getinputlayer() {
+            return inputlayer;
+        }
+        
         
     private:
         bool enabled = true;
@@ -175,6 +180,7 @@ namespace Gorgon { namespace Widgets {
         virtual void show() override;
         
         Layer base;
+        Input::Layer inputlayer;
         
         int spacing   = 0;
         int unitwidth = 0;
@@ -187,10 +193,9 @@ namespace Gorgon { namespace Widgets {
     * container, which allows widgets on top of it. However, container side is
     * not public. Therefore, users of the derived widget cannot add more widgets
     * to the derived widget. Widget Composer handles focus, keyboard and all
-    * necessary functions to build a widget container and a widget. It does not
-    * require any templates to build, however, you may request templates to use
-    * in widgets in the composer. This object does not support scrolling, however,
-    * you may place a panel in it to have that functionality.
+    * necessary functions to build a widget container and a widget. This object 
+    * does not support scrolling, however, you may place a panel in it to have 
+    * that functionality.
     */
     class ComponentStackComposer : public UI::ComponentStackWidget, protected UI::WidgetContainer {
         friend class UI::WidgetContainer;

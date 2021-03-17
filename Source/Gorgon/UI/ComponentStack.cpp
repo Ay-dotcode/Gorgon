@@ -75,6 +75,9 @@ namespace Gorgon { namespace UI {
                 }
             }
             
+            if(mouseenter)
+                (*mouseenter)();
+            
             if(!IsDisabled() && over_fn)
                 over_fn(ComponentTemplate::NoTag);
         });
@@ -84,6 +87,9 @@ namespace Gorgon { namespace UI {
                 RemoveCondition(ComponentCondition::Hover, !IsDisabled());
                 disabled.erase(ComponentCondition::Hover);
             }
+            
+            if(mouseleave)
+                (*mouseleave)();
 
             if(!IsDisabled() && out_fn)
                 out_fn(ComponentTemplate::NoTag);

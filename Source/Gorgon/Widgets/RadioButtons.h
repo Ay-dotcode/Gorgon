@@ -66,11 +66,11 @@ namespace Gorgon { namespace Widgets {
             SetWidth(w * n + s * (n-1));
         }
 
-        void Add(const T_ value) {
-            Add(value, String::From(value));
+        W_ &Add(const T_ value) {
+            return Add(value, String::From(value));
         }
 
-        void Add(const T_ value, std::string text) {
+        W_ &Add(const T_ value, std::string text) {
             if(Exists(value)) {
                 this->ForceRemove(this->elements[value]);
                 this->elements.Delete(value);
@@ -91,6 +91,8 @@ namespace Gorgon { namespace Widgets {
             
             boundschanged();
             childboundschanged(&c);
+            
+            return c;
         }
         
         /// Changes the value of the given element
@@ -198,6 +200,16 @@ namespace Gorgon { namespace Widgets {
             return Get();
         }
 
+        /// Allows access to widgets
+        W_ &GetWidget(const T_ &key) {
+            return this->GetController(key);
+        }
+        
+        /// Allows access to controllers
+        const W_ &GetWidget(const T_ &key) const {
+            return this->GetController(key);
+        }
+        
         using UI::RadioControl<T_, W_>::ChangedEvent;
 
         using UI::RadioControl<T_, W_>::Exists;

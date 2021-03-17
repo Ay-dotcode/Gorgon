@@ -4,6 +4,18 @@
 
 namespace Gorgon { namespace Widgets {
 
+    Composer::Composer() {
+        base.Add(inputlayer);
+        
+        inputlayer.SetOver([this]{
+            MouseEnterEvent();
+        });
+        
+        inputlayer.SetOut([this] {
+            MouseLeaveEvent();
+        });
+    }
+    
     bool Composer::Activate() {
         if(!Focus())
             return false;

@@ -199,6 +199,16 @@ namespace Gorgon { namespace UI {
             }
         }
         
+        /// Allows access to controllers
+        CT_ &GetController(const T_ &key) {
+            return elements[key];
+        }
+        
+        /// Allows access to controllers
+        const CT_ &GetController(const T_ &key) const {
+            return elements[key];
+        }
+        
         /// For iteration
         auto begin() {
             return elements.begin();

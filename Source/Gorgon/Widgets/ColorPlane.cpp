@@ -9,28 +9,23 @@
 namespace Gorgon { namespace Widgets {
     
     ColorPlane::ColorPlane(const UI::Template &temp) : 
-        ComponentStackComposer(temp),
-        layerbox(Registry::Layerbox_Blank)
+        ComponentStackWidget(temp)
     {
-        layerbox.Resize(GetInteriorSize());
-        
-        layerbox.GetLayer().Add(inputlayer);
-        layerbox.GetLayer().Add(displaylayer);
-        Add(layerbox);
+        getlayer().Add(inputlayer);
+        getlayer().Add(displaylayer);
         Refresh();
         
         inputlayer.SetClick(this, &ColorPlane::click);
     }
     
     void ColorPlane::Resize(const Geometry::Size &size) {
-        auto oldsz = layerbox.GetSize();
+        auto oldsz = getinteriorsize();
 
-        ComponentStackComposer::Resize(size);
+        ComponentStackWidget::Resize(size);
         
-        auto newsz = GetInteriorSize();
+        auto newsz = getinteriorsize();
 
         if(oldsz != newsz) {
-            layerbox.Resize(GetInteriorSize());
             Refresh();
         }
     }
