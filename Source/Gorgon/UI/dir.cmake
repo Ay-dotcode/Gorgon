@@ -18,6 +18,8 @@ SET(Local
 	../UI.h
 	UI.cpp
 	TwoStateControl.h
+	TooltipManager.h
+	TooltipManager.cpp
 	Validators.h
 	Widget.h
 	Widget.cpp

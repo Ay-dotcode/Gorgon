@@ -277,30 +277,7 @@ int main() {
     
     
     auto &org = blank.CreateOrganizer<UI::Organizers::Flow>();
-    blank.MouseEnterEvent.Register([]{
-        std::cout << "Enter blank" << std::endl;
-    });
-    blank.MouseLeaveEvent.Register([]{
-        std::cout << "Left blank" << std::endl;
-    });
-    radio.MouseEnterEvent.Register([]{
-        std::cout << "Enter radio" << std::endl;
-    });
-    radio.MouseLeaveEvent.Register([]{
-        std::cout << "Left radio" << std::endl;
-    });
-    radio.GetWidget(0).MouseEnterEvent.Register([]{
-        std::cout << "Enter 0" << std::endl;
-    });
-    radio.GetWidget(0).MouseLeaveEvent.Register([]{
-        std::cout << "Left 0" << std::endl;
-    });
-    radio.GetWidget(1).MouseEnterEvent.Register([]{
-        std::cout << "Enter 1" << std::endl;
-    });
-    radio.GetWidget(1).MouseLeaveEvent.Register([]{
-        std::cout << "Left 1" << std::endl;
-    });
+
     //org.SetAlignment(org.Center);
     
     Widgets::ColorPlane plane;
@@ -316,20 +293,10 @@ int main() {
         << scroll1 << scroll2
         << colorin
     ;
+    
     org << org.Action("Ok", [&]() { std::cout << "Ok clicked" << std::endl; });
     btn.SetHorizonalAutosize(Gorgon::UI::Autosize::Unit);
-    plane.MouseEnterEvent.Register([]{
-        std::cout << "Enter plane" << std::endl;
-    });
-    plane.MouseLeaveEvent.Register([]{
-        std::cout << "Left plane" << std::endl;
-    });
-    Coffee.MouseEnterEvent.Register([]{
-        std::cout << "Enter Coffee" << std::endl;
-    });
-    Coffee.MouseLeaveEvent.Register([]{
-        std::cout << "Left Coffee" << std::endl;
-    });
+
     
     Widgets::DialogWindow wind("My window", {200, 300});
     wind.Add(btn);
