@@ -637,9 +637,9 @@ namespace Gorgon { namespace UI {
         }
         
         /// Sets mouse enter and leave events to be called automatically.
-        void SetMouseEnterLeaveEvents(Event<Widget> &enter, Event<Widget> &leave) {
-            mouseenter = &enter;
-            mouseleave = &leave;
+        void SetMouseEnterLeaveEvents(std::function<void()> enter, std::function<void()> leave) {
+            mouseenter = enter;
+            mouseleave = leave;
             
             for(auto stack : substacks) {
                 stack.second.SetMouseEnterLeaveEvents(enter, leave);
@@ -830,7 +830,7 @@ namespace Gorgon { namespace UI {
         std::function<void()> render_fn;
         std::function<int(int)> ceiltounitsize_fn;
         
-        Event<Widget> *mouseenter = nullptr, *mouseleave = nullptr;
+        std::function<void()> mouseenter, mouseleave;
         
         std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> widgetgenerators;
         Containers::Hashmap<const ComponentTemplate *, Widget> widgets;

@@ -8,11 +8,11 @@ namespace Gorgon { namespace Widgets {
         base.Add(inputlayer);
         
         inputlayer.SetOver([this]{
-            MouseEnterEvent();
+            mouseenter();
         });
         
         inputlayer.SetOut([this] {
-            MouseLeaveEvent();
+            mouseleave();
         });
     }
     

@@ -6,11 +6,11 @@
 
 namespace Gorgon { namespace UI {
     
-   
+
     /**
-     * This class acts as a widget base that uses component stack to handle
-     * rendering, resizing and other operations.
-     */
+    * This class acts as a widget base that uses component stack to handle
+    * rendering, resizing and other operations.
+    */
     class ComponentStackWidget : virtual public Widget {
     public:
         ComponentStackWidget(const Template &temp, std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> generators = {}) : stack(*new ComponentStack(temp, temp.GetSize(), generators)) {
@@ -25,7 +25,10 @@ namespace Gorgon { namespace UI {
                 return (s + w - 1) / w * w;
             });
             
-            stack.SetMouseEnterLeaveEvents(MouseEnterEvent, MouseLeaveEvent);
+            stack.SetMouseEnterLeaveEvents(
+                std::function<void()>(std::bind(&ComponentStackWidget::mouseenter, this)), 
+                std::function<void()>(std::bind(&ComponentStackWidget::mouseleave, this))
+            );
         }
         
         ComponentStackWidget(ComponentStackWidget &&) = default;
@@ -37,31 +40,31 @@ namespace Gorgon { namespace UI {
         using Widget::Move;
         
         virtual void Move(const Geometry::Point &location) override {
-			stack.Move(location);
+            stack.Move(location);
 
-			if(IsVisible() && HasParent())
+            if(IsVisible() && HasParent())
                 boundschanged();
-		}
+        }
         
         using Widget::Resize;
         
         virtual void Resize(const Geometry::Size &size) override {
             stack.Resize(size);
 
-			if(IsVisible() && HasParent())
+            if(IsVisible() && HasParent())
                 boundschanged();
         }
 
-		virtual Geometry::Point GetLocation() const override {
-			return stack.GetLocation();
-		}
+        virtual Geometry::Point GetLocation() const override {
+            return stack.GetLocation();
+        }
 
-		virtual Geometry::Size GetSize() const override {
-			return stack.GetSize();
-		}
-		
-		/// Sets the width of the widget in unit widths.
-		virtual void SetWidthInUnits(int n) override {
+        virtual Geometry::Size GetSize() const override {
+            return stack.GetSize();
+        }
+        
+        /// Sets the width of the widget in unit widths.
+        virtual void SetWidthInUnits(int n) override {
             int w, s;
             if(HasParent()) {
                 w = GetParent().GetUnitWidth();
@@ -99,7 +102,7 @@ namespace Gorgon { namespace UI {
             return enabled;
         }
         
-	protected:
+    protected:
         ComponentStack &stack; //allocate on heap due to its size.
         
         bool enabled = true;
@@ -117,39 +120,39 @@ namespace Gorgon { namespace UI {
             parentenabled = state;
         }
 
-		virtual void focused() override {
+        virtual void focused() override {
             Widget::focused();
-			stack.AddCondition(ComponentCondition::Focused);
-			FocusEvent();
-		}
+            stack.AddCondition(ComponentCondition::Focused);
+            FocusEvent();
+        }
 
-		virtual void focuslost() override {
+        virtual void focuslost() override {
             Widget::focuslost();
-			stack.RemoveCondition(ComponentCondition::Focused);
-			FocusEvent();
-		}
+            stack.RemoveCondition(ComponentCondition::Focused);
+            FocusEvent();
+        }
         
-		virtual void removed() override {
-			     Widget::removed();
+        virtual void removed() override {
+                Widget::removed();
 
-			stack.FinalizeTransitions();
-		}
+            stack.FinalizeTransitions();
+        }
 
-		virtual void addto(Layer &layer) override {
-			layer.Add(stack);
-		}
-
-
-		virtual void removefrom(Layer &layer) override {
-			layer.Remove(stack);
-		}
+        virtual void addto(Layer &layer) override {
+            layer.Add(stack);
+        }
 
 
-		virtual void setlayerorder(Layer &, int order) override {
-			stack.PlaceBefore(order);
-		}
-		
-		//Make these functions public as necessary.
+        virtual void removefrom(Layer &layer) override {
+            layer.Remove(stack);
+        }
+
+
+        virtual void setlayerorder(Layer &, int order) override {
+            stack.PlaceBefore(order);
+        }
+        
+        //Make these functions public as necessary.
         
         /// Adjusts autosizing of the widget. In autosize mode, set width is used to limit
         /// text width so that it will flow to next line.
@@ -191,17 +194,17 @@ namespace Gorgon { namespace UI {
         virtual void show() override {
             stack.Show();
 
-			if(HasParent())
+            if(HasParent())
                 boundschanged();
-		}
+        }
         
         virtual void hide() override {
             stack.Hide();
 
-			if(HasParent())
+            if(HasParent())
                 boundschanged();
-		}
-	};
+        }
+    };
     
 #define GORGON_UI_CSW_AUTOSIZABLE_WIDGET \
         using ComponentStackWidget::SetAutosize; \

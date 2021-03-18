@@ -94,6 +94,9 @@ namespace Gorgon { namespace UI {
             focushandler = fn;
         }
         
+        virtual void SetHoveredWidget(Widget *widget) override;
+
+        
     protected:
         virtual Gorgon::Layer &getlayer() override {
             return *base;

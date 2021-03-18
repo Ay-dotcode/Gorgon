@@ -348,6 +348,7 @@ int main() {
         );
     }).SetHorizonalAutosize(Gorgon::UI::Autosize::Automatic);
     
+    UI::Widget *cur = nullptr;
     
 
     app.wind.Add(blank);

@@ -111,6 +111,9 @@ namespace Gorgon { namespace UI {
     
     void WidgetContainer::deleted(Widget *widget) {
         auto pos = widgets.Find(*widget);
+        
+        if(widget == hovered)
+            SetHoveredWidget(widget);
 
         //not our widget
         if(pos == widgets.end())
@@ -121,6 +124,12 @@ namespace Gorgon { namespace UI {
 
         if(focusindex > pos - widgets.begin())
             focusindex--;
+        
+        if(def == widget)
+            RemoveDefault();
+        
+        if(cancel == widget)
+            RemoveCancel();
         
         widgets.Remove(pos);
         widgetremoved(*widget);
@@ -574,6 +583,14 @@ namespace Gorgon { namespace UI {
         auto sz      = GetInteriorSize();
         
         return wbounds.Bottom > 0 && wbounds.Right > 0 && wbounds.Top < sz.Height && wbounds.Left < sz.Width;
+    }
+
+
+    void WidgetContainer::SetHoveredWidget(Widget* widget) {
+        hovered = widget;
+
+        if(IsWidget() && AsWidget().HasParent())
+            AsWidget().GetParent().SetHoveredWidget(widget);
     }
 
 } }

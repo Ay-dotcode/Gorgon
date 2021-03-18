@@ -257,6 +257,10 @@ namespace Gorgon { namespace UI {
         /// This function is called when this widget is made or unmade cancel.
         virtual void setcancelstate(bool /*cancel*/) { }
         
+        virtual void mouseenter();
+        
+        virtual void mouseleave();
+        
     private:
         bool visible = true;
         bool enabled = true;

@@ -32,4 +32,15 @@ namespace Gorgon { namespace UI {
         }
     }
 
+    void LayerAdapter::SetHoveredWidget(Widget *widget) {
+        hovered = widget;
+        
+        if(base) {
+            auto toplevel = dynamic_cast<Window *>(&base->GetTopLevel());
+
+            if(toplevel)
+                toplevel->SetHoveredWidget(widget);
+        }
+    }
+    
 } }

@@ -88,6 +88,9 @@ namespace Gorgon { namespace UI {
             return;
         
         parent->childboundschanged(this);
+        
+        if(parent && parent->GetHoveredWidget() == this)
+            parent->SetHoveredWidget(nullptr);
 
         parent = nullptr;
         
@@ -112,6 +115,22 @@ namespace Gorgon { namespace UI {
         if(HasParent()) {
             GetParent().deleted(this);
         }
+    }
+
+
+    void Widget::mouseenter() {
+        if(parent)
+            parent->SetHoveredWidget(this);
+
+        MouseEnterEvent();
+    }
+
+
+    void Widget::mouseleave() {
+        if(parent && parent->GetHoveredWidget() == this)
+            parent->SetHoveredWidget(nullptr);
+
+        MouseLeaveEvent();
     }
 
 } }

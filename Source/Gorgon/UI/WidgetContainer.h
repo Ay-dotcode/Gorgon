@@ -423,6 +423,16 @@ namespace Gorgon { namespace UI {
         /// This system allows container widgets that have multiple indirection levels.
         virtual Widget &AsWidget() { throw std::runtime_error("This container is not a widget"); }
         
+        /// Returns the currently hovered widget. Returns nullptr if no widget is hovered.
+        virtual Widget *GetHoveredWidget() const {
+            return hovered;
+        }
+        
+        /// Set the currently hovered widget. Setting it to nullptr is supported. A widget that is
+        /// became invisible, or removed from its container should unset the hovered 
+        /// if it is the hovered widget.
+        virtual void SetHoveredWidget(Widget *widget);
+        
         /// This function will return a container that will act as an extender.
         virtual ExtenderRequestResponse RequestExtender(const Gorgon::Layer &self) = 0;
     
@@ -438,6 +448,9 @@ namespace Gorgon { namespace UI {
     protected:
         /// This container is sorted by the focus order
         Containers::Collection<Widget> widgets;
+        
+        /// This is the currently hovered widget
+        Widget *hovered = nullptr;
 
         /// This function can return false to prevent the given
         /// widget from getting added to the container.
