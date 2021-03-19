@@ -352,13 +352,8 @@ int main() {
     
     Widgets::Label tiplabel("Some text here", Gorgon::Widgets::Registry::Label_Info);
     tiplabel.SetAutosize(Gorgon::UI::Autosize::None, Gorgon::UI::Autosize::Automatic);
-    app.wind.Tooltips.SetTarget(tiplabel);
     app.wind.Add(tiplabel);
     tiplabel.Move(0, 550);
-    app.wind.Tooltips.SetSetText([&tiplabel](const std::string &text) {
-        std::cout << "Tooltip: " << text << std::endl;
-        tiplabel.Text = text;
-    });
 
     blank.Tooltip = "This is the container.\n Yehaaw there is tons of text here. A potential for next line. Even one more...";
     app.wind.Add(blank);
