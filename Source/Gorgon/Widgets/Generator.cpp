@@ -94,7 +94,7 @@ namespace Gorgon { namespace Widgets {
         SubtitleFont.SetGlyphRenderer(subtitle);
         
         auto &small = *new Graphics::FreeType();
-        small.LoadFile(findfontfile(fontname, false), int(std::round(fontsize*0.8)));
+        small.LoadFile(findfontfile(fontname, false), int(std::round(fontsize*0.85)));
         smallrenderer = &small;
         SmallFont.SetGlyphRenderer(small);
         
