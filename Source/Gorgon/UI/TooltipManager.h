@@ -32,6 +32,18 @@ namespace UI {
      */
     class TooltipManager {
     public:
+        enum Mode {
+            Static,
+            Dynamic
+        };
+        
+        enum Follow {
+            Pointer,
+            FollowPointer,
+            UnderWidget,
+            NextToWidget,
+        };
+        
         /// Tooltip manager requires a widget container to work.
         TooltipManager(WidgetContainer &container);
         
@@ -79,6 +91,30 @@ namespace UI {
             return tolerance;
         }
         
+        /// Sets the current mode. Static only calls SetText while dynamic will display, hide and 
+        /// move the target widget. If the target widget is not set, dynamic mode will not work.
+        /// Default value is Dynamic.
+        void SetMode(Mode value);
+        
+        /// Returns the current operation mode.
+        Mode GetMode() const {
+            return mode;
+        }
+        
+        /// Sets the current follow mode. Follow modes are only functional if tooltip is operating 
+        /// in Dynamic mode. In Pointer mode, tooltip is placed under the pointer but will not move
+        /// with it. In FollowPointer mode, tooltip is placed under the pointer and will follow it.
+        /// In UnderWidget, tooltip will be placed under the widget if there is space, over it if 
+        /// not. In NextToWidget mode, tooltip is placed on the right side of the widget if there
+        /// is space, if not, first left side, then bottom and finally above is tried. Default is
+        /// Pointer. Currently only Pointer mode is implemented.
+        void SetFollow(Follow value);
+        
+        /// Returns the current follow mode.
+        Follow GetFollow() const {
+            return follow;
+        }
+        
         /// Enables tooltips. Manager starts enabled.
         void Enable();
         
@@ -119,7 +155,7 @@ namespace UI {
         /// may use CreateTarget or SetTarget functions to create a target. If a widget registry
         /// available, constructor will create a target. If not, it will wait until a registry is
         /// created and then it creates the target automatically if it is not set already.
-        Widget &GetTarget() const {
+        UI::Widget &GetTarget() const {
             if(!target)
                 throw std::runtime_error("The tooltip target is not set");
             
@@ -128,7 +164,7 @@ namespace UI {
         
         /// Sets the target that will be used in dynamic mode. If own is true, ownership is 
         /// transferred to this manager
-        void SetTarget(Widget &target, bool own);
+        void SetTarget(Widget &target, bool own = false);
         
         /// Changes the set text function that will be used to set the tooltip text. CreateTarget
         /// overwrites this value. If there is a tooltip displayed, this function will be called
@@ -152,21 +188,25 @@ namespace UI {
         
         void changed();
         
-        Widget *gettooltipwidget();
+        void place();
+        
+        UI::Widget *gettooltipwidget();
         
     private:
         WidgetContainer                          *container     ;
-        Widget                                   *current       = nullptr;
+        UI::Widget                               *current       = nullptr;
         Window                                   *toplevel      = nullptr;
         
         std::function<void(const std::string &)>  settext       ;
-        Widget                                   *target        = nullptr;
+        UI::Widget                               *target        = nullptr;
         bool                                      owntarget     = false;
         
         EventToken                                token         = 0;
         int                                       delay         = 1000;
         int                                       linger        = 2000;
         int                                       tolerance     = 5;
+        Mode                                      mode          = Dynamic;
+        Follow                                    follow        = Pointer;
         
         int                                       delayleft     = -1;
         int                                       lingerleft    = -1;

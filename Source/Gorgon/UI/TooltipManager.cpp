@@ -5,6 +5,7 @@
 #include "../Main.h"
 #include "../Time.h"
 #include "../Window.h"
+#include "../Widgets/Registry.h"
 
 namespace Gorgon { namespace UI {
     
@@ -21,6 +22,14 @@ namespace Gorgon { namespace UI {
             delete target;
     }
         
+    void TooltipManager::SetFollow(Follow value) {
+        if(value != follow) {
+            follow = value;
+
+            place();
+        }
+    }
+
     void TooltipManager::Enable() {
         if(!token)
             token = BeforeFrameEvent.Register(*this, &TooltipManager::Tick);
@@ -40,6 +49,10 @@ namespace Gorgon { namespace UI {
         displayed = false;
         tooltip   = "";
         settext("");
+        
+        if(mode == Dynamic && target) {
+            target->Hide();
+        }
     }
 
     void TooltipManager::Show(const std::string &text) {
@@ -53,16 +66,37 @@ namespace Gorgon { namespace UI {
         }
     }
 
-    void TooltipManager::SetTarget(Widget &target, bool own) {
+    void TooltipManager::SetTarget(UI::Widget &target, bool own) {
         if(owntarget)
             delete this->target;
         
         this->target = &target;
         owntarget = own;
+        
+        if(mode == Dynamic) {
+            if(displayed) {
+                place();
+            }
+            else
+                target.Hide();
+        }
     }
     
     void TooltipManager::SetSetText(std::function<void(const std::string &)> value) {
         settext = value;
+        
+        settext(tooltip);
+    }
+    
+    void TooltipManager::SetMode(Mode value) {
+        if(value == mode)
+            return;
+        
+        mode = value;
+        
+        if(mode == Dynamic) {
+            place();
+        }
     }
     
     void TooltipManager::Tick() {
@@ -71,6 +105,7 @@ namespace Gorgon { namespace UI {
         
         if(!toplevel) {
             toplevel = dynamic_cast<Gorgon::Window*>(&container->TopLevelLayer());
+            ASSERT(toplevel, "Tooltip manager cannot reach to top level window.");
         }
         
         auto wgt = gettooltipwidget();
@@ -119,8 +154,10 @@ namespace Gorgon { namespace UI {
             }
             
             if(delayleft <= Time::DeltaTime()) {
-                if(current)
+                if(current) {
                     Show(current->GetTooltip());
+                    place();
+                }
                 
                 delayleft = -1;
                 toleranceleft = -1;
@@ -140,12 +177,38 @@ namespace Gorgon { namespace UI {
         }
     }
     
-    Widget *TooltipManager::gettooltipwidget() {
-        Widget *wgt = container->GetHoveredWidget();
+    void TooltipManager::place() {
+        if(mode != Dynamic || !target || !toplevel)
+            return;
+
+        auto loc = toplevel->GetMouseLocation();
+        
+        if(!target->IsVisible() || !target->HasParent()) {
+            auto res = container->RequestExtender(container->GetLayer());
+            
+            if(res.Extender) {
+                res.Extender->Add(*target);
+                target->Show();
+            }
+        }
+        
+        if(target->IsVisible() && target->HasParent()) {
+            auto offset = target->GetParent().GetLayer().TranslateToTopLevel({0, 0});
+            
+            target->Move(loc-offset + Geometry::Point(0, Widgets::Registry::Active().GetEmSize()));
+        }
+    }
+    
+    UI::Widget *TooltipManager::gettooltipwidget() {
+        auto wgt = container->GetHoveredWidget();
         
         while(wgt) {
-            if(!wgt->GetTooltip().empty())
+            if(wgt == target) { //cursor is over the target, keep the current tooltip
+                return current;
+            }
+            else if(!wgt->GetTooltip().empty()) {
                 return wgt;
+            }
             else {
                 WidgetContainer *cont = wgt->HasParent() ? &wgt->GetParent() : nullptr;
                 
@@ -173,4 +236,5 @@ namespace Gorgon { namespace UI {
         current = nullptr;
     }
     
+
 } }
