@@ -4,6 +4,7 @@
 
 #include <string>
 #include <functional>
+#include "../Event.h"
 
 
 namespace Gorgon { namespace UI {
@@ -29,6 +30,9 @@ namespace Gorgon { namespace UI {
     public:
         /// Tooltip manager requires a widget container to work.
         TooltipManager(WidgetContainer &container);
+        
+        /// Destructor
+        ~TooltipManager();
         
         /// Sets the delay in milliseconds before the tooltip is shown. Default value is 1000.
         void SetDelay(int value) {
@@ -77,6 +81,14 @@ namespace Gorgon { namespace UI {
         /// Disables tooltips. Manager starts enabled.
         void Disable();
         
+        /// Hides currently displayed tooltip. The tooltip will only shown if mouse moves to
+        /// another widget or tooltip text is changed.
+        void Hide();
+        
+        /// Shows the given text until hovered widget is changed or tooltip of the currently hovered
+        /// widget is changed. Tooltip will not be displayed if the text is empty.
+        void Show(const std::string &text);
+        
         /// Sets the enabled state of the tooltip manager.
         void SetEnabled(bool value) {
             if(value) Enable();
@@ -85,7 +97,7 @@ namespace Gorgon { namespace UI {
         
         /// Returns if the manager is enabled
         bool IsEnabled() const {
-            return enabled;
+            return token != 0;
         }
         
         /// Returns if a tooltip is displayed
@@ -122,16 +134,29 @@ namespace Gorgon { namespace UI {
         /// Creates a target automatically if there is an active widget registry. Returns true if
         /// successful. Replaces both target and SetText function. This function creates a label
         /// with Tooltip template.
-        bool CreateTarget();
+        bool CreateTarget() {
+            return false;
+        }
+        
+        /// This function is called automatically to detect current mouse location, adjust and 
+        /// display tooltip
+        void Tick();
+        
+    protected:
+        
+        void destroyed();
+        
+        void changed();
         
     private:
         WidgetContainer                          *container     ;
+        Widget                                   *current       = nullptr;
         
         std::function<void(const std::string &)>  settext       ;
         Widget                                   *target        = nullptr;
         bool                                      owntarget     = false;
         
-        bool                                      enabled       = true;
+        EventToken                                token         = 0;
         int                                       delay         = 1000;
         int                                       linger        = 2000;
         int                                       tolerance     = 5;
@@ -141,6 +166,10 @@ namespace Gorgon { namespace UI {
         Geometry::Point                           lastlocation  = {0, 0};
         std::string                               tooltip       ;
         bool                                      displayed     = false;
+        
+        EventToken                                changetoken   = 0;
+        EventToken                                destroytoken  = 0;
+
     };
     
 } }

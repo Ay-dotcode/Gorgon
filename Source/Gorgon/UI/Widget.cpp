@@ -112,6 +112,8 @@ namespace Gorgon { namespace UI {
 
 
     Widget::~Widget() {
+        DestroyedEvent();
+        
         if(HasParent()) {
             GetParent().deleted(this);
         }

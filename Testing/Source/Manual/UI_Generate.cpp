@@ -233,12 +233,14 @@ int main() {
     list.EnsureVisible(1);
     list.Clear();
     list.FitHeight(list.GetHeight());
+    list.Tooltip = "This is the list";
     
     Widgets::DropdownList<DaysOfWeek> dlist(begin(Enumerate<DaysOfWeek>()), end(Enumerate<DaysOfWeek>()));
     dlist.List.SetSelectedIndex(1);
     dlist.ChangedEvent.Register([](long index) {
         std::cout << "Dropdown index: " << index << std::endl;
     });
+    dlist.Tooltip = "Choose your coffee";
    
     //...
     // Define your DropDown with : 
@@ -348,8 +350,9 @@ int main() {
         );
     }).SetHorizonalAutosize(Gorgon::UI::Autosize::Automatic);
     
-    UI::Widget *cur = nullptr;
-    
+    app.wind.Tooltips.SetSetText([](const std::string &text) {
+        std::cout << text << std::endl;
+    });
 
     app.wind.Add(blank);
     app.wind.Run();

@@ -3,6 +3,7 @@
 #include "../Layer.h"
 #include "../Geometry/Point.h"
 #include "../Input/Keyboard.h"
+#include "../Property.h"
 #include "../Geometry/PointProperty.h"
 #include "../Geometry/SizeProperty.h"
 
@@ -34,7 +35,7 @@ namespace Gorgon { namespace UI {
         }
     public:
         
-        Widget() : Location(this), Size(this) {
+        Widget() : Location(this), Size(this), Tooltip(this) {
         }
         
         Widget(Widget &&) = default;
@@ -172,6 +173,25 @@ namespace Gorgon { namespace UI {
         /// interaction. This may cause widget fire change event or reorganize
         /// itself.
         virtual bool Done() { return true; }
+        
+        /// Sets the tooltip to the given value. This will immediately update the display if it is
+        /// currently displayed.
+        void SetTooltip(const std::string &value) {
+            if(tooltip != value) {
+                tooltip = value;
+                TooltipChangedEvent();
+            }
+        }
+        
+        /// Removes the tooltip from this widget
+        void RemoveTooltip() {
+            SetTooltip("");
+        }
+        
+        /// Returns the tooltip of this widget.
+        std::string GetTooltip() const {
+            return tooltip;
+        }
 
         /// This event will be fired when the widget receives or looses focus.
         Event<Widget> FocusEvent = Event<Widget>{*this};
@@ -183,16 +203,26 @@ namespace Gorgon { namespace UI {
         /// if the object does not have a parent movement and resize will not
         /// trigger this event. Organizers use this event to rearrange widgets, 
         /// thus it is not advisable to remove all handlers from this event.
-        Event<Widget> BoundsChangedEvent = Event<Widget>{*this};
+        Event<Widget> BoundsChangedEvent    = Event<Widget>{*this};
         
         /// This event will be fired when the mouse enters the widget area.
-        Event<Widget> MouseEnterEvent    = Event<Widget>{*this};
+        Event<Widget> MouseEnterEvent       = Event<Widget>{*this};
         
         /// This event will be fired when the mouse exits the widget area.
-        Event<Widget> MouseLeaveEvent    = Event<Widget>{*this};
+        Event<Widget> MouseLeaveEvent       = Event<Widget>{*this};
+        
+        /// This event will be fired when the tooltip of the widget is changed
+        Event<Widget> TooltipChangedEvent   = Event<Widget>{*this};
+        
+        /// This event will be fired before the widget is destroyed. This event 
+        /// is fired in the middle of the destruction. It is not safe to access
+        /// the widget at this point. Only the aliases to this widget should be
+        /// invalidated in the event handlers registered to this function.
+        Event<Widget> DestroyedEvent        = Event<Widget>{*this};
         
         Geometry::PointProperty<Widget, &Widget::getlocation, &Widget::move> Location;
         Geometry::SizeProperty<Widget, &Widget::getsize, &Widget::resize> Size;
+        TextualProperty<Widget, std::string, &Widget::GetTooltip, &Widget::SetTooltip> Tooltip;
         
         /// This is a debug feature
         void setname(std::string value) {
@@ -260,6 +290,8 @@ namespace Gorgon { namespace UI {
         virtual void mouseenter();
         
         virtual void mouseleave();
+        
+        std::string tooltip;
         
     private:
         bool visible = true;

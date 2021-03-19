@@ -11,6 +11,7 @@
 #include "LayerAdapter.h"
 
 #include "WidgetContainer.h"
+#include "TooltipManager.h"
 
 #include <stdexcept>
 
@@ -253,6 +254,8 @@ namespace Gorgon { namespace UI {
         }
         
         virtual void Destroy() override;
+        
+        TooltipManager Tooltips = TooltipManager{*this};
         
         using WidgetContainer::Add;
         using Gorgon::Window::Add;
