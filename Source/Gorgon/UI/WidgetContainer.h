@@ -433,6 +433,11 @@ namespace Gorgon { namespace UI {
         /// if it is the hovered widget.
         virtual void SetHoveredWidget(Widget *widget);
         
+        /// Returns the toplevel layer of this container
+        Layer &TopLevelLayer() {
+            return getlayer().GetTopLevel();
+        }
+        
         /// This function will return a container that will act as an extender.
         virtual ExtenderRequestResponse RequestExtender(const Gorgon::Layer &self) = 0;
     

@@ -351,9 +351,10 @@ int main() {
     }).SetHorizonalAutosize(Gorgon::UI::Autosize::Automatic);
     
     app.wind.Tooltips.SetSetText([](const std::string &text) {
-        std::cout << text << std::endl;
+        std::cout << "Tooltip: " << text << std::endl;
     });
 
+    blank.Tooltip = "This is the container";
     app.wind.Add(blank);
     app.wind.Run();
 

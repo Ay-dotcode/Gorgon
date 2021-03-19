@@ -7,7 +7,11 @@
 #include "../Event.h"
 
 
-namespace Gorgon { namespace UI {
+namespace Gorgon { 
+    
+    class Window;
+    
+namespace UI {
     
     class Widget;
     class WidgetContainer;
@@ -148,9 +152,12 @@ namespace Gorgon { namespace UI {
         
         void changed();
         
+        Widget *gettooltipwidget();
+        
     private:
         WidgetContainer                          *container     ;
         Widget                                   *current       = nullptr;
+        Window                                   *toplevel      = nullptr;
         
         std::function<void(const std::string &)>  settext       ;
         Widget                                   *target        = nullptr;
@@ -164,6 +171,7 @@ namespace Gorgon { namespace UI {
         int                                       delayleft     = -1;
         int                                       lingerleft    = -1;
         Geometry::Point                           lastlocation  = {0, 0};
+        int                                       toleranceleft = -1;
         std::string                               tooltip       ;
         bool                                      displayed     = false;
         

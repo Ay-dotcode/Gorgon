@@ -3,6 +3,8 @@
 #include "Widget.h"
 #include "WidgetContainer.h"
 #include "../Main.h"
+#include "../Time.h"
+#include "../Window.h"
 
 namespace Gorgon { namespace UI {
     
@@ -67,9 +69,11 @@ namespace Gorgon { namespace UI {
         if(!settext)
             return;
         
+        if(!toplevel) {
+            toplevel = dynamic_cast<Gorgon::Window*>(&container->TopLevelLayer());
+        }
         
-        
-        auto wgt = container->GetHoveredWidget();
+        auto wgt = gettooltipwidget();
         
         if(wgt != current) {
             if(current && changetoken) {
@@ -80,21 +84,79 @@ namespace Gorgon { namespace UI {
             }
                 
             if(!wgt) {
-                //TODO start linger timeout
+                if(displayed) {
+                    lingerleft = linger + Time::DeltaTime();
+                }
                 
-                Hide();
+                delayleft = -1;
             }
             else {
                 changetoken = wgt->TooltipChangedEvent.Register(*this, &TooltipManager::changed);
                 destroytoken = wgt->DestroyedEvent.Register(*this, &TooltipManager::destroyed);
                 
-                //TODO start delay timeout
+                lingerleft = -1;
+                delayleft = displayed ? 0 : delay + Time::DeltaTime();
+                toleranceleft = tolerance;
                 
-                Show(wgt->GetTooltip());
+                if(toplevel) {
+                    lastlocation  = toplevel->GetMouseLocation();
+                }
             }
             
             current = wgt;
         }
+        
+        if(delayleft != -1) {
+            if(toplevel) {
+                int movement = (toplevel->GetMouseLocation()-lastlocation).ManhattanDistance();
+                if(toleranceleft < movement) {
+                    lastlocation = toplevel->GetMouseLocation();
+                    delayleft = delay + Time::DeltaTime();
+                }
+                else {
+                    toleranceleft -= movement;
+                }
+            }
+            
+            if(delayleft <= Time::DeltaTime()) {
+                if(current)
+                    Show(current->GetTooltip());
+                
+                delayleft = -1;
+                toleranceleft = -1;
+            }
+            else
+                delayleft -= Time::DeltaTime();
+        }
+        
+        if(lingerleft != -1) {
+            if(lingerleft <= Time::DeltaTime()) {
+                Hide();
+                
+                lingerleft = -1;
+            }
+            else
+                lingerleft -= Time::DeltaTime();
+        }
+    }
+    
+    Widget *TooltipManager::gettooltipwidget() {
+        Widget *wgt = container->GetHoveredWidget();
+        
+        while(wgt) {
+            if(!wgt->GetTooltip().empty())
+                return wgt;
+            else {
+                WidgetContainer *cont = wgt->HasParent() ? &wgt->GetParent() : nullptr;
+                
+                if(cont && cont->IsWidget())
+                    wgt = &cont->AsWidget();
+                else
+                    return nullptr;
+            }
+        }
+        
+        return nullptr;
     }
     
     void TooltipManager::changed() {
