@@ -21,7 +21,7 @@ namespace Gorgon { namespace OS {
 #endif
 #include "../Graphics/EmptyImage.h"
 
-namespace Gorgon { namespace Widgets { 
+namespace Gorgon { namespace Widgets {
 
     SimpleGenerator::SimpleGenerator(int fontsize, std::string fontname, std::string boldfontname, bool activate, float density) : Generator(activate), Density(density) {
         Init(fontsize, fontname, boldfontname);
@@ -93,6 +93,14 @@ namespace Gorgon { namespace Widgets {
         subtitlerenderer = &subtitle;
         SubtitleFont.SetGlyphRenderer(subtitle);
         
+        auto &small = *new Graphics::FreeType();
+        small.LoadFile(findfontfile(fontname, false), int(std::round(fontsize*0.8)));
+        smallrenderer = &small;
+        SmallFont.SetGlyphRenderer(small);
+        
+        InfoFont.SetGlyphRenderer(small);
+        InfoFont.SetParagraphSpacing(Spacing);
+        
         UpdateDimensions();
         UpdateBorders();
         UpdateDimensions();
@@ -116,6 +124,7 @@ namespace Gorgon { namespace Widgets {
         delete boldrenderer;
         delete titlerenderer;
         delete subtitlerenderer;
+        delete smallrenderer;
         
         providers.DeleteAll();
         drawables.DeleteAll();
@@ -133,6 +142,7 @@ namespace Gorgon { namespace Widgets {
         delete readonlyborder;
         delete focusborder;
         delete normalemptyborder;
+        delete infoborder;
         DELETEALL(normalbg);
         DELETEALL(hoverbg);
         DELETEALL(downbg);
@@ -314,7 +324,15 @@ namespace Gorgon { namespace Widgets {
             readonlyborder = makeborder(Border.Color, c);
         }
 
-        return *hovereditborder;
+        return *readonlyborder;
+    }
+
+    Graphics::BitmapRectangleProvider &SimpleGenerator::InfoBorder() {
+        if(!infoborder) {
+            infoborder = makeborder(Border.Info, Background.Info);
+        }
+
+        return *infoborder;
     }
 
     Graphics::BitmapRectangleProvider &SimpleGenerator::NormalBG(int missingedge) {
@@ -606,7 +624,6 @@ namespace Gorgon { namespace Widgets {
         
         return ret;
     }
-    
     
     Graphics::BitmapRectangleProvider *SimpleGenerator::makecheckeredbg() {
         auto r = Border.Radius;
@@ -1538,6 +1555,54 @@ namespace Gorgon { namespace Widgets {
         ln.SetSize({100, UI::Dimension::Percent}, std::max(1, int(std::round(Border.Width/2.f))));
         ln.SetMargin(Spacing*2, 0, BorderedWidgetHeight, 0);
         ln.SetAnchor(UI::Anchor::FirstBaselineRight, UI::Anchor::BottomLeft, UI::Anchor::BottomLeft);
+        
+        
+        return temp;
+    }
+
+    UI::Template SimpleGenerator::InfoLabel() {
+        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, BorderedWidgetHeight};
+        
+        UI::Template temp = maketemplate();
+        temp.SetSpacing(Spacing);
+        temp.SetSize(defsize);
+        
+        temp.AddContainer(0, UI::ComponentCondition::Always)
+            .AddIndex(3) //Border
+            .AddIndex(4) //Content
+        ;
+        
+        auto &bg = temp.AddContainer(3, UI::ComponentCondition::Always);
+        bg.Background.SetAnimation(InfoBorder());
+        bg.SetPositioning(UI::ComponentTemplate::Absolute);
+        
+        
+        auto &cont = temp.AddContainer(4, UI::ComponentCondition::Always, UI::ComponentCondition::Disabled)
+            .AddIndex(1) //icon
+            .AddIndex(2) //text
+        ;
+        cont.SetValueModification(UI::ComponentTemplate::ModifyAlpha, UI::ComponentTemplate::UseTransition);
+        cont.SetValueRange(0, 1, 0.5);
+        cont.SetReversible(true);
+        cont.SetClip(true);
+        cont.SetPadding(Spacing);
+        cont.SetBorderSize(Border.Width + Border.Radius/2);
+        cont.SetPositioning(UI::ComponentTemplate::Absolute);
+        
+        auto &icon = temp.AddPlaceholder(1, UI::ComponentCondition::Icon1IsSet);
+        icon.SetDataEffect(UI::ComponentTemplate::Icon);
+        icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        icon.SetSize(100, 100, UI::Dimension::Percent);
+        icon.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        icon.SetMargin(0, 0, Spacing, 0);
+        
+        auto &txt = temp.AddTextholder(2, UI::ComponentCondition::Always);
+        txt.SetRenderer(InfoFont);
+        txt.SetColor(Forecolor.Info);
+        txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        txt.SetDataEffect(UI::ComponentTemplate::Text);
+        txt.SetSize(100, 100, UI::Dimension::Percent);
+        txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
         
         
         return temp;

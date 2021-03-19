@@ -350,8 +350,8 @@ int main() {
         );
     }).SetHorizonalAutosize(Gorgon::UI::Autosize::Automatic);
     
-    Widgets::Label tiplabel("Some text here");
-    tiplabel.SetAutosize(Gorgon::UI::Autosize::Automatic, Gorgon::UI::Autosize::Automatic);
+    Widgets::Label tiplabel("Some text here", Gorgon::Widgets::Registry::Label_Info);
+    tiplabel.SetAutosize(Gorgon::UI::Autosize::None, Gorgon::UI::Autosize::Automatic);
     app.wind.Tooltips.SetTarget(tiplabel);
     app.wind.Add(tiplabel);
     tiplabel.Move(0, 550);
@@ -360,7 +360,7 @@ int main() {
         tiplabel.Text = text;
     });
 
-    blank.Tooltip = "This is the container\n\nYehaaw";
+    blank.Tooltip = "This is the container.\n Yehaaw there is tons of text here. A potential for next line. Even one more...";
     app.wind.Add(blank);
     app.wind.Run();
 

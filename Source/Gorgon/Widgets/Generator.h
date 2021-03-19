@@ -48,6 +48,8 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template LeadingLabel() = 0;
         
+        virtual UI::Template InfoLabel() = 0;
+        
         
         
         virtual UI::Template Panel() = 0;
@@ -114,6 +116,8 @@ namespace Gorgon { namespace Widgets {
                 return *new UI::Template(SubtitleLabel());
             case Label_Leading:
                 return *new UI::Template(LeadingLabel());
+            case Label_Info:
+                return *new UI::Template(InfoLabel());
             case Checkbox_Regular:
                 return *new UI::Template(Checkbox());
             case Checkbox_Button:
@@ -213,6 +217,8 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template LeadingLabel() override;
         
+        virtual UI::Template InfoLabel() override;
+        
         
         virtual UI::Template BlankPanel() override;
         
@@ -293,6 +299,8 @@ namespace Gorgon { namespace Widgets {
         
         Graphics::BitmapRectangleProvider &NormalEmptyBorder();
         
+        Graphics::BitmapRectangleProvider &InfoBorder();
+        
         Graphics::BitmapRectangleProvider &NormalBG(int missingedge = 0);
         Graphics::BitmapRectangleProvider &HoverBG(int missingedge = 0);
         Graphics::BitmapRectangleProvider &DownBG(int missingedge = 0);
@@ -336,6 +344,8 @@ namespace Gorgon { namespace Widgets {
         Graphics::StyledRenderer BoldFont;
         Graphics::StyledRenderer TitleFont;
         Graphics::StyledRenderer SubtitleFont;
+        Graphics::StyledRenderer SmallFont;
+        Graphics::StyledRenderer InfoFont;
 
         struct FocusInfo {
             Graphics::RGBA  Color   = {Graphics::Color::Charcoal, 0.7};
@@ -349,6 +359,7 @@ namespace Gorgon { namespace Widgets {
             int Radius                   = 0;
             int Divisions                = 1;
             Graphics::RGBA Color         = Graphics::Color::Charcoal;
+            Graphics::RGBA Info          = Graphics::Color::Charcoal;
             Graphics::RGBA Disabled      = {Graphics::Color::Charcoal, 0.5};
             Graphics::RGBA PassiveWindow = {Graphics::Color::SemiDarkGrey, 0.9};
             Graphics::RGBA ActiveWindow  = {Graphics::Color::Charcoal, 0.9};
@@ -367,6 +378,8 @@ namespace Gorgon { namespace Widgets {
             Graphics::RGBA Groove  = {Graphics::Color::Charcoal, 0.5};
             
             Graphics::RGBA Selected= {Graphics::Color::Charcoal, 0.4};
+            
+            Graphics::RGBA Info    = {Graphics::Color::BabyBlue, 0.8};
         } Background;
         
         struct ForecolorInfo {
@@ -378,6 +391,7 @@ namespace Gorgon { namespace Widgets {
             Graphics::RGBA Error   = Graphics::Color::Red;
             Graphics::RGBA Inverted= {Graphics::Color::White, 0.8};
             Graphics::RGBA InvertedActive  = Graphics::Color::White;
+            Graphics::RGBA Info    = {Graphics::Color::DarkBlue, 0.9};
         } Forecolor;
         
         
@@ -410,6 +424,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::GlyphRenderer *boldrenderer = nullptr;
         Graphics::GlyphRenderer *titlerenderer = nullptr;
         Graphics::GlyphRenderer *subtitlerenderer = nullptr;
+        Graphics::GlyphRenderer *smallrenderer = nullptr;
         
         Containers::Collection<Graphics::Drawable> drawables;
         Containers::Collection<Graphics::AnimationProvider> providers;
@@ -432,6 +447,8 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider *readonlyborder = nullptr;
         
         Graphics::BitmapRectangleProvider *normalemptyborder = nullptr;
+        
+        Graphics::BitmapRectangleProvider *infoborder = nullptr;
         
         Graphics::BitmapRectangleProvider *normalrbg = nullptr;
         Graphics::BitmapRectangleProvider *hoverrbg = nullptr;

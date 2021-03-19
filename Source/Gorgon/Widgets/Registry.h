@@ -26,6 +26,7 @@ namespace Gorgon { namespace Widgets {
             Label_Title,
             Label_Subtitle,
             Label_Leading,
+            Label_Info,
             
             Checkbox_Regular,
             Checkbox_Button,

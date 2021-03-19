@@ -11,6 +11,12 @@ namespace Gorgon {
     
     class Window;
     
+namespace Widgets {
+    
+    class Label;
+    
+}
+    
 namespace UI {
     
     class Widget;
@@ -62,7 +68,7 @@ namespace UI {
         
         /// Sets the duration in milliseconds tooltip will stay on after the mouse leaves a widget. 
         /// If the mouse enters a widget with tooltip before this duration is expended, tooltip will
-        /// be updated immediately without waiting for delay or linger. Default is 2000.
+        /// be updated immediately without waiting for delay or linger. Default is 1000.
         void SetLinger(int value) {
             linger = value;
         }
@@ -171,12 +177,9 @@ namespace UI {
         /// immediately.
         void SetSetText(std::function<void(const std::string &)> value);
         
-        /// Creates a target automatically if there is an active widget registry. Returns true if
-        /// successful. Replaces both target and SetText function. This function creates a label
-        /// with Tooltip template.
-        bool CreateTarget() {
-            return false;
-        }
+        /// Creates a target automatically. Replaces both target and SetText function. This function
+        /// creates a label with Tooltip template.
+        void CreateTarget();
         
         /// This function is called automatically to detect current mouse location, adjust and 
         /// display tooltip
@@ -189,6 +192,8 @@ namespace UI {
         void changed();
         
         void place();
+        
+        void setmytargettext(const std::string &text);
         
         UI::Widget *gettooltipwidget();
         
@@ -203,7 +208,7 @@ namespace UI {
         
         EventToken                                token         = 0;
         int                                       delay         = 1000;
-        int                                       linger        = 2000;
+        int                                       linger        = 1000;
         int                                       tolerance     = 5;
         Mode                                      mode          = Dynamic;
         Follow                                    follow        = Pointer;
@@ -217,6 +222,8 @@ namespace UI {
         
         EventToken                                changetoken   = 0;
         EventToken                                destroytoken  = 0;
+        
+        Widgets::Label                           *mytarget      = nullptr;
 
     };
     

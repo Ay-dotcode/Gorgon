@@ -6,6 +6,7 @@
 #include "../Time.h"
 #include "../Window.h"
 #include "../Widgets/Registry.h"
+#include "../Widgets/Label.h"
 
 namespace Gorgon { namespace UI {
     
@@ -67,8 +68,12 @@ namespace Gorgon { namespace UI {
     }
 
     void TooltipManager::SetTarget(UI::Widget &target, bool own) {
-        if(owntarget)
+        if(owntarget) {
+            if(this->target == mytarget)
+                mytarget = nullptr;
+            
             delete this->target;
+        }
         
         this->target = &target;
         owntarget = own;
@@ -106,6 +111,10 @@ namespace Gorgon { namespace UI {
         if(!toplevel) {
             toplevel = dynamic_cast<Gorgon::Window*>(&container->TopLevelLayer());
             ASSERT(toplevel, "Tooltip manager cannot reach to top level window.");
+            
+            if(!target && !settext) {
+                CreateTarget();
+            }
         }
         
         auto wgt = gettooltipwidget();
@@ -177,6 +186,20 @@ namespace Gorgon { namespace UI {
         }
     }
     
+    void TooltipManager::CreateTarget() {
+        if(owntarget && target != mytarget)
+            delete target;
+        
+        if(!mytarget) {
+            mytarget = new Widgets::Label(Widgets::Registry::Label_Info);
+        }
+        target = mytarget;
+        
+        using namespace std::placeholders;
+        
+        settext = std::bind(&TooltipManager::setmytargettext, this, _1);
+    }
+    
     void TooltipManager::place() {
         if(mode != Dynamic || !target || !toplevel)
             return;
@@ -236,5 +259,9 @@ namespace Gorgon { namespace UI {
         current = nullptr;
     }
     
+    void TooltipManager::setmytargettext(const std::string &text) {
+        if(mytarget)
+            mytarget->Text = text;
+    }
 
 } }
