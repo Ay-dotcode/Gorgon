@@ -217,9 +217,19 @@ namespace Gorgon { namespace UI {
         }
         
         if(target->IsVisible() && target->HasParent()) {
-            auto offset = target->GetParent().GetLayer().TranslateToTopLevel({0, 0});
+            auto offset = loc - target->GetParent().GetLayer().TranslateToTopLevel({0, 0}) + Geometry::Point(0, Widgets::Registry::Active().GetEmSize());
+            auto size   = target->GetSize();
+            auto csize = target->GetParent().GetLayer().GetCalculatedSize();
             
-            target->Move(loc-offset + Geometry::Point(0, Widgets::Registry::Active().GetEmSize()));
+            if(offset.X + size.Width > csize.Width) {
+                offset.X = csize.Width - size.Width;
+            }
+            
+            if(offset.Y + size.Height > csize.Height) {
+                offset.Y = csize.Height - size.Height;
+            }
+            
+            target->Move(offset);
         }
     }
     
