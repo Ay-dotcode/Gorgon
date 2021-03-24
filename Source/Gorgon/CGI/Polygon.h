@@ -49,16 +49,17 @@ namespace Gorgon { namespace CGI {
             for(const auto &points : pointlist) {
                 int N = (int)points.GetSize();
                 
-                if(N <= 1) continue;
-            
+                if(N <= 1) {
+                    listind++;
+                    continue;
+                }
+                    
                 int off = 0;
                 //trackback until the line that is not touching this scanline
                 while(off > -N) {
                     auto line = points.GetLine(off);
                     
-                    if( (line.End.Y < nexty && line.End.Y > y) || 
-                        (line.Start.Y < nexty && line.Start.Y > y)) 
-                    {
+                    if(line.Start.Y < nexty && line.Start.Y > y) {
                         off--;
                     }
                     else
@@ -67,19 +68,16 @@ namespace Gorgon { namespace CGI {
                 
                 if(off == -N)
                     continue;
-            
-            
+                
                 bool connected = false, wasconnected = false;
                 int firstdir = 0, lastdir = 0;
-                for(int i=off; i<N+off; i++) {
-                    auto line = points.GetLine(i);
+                for(int i=0; i<N; i++) {
+                    auto line = points.GetLine(i+off);
                     
                     if(line.Start == line.End)
                         continue;
                     
-                    if(line.MinY() < nexty && line.MaxY() > y) {
-                        auto line = points.GetLine(i);
-                        
+                    if(line.MinY() < nexty && line.MaxY() > y && (line.MinY() < y || line.MaxY() > y)) {
                         auto slope = line.SlopeInv();
                         auto offset= line.OffsetInv();
                         
@@ -144,15 +142,6 @@ namespace Gorgon { namespace CGI {
             
             std::sort(xpoints.begin(), xpoints.end(), [](auto l, auto r) { return l.first < r.first; });
             
-            //join overlapping x sections
-            /*for(int i=0; i<(int)xpoints.size()-1; i++) {
-                if(xpoints[i].second >= xpoints[i+1].first) {
-                    //join
-                    xpoints[i+1].first = xpoints[i].first; //sorted
-                    xpoints[i].second  = xpoints[i].second > xpoints[i+1].second ? xpoints[i].second : xpoints[i+1].second;
-                    xpoints[i+1].second= xpoints[i].second;
-                }
-            }*/
             
             //fill
             fn((Float)y, xpoints);
