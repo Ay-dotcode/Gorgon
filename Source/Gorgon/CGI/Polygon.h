@@ -153,9 +153,7 @@ namespace Gorgon { namespace CGI {
     /**
      * This function fills the given point list as a polygon. List is treated as closed
      * where last pixel connects to the first. S_ is the number of subdivision for subpixel
-     * accuracy. If subpixelonly is true, the segment where fully set pixels are determined
-     * is skipped. When drawing very thin polygon such as lines, setting this parameters can
-     * improve speed. S_ should be a power of two for this algorithm to work properly. W_ is
+     * accuracy. S_ should be a power of two for this algorithm to work properly. W_ is
      * winding, 1 is odd, 0 is non-zero.
      */
     template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, int W_ = 1, class P_= Geometry::Pointf, class F_ = SolidFill<>>
