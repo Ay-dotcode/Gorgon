@@ -36,8 +36,11 @@ SET(Local
 	HTMLRenderer.cpp
 )
 
+
 if(FREETYPE STREQUAL BUILTIN)
     list(APPEND Local FreeType.h FreeType.cpp)
+    
+    set(FREETYPE_INCLUDE_DIRS  "${CMAKE_SOURCE_DIR}/Source/External/freetype/include")
 endif()
 
 if(FREETYPE STREQUAL SYSTEM)

@@ -191,6 +191,7 @@ set(OptimizedLibs "")
 
 StartSource(Source/Gorgon)
 
+
 if(TESTS)
 	include(Scripts/Testing.cmake)
 endif()
@@ -256,6 +257,7 @@ if(FREETYPE STREQUAL "BUILTIN")
 	add_subdirectory(Source/External/freetype)
 	
 	include_directories(Source/External/freetype/include)
+	set(FREETYPE_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/Source/External/freetype/include)
 	
 	target_link_libraries(Gorgon freetype)
 endif()
