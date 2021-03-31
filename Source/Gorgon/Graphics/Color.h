@@ -301,6 +301,28 @@ namespace Gorgon { namespace Graphics {
         /// Converts this color to a hex representation of this color
         operator std::string() const;
 
+        /// Converts this color to the given color mode. At most GetChannelsPerPixel(mode) amount
+        /// of values will be set
+        std::array<Gorgon::Byte, 4> Convert(const Gorgon::Graphics::ColorMode &mode) {
+            switch(mode){
+                case Gorgon::Graphics::ColorMode::Alpha:
+                    return {A};
+                case Gorgon::Graphics::ColorMode::Grayscale_Alpha:
+                    return {Luminance(), A};
+                case Gorgon::Graphics::ColorMode::Grayscale:
+                    return {Luminance()};
+                case Gorgon::Graphics::ColorMode::RGB:
+                    return {R, G, B};
+                case Gorgon::Graphics::ColorMode::BGR:
+                    return {B, G, R};
+                case Gorgon::Graphics::ColorMode::RGBA:
+                    return {R, G, B, A};
+                case Gorgon::Graphics::ColorMode::BGRA:
+                    return {B, G, R, A};
+                default:
+                    return {};
+            }
+        }
 
 
         /// Red channel

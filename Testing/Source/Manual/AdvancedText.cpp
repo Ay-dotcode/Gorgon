@@ -5,6 +5,9 @@
 
 #include <Gorgon/Graphics/AdvancedRenderer.h>
 
+#include <Gorgon/ImageProcessing/Filters.h>
+
+
 
 std::string helptext = 
     "Key list:\n"

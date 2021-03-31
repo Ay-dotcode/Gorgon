@@ -1,4 +1,6 @@
 SET(Local
-	Kernel.h
-	Kernel.cpp
+    Filters.h
+    
+    Kernel.h
+    Kernel.cpp
 )
