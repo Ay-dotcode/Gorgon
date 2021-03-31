@@ -81,10 +81,10 @@ namespace Gorgon { namespace ImageProcessing {
                     
                     Float weightsum = 0;
                     
-                    for(int i=0; i<h; i++) {
-                        for(int j=0; j<w; j++) {
-                            auto cx = x - i + h/2;
-                            auto cy = y - j + w/2;
+                    for(int i=0; i<w; i++) {
+                        for(int j=0; j<h; j++) {
+                            auto cx = x - i + w/2;
+                            auto cy = y - j + h/2;
                             
                             if(cx >= 0 && cx < W && cy >= 0 && cy < H) {
                                 for(int c=0; c<C; c++) {
@@ -189,10 +189,10 @@ namespace Gorgon { namespace ImageProcessing {
                 for(int x=0; x<W; x++) {
                     std::array<Float, 4> values = {};
                     
-                    for(int i=0; i<h; i++) {
-                        for(int j=0; j<w; j++) {
-                            auto cx = x - i + h/2;
-                            auto cy = y - j + w/2;
+                    for(int i=0; i<w; i++) {
+                        for(int j=0; j<h; j++) {
+                            auto cx = x - i + w/2;
+                            auto cy = y - j + h/2;
                             
                             if(cx < 0 || cx >= W || cy < 0 || cy >= H) {
                                 oob(cx, cy, values);

@@ -150,6 +150,23 @@ namespace Gorgon { namespace Graphics {
         /// used.
         AdvancedTextBuilder &SetColor(RGBA color, bool precise = false) { CSI(0x02); Color(color, precise); return ST(); }
         
+        /// Removes tint color that is used for images.
+        AdvancedTextBuilder &RemoveTint() { CSI(0x18); return ST(); }
+        
+        /// Sets the tint color that is used for images to the given 7-bit index. 
+        AdvancedTextBuilder &SetTint(Byte index, Byte alpha = 255) { CSI(0x18); Index(index); if(alpha != 255) Byte(alpha); return ST(); }
+        
+        /// Sets the tint color that is used for images to the given index name. 
+        AdvancedTextBuilder &SetTint(NamedColors index, Byte alpha = 255) { return SetTint(Gorgon::Byte(index), alpha); }
+        
+        /// Sets the tint color that is used for images to the given color. If precise is not set, 
+        /// 7-bits per channel will be used.
+        AdvancedTextBuilder &SetTint(RGBA color, bool precise = false) { CSI(0x18); Color(color, precise); return ST(); }
+        
+        /// Sets the alpha that is used for images to the given color. If precise is not set, 
+        /// 7-bits per channel will be used.
+        AdvancedTextBuilder &SetAlpha(Byte alpha, bool precise = false) { return SetTint(RGBA{255, 255, 255, alpha}, precise); }
+        
         /// Sets the background color to the given 7-bit index. 
         AdvancedTextBuilder &SetBackgroundColor(Byte index, Byte alpha = 255) { CSI(0x03); Index(index); if(alpha != 255) Byte(alpha); return ST(); }
         
@@ -412,8 +429,9 @@ namespace Gorgon { namespace Graphics {
         }
         
         /// Displays the image with the given ID and size. Image will be scale proportionally to
-        /// this area
-        AdvancedTextBuilder &InlineImage(Byte index, Geometry::Size size, Geometry::Point offset = {0, 0}) {
+        /// this area. If any dimension is 0, it will be ignored. relsize is relative to wrap width
+        /// and line height and is in percentage.
+        AdvancedTextBuilder &InlineImage(Byte index, Geometry::Size pixelsize, Geometry::Size relsize, Geometry::Point offset = {0, 0}) {
             CSI(0x10);
             Index(index);
             Byte(0);
@@ -422,10 +440,14 @@ namespace Gorgon { namespace Graphics {
                 US();
                 Int((short)offset.Y);
             }
-            RS(); 
-            Int((short)size.Width);
+            RS();
+            Int((short)pixelsize.Width);
             US();
-            Int((short)size.Height);
+            Int((short)pixelsize.Height);
+            US();
+            Int((short)relsize.Width);
+            US();
+            Int((short)relsize.Height);
             
             return ST();
         }
@@ -470,8 +492,8 @@ namespace Gorgon { namespace Graphics {
         
         
         /// Displays the image with the given ID, side and margin. If the image is larger than the wrap
-        /// width, it will be shrunk.
-        AdvancedTextBuilder &AlignedImage(Byte index, ImageAlign side, Geometry::Size size, Geometry::Point offset = {0, 0}, Geometry::Margin margins = {0}) {
+        /// width, it will be shrunk. If any dimension of the size is zero, it will be ignored.
+        AdvancedTextBuilder &AlignedImage(Byte index, ImageAlign side,  Geometry::Size pixelsize, Geometry::Size relsize, Geometry::Point offset = {0, 0}, Geometry::Margin margins = {0}) {
             CSI(0x10);
             Index(index);
             Byte(side);
@@ -481,9 +503,13 @@ namespace Gorgon { namespace Graphics {
                 Int((short)offset.Y);
             }
             RS();
-            Int((short)size.Width);
+            Int((short)pixelsize.Width);
             US();
-            Int((short)size.Height);
+            Int((short)pixelsize.Height);
+            US();
+            Int((short)relsize.Width);
+            US();
+            Int((short)relsize.Height);
             RS();
             if(margins != Geometry::Margin{0}) {
                 if(margins.Left == margins.Top == margins.Right == margins.Bottom) {
@@ -504,9 +530,9 @@ namespace Gorgon { namespace Graphics {
         }
         
         /// Displays the image with the given ID and offset. If the image is larger than the wrap
-        /// width, it will be shrunk.
-        AdvancedTextBuilder &AlignedImage(Byte index, ImageAlign side, Geometry::Size size, Geometry::Margin margins) {
-            return AlignedImage(index, side, size, {0, 0}, margins);
+        /// width, it will be shrunk. If any dimension of the size is zero, it will be ignored.
+        AdvancedTextBuilder &AlignedImage(Byte index, ImageAlign side, Geometry::Size pixelsize, Geometry::Size relsize, Geometry::Margin margins) {
+            return AlignedImage(index, side, pixelsize, relsize, {0, 0}, margins);
         }
         
         /// END @}
@@ -575,6 +601,16 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &StartRegion(Byte index) { CSI(0x30); Index(index); return ST(); }
         
         AdvancedTextBuilder &EndRegion(Byte index) { CSI(0x31); Index(index); return ST(); }
+        
+        /// Places a placeholder space. Placeholder will be wrapped as if it is a single glyph. Relative
+        /// is relative to wrap width and line height and is in percentage.
+        AdvancedTextBuilder &Placeholder(Geometry::Size pixels, Geometry::Size rel) { 
+            CSI(0x42); 
+            ValAndRel(pixels.Width, rel.Width); GS();
+            ValAndRel(pixels.Height, rel.Height);
+            
+            return ST(); 
+        }
         
         /// @}
         
