@@ -6,7 +6,7 @@
 
 namespace Gorgon { namespace Graphics {
     namespace internal {
-        Glyph decode(std::string::const_iterator &it, std::string::const_iterator end) {
+        Glyph decode_impl(std::string::const_iterator &it, std::string::const_iterator end) {
             Byte b = *it;
             if(b < 127) {
                 if(b == '\r') {
@@ -71,7 +71,44 @@ namespace Gorgon { namespace Graphics {
     
             return 0xfffd;
         }
-    
+        
+        Glyph decode(std::string::const_iterator &it, std::string::const_iterator end, bool skipcmd) {
+            Glyph g = decode_impl(it, end);
+            
+            if(!skipcmd)
+                return g;
+            
+            bool ctrl = g == 0x9b;
+            
+            while(ctrl || (g >= 0x0e && g < 0x20) || (g == 0x86 || g == 0x87) || (g >= 0x90 && g < 0xa0)) {
+                ++it;
+                
+                if(it == end) {
+                    --it;
+                    return 0xffff;
+                }
+                
+                if(g == 0x9a) { //SCI ignore next char
+                    decode_impl(it, end);
+                
+                    ++it;
+                    if(it == end) {
+                        --it;
+                        return 0xffff;
+                    }
+                }
+                
+                g = decode_impl(it, end);
+                
+                if(g == 0x9b) //CSI ignore until ST
+                    ctrl = true;
+                if(g == 0x9c) //ST, stop ignoring
+                    ctrl = false;
+            }
+            
+            return g;
+        }
+        
         bool isspaced(Glyph g) {
             return g < 0x300 || g > 0x3ff;
         }
@@ -215,6 +252,10 @@ namespace Gorgon { namespace Graphics {
 
             for(auto it=begin; it!=end; ++it) {
                 Glyph g = internal::decode(it, end);
+                
+                if(g == 0xffff)
+                    continue;
+                
                 int poff = 0;
 
                 ind++;
@@ -285,6 +326,10 @@ namespace Gorgon { namespace Graphics {
 
             for(auto it=begin; it!=end; ++it) {
                 Glyph g = internal::decode(it, end);
+                 
+                if(g == 0xffff)
+                    continue;
+                
                 int poff = 0;
 
                 ind++;
@@ -369,7 +414,10 @@ namespace Gorgon { namespace Graphics {
 
             for(auto it=begin; it!=end; ++it) {
                 Glyph g = internal::decode(it, end);
-
+                 
+                if(g == 0xffff)
+                    continue;
+                
                 int cur_spacing = 0, prev_gw = 0;
 
                 // if the string can be broken to a second line from here
@@ -516,6 +564,9 @@ namespace Gorgon { namespace Graphics {
             
             for(auto it=begin; it!=end; ++it) {
                 Glyph g = internal::decode(it, end);
+                 
+                if(g == 0xffff)
+                    continue;
                 
                 int cur_spacing = 0, prev_gw = 0;
                 

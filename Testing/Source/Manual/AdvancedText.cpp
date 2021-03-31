@@ -27,6 +27,7 @@ int main() {
     builder.UseHeader(Gorgon::Graphics::AdvancedTextBuilder::H1)
            .Append("Hello world.\n")
            .UseDefaultFont()
+           .SetHangingIndent(10, 0)
            .Append("This is ")
            .UseBoldFont()
            .Append("a bold ")
@@ -34,9 +35,11 @@ int main() {
            .SetColor(2)
            .Append("text.")
            .ResetFormatting()
+           .LineBreak()
+           .Append("Not a paragraph")
     ;
     
-    std::cout << builder.Get() << std::endl;
+    app.sty.Print(l, builder, 10, 10, 100);
     
     while(true) {
         Gorgon::NextFrame();

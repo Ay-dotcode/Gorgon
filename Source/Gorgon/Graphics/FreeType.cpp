@@ -586,6 +586,9 @@ namespace Gorgon { namespace Graphics {
         
         for(auto it=text.begin(); it!=text.end(); it++) {
             auto g = internal::decode(it, text.end());
+            if(g == 0xffff)
+                continue;
+            
             if(!Exists(g))
                 list.insert(g);
         }

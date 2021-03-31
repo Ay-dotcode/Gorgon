@@ -46,8 +46,9 @@ namespace Gorgon { namespace Graphics {
     /// externally and will not have any impact on inner workings of the system.
     namespace internal {
         /// Decodes a utf-8 character from the given iterator. If char is not valid 
-        /// 0xfffd is returned. \\r\\n is mapped to \\n
-        Glyph decode(std::string::const_iterator &it, std::string::const_iterator end);
+        /// 0xfffd is returned. \\r\\n is mapped to \\n, if skipcmd is true, this will skip advanced
+        /// renderer commands
+        Glyph decode(std::string::const_iterator &it, std::string::const_iterator end, bool skipcmd = true);
         bool isnewline(Glyph g);
         bool isspaced(Glyph g);
         bool isspace(Glyph g);

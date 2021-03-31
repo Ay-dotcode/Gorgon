@@ -100,7 +100,7 @@ namespace Gorgon { namespace Graphics {
         }
         
         /// Appends a line break that does not start a new paragraph.
-        AdvancedTextBuilder &LineBreak() { return SCI(0x32); }
+        AdvancedTextBuilder &LineBreak() { return C2(0x85); }
         
         /// Resets all formatting instructions.
         AdvancedTextBuilder &ResetFormatting() { return SCI(0x04); }
@@ -132,6 +132,7 @@ namespace Gorgon { namespace Graphics {
         /// Switches to the given font index. If it doesn't exist, default font will be used.
         AdvancedTextBuilder &SetFont(Byte fontindex) { CSI(0x15); Index(fontindex); return ST(); }
         /// END @}
+        
         
         /// @name Color control
         /// These functions control the color of different parts of the system. Default color for
@@ -253,6 +254,7 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &Strikethrough(bool enable = true) { return SCI(enable ? 0x12 : 0x13); }
         
         /// END @}
+        
         
         /// @name Positioning
         /// @{ BEGIN
@@ -402,6 +404,7 @@ namespace Gorgon { namespace Graphics {
         
         /// END @}
         
+        
         /// @name Image
         /// @{ BEGIN
         
@@ -537,6 +540,7 @@ namespace Gorgon { namespace Graphics {
         
         /// END @}
         
+        
         /// @name Table
         /// These functions allow generation of tables
         /// @{ BEGIN
@@ -579,6 +583,7 @@ namespace Gorgon { namespace Graphics {
         
         /// END @}
         
+        
         /// @name Selection
         /// These functions help to display selection marker
         /// @{
@@ -590,6 +595,7 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &EndSelection() { return C2(0x87); }
         
         /// @}
+        
         
         /// @name Regions
         /// Regions are ranges of text. AdvancedPrint function will return a list of region 
@@ -686,10 +692,13 @@ namespace Gorgon { namespace Graphics {
         std::string text;
     };
     
-    class AdvancedRenderer {
+    class AdvancedRenderer : public TextRenderer {
     public:
         
         
+        
+    protected:
+        std::map<Byte, StyledRenderer> fonts;
         
     };
 
