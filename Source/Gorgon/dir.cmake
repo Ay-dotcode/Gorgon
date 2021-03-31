@@ -9,6 +9,7 @@ SET(Local
 	GL
 	Graphics
 	Input
+	ImageProcessing
 	IO
 	Network
 	Multimedia

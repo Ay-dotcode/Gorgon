@@ -167,6 +167,12 @@ namespace Gorgon {
         /// Item is the last item
         Last    = 4
     };
+    
+    /// Defines a cardinal direction
+    enum class Axis {
+        X,
+        Y
+    };
 
     
 #ifdef DOXYGEN
