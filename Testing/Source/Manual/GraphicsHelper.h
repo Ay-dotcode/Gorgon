@@ -130,7 +130,7 @@ public:
     Graphics::Layer l;
     Bitmap bgimage, icon;
     Graphics::FreeType fnt, fntlarge;
-    Graphics::StyledRenderer sty = {fnt}, stylarge = {fntlarge};
+    Graphics::StyledPrinter sty = {fnt}, stylarge = {fntlarge};
     WM::Icon ico;
 
     std::string appname;

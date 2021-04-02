@@ -3,7 +3,7 @@
 #include <Gorgon/Resource/File.h>
 #include <Gorgon/Resource/Font.h>
 
-#include <Gorgon/Graphics/AdvancedRenderer.h>
+#include <Gorgon/Graphics/AdvancedPrinter.h>
 
 #include <Gorgon/ImageProcessing/Filters.h>
 
@@ -24,7 +24,7 @@ int main() {
     using namespace Gorgon::Graphics;
     
     Graphics::AdvancedTextBuilder builder;
-    builder.UseHeader(Gorgon::Graphics::AdvancedTextBuilder::H1)
+    builder.UseHeader(Gorgon::Graphics::HeaderLevel::H1)
            .Append("Hello world.\n")
            .UseDefaultFont()
            .SetHangingIndent(10, 0)
@@ -36,7 +36,12 @@ int main() {
            .Append("text.")
            .ResetFormatting()
            .LineBreak()
-           .Append("Not a paragraph")
+           .Append("Not a new paragraph. ")
+           .UseItalicFont()
+           .Append("e = mc")
+           .UseSuperscript()
+           .Append("2")
+           .ScriptOff()
     ;
     
     app.sty.Print(l, builder, 10, 10, 100);

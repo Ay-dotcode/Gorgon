@@ -1043,7 +1043,7 @@ namespace Gorgon { namespace Graphics {
         );
     }
 
-    void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Point location) const {
+    void StyledPrinter::print(TextureTarget &target, const std::string &text, Geometry::Point location) const {
         if(shadow.type == TextShadow::Flat) {
             print(target, text, Geometry::Pointf(location) + shadow.offset, shadow.color, shadow.color, shadow.color);
         }
@@ -1051,7 +1051,7 @@ namespace Gorgon { namespace Graphics {
         print(target, text, location, color, strikecolor, underlinecolor);
     }
 
-    void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Pointf location, 
+    void StyledPrinter::print(TextureTarget &target, const std::string &text, Geometry::Pointf location, 
                                RGBAf color, RGBAf strikecolor, RGBAf underlinecolor) const {
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
@@ -1087,7 +1087,7 @@ namespace Gorgon { namespace Graphics {
 
     }
 
-    Geometry::Size StyledRenderer::GetSize(const std::string &text) const {
+    Geometry::Size StyledPrinter::GetSize(const std::string &text) const {
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
@@ -1107,7 +1107,7 @@ namespace Gorgon { namespace Graphics {
         return{maxx > 0 ? maxx : 0, cur.Y > 0 ? (cur.Y - pspace + (int)std::round(renderer->GetLineGap() * (1 - vspace))) : 0};
     }
     
-    Geometry::Size StyledRenderer::GetSize(const std::string &text, int width) const {
+    Geometry::Size StyledPrinter::GetSize(const std::string &text, int width) const {
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
@@ -1138,7 +1138,7 @@ namespace Gorgon { namespace Graphics {
         return {maxx > 0 ? maxx : 0, y > 0 ?  y - pspace + (int)std::round(renderer->GetLineGap() * (1 - vspace)) : 0};
     }
     
-    int StyledRenderer::GetCharacterIndex(const std::string &text, Geometry::Point location) const{ 
+    int StyledPrinter::GetCharacterIndex(const std::string &text, Geometry::Point location) const{ 
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
@@ -1181,7 +1181,7 @@ namespace Gorgon { namespace Graphics {
         return bestind;
     }
 
-    Geometry::Rectangle StyledRenderer::GetPosition(const std::string& text, int index) const { 
+    Geometry::Rectangle StyledPrinter::GetPosition(const std::string& text, int index) const { 
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
@@ -1233,7 +1233,7 @@ namespace Gorgon { namespace Graphics {
         return {pos, size};
     }
     
-    int StyledRenderer::GetCharacterIndex(const std::string &text, int width, Geometry::Point location, bool wrap) const {
+    int StyledPrinter::GetCharacterIndex(const std::string &text, int width, Geometry::Point location, bool wrap) const {
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
@@ -1373,7 +1373,7 @@ namespace Gorgon { namespace Graphics {
         return bestind;
     }
     
-    Geometry::Rectangle StyledRenderer::GetPosition(const std::string& text, int width, int index, bool wrap) const {
+    Geometry::Rectangle StyledPrinter::GetPosition(const std::string& text, int width, int index, bool wrap) const {
          if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
@@ -1515,7 +1515,7 @@ namespace Gorgon { namespace Graphics {
         return {pos, size};
     }
 
-    void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align_override) const {
+    void StyledPrinter::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align_override) const {
         /*if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         */
@@ -1526,7 +1526,7 @@ namespace Gorgon { namespace Graphics {
         print(target, text, location, align_override, color, strikecolor, underlinecolor);
     }
 
-    void StyledRenderer::print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, 
+    void StyledPrinter::print(TextureTarget &target, const std::string &text, Geometry::Rectanglef location, 
                                TextAlignment align, RGBAf color, RGBAf strikecolor, RGBAf underlinecolor) const {
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
@@ -1670,7 +1670,7 @@ namespace Gorgon { namespace Graphics {
         }
     }
 
-    void StyledRenderer::printnowrap(TextureTarget& target, const std::string& text, Geometry::Rectangle location, TextAlignment align) const {
+    void StyledPrinter::printnowrap(TextureTarget& target, const std::string& text, Geometry::Rectangle location, TextAlignment align) const {
         switch(align) {
         case TextAlignment::Left:
             print(target, text, {location.TopLeft(), 0, location.Height}, align);

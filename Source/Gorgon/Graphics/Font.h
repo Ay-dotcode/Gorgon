@@ -150,9 +150,9 @@ namespace Gorgon { namespace Graphics {
     * functions. TextRenderers must be accept utf-8. internal::decode function should be preferred
     * to decode utf-8, among regular utf-8 decoding, this function will map \r\n to \n.
     */
-    class TextRenderer {
+    class TextPrinter {
     public:
-        virtual ~TextRenderer() { }
+        virtual ~TextPrinter() { }
         
         /// Prints the given text to the target. y coordinate is the top if the text. However, depending
         /// on the font, this value might exclude uppercase accents.
@@ -269,13 +269,13 @@ namespace Gorgon { namespace Graphics {
     * This is the basic font, performing the minimal amount of operations necessary to render
     * text on the screen. It requires a single GlyphRenderer to work.
     */
-    class BasicFont : public TextRenderer {
+    class BasicFont : public TextPrinter {
     public:
         BasicFont(const GlyphRenderer &renderer, RGBAf color = 1.f, TextAlignment defaultalign = TextAlignment::Left) : 
             defaultalign(defaultalign), color(color), renderer(&renderer) {
         }
 
-        using TextRenderer::Print;
+        using TextPrinter::Print;
 
 
         void Print(TextureTarget &target, const std::string &text, RGBAf color) const {
@@ -459,16 +459,16 @@ namespace Gorgon { namespace Graphics {
     * heavy, and could be copied. When setting up spacing, try to avoid non-integer values,
     * as they would cause text to blur.
     */
-    class StyledRenderer : public TextRenderer {
+    class StyledPrinter : public TextPrinter {
     public:
         /// Renderer must be ready in order to calculate spacings correctly. If it will be
         /// initialized later, call ResetSpacing to reset all to defaults.
-        StyledRenderer(GlyphRenderer &renderer, RGBAf color = 1.f, TextShadow shadow = {}) : 
+        StyledPrinter(GlyphRenderer &renderer, RGBAf color = 1.f, TextShadow shadow = {}) : 
             renderer(&renderer), color(color), shadow(shadow) { 
             tabwidth = renderer.GetMaxWidth() * 8;
         }
 
-        StyledRenderer() = default;
+        StyledPrinter() = default;
 
         GlyphRenderer &GetGlyphRenderer() {
             return *renderer;

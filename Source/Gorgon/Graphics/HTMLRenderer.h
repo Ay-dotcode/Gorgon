@@ -150,7 +150,7 @@ private:
     };
     
     FontFamily &fontfamily;
-    StyledRenderer renderer;
+    StyledPrinter renderer;
     bool drawunderlined, drawstriked;
     unsigned int underlinedstart, strikedstart;
     int baselineoffset, xx, yy, orgx, orgy;

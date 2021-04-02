@@ -15,7 +15,7 @@
 
 namespace Gorgon { 
     namespace Graphics {
-        class TextRenderer;
+        class TextPrinter;
     }
     
     /// This namespace contains User interface related functionality. This namespace
@@ -1527,12 +1527,12 @@ namespace Gorgon {
         bool IsReady() const;
         
         /// Changes the renderer
-        void SetRenderer(const Graphics::TextRenderer &value) {
+        void SetRenderer(const Graphics::TextPrinter &value) {
             renderer = &value;
         }
         
         /// Returns the renderer for this textholder
-        const Graphics::TextRenderer &GetRenderer() const {
+        const Graphics::TextPrinter &GetRenderer() const {
             ASSERT(renderer, "Renderer is not set.");
             
             return *renderer;
@@ -1577,7 +1577,7 @@ namespace Gorgon {
         }
     
     private:
-        const Graphics::TextRenderer *renderer = nullptr;
+        const Graphics::TextPrinter *renderer = nullptr;
         Graphics::RGBAf color = 1.0f;
         Graphics::RGBAf targetcolor = 0.f;
         std::string text;

@@ -1,15 +1,90 @@
 #pragma once
 
+#include "Font.h"
 #include "Color.h"
 #include "../Graphics.h"
 #include "../Geometry/Margin.h"
+#include "../Containers/Hashmap.h"
 
 #include <string>
 
 #include "../String.h"
 
 namespace Gorgon { namespace Graphics {
+            
+    /// Constants for colors. Color indices are 7-bit integers 0-127. First few are named as
+    /// follows. Each named color has forecolor and backcolor pairs.
+    enum class NamedFontColors {
+        Regular,
+        Title,
+        Emphasis,
+        Info,
+        Inverted,
+        Code,
+        Keyword,
+        Comment,
+    };
     
+    /// Constants for headings
+    enum class HeaderLevel {
+        H1 = 1,
+        H2,
+        H3,
+        H4
+    };
+            
+    /// Constants for fonts. Font indices are 7-bit integers 0-127. First few are named as
+    /// follows.
+    enum class NamedFonts {
+        /// Default font
+        Normal,
+        
+        /// Default font
+        Regular = Normal,
+        
+        /// Bold font
+        Bold,
+        
+        /// First level heading
+        H1,
+        
+        /// Second level heading
+        H2,
+        
+        /// Third level heading
+        H3,
+        
+        /// Fourth level heading
+        H4,
+        
+        /// Italic font
+        Italic,
+        
+        /// Smaller font, usually 75% of full size
+        Small,
+        
+        /// Bold and italic font
+        BoldItalic,
+        
+        /// Font style used to display information, usually smaller and uses different colors.
+        Info,
+        
+        /// A large font, usually 125% of the original size
+        Larger,
+        
+        /// Small font that will be used in super and subscripts. Could also be used for other purposes.
+        Script,
+        
+        /// Small font that will be used in super and subscripts for fonts that is known to be bold.
+        /// Could also be used for other purposes.
+        BoldScript,
+        
+        /// Small font that will be used in super and subscripts. Could also be used for other purposes.
+        /// This script font will be used for small, info and script fonts
+        SmallScript
+    };
+        
+
     /**
      * This class helps building strings to be used with AdvancedRenderer. Advanced rendering is
      * capable of modifying fonts, offsets, displaying images, handing regions, selection, and 
@@ -20,26 +95,6 @@ namespace Gorgon { namespace Graphics {
      */
     class AdvancedTextBuilder {
     public:
-        enum HeaderLevel {
-            H1 = 1,
-            H2,
-            H3,
-            H4
-        };
-        
-        /// Constants for colors. Color indices are 7-bit integers 0-127. First 8 are named as
-        /// follows. Each named color has forecolor and backcolor pairs.
-        enum NamedColors {
-            Regular,
-            Title,
-            Emphasis,
-            Info,
-            Inverted,
-            Code,
-            Keyword,
-            Comment,
-        };
-        
         /// Defines how an image will be aligned
         enum ImageAlign {
             Inline,
@@ -125,9 +180,14 @@ namespace Gorgon { namespace Graphics {
         
         AdvancedTextBuilder &UseHeader(HeaderLevel level) { return C1(0x10 + char(level)); }
         
-        AdvancedTextBuilder &UseSuperscript() { return SetFont(10); }
+        /// Switch to superscript, use ScriptOff to switch off
+        AdvancedTextBuilder &UseSuperscript() { return C1(5); }
         
-        AdvancedTextBuilder &UseSubscript() { return SetFont(11); }
+        /// Switch to subscript, use ScriptOff to switch off
+        AdvancedTextBuilder &UseSubscript() { return C1(6); }
+        
+        /// Switches sub and superscript off
+        AdvancedTextBuilder &ScriptOff() { return C1(7); }
 
         /// Switches to the given font index. If it doesn't exist, default font will be used.
         AdvancedTextBuilder &SetFont(Byte fontindex) { CSI(0x15); Index(fontindex); return ST(); }
@@ -145,7 +205,7 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &SetColor(Byte index, Byte alpha = 255) { CSI(0x01); Index(index); if(alpha != 255) Byte(alpha); return ST(); }
         
         /// Sets the forecolor to the given index name. 
-        AdvancedTextBuilder &SetColor(NamedColors index, Byte alpha = 255) { return SetColor(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetColor(NamedFontColors index, Byte alpha = 255) { return SetColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the forecolor to the given color. If precise is not set, 7-bits per channel will be
         /// used.
@@ -158,7 +218,7 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &SetTint(Byte index, Byte alpha = 255) { CSI(0x18); Index(index); if(alpha != 255) Byte(alpha); return ST(); }
         
         /// Sets the tint color that is used for images to the given index name. 
-        AdvancedTextBuilder &SetTint(NamedColors index, Byte alpha = 255) { return SetTint(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetTint(NamedFontColors index, Byte alpha = 255) { return SetTint(Gorgon::Byte(index), alpha); }
         
         /// Sets the tint color that is used for images to the given color. If precise is not set, 
         /// 7-bits per channel will be used.
@@ -172,7 +232,7 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &SetBackgroundColor(Byte index, Byte alpha = 255) { CSI(0x03); Index(index); if(alpha != 255) Byte(alpha); return ST(); }
         
         /// Sets the background color to the given index name. 
-        AdvancedTextBuilder &SetBackgroundColor(NamedColors index, Byte alpha = 255) { return SetBackgroundColor(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetBackgroundColor(NamedFontColors index, Byte alpha = 255) { return SetBackgroundColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the background color to the given color. If precise is not set, 7-bits per channel 
         /// will be used.
@@ -183,7 +243,7 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &SetBorderColor(Byte index, Byte alpha = 255) { CSI(0x06); Index(index); if(alpha != 255) Byte(alpha); return ST(); }
         
         /// Sets the border color to the given index name. 
-        AdvancedTextBuilder &SetBorderColor(NamedColors index, Byte alpha = 255) { return SetBorderColor(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetBorderColor(NamedFontColors index, Byte alpha = 255) { return SetBorderColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the border color to the given color. If precise is not set, 7-bits per channel 
         /// will be used.
@@ -309,23 +369,23 @@ namespace Gorgon { namespace Graphics {
         /// @{ BEGIN
         
         /// Changes the spacing between paragraphs. rel is relative to line height and in percentage.
-        AdvancedTextBuilder &SetParagraphSpacing(short pixels, short rel) { CSI(0x09); ValAndRel(pixels, rel); return ST(); }
+        AdvancedTextBuilder &SetParagraphSpacing(short pixels, short rel = 0) { CSI(0x09); ValAndRel(pixels, rel); return ST(); }
         
         AdvancedTextBuilder &DefaultParagraphSpacing() { CSI(0x09); return ST(); }
         
         /// Changes the spacing between lines. rel is relative to line height and in percentage.
-        AdvancedTextBuilder &SetLineSpacing(short pixels, short rel) { CSI(0x0d); ValAndRel(pixels, rel); return ST(); }
+        AdvancedTextBuilder &SetLineSpacing(short pixels, short rel = 0) { CSI(0x0d); ValAndRel(pixels, rel); return ST(); }
         
         AdvancedTextBuilder &DefaultLineSpacing() { CSI(0x0d); return ST(); }
         
         /// Changes the spacing between the letters. rel is relative to em width and in 
         /// percentage.
-        AdvancedTextBuilder &SetLetterSpacing(short pixels, short rel) { CSI(0x0c); ValAndRel(pixels, rel); return ST(); }
+        AdvancedTextBuilder &SetLetterSpacing(short pixels, short rel = 0) { CSI(0x0c); ValAndRel(pixels, rel); return ST(); }
         
         AdvancedTextBuilder &DefaultLetterSpacing() { CSI(0x0c); return ST(); }
         
         /// Changes the indent. rel is relative to em width and in percentage.
-        AdvancedTextBuilder &SetIndent(short pixels, short rel) { CSI(0x0a); ValAndRel(pixels, rel); return ST(); }
+        AdvancedTextBuilder &SetIndent(short pixels, short rel = 0) { CSI(0x0a); ValAndRel(pixels, rel); return ST(); }
         
         AdvancedTextBuilder &RemoveIndent() { CSI(0x0a); return ST(); }
         
@@ -338,18 +398,19 @@ namespace Gorgon { namespace Graphics {
         
         /// Place the requested amount of space horizontally. rel is relative to em width and in 
         /// percentage.
-        AdvancedTextBuilder &HorizontalSpace(short pixels, short rel) { CSI(0x40); ValAndRel(pixels, rel); return ST(); }
+        AdvancedTextBuilder &HorizontalSpace(short pixels, short rel = 0) { CSI(0x40); ValAndRel(pixels, rel); return ST(); }
         
         /// Place the requested amount of space vertically. rel is relative to line height and in 
         /// percentage.
-        AdvancedTextBuilder &VerticalSpace(short pixels, short rel) { CSI(0x41); ValAndRel(pixels, rel); return ST(); }
+        AdvancedTextBuilder &VerticalSpace(short pixels, short rel = 0) { CSI(0x41); ValAndRel(pixels, rel); return ST(); }
         
-        /// Changes the spacing between the tab stops. rel is in space widths.
-        AdvancedTextBuilder &SetTabWidth(short pixels, short rel) { CSI(0x17); ValAndRel(pixels, rel); return ST(); }
+        /// Changes the spacing between the tab stops. rel is in space widths. per is percentage of
+        /// wrap width
+        AdvancedTextBuilder &SetTabWidth(short pixels, short rel = 0, short per = 0) { CSI(0x17); ValAndRel(pixels, rel); Int(per); return ST(); }
         
         /// Adds a tabstop. The tabstop with the given index will be located at the specified location.
         /// It replaces nearest tabstop. rel is in space widths.
-        AdvancedTextBuilder &AddTabStop(Byte index, short pixels, short rel) { CSI(0x25); Index(index); ValAndRel(pixels, rel); return ST(); }
+        AdvancedTextBuilder &AddTabStop(Byte index, short pixels, short rel = 0, short per = 0) { CSI(0x25); Index(index); ValAndRel(pixels, rel); RS(); Int(per); return ST(); }
         
         /// Removes the tabstop at the given index.
         AdvancedTextBuilder &RemoveTabStop(Byte index) { CSI(0x26); Index(index); return ST(); }
@@ -692,15 +753,72 @@ namespace Gorgon { namespace Graphics {
         std::string text;
     };
     
-    class AdvancedRenderer : public TextRenderer {
+    /**
+     * Advanced renderer allows AdvancedPrint that allows unicode based markup that can change every
+     * aspect of text rendering. It allows images and tables to be placed. Use AdvancedTextBuilder
+     * to easily build advanced markup. Unlike other text printers AdvancedRenderer is a heavy object
+     * and should not be copied around.
+     */
+    class AdvancedPrinter : public TextPrinter {
     public:
         
+        AdvancedPrinter(AdvancedPrinter &&) = default;
         
+        AdvancedPrinter &operator =(AdvancedPrinter &&) = default;
+        
+        class Region {
+        public:
+            Byte id;
+            Geometry::Bounds bounds;
+        };
+        
+        void RegisterFont(Byte index, const StyledPrinter &renderer);
+        
+        void RegisterFont(NamedFonts index, const StyledPrinter &renderer) { 
+            RegisterFont((Byte)index, renderer); 
+        }
+        
+        void RegisterColor(Byte index, const RGBA &forecolor, const RGBA &backcolor);
+        
+        void RegisterColor(NamedFonts index, const RGBA &forecolor, const RGBA &backcolor) { 
+            RegisterColor((Byte)index, forecolor, backcolor); 
+        }
+        
+        /// Registers the given image to be used in the advanced print
+        void RegisterImage(Byte index, const RectangularDrawable &image) {
+            images.Add(index, image);
+        }
+        
+        /// This is the advanced operation which allows user to submit functions that will perform the
+        /// rendering. First one is glyph render, the second is box renderer, starting point, size,
+        /// background color, border thickness and border color will be given to this function. The 
+        /// final one draws a horizontal line from a point with the given width and thickness.
+        template<class GF_, class BF_, class LF_>
+        std::vector<Region> AdvancedOperation(
+            GF_ glyphr, BF_ boxr, LF_ liner, 
+            const std::string &text, Geometry::Point location, int width
+        );
+        
+        std::vector<Region> AdvancedPrint(
+            Layer &target, const std::string &text, 
+            Geometry::Point location, int width
+        );
         
     protected:
-        std::map<Byte, StyledRenderer> fonts;
+        /// Indexed fonts, some of these are named
+        std::map<Byte, StyledPrinter> fonts;
         
+        /// Indexed images
+        Containers::Hashmap<Byte, const RectangularDrawable> images;
+        
+        /// Tabstops
+        std::map<Byte, std::tuple<int, int, int>> tabstops;
+        
+        /// Indexed foreground colors
+        std::map<Byte, RGBA> colors;
+        
+        /// Indexed background colors
+        std::map<Byte, RGBA> background;
     };
-
     
 } }

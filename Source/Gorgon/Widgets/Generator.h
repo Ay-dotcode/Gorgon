@@ -339,13 +339,13 @@ namespace Gorgon { namespace Widgets {
         /// This function will update default widget borders depending on the font size
         void UpdateBorders(bool smooth = true);
 
-        Graphics::StyledRenderer RegularFont;
-        Graphics::StyledRenderer CenteredFont;
-        Graphics::StyledRenderer BoldFont;
-        Graphics::StyledRenderer TitleFont;
-        Graphics::StyledRenderer SubtitleFont;
-        Graphics::StyledRenderer SmallFont;
-        Graphics::StyledRenderer InfoFont;
+        Graphics::StyledPrinter RegularFont;
+        Graphics::StyledPrinter CenteredFont;
+        Graphics::StyledPrinter BoldFont;
+        Graphics::StyledPrinter TitleFont;
+        Graphics::StyledPrinter SubtitleFont;
+        Graphics::StyledPrinter SmallFont;
+        Graphics::StyledPrinter InfoFont;
 
         struct FocusInfo {
             Graphics::RGBA  Color   = {Graphics::Color::Charcoal, 0.7};
