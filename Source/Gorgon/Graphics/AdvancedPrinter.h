@@ -181,13 +181,13 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &UseHeader(HeaderLevel level) { return C1(0x10 + char(level)); }
         
         /// Switch to superscript, use ScriptOff to switch off
-        AdvancedTextBuilder &UseSuperscript() { return C1(5); }
+        AdvancedTextBuilder &UseSuperscript() { return SCI(5); }
         
         /// Switch to subscript, use ScriptOff to switch off
-        AdvancedTextBuilder &UseSubscript() { return C1(6); }
+        AdvancedTextBuilder &UseSubscript() { return SCI(6); }
         
         /// Switches sub and superscript off
-        AdvancedTextBuilder &ScriptOff() { return C1(7); }
+        AdvancedTextBuilder &ScriptOff() { return SCI(7); }
 
         /// Switches to the given font index. If it doesn't exist, default font will be used.
         AdvancedTextBuilder &SetFont(Byte fontindex) { CSI(0x15); Index(fontindex); return ST(); }
@@ -323,7 +323,7 @@ namespace Gorgon { namespace Graphics {
         
         /// Sets the width that the words will wrap from. Pixel and char widths will be added
         /// together. For char width letter A is often used.
-        AdvancedTextBuilder &SetWrapWidth(short pixels, short rel) { CSI(0x0e); ValAndRel(pixels, rel); return ST(); }
+        AdvancedTextBuilder &SetWrapWidth(short pixels, short rel = 0) { CSI(0x0e); ValAndRel(pixels, rel); return ST(); }
         
         AdvancedTextBuilder &DefaultWrapWidth() { CSI(0x0e); return ST(); }
         
@@ -331,7 +331,7 @@ namespace Gorgon { namespace Graphics {
         /// character width and line height, the value is in percentage.
         AdvancedTextBuilder &SetLetterOffset(const Geometry::Point &pixels, const Geometry::Point &rel) { 
             CSI(0x14); 
-            ValAndRel(pixels.X, rel.X); GS(); 
+            ValAndRel(pixels.X, rel.X); RS(); 
             ValAndRel(pixels.Y, rel.Y);
             return ST(); 
         }
@@ -406,11 +406,11 @@ namespace Gorgon { namespace Graphics {
         
         /// Changes the spacing between the tab stops. rel is in space widths. per is percentage of
         /// wrap width
-        AdvancedTextBuilder &SetTabWidth(short pixels, short rel = 0, short per = 0) { CSI(0x17); ValAndRel(pixels, rel); Int(per); return ST(); }
+        AdvancedTextBuilder &SetTabWidth(short pixels, short rel = 0, short per = 0) { CSI(0x17); ValAndRel(pixels, rel); US(); Int(per); return ST(); }
         
         /// Adds a tabstop. The tabstop with the given index will be located at the specified location.
         /// It replaces nearest tabstop. rel is in space widths.
-        AdvancedTextBuilder &AddTabStop(Byte index, short pixels, short rel = 0, short per = 0) { CSI(0x25); Index(index); ValAndRel(pixels, rel); RS(); Int(per); return ST(); }
+        AdvancedTextBuilder &AddTabStop(Byte index, short pixels, short rel = 0, short per = 0) { CSI(0x25); Index(index); ValAndRel(pixels, rel); US(); Int(per); return ST(); }
         
         /// Removes the tabstop at the given index.
         AdvancedTextBuilder &RemoveTabStop(Byte index) { CSI(0x26); Index(index); return ST(); }
@@ -445,9 +445,9 @@ namespace Gorgon { namespace Graphics {
         /// and is in percentage. Default padding is pixels = 0, rel = 100
         AdvancedTextBuilder &SetPadding(const Gorgon::Geometry::Margin &pixels, const Gorgon::Geometry::Margin rel) { 
             CSI(0x08); 
-            ValAndRel(pixels.Left, rel.Left); GS();
-            ValAndRel(pixels.Top, rel.Top); GS();
-            ValAndRel(pixels.Right, rel.Right); GS();
+            ValAndRel(pixels.Left, rel.Left); RS();
+            ValAndRel(pixels.Top, rel.Top); RS();
+            ValAndRel(pixels.Right, rel.Right); RS();
             ValAndRel(pixels.Bottom, rel.Bottom);
             return ST(); 
         }
@@ -456,9 +456,9 @@ namespace Gorgon { namespace Graphics {
         /// rel is relative to underline thickness and is in percentage. Default is pixels = 0, rel = 200.
         AdvancedTextBuilder &SetSelectionPadding(const Gorgon::Geometry::Margin &pixels, const Gorgon::Geometry::Margin rel) { 
             CSI(0x016); 
-            ValAndRel(pixels.Left, rel.Left); GS();
-            ValAndRel(pixels.Top, rel.Top); GS();
-            ValAndRel(pixels.Right, rel.Right); GS();
+            ValAndRel(pixels.Left, rel.Left); RS();
+            ValAndRel(pixels.Top, rel.Top); RS();
+            ValAndRel(pixels.Right, rel.Right); RS();
             ValAndRel(pixels.Bottom, rel.Bottom);
             return ST(); 
         }
@@ -673,7 +673,7 @@ namespace Gorgon { namespace Graphics {
         /// is relative to wrap width and line height and is in percentage.
         AdvancedTextBuilder &Placeholder(Geometry::Size pixels, Geometry::Size rel) { 
             CSI(0x42); 
-            ValAndRel(pixels.Width, rel.Width); GS();
+            ValAndRel(pixels.Width, rel.Width); RS();
             ValAndRel(pixels.Height, rel.Height);
             
             return ST(); 
@@ -729,7 +729,7 @@ namespace Gorgon { namespace Graphics {
                 Int(value);
             
             if(value != 0 && rel != 0)
-                RS();
+                US();
             
             if(rel != 0)
                 Int(rel);
@@ -741,13 +741,10 @@ namespace Gorgon { namespace Graphics {
         
         AdvancedTextBuilder &ST()  { return C2('\x9c'); }
         
-        void FS()  { C2('\x1c'); }
+        //no longer rs and us as they clash with numbers
+        void RS()  { C2('\x8e'); }
         
-        void GS()  { C2('\x1d'); }
-        
-        void RS()  { C2('\x1e'); }
-        
-        void US()  { C2('\x1f'); }
+        void US()  { C2('\x8f'); }
 
     private:
         std::string text;
@@ -757,14 +754,10 @@ namespace Gorgon { namespace Graphics {
      * Advanced renderer allows AdvancedPrint that allows unicode based markup that can change every
      * aspect of text rendering. It allows images and tables to be placed. Use AdvancedTextBuilder
      * to easily build advanced markup. Unlike other text printers AdvancedRenderer is a heavy object
-     * and should not be copied around.
+     * and should not be copied around. Normal font must be set in order to print anything.
      */
     class AdvancedPrinter : public TextPrinter {
     public:
-        
-        AdvancedPrinter(AdvancedPrinter &&) = default;
-        
-        AdvancedPrinter &operator =(AdvancedPrinter &&) = default;
         
         class Region {
         public:
@@ -772,13 +765,27 @@ namespace Gorgon { namespace Graphics {
             Geometry::Bounds bounds;
         };
         
-        void RegisterFont(Byte index, const StyledPrinter &renderer);
+        
+        AdvancedPrinter() = default;
+        
+        AdvancedPrinter(AdvancedPrinter &&) = default;
+
+        
+        AdvancedPrinter &operator =(AdvancedPrinter &&) = default;
+        
+        
+        void RegisterFont(Byte index, const StyledPrinter &renderer) {
+            fonts[index] = renderer;
+        }
         
         void RegisterFont(NamedFonts index, const StyledPrinter &renderer) { 
             RegisterFont((Byte)index, renderer); 
         }
         
-        void RegisterColor(Byte index, const RGBA &forecolor, const RGBA &backcolor);
+        void RegisterColor(Byte index, const RGBA &forecolor, const RGBA &backcolor) {
+            colors[index] = forecolor;
+            backcolors[index] = backcolor;
+        }
         
         void RegisterColor(NamedFonts index, const RGBA &forecolor, const RGBA &backcolor) { 
             RegisterColor((Byte)index, forecolor, backcolor); 
@@ -790,21 +797,239 @@ namespace Gorgon { namespace Graphics {
         }
         
         /// This is the advanced operation which allows user to submit functions that will perform the
-        /// rendering. First one is glyph render, the second is box renderer, starting point, size,
-        /// background color, border thickness and border color will be given to this function. The 
-        /// final one draws a horizontal line from a point with the given width and thickness.
+        /// rendering. First one is glyph render. It will be given the renderer to be used, the 
+        /// second is box renderer, starting point, size, background color, border thickness and 
+        /// border color will be given to this function. The final one draws a horizontal line from 
+        /// a point with the given width and thickness.
         template<class GF_, class BF_, class LF_>
         std::vector<Region> AdvancedOperation(
             GF_ glyphr, BF_ boxr, LF_ liner, 
             const std::string &text, Geometry::Point location, int width
-        );
+        ) const {
+            int wrapwidth = width;
+            
+            for(auto &sty : fonts) {
+                if(sty.second.IsReady() && sty.second.GetGlyphRenderer().NeedsPrepare())
+                    sty.second.GetGlyphRenderer().Prepare(text);
+            }
+            
+            Glyph prev = 0;
+            int ind = 0;
+
+            auto end = text.end();
+            
+            Geometry::Point cur = location;
+            SetValRel letterspacing;
+            
+#define MOVEIT(x) ++it; if(it == end) { --it; return x; }
+            
+            auto DecodeInt = [](auto &it, auto end, Glyph &cur) {
+                if(cur > 0x7f)
+                    return 0;
+                
+                int num = cur;
+                
+                MOVEIT(num);
+                
+                cur = internal::decode_impl(it, end);
+                
+                if(cur > 0x7f) //1 byte data
+                    return num;
+                
+                num = num | num << 7;
+                
+                MOVEIT(num);
+                
+                cur = internal::decode_impl(it, end);
+                
+                if(num > 0x7f) //2 byte data
+                    return num;
+                
+                num = num | cur << 14;
+                
+                MOVEIT(num); //get the byte after
+                
+                return num;
+            };
+            
+            auto ReadValRel = [&DecodeInt](auto &it, auto end, Glyph &cur) {
+                MOVEIT(SetValRel())
+                
+                cur = internal::decode_impl(it, end);
+                
+                int val = 0;
+                int rel = 0;
+                
+                if(cur == ST) //nothing is in here
+                    return SetValRel();
+                
+                if(cur == 0x8e) { //no val, only rel
+                    MOVEIT(SetValRel());
+                    
+                    return SetValRel(true, 0, DecodeInt(it, end, cur) / 100.f);
+                }
+                
+                val = DecodeInt(it, end, cur);
+                
+                if(cur == ST)
+                    return SetValRel(true, val, 0);
+                else
+                    return SetValRel(true, val, DecodeInt(it, end, cur) / 100.f);
+            };
+            
+            //parse multi character command
+            auto CSI = [&](auto &it, auto end) {
+                ++it;
+                
+                if(it == end) {
+                    --it;
+                    return;
+                }
+                
+                Glyph cmd = internal::decode_impl(it, end);
+                if(cmd == ST)
+                    return;
+                
+                Glyph p = 0;
+                
+                switch(cmd) {
+                case 0xc:
+                    letterspacing = ReadValRel(it, end, p);
+                    break;
+                }
+                
+                //if extra data at the end, read them
+                while(p != ST) {
+                    if(it == end) {
+                        --it;
+                        return;
+                    }
+                
+                    ++it;
+                    p = internal::decode_impl(it, end);
+                }
+            };
+            
+            const StyledPrinter *printer = &fonts.at(0);
+            for(auto it=text.begin(); it!=end; ++it) {
+                Glyph g = internal::decode_impl(it, end);
+                
+                if(g == 0xffff)
+                    continue;
+                
+                if(g == this->CSI) {
+                    CSI(it, end);
+                    continue;
+                }
+                
+                ind++;
+                
+                glyphr(printer->GetGlyphRenderer(), g, cur, printer->GetColor());
+                
+                cur.X += printer->GetGlyphRenderer().GetCursorAdvance(g);
+                
+                if(letterspacing.set) {
+                    cur.X += letterspacing.val + (int)std::round(letterspacing.rel * printer->GetEMSize());
+                }
+                else {
+                    cur.X += printer->GetLetterSpacing();
+                }
+                
+                prev = g;
+            }
+            
+            return {};
+        }
         
         std::vector<Region> AdvancedPrint(
-            Layer &target, const std::string &text, 
+            TextureTarget &target, const std::string &text, 
             Geometry::Point location, int width
-        );
+        ) const {
+            return AdvancedOperation(
+                [&target](
+                    const GlyphRenderer &renderer, Glyph g, 
+                    const Geometry::Point &location, const RGBAf &color
+                ) {
+                    renderer.Render(g, target, location, color);
+                },
+                []{}, []{}, text, location, width
+            );
+        }
+        
+        bool IsReady() const override {
+            return fonts.count(0) && fonts.at(0).IsReady();
+        }
+        
+        virtual const GlyphRenderer &GetGlyphRenderer() const override {
+            return fonts.at(0).GetGlyphRenderer();
+        }
+        
+        virtual int GetEMSize() const override {
+            return fonts.at(0).GetEMSize();
+        }
+        
+        virtual float GetBaseLine() const override {
+            return fonts.at(0).GetBaseLine();
+        }
+        
+        virtual int GetHeight() const override {
+            return fonts.at(0).GetHeight();
+        }
+        
+        virtual Geometry::Size GetSize(const std::string &text) const override { Utils::NotImplemented(); }
+        
+        virtual Geometry::Size GetSize(const std::string &text, int width) const override { Utils::NotImplemented(); }
+        
+        virtual int GetCharacterIndex(const std::string &text, Geometry::Point location) const override { Utils::NotImplemented(); }
+        
+        virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location, bool wrap = true) const override { Utils::NotImplemented(); }
+        
+        virtual Geometry::Rectangle GetPosition(const std::string& text, int index) const override { Utils::NotImplemented(); }
+        
+        virtual Geometry::Rectangle GetPosition(const std::string& text, int w, int index, bool wrap = true) const override { Utils::NotImplemented(); }
+        
         
     protected:
+        
+        struct SetValRel {
+            explicit SetValRel(bool set = false, int val = 0, float rel = 0) : set(set), val(val), rel(rel) { }
+            bool set;
+            int val;
+            float rel;
+        };
+        
+        
+        virtual void print(TextureTarget &target, const std::string &text, Geometry::Point location) const override {
+            AdvancedPrint(target, text, location, 0);
+        }
+
+        virtual void print(TextureTarget &target, const std::string &text,
+                        Geometry::Rectangle location) const override {
+            AdvancedPrint(target, text, location.TopLeft(), location.Width);
+        }
+
+        virtual void print(TextureTarget &target, const std::string &text,
+                        Geometry::Rectangle location, TextAlignment align) const override {
+            AdvancedPrint(target, text, location.TopLeft(), location.Width);
+        }
+
+        virtual void printnowrap(TextureTarget &target, const std::string &text,
+                        Geometry::Rectangle location) const override {
+            AdvancedPrint(target, text, location.TopLeft(), location.Width);
+        }
+
+        virtual void printnowrap(TextureTarget &target, const std::string &text,
+                        Geometry::Rectangle location, TextAlignment align) const override {
+            AdvancedPrint(target, text, location.TopLeft(), location.Width);
+        }
+        
+        static const int RS = 0x8e;
+        static const int US = 0x8f;
+        static const int SCI = 0x9a;
+        static const int CSI = 0x9b;
+        static const int ST = 0x9c;
+
+        
         /// Indexed fonts, some of these are named
         std::map<Byte, StyledPrinter> fonts;
         
@@ -818,7 +1043,7 @@ namespace Gorgon { namespace Graphics {
         std::map<Byte, RGBA> colors;
         
         /// Indexed background colors
-        std::map<Byte, RGBA> background;
+        std::map<Byte, RGBA> backcolors;
     };
     
 } }

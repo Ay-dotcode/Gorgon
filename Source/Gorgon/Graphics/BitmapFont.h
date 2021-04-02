@@ -21,7 +21,7 @@ namespace Gorgon { namespace Graphics {
      * it is best to use BitmapFont to construct a new TextRenderer and use the TextRenderer
      * to render the text instead of using BitmapFont itself for the task. 
      */
-    class BitmapFont : public GlyphRenderer, public BasicFont {
+    class BitmapFont : public GlyphRenderer, public BasicPrinter {
         friend class Resource::Font;
     public:
         /// to be used internally.
@@ -129,7 +129,7 @@ namespace Gorgon { namespace Graphics {
             int spacing = -1;
         };
         
-        explicit BitmapFont(float baseline = 0) : BasicFont(dynamic_cast<GlyphRenderer &>(*this)), baseline(baseline) { }
+        explicit BitmapFont(float baseline = 0) : BasicPrinter(dynamic_cast<GlyphRenderer &>(*this)), baseline(baseline) { }
         
         BitmapFont(const BitmapFont &) = delete;
         
@@ -196,7 +196,7 @@ namespace Gorgon { namespace Graphics {
         /// Performs packing without changing the font itself
         Graphics::Bitmap CreateAtlas(std::vector<Geometry::Bounds> &bounds, bool tight = false) const;
         
-        using BasicFont::GetSize;
+        using BasicPrinter::GetSize;
         
         virtual Geometry::Size GetSize(Glyph chr) const override;
         

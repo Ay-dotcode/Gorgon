@@ -93,6 +93,7 @@ public:
         if(!found) {
             fnt.LoadFile("/usr/share/fonts/gnu-free/FreeSans.ttf", sz);
             fntlarge.LoadFile("/usr/share/fonts/gnu-free/FreeSans.ttf", sz*1.5);
+            fntsmall.LoadFile("/usr/share/fonts/gnu-free/FreeSans.ttf", sz*0.8);
         }
 #endif
         /*if(!fnt.HasKerning()) {
@@ -129,8 +130,8 @@ public:
     W_ wind;
     Graphics::Layer l;
     Bitmap bgimage, icon;
-    Graphics::FreeType fnt, fntlarge;
-    Graphics::StyledPrinter sty = {fnt}, stylarge = {fntlarge};
+    Graphics::FreeType fnt, fntlarge, fntsmall;
+    Graphics::StyledPrinter sty = {fnt}, stylarge = {fntlarge}, stysmall = {fntsmall};
     WM::Icon ico;
 
     std::string appname;

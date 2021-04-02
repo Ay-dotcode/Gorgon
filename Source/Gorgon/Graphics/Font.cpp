@@ -6,72 +6,6 @@
 
 namespace Gorgon { namespace Graphics {
     namespace internal {
-        Glyph decode_impl(std::string::const_iterator &it, std::string::const_iterator end) {
-            Byte b = *it;
-            if(b < 127) {
-                if(b == '\r') {
-                    if(it+1 != end && *(it+1) == '\n') {
-                        ++it;
-
-                        return '\n';
-                    }
-                    else
-                        return b;
-                }
-                else
-                    return b;
-            }
-            
-            if(b == 255) {
-                ++it;
-                if(it == end) return 0xfffd;
-                Byte b2 = *it;
-                
-                if(b2 == 254) return 0; //bom
-                
-                --it;
-                return 0xfffd;
-            }
-    
-            if((b & 0b11100000) == 0b11000000) {
-                ++it;
-                if(it == end) return 0xfffd;
-                Byte b2 = *it;
-                
-                return ((b & 0b11111) << 6) | (b2 & 0b111111);
-            }
-    
-            if((b & 0b11110000) == 0b11100000) {
-                ++it;
-                if(it == end) return 0xfffd;
-                Byte b2 = *it;
-                
-                ++it;
-                if(it == end) return 0xfffd;
-                Byte b3 = *it;
-    
-                return ((b & 0b1111) << 12) + ((b2 & 0b111111) << 6) + (b3 & 0b111111);
-            }
-    
-            if((b & 0b11111000) == 0b11110000) {
-                ++it;
-                if(it == end) return 0xfffd;
-                Byte b2 = *it;
-
-                ++it;
-                if(it == end) return 0xfffd;
-                Byte b3 = *it;
-
-                ++it;
-                if(it == end) return 0xfffd;
-                Byte b4 = *it;
-    
-                return ((b & 0b1111) << 18) + ((b2 & 0b111111) << 12) + ((b3 & 0b111111) << 6) + (b4 & 0b111111);
-            }
-    
-            return 0xfffd;
-        }
-        
         Glyph decode(std::string::const_iterator &it, std::string::const_iterator end, bool skipcmd) {
             Glyph g = decode_impl(it, end);
             
@@ -726,7 +660,7 @@ namespace Gorgon { namespace Graphics {
     } //internal
 
     
-    Geometry::Size BasicFont::GetSize(const std::string& text) const {
+    Geometry::Size BasicPrinter::GetSize(const std::string& text) const {
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
@@ -746,7 +680,7 @@ namespace Gorgon { namespace Graphics {
         return{maxx, cur.Y};
     }
     
-    Geometry::Size BasicFont::GetSize(const std::string& text, int w) const {
+    Geometry::Size BasicPrinter::GetSize(const std::string& text, int w) const {
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
@@ -771,7 +705,7 @@ namespace Gorgon { namespace Graphics {
         return {maxx, y};
     }
     
-    int BasicFont::GetCharacterIndex(const std::string &text, Geometry::Point location) const{ 
+    int BasicPrinter::GetCharacterIndex(const std::string &text, Geometry::Point location) const{ 
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
@@ -814,7 +748,7 @@ namespace Gorgon { namespace Graphics {
         return bestind;
     }
     
-    int BasicFont::GetCharacterIndex(const std::string& text, int width, Geometry::Point location, bool wrap) const { 
+    int BasicPrinter::GetCharacterIndex(const std::string& text, int width, Geometry::Point location, bool wrap) const { 
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
@@ -878,7 +812,7 @@ namespace Gorgon { namespace Graphics {
         return bestind;
     }
 
-    Geometry::Rectangle BasicFont::GetPosition(const std::string& text, int index) const { 
+    Geometry::Rectangle BasicPrinter::GetPosition(const std::string& text, int index) const { 
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
@@ -930,7 +864,7 @@ namespace Gorgon { namespace Graphics {
         return {pos, size};
     }
 
-    Geometry::Rectangle BasicFont::GetPosition(const std::string& text, int width, int index, bool wrap) const { 
+    Geometry::Rectangle BasicPrinter::GetPosition(const std::string& text, int width, int index, bool wrap) const { 
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
@@ -994,7 +928,7 @@ namespace Gorgon { namespace Graphics {
         return {pos, size};
     }
     
-    void BasicFont::print(TextureTarget& target, const std::string& text, Geometry::Point location, RGBAf color) const {
+    void BasicPrinter::print(TextureTarget& target, const std::string& text, Geometry::Point location, RGBAf color) const {
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
@@ -1010,7 +944,7 @@ namespace Gorgon { namespace Graphics {
         );
     }
 
-    void BasicFont::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align, RGBAf color) const {
+    void BasicPrinter::print(TextureTarget &target, const std::string &text, Geometry::Rectangle location, TextAlignment align, RGBAf color) const {
         if(renderer->NeedsPrepare())
             renderer->Prepare(text);
         
@@ -1651,7 +1585,7 @@ namespace Gorgon { namespace Graphics {
         );
     }
 
-    void BasicFont::printnowrap(TextureTarget& target, const std::string& text, Geometry::Rectangle location, TextAlignment align, RGBAf color) const {
+    void BasicPrinter::printnowrap(TextureTarget& target, const std::string& text, Geometry::Rectangle location, TextAlignment align, RGBAf color) const {
         switch(align) {
         case TextAlignment::Left:
             print(target, text, {location.TopLeft(), 0, location.Height}, align, color);

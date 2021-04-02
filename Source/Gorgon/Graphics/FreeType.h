@@ -46,7 +46,7 @@ namespace Gorgon { namespace Graphics {
 	 * to run programs that actually uses FreeType, you need to distribute
 	 * freetype.dll file along with your application.
      */
-    class FreeType : public GlyphRenderer, public BasicFont { 
+    class FreeType : public GlyphRenderer, public BasicPrinter { 
         friend class ::Gorgon::Resource::Font;
         
         /// to be used internally.
@@ -262,7 +262,7 @@ namespace Gorgon { namespace Graphics {
         /// return nullptr or not found character.
         Drawable *GetCharacter(Glyph chr);
 
-        using BasicFont::GetSize;
+        using BasicPrinter::GetSize;
         
 		/// This function should return the size of the requested glyph. If it does not exists,
 		/// 0x0 should be returned

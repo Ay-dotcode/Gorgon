@@ -7,7 +7,7 @@
 
 namespace Gorgon { namespace Graphics {
 
-    BitmapFont::BitmapFont(Graphics::BitmapFont&& other) : BasicFont(dynamic_cast<GlyphRenderer &>(*this)) {
+    BitmapFont::BitmapFont(Graphics::BitmapFont&& other) : BasicPrinter(dynamic_cast<GlyphRenderer &>(*this)) {
         using std::swap;
         
         swap(glyphmap, other.glyphmap);

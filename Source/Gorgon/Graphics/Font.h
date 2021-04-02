@@ -45,6 +45,72 @@ namespace Gorgon { namespace Graphics {
     /// Functions inside this namespace is designed for internal use, however, they might be used
     /// externally and will not have any impact on inner workings of the system.
     namespace internal {
+        inline Glyph decode_impl(std::string::const_iterator &it, std::string::const_iterator end) {
+            Byte b = *it;
+            if(b < 127) {
+                if(b == '\r') {
+                    if(it+1 != end && *(it+1) == '\n') {
+                        ++it;
+
+                        return '\n';
+                    }
+                    else
+                        return b;
+                }
+                else
+                    return b;
+            }
+            
+            if(b == 255) {
+                ++it;
+                if(it == end) return 0xfffd;
+                Byte b2 = *it;
+                
+                if(b2 == 254) return 0; //bom
+                
+                --it;
+                return 0xfffd;
+            }
+    
+            if((b & 0b11100000) == 0b11000000) {
+                ++it;
+                if(it == end) return 0xfffd;
+                Byte b2 = *it;
+                
+                return ((b & 0b11111) << 6) | (b2 & 0b111111);
+            }
+    
+            if((b & 0b11110000) == 0b11100000) {
+                ++it;
+                if(it == end) return 0xfffd;
+                Byte b2 = *it;
+                
+                ++it;
+                if(it == end) return 0xfffd;
+                Byte b3 = *it;
+    
+                return ((b & 0b1111) << 12) + ((b2 & 0b111111) << 6) + (b3 & 0b111111);
+            }
+    
+            if((b & 0b11111000) == 0b11110000) {
+                ++it;
+                if(it == end) return 0xfffd;
+                Byte b2 = *it;
+
+                ++it;
+                if(it == end) return 0xfffd;
+                Byte b3 = *it;
+
+                ++it;
+                if(it == end) return 0xfffd;
+                Byte b4 = *it;
+    
+                return ((b & 0b1111) << 18) + ((b2 & 0b111111) << 12) + ((b3 & 0b111111) << 6) + (b4 & 0b111111);
+            }
+    
+            return 0xfffd;
+        }
+        
         /// Decodes a utf-8 character from the given iterator. If char is not valid 
         /// 0xfffd is returned. \\r\\n is mapped to \\n, if skipcmd is true, this will skip advanced
         /// renderer commands
@@ -269,9 +335,9 @@ namespace Gorgon { namespace Graphics {
     * This is the basic font, performing the minimal amount of operations necessary to render
     * text on the screen. It requires a single GlyphRenderer to work.
     */
-    class BasicFont : public TextPrinter {
+    class BasicPrinter : public TextPrinter {
     public:
-        BasicFont(const GlyphRenderer &renderer, RGBAf color = 1.f, TextAlignment defaultalign = TextAlignment::Left) : 
+        BasicPrinter(const GlyphRenderer &renderer, RGBAf color = 1.f, TextAlignment defaultalign = TextAlignment::Left) : 
             defaultalign(defaultalign), color(color), renderer(&renderer) {
         }
 

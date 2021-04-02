@@ -114,7 +114,7 @@ namespace Gorgon { namespace Graphics {
     };
     
     
-    FreeType::FreeType() : BasicFont(dynamic_cast<GlyphRenderer &>(*this)) {
+    FreeType::FreeType() : BasicPrinter(dynamic_cast<GlyphRenderer &>(*this)) {
         lib = new ftlib;
     }
     

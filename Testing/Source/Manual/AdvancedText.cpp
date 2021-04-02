@@ -30,12 +30,15 @@ int main() {
            .SetHangingIndent(10, 0)
            .Append("This is ")
            .UseBoldFont()
+           .SetLetterSpacing(5)
            .Append("a bold ")
            .UseDefaultFont()
+           .DefaultLetterSpacing()
            .SetColor(2)
            .Append("text.")
            .ResetFormatting()
            .LineBreak()
+           .SetWrapWidth(40)
            .Append("Not a new paragraph. ")
            .UseItalicFont()
            .Append("e = mc")
@@ -44,7 +47,13 @@ int main() {
            .ScriptOff()
     ;
     
-    app.sty.Print(l, builder, 10, 10, 100);
+    Graphics::AdvancedPrinter printer;
+    printer.RegisterFont(0, app.sty);
+    printer.RegisterFont(Graphics::NamedFonts::H1, app.stylarge);
+    printer.RegisterFont(Graphics::NamedFonts::Small, app.stysmall);
+    
+    
+    printer.AdvancedPrint(l, builder, {10, 10}, 100);
     
     while(true) {
         Gorgon::NextFrame();
