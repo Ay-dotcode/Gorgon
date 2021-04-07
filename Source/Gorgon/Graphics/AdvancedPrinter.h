@@ -10,6 +10,8 @@
 
 #include "../String.h"
 
+#define MOVEIT(x) ++it; if(it == end) { --it; return x; }
+
 namespace Gorgon { namespace Graphics {
             
     /// Constants for colors. Color indices are 7-bit integers 0-127. First few are named as
@@ -35,7 +37,7 @@ namespace Gorgon { namespace Graphics {
             
     /// Constants for fonts. Font indices are 7-bit integers 0-127. First few are named as
     /// follows.
-    enum class NamedFonts {
+    enum class NamedFont {
         /// Default font
         Normal,
         
@@ -83,7 +85,10 @@ namespace Gorgon { namespace Graphics {
         /// This script font will be used for small, info and script fonts
         SmallScript
     };
-        
+    
+    inline bool operator ==(int l, NamedFont r) {
+        return l == (int)r;
+    }
 
     /**
      * This class helps building strings to be used with AdvancedRenderer. Advanced rendering is
@@ -257,7 +262,7 @@ namespace Gorgon { namespace Graphics {
         /// dictated by the font style. Default vertical alignment is baseline.
         /// @{ BEGIN
         
-        /// Disables horizontal alignment override.
+        /// Disables horizontal alignment and justify override.
         AdvancedTextBuilder &UseDefaultHorizontalAlignment() { return SCI(0x29); }
         
         /// Aligns text to left. Disables justify.
@@ -321,8 +326,8 @@ namespace Gorgon { namespace Graphics {
         
         AdvancedTextBuilder &WordWrap(bool enable) { return SCI(enable ? 0x30 : 0x31); }
         
-        /// Sets the width that the words will wrap from. Pixel and char widths will be added
-        /// together. For char width letter A is often used.
+        /// Sets the width that the words will wrap from. Pixel and em widths will be added
+        /// together. rel is relative to em size.
         AdvancedTextBuilder &SetWrapWidth(short pixels, short rel = 0) { CSI(0x0e); ValAndRel(pixels, rel); return ST(); }
         
         AdvancedTextBuilder &DefaultWrapWidth() { CSI(0x0e); return ST(); }
@@ -368,7 +373,7 @@ namespace Gorgon { namespace Graphics {
         /// @name Spacing
         /// @{ BEGIN
         
-        /// Changes the spacing between paragraphs. rel is relative to line height and in percentage.
+        /// Changes the spacing between paragraphs. rel is relative to line height and in percentage. This value is applied after line spacing.
         AdvancedTextBuilder &SetParagraphSpacing(short pixels, short rel = 0) { CSI(0x09); ValAndRel(pixels, rel); return ST(); }
         
         AdvancedTextBuilder &DefaultParagraphSpacing() { CSI(0x09); return ST(); }
@@ -728,7 +733,7 @@ namespace Gorgon { namespace Graphics {
             if(value != 0 || rel == 0)
                 Int(value);
             
-            if(value != 0 && rel != 0)
+            if(rel != 0)
                 US();
             
             if(rel != 0)
@@ -778,7 +783,7 @@ namespace Gorgon { namespace Graphics {
             fonts[index] = renderer;
         }
         
-        void RegisterFont(NamedFonts index, const StyledPrinter &renderer) { 
+        void RegisterFont(NamedFont index, const StyledPrinter &renderer) { 
             RegisterFont((Byte)index, renderer); 
         }
         
@@ -787,7 +792,7 @@ namespace Gorgon { namespace Graphics {
             backcolors[index] = backcolor;
         }
         
-        void RegisterColor(NamedFonts index, const RGBA &forecolor, const RGBA &backcolor) { 
+        void RegisterColor(NamedFont index, const RGBA &forecolor, const RGBA &backcolor) { 
             RegisterColor((Byte)index, forecolor, backcolor); 
         }
         
@@ -806,7 +811,6 @@ namespace Gorgon { namespace Graphics {
             GF_ glyphr, BF_ boxr, LF_ liner, 
             const std::string &text, Geometry::Point location, int width
         ) const {
-            int wrapwidth = width;
             
             for(auto &sty : fonts) {
                 if(sty.second.IsReady() && sty.second.GetGlyphRenderer().NeedsPrepare())
@@ -819,124 +823,425 @@ namespace Gorgon { namespace Graphics {
             auto end = text.end();
             
             Geometry::Point cur = location;
-            SetValRel letterspacing;
+            setvalrel               letterspacing;
+            int                     wrapwidth = width; //relative will be calculated instantly
+            setvalrel               hangingindent;
+            setvalrel               indent;
+            setvalrel               paragraphspacing;
+            setvalrel               linespacing;
+            setval<bool>            justify;
+            setval<TextAlignment>   align;
             
-#define MOVEIT(x) ++it; if(it == end) { --it; return x; }
+            bool wrap = width != 0;
             
-            auto DecodeInt = [](auto &it, auto end, Glyph &cur) {
-                if(cur > 0x7f)
-                    return 0;
-                
-                int num = cur;
-                
-                MOVEIT(num);
-                
-                cur = internal::decode_impl(it, end);
-                
-                if(cur > 0x7f) //1 byte data
-                    return num;
-                
-                num = num | num << 7;
-                
-                MOVEIT(num);
-                
-                cur = internal::decode_impl(it, end);
-                
-                if(num > 0x7f) //2 byte data
-                    return num;
-                
-                num = num | cur << 14;
-                
-                MOVEIT(num); //get the byte after
-                
-                return num;
+            int fontid = 0;
+            const StyledPrinter *printer = &fonts.at(0);
+            const GlyphRenderer *renderer = nullptr;
+            int height = 0; //current font height, line gap is used
+            int baseline = 0; //current font baseline
+            int em = 0; //current font size em size
+            
+            float baselineoffset = 0;
+            int extralineoffset = 0;
+            int extralineheight = 0;
+            
+            int  lastbreak = 0;
+            bool beginparag = true;
+            bool newline    = true;
+            int  lastadvance = 0;
+            
+            auto changeprinter = [&](auto p) {
+                printer = p;
+                renderer = &printer->GetGlyphRenderer();
+                height   = renderer->GetLineGap();
+                baseline = renderer->GetBaseLine();
+                em       = renderer->GetEMSize();
             };
             
-            auto ReadValRel = [&DecodeInt](auto &it, auto end, Glyph &cur) {
-                MOVEIT(SetValRel())
-                
-                cur = internal::decode_impl(it, end);
-                
-                int val = 0;
-                int rel = 0;
-                
-                if(cur == ST) //nothing is in here
-                    return SetValRel();
-                
-                if(cur == 0x8e) { //no val, only rel
-                    MOVEIT(SetValRel());
-                    
-                    return SetValRel(true, 0, DecodeInt(it, end, cur) / 100.f);
-                }
-                
-                val = DecodeInt(it, end, cur);
-                
-                if(cur == ST)
-                    return SetValRel(true, val, 0);
-                else
-                    return SetValRel(true, val, DecodeInt(it, end, cur) / 100.f);
-            };
+            changeprinter(printer);
             
             //parse multi character command
             auto CSI = [&](auto &it, auto end) {
-                ++it;
-                
-                if(it == end) {
-                    --it;
-                    return;
-                }
-                
+                MOVEIT();
                 Glyph cmd = internal::decode_impl(it, end);
+                
                 if(cmd == ST)
                     return;
                 
                 Glyph p = 0;
                 
                 switch(cmd) {
-                case 0xc:
-                    letterspacing = ReadValRel(it, end, p);
+                case 0x0c: //letter spacing
+                    letterspacing = readvalrel(it, end, p);
+                    break;
+                case 0x0e: //wrap width
+                    wrapwidth = readvalrel(it, end, p)(renderer->GetEMSize(), width);
+                    break;
+                case 0x09: //paragraph spacing
+                    paragraphspacing = readvalrel(it, end, p);
+                    break;
+                case 0x0a: //set indent
+                    indent = readvalrel(it, end, p);
+                    break;
+                case 0x0b:
+                    hangingindent = readvalrel(it, end, p);
+                    break;
+                case 0x0d: //line spacing
+                    linespacing = readvalrel(it, end, p);
                     break;
                 }
                 
                 //if extra data at the end, read them
                 while(p != ST) {
-                    if(it == end) {
-                        --it;
-                        return;
-                    }
-                
-                    ++it;
+                    MOVEIT();
                     p = internal::decode_impl(it, end);
                 }
             };
             
-            const StyledPrinter *printer = &fonts.at(0);
+            auto SCI = [&](auto &it, auto end) {
+                MOVEIT();
+                Glyph cmd = internal::decode_impl(it, end);
+                
+                switch(cmd) {
+                case 0x5:
+                case 0x6:
+                    if(
+                        fontid == NamedFont::Info || fontid == NamedFont::Small ||  fontid == NamedFont::Script || 
+                        fontid == NamedFont::BoldScript || fontid == NamedFont::SmallScript) 
+                    {
+                        changeprinter(findfont(NamedFont::SmallScript));
+                    }
+                    else if(
+                        fontid == NamedFont::Bold || fontid == NamedFont::BoldItalic || fontid == NamedFont::H3 || 
+                        fontid == NamedFont::H4
+                    ) {
+                        changeprinter(findfont(NamedFont::BoldScript));
+                    }
+                    else if(
+                        fontid == NamedFont::Larger
+                    ) {
+                        changeprinter(&fonts.at(0));
+                    }
+                    else if(
+                        fontid == NamedFont::H1 || fontid == NamedFont::H2
+                    ) {
+                        changeprinter(findfont(NamedFont::Bold));
+                    }
+                    else {
+                        changeprinter(findfont(NamedFont::Script));
+                    }
+                    break;
+                case 0x7:
+                    changeprinter(findfont(fontid));
+                    break;
+                case 0x20:
+                    justify = setval<bool>{true, true};
+                    break;
+                case 0x21:
+                    justify = setval<bool>{true, false};
+                    break;
+                case 0x22:
+                    align = setval<TextAlignment>{true, TextAlignment::Left};
+                    break;
+                case 0x23:
+                    align = setval<TextAlignment>{true, TextAlignment::Right};
+                    break;
+                case 0x24:
+                    align = setval<TextAlignment>{true, TextAlignment::Center};
+                    break;
+                case 0x29:
+                    justify = setval<bool>{false};
+                    align = setval<TextAlignment>{false};
+                    break;
+                case 0x30:
+                    wrap = true;
+                    break;
+                case 0x31:
+                    wrap = false;
+                    break;
+                }
+                
+                switch(cmd) {
+                case 0x5: {
+                    baselineoffset = 0.4f;
+                    
+                    auto offset = renderer->GetBaseLine() * 0.4f;
+                    if(offset > extralineoffset)
+                        extralineoffset = offset;
+                    
+                    break;
+                }
+                case 0x6: {
+                    baselineoffset = -0.3f;
+                    
+                    auto height = renderer->GetBaseLine() * 0.4f;
+                    if(height > extralineheight)
+                        extralineheight = height;
+                    
+                    break;
+                }
+                case 0x7:
+                    baselineoffset = 0.0f;
+                    break;
+                }
+            };
+            
+            auto othercmd = [&](Glyph g) {
+                switch(g) {
+                case 0x0e:
+                    changeprinter(findfont(NamedFont::Bold));
+                    return true;
+                case 0x0f:
+                    changeprinter(findfont(NamedFont::Regular));
+                    return true;
+                case 0x91:
+                    changeprinter(findfont(NamedFont::Italic));
+                    return true;
+                case 0x92:
+                    changeprinter(findfont(NamedFont::Small));
+                    return true;
+                case 0x11:
+                    changeprinter(findfont(NamedFont::H1));
+                    return true;
+                case 0x12:
+                    changeprinter(findfont(NamedFont::H2));
+                    return true;
+                case 0x13:
+                    changeprinter(findfont(NamedFont::H3));
+                    return true;
+                case 0x14:
+                    changeprinter(findfont(NamedFont::H4));
+                    return true;
+                }
+                
+                return false;
+            };
+            
+            std::vector<glyphmark> acc;
+            int maxh = 0; //maximum height of a line
+            int maxb = 0; //maximum baseline of a line
+            
+            auto doline = [&](Glyph nl) {
+                
+                auto end = nl == 0 ? lastbreak : acc.size();
+                
+                int totalw = acc[end-1].location.X + acc[end-1].width;
+                int xoff = 0;
+                
+                //TODO justify
+                if(nl == 0 && justify(printer->GetJustify())) {
+                    
+                }
+                else if(wrapwidth > 0) {
+                    switch(align(printer->GetDefaultAlign())) {
+                    case TextAlignment::Right:
+                        xoff = wrapwidth - totalw;
+                        
+                        break;
+                    case TextAlignment::Center:
+                        xoff = (wrapwidth - totalw) / 2;
+                        
+                        break;
+                    default:
+                        //nothing
+                        break;
+                    }
+                }
+                
+                //render
+                for(int i=0; i<end; i++) {
+                    //this changes the location but modified ones are erased promptly.
+                    Translate(acc[i].location, xoff, maxb-acc[i].baseline+extralineoffset);
+                    glyphr(*acc[i].renderer, acc[i].g, acc[i].location + acc[i].offset, acc[i].color);
+                }
+                
+                //clean spaces at the start of the next line
+                for(; end<acc.size(); end++) {
+                    if(!internal::isspace(acc[end].g))
+                        break;
+                }
+                
+                //clean consumed glyphs
+                acc.erase(acc.begin(), acc.begin()+end);
+                
+                int lineh = linespacing(maxh, printer->GetLineSpacing() * (maxh + extralineoffset + extralineheight));
+                //reset index
+
+                beginparag = nl != 0 && nl != 0x85;
+                
+                cur.X = location.X;
+                
+                //if not empty we need to translate the remaining glyphs to next line
+                if(!acc.empty()) {
+                    if(beginparag) {
+                        cur.X += hangingindent(em, 0);
+                    }
+                    
+                    cur.X += indent(em, 0);
+                    
+                    //offset every glyph back this amount
+                    int xoff = cur.X - acc[0].location.X;
+                    
+                    //move remaining glyphs to next line
+                    for(auto &gm : acc) {
+                        gm.location.Y += lineh;
+                        gm.location.X += xoff;
+                    }
+                    
+                    cur.X = acc.back().location.X + acc.back().width;
+                }
+                
+                ind = acc.size();
+                newline = ind == 0;
+
+
+                cur.Y += lineh;
+                
+                if(beginparag)
+                    cur.Y += paragraphspacing(maxh, printer->GetParagraphSpacing());
+                
+                maxh = 0;
+                maxb = 0;
+                extralineoffset = 0;
+                extralineheight = 0;
+                lastbreak = 0;
+            };
+            
             for(auto it=text.begin(); it!=end; ++it) {
                 Glyph g = internal::decode_impl(it, end);
                 
                 if(g == 0xffff)
                     continue;
                 
+                // **** Commands
                 if(g == this->CSI) {
                     CSI(it, end);
                     continue;
                 }
                 
+                if(g == this->SCI) {
+                    SCI(it, end);
+                    continue;
+                }
+                
+                if(othercmd(g))
+                    continue;
+                
+                //used to detect 0 char line wraps
                 ind++;
                 
-                glyphr(printer->GetGlyphRenderer(), g, cur, printer->GetColor());
+                //horizontal space between the previous glyph to this one
+                //will be ignored after a break
+                int hspace = 0;
                 
-                cur.X += printer->GetGlyphRenderer().GetCursorAdvance(g);
+                //width of the current glyph
+                int gw     = 0;
+
                 
-                if(letterspacing.set) {
-                    cur.X += letterspacing.val + (int)std::round(letterspacing.rel * printer->GetEMSize());
+                // **** Wrap check
+                if(internal::isbreaking(g)) {
+                    lastbreak = (int)acc.size();
+                }
+                
+                // **** Determine spacing
+                
+                //indent if the first character of the new line, otherwise indent will be
+                //handled by doline
+                if(newline) {
+                    if(beginparag) {
+                        hspace = hangingindent(em, 0);
+                    }
+                    
+                    hspace += indent(em, 0);
+                }
+                
+                if(g == '\t') {
+                    //do tab use hspace from indent if exists
+                }
+                else if(prev && !newline) {
+                    hspace = (int)renderer->KerningDistance(prev, g).X;
+                    
+                    if(!internal::isspaced(g)) { //will be drawn on top of previous glyph
+                        hspace -= lastadvance;
+                    }
+                    else {
+                        hspace += letterspacing(em, printer->GetLetterSpacing());
+                    }
+                }
+                
+                
+                // **** Determine glyph size
+                if(internal::isnewline(g)) {
+                    doline(g);
+                    continue;
+                }
+                else if(internal::isspace(g)) {
+                    if(renderer->Exists(g)) {
+                        gw = renderer->GetCursorAdvance(g);
+                    }
+                    else {
+                        gw = (int)internal::defaultspace(g, *renderer);
+                    }
+                    
+                    newline = false;
                 }
                 else {
-                    cur.X += printer->GetLetterSpacing();
+                    gw = renderer->GetCursorAdvance(g);
+                    
+                    newline = false;
                 }
                 
+
+                // **** Accumulate
+                cur.X += hspace;
+                
+                if(baselineoffset != 0) {
+                    acc.push_back({g, renderer, cur, {0,0}, printer->GetColor(), 
+                        gw,
+                        (int)std::round(baseline*(1+baselineoffset)), 
+                        (int)std::round(height + baseline*fabs(baselineoffset))
+                    });
+                }
+                else {
+                    acc.push_back({g, renderer, cur, {0,0}, printer->GetColor(), 
+                        gw, baseline, height
+                    });
+                }
+                
+                if(height > maxh)
+                    maxh = height;
+                if(baseline > maxb)
+                    maxb = baseline;
+                
+                cur.X += gw;
+                
+                
                 prev = g;
+                
+                
+                if(wrapwidth && wrap && cur.X > wrapwidth + location.X) {
+                    //emergency break, no spaces
+                    if(lastbreak == 0) {
+                        if(ind == 1) { //at least one character should be processed
+                            lastbreak = (int)acc.size();
+                        }
+                        else {
+                            lastbreak = (int)acc.size()-1;
+                        }
+                    }
+                    
+                    //ignore spaces at the end of the line
+                    for(; lastbreak>0; lastbreak--) {
+                        if(!internal::isspace(acc[lastbreak-1].g))
+                            break;
+                    }
+                    
+                    doline(0);
+                }
             }
+            
+            if(!acc.empty())
+                doline(-1);
             
             return {};
         }
@@ -990,12 +1295,45 @@ namespace Gorgon { namespace Graphics {
         
         
     protected:
-        
-        struct SetValRel {
-            explicit SetValRel(bool set = false, int val = 0, float rel = 0) : set(set), val(val), rel(rel) { }
+        struct glyphmark {
+            Glyph g;
+            const GlyphRenderer *renderer;
+            Geometry::Point location, offset;
+            RGBAf color;
+            int width;
+            int baseline;
+            int height;
+        };
+
+
+        struct setvalrel {
+            explicit setvalrel(bool set = false, int val = 0, float rel = 0) : set(set), val(val), rel(rel) { }
             bool set;
             int val;
             float rel;
+            
+            template<class T_>
+            int operator()(T_ to, int def) {
+                if(!set)
+                    return def;
+                
+                return val + int(std::round(rel * to));
+            }
+        };
+        
+        template<class T_>
+        struct setval {
+            explicit setval(bool set = false, T_ val = T_()) : set(set), val(val) { }
+            
+            bool set;
+            T_ val;
+            
+            T_ operator()(T_ def) {
+                if(!set)
+                    return def;
+                
+                return val;
+            }
         };
         
         
@@ -1022,7 +1360,126 @@ namespace Gorgon { namespace Graphics {
                         Geometry::Rectangle location, TextAlignment align) const override {
             AdvancedPrint(target, text, location.TopLeft(), location.Width);
         }
+            
+        int decodeint(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur) const {
+            if(cur > 0x7f)
+                return 0;
+            
+            int num = cur;
+            
+            MOVEIT(num);
+            cur = internal::decode_impl(it, end);
+            
+            if(cur > 0x7f) //1 byte data
+                return num;
+            
+            num = num | cur << 7;
+            
+            MOVEIT(num);
+            cur = internal::decode_impl(it, end);
+            
+            if(num > 0x7f) //2 byte data
+                return num;
+            
+            num = num | cur << 14;
+            
+            MOVEIT(num); //get the byte after
+            cur = internal::decode_impl(it, end);
+            
+            return num;
+        }
         
+        setvalrel readvalrel(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur) const {
+            MOVEIT(setvalrel())
+            cur = internal::decode_impl(it, end);
+            
+            int val = 0;
+            
+            if(cur == ST) //nothing is in here
+                return setvalrel();
+            
+            if(cur == US) { //no val, only rel
+                MOVEIT(setvalrel());
+                cur = internal::decode_impl(it, end);
+                
+                return setvalrel(true, 0, decodeint(it, end, cur) / 100.f);
+            }
+            
+            val = decodeint(it, end, cur);
+            
+            if(cur == ST)
+                return setvalrel(true, val, 0);
+            else {
+                MOVEIT(setvalrel(true, val, 0));
+                cur = internal::decode_impl(it, end);
+                
+                return setvalrel(true, val, decodeint(it, end, cur) / 100.f);
+            }
+        }
+        
+        const StyledPrinter *findfont(int f) const {
+            if(fonts.count(f))
+                return &fonts.at(f);
+            
+            switch((NamedFont)f) {
+            default:
+            case NamedFont::Normal:
+            case NamedFont::Bold:
+            case NamedFont::Italic:
+            case NamedFont::Larger:
+                return &fonts.at(0);
+            case NamedFont::Small:
+                if(fonts.count((int)NamedFont::Info))
+                    return &fonts.at((int)NamedFont::Info);
+                else
+                    return &fonts.at(0);
+            case NamedFont::Info:
+                if(fonts.count((int)NamedFont::Small))
+                    return &fonts.at((int)NamedFont::Small);
+                else
+                    return &fonts.at(0);
+            case NamedFont::H1:
+            case NamedFont::H2:
+                if(fonts.count((int)NamedFont::H1))
+                    return &fonts.at((int)NamedFont::H1);
+                else if(fonts.count((int)NamedFont::H2))
+                    return &fonts.at((int)NamedFont::H2);
+                else if(fonts.count((int)NamedFont::H3))
+                    return &fonts.at((int)NamedFont::H3);
+                else if(fonts.count((int)NamedFont::H4))
+                    return &fonts.at((int)NamedFont::H4);
+                else
+                    return findfont(NamedFont::Larger);
+            case NamedFont::H3:
+            case NamedFont::H4:
+                if(fonts.count((int)NamedFont::H1))
+                    return &fonts.at((int)NamedFont::H1);
+                else if(fonts.count((int)NamedFont::H2))
+                    return &fonts.at((int)NamedFont::H2);
+                else if(fonts.count((int)NamedFont::H3))
+                    return &fonts.at((int)NamedFont::H3);
+                else if(fonts.count((int)NamedFont::H4))
+                    return &fonts.at((int)NamedFont::H4);
+                else
+                    return findfont(NamedFont::Bold);
+            case NamedFont::BoldItalic:
+                if(fonts.count((int)NamedFont::Bold))
+                    return &fonts.at((int)NamedFont::Bold);
+                else
+                    return findfont(NamedFont::Italic);
+            case NamedFont::BoldScript:
+            case NamedFont::SmallScript:
+                return findfont(NamedFont::Script);
+                
+            case NamedFont::Script:
+                return findfont(NamedFont::Small);
+            }
+        }
+        
+        const StyledPrinter *findfont(NamedFont f) const {
+            return findfont((int)f);
+        }
+
         static const int RS = 0x8e;
         static const int US = 0x8f;
         static const int SCI = 0x9a;
@@ -1047,3 +1504,5 @@ namespace Gorgon { namespace Graphics {
     };
     
 } }
+
+#undef MOVEIT

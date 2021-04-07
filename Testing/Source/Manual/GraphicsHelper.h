@@ -61,10 +61,11 @@ public:
         bgimage.Prepare();
         bgimage.DrawIn(l);
     
-        int sz = 11;
+        int sz = 13;
 #ifdef WIN32
         fnt.LoadFile("C:/Windows/Fonts/tahoma.ttf", sz);
         fntlarge.LoadFile("C:/Windows/Fonts/tahoma.ttf", int(std::round(sz*1.5)));
+        fntsmall.LoadFile("C:/Windows/Fonts/tahoma.ttf", int(std::round(sz*0.8)));
 #else
         bool found = false;
         std::streambuf *buf;
@@ -83,6 +84,8 @@ public:
                     found = fnt.LoadFile(fname, sz);
                     if(found) 
                         fntlarge.LoadFile(fname, sz*1.5);
+                    if(found) 
+                        fntsmall.LoadFile(fname, sz*0.7);
                     break;
                 }
             }
@@ -93,7 +96,7 @@ public:
         if(!found) {
             fnt.LoadFile("/usr/share/fonts/gnu-free/FreeSans.ttf", sz);
             fntlarge.LoadFile("/usr/share/fonts/gnu-free/FreeSans.ttf", sz*1.5);
-            fntsmall.LoadFile("/usr/share/fonts/gnu-free/FreeSans.ttf", sz*0.8);
+            fntsmall.LoadFile("/usr/share/fonts/gnu-free/FreeSans.ttf", sz*0.7);
         }
 #endif
         /*if(!fnt.HasKerning()) {

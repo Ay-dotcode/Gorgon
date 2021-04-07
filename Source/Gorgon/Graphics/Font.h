@@ -868,4 +868,128 @@ namespace Gorgon { namespace Graphics {
         int   tabwidth = 0;
     };
     
+    namespace internal {
+        
+        inline bool isspaced(Glyph g) {
+            return g < 0x300 || g > 0x3ff;
+        }
+
+        inline bool isnewline(Glyph g) {
+            switch(g) {
+                case 0x0d: //CR
+                case 0x0a: //LF
+                case 0x0b: //VTAB
+                case 0x0c: //FF
+                case 0x85: //NEL
+                case 0x2028: //LS
+                case 0x2029: //PS
+                    return true;
+
+                default:
+                    return false;
+            }
+
+        }
+
+        inline bool isspace(Glyph g) {
+            if(g>=0x2000 && g<=0x200b)
+                return true;
+
+            switch(g) {
+            case 0x20:
+            case 0xa0:
+            case 0x1680:
+            case 0x202F:
+            case 0x205F:
+            case 0x3000:
+            case 0xfeff:
+                return true;
+
+            default:
+                return false;
+            }
+        }
+
+        inline bool isadjustablespace(Glyph g) {
+            switch(g) {
+            case 0x20:
+            case 0xa0:
+            case 0x2002:
+            case 0x2003:
+            case 0x3000:
+                return true;
+
+            default:
+                return false;
+            }
+        }
+
+        inline bool isbreaking(Glyph g) {
+            if(g>=0x2000 && g<=0x200b)
+                return true;
+
+            switch(g) {
+                case 0x20:
+                case 0x1680:
+                case 0x2010:
+                case 0x3000:
+                    return true;
+
+                default:
+                    return false;
+            }
+        }
+
+        inline float defaultspace(Glyph g, const GlyphRenderer &renderer) {
+            auto em = renderer.GetEMSize();
+
+            switch(g) {
+            case 0x3000:
+                return (float)renderer.GetMaxWidth();
+
+            case 0x2001:
+            case 0x2003:
+                return (float)em;
+
+            case 0x2000:
+            case 0x2002:
+                return (float)rounddiv(em, 2);
+
+            case 0x2007:
+                return (float)renderer.GetDigitWidth();
+
+            case 0x2004:
+                return (float)rounddiv(em, 3);
+
+            case 0x20:
+            case 0xa0:
+            case 0x2005:
+            default:
+                return (float)ceildiv(em, 4);
+
+            case 0x25f:
+                return (float)ceildiv(em, 18.f/4.f);
+
+            case 0x2009:
+            case 0x202f:
+                return (float)ceildiv(em, 5);
+
+            case 0x2006:
+                return (float)ceildiv(em, 6);
+
+            case 0x200a:
+                return (float)ceildiv(em, 8);
+
+            case 0x2008:
+                return std::max(renderer.GetCursorAdvance('.'), 1.f);
+
+            case 0x180e:
+            case 0xfeff:
+            case 0x200b:
+                return 0;
+            }
+        }
+
+    }
+    
 } }
