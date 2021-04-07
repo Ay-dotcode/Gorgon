@@ -6,6 +6,9 @@
 #include <Gorgon/Graphics/AdvancedPrinter.h>
 
 #include <Gorgon/ImageProcessing/Filters.h>
+#include <Gorgon/UI/Window.h>
+#include <Gorgon/Widgets/Generator.h>
+
 
 
 
@@ -16,7 +19,7 @@ std::string helptext =
 
 
 int main() {
-    Application app("generictest", "Test", helptext);
+    basic_Application<Gorgon::UI::Window> app("generictest", "Test", helptext, 25, 0xe0);
 
     Graphics::Layer l;
     app.wind.Add(l);
@@ -45,20 +48,23 @@ int main() {
            .Append("Hello there")
            .ScriptOff()
            .LineBreak()
-           .SetWrapWidth(175)
+           .SetWrapWidth(200)
            .Append("Not a new paragraph.\n")
            .UseItalicFont()
            .Append("New paragraph")
     ;
     
+    auto &reg = (Gorgon::Widgets::SimpleGenerator&)Gorgon::Widgets::Registry::Active();
+    
     Graphics::AdvancedPrinter printer;
-    printer.RegisterFont(0, app.sty);
-    printer.RegisterFont(Graphics::NamedFont::H1, app.stylarge);
-    printer.RegisterFont(Graphics::NamedFont::Small, app.stysmall);
-    printer.RegisterFont(Graphics::NamedFont::Script, app.stysmall);
+    printer.RegisterFont(0, reg.RegularFont);
+    printer.RegisterFont(Graphics::NamedFont::Bold, reg.BoldFont);
+    printer.RegisterFont(Graphics::NamedFont::H1, reg.TitleFont);
+    printer.RegisterFont(Graphics::NamedFont::Small, reg.InfoFont);
+    printer.RegisterFont(Graphics::NamedFont::Script, reg.SmallFont);
     
     
-    printer.AdvancedPrint(l, builder, {25, 25}, 100);
+    printer.AdvancedPrint(l, builder, {25, 25}, 150);
     
     while(true) {
         Gorgon::NextFrame();

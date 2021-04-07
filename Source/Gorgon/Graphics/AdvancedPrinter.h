@@ -1025,14 +1025,104 @@ namespace Gorgon { namespace Graphics {
                 
                 auto end = nl == 0 ? lastbreak : acc.size();
                 
-                int totalw = acc[end-1].location.X + acc[end-1].width;
+                int totalw = acc[end-1].location.X + acc[end-1].width - location.X;
                 int xoff = 0;
                 
                 //TODO justify
-                if(nl == 0 && justify(printer->GetJustify())) {
+                if(nl == 0 && justify(printer->GetJustify()) && wrapwidth) {
+                    //count spaces and letters
+                    int sps = 0;
+                    int letters = 0;
+                    Glyph prev = 0;
+
+                    for(auto it=acc.begin(); it!=acc.begin()+end; ++it) {
+                        if(internal::isadjustablespace(it->g))
+                            sps++;
+
+                        //ignore before and after tabs
+                        if(it->g == '\t') {
+                            prev = 0;
+                        }
+                        else {
+                            if(prev && internal::isspaced(prev))
+                                letters++;
+
+                            prev = it->g;
+                        }
+                    }
+
+                    auto target = wrapwidth - totalw;
+                    int gs = 0; //glyph spacing
+                    int spsp = 0; //space spacing
+                    int extraspsp = 0; //extra spaced spaces
+
+                    //try stretching up to 1 full digit if that would be enough.
+                    //this may reduce the amount of spacing per letter.
+                    if(sps > 0) {
+                        spsp = target/sps;
+
+                        //max 1em
+                        if(spsp > renderer->GetDigitWidth()) {
+                            spsp = renderer->GetDigitWidth();
+                            target -= spsp*sps;
+                        }
+                        else {
+                            target -= spsp*sps;
+
+                            extraspsp = target;
+                            target = 0;
+                        }
+                    }
+
+                    if(letters && target/letters >= 1) { //we can increase glyph spacing
+                        gs = target/letters;
+                        if(gs > 1 && gs > renderer->GetHeight()/3) //1 is always usable
+                            gs = renderer->GetHeight()/3;
+
+                        target -= gs*letters;
+                    }
+
+                    if(sps > 0 && target > 0) {
+                        target += spsp*sps; //roll back and allow upto 2em now
+                        spsp = target/sps;
+
+                        //max 2em
+                        if(spsp > renderer->GetHeight()*2) {
+                            spsp = renderer->GetHeight()*2;
+                            target -= spsp*sps;
+                        }
+                        else {
+                            target -= spsp*sps;
+
+                            extraspsp = target;
+                            target = 0;
+                        }
+                    }
+
+                    if(target == 0) {
+                        //go over all glyphs and set widths
+                        int off = 0;
+                        for(auto it=acc.begin(); it!=acc.begin()+end; ++it) {
+                            it->location.X += off;
+
+                            if(internal::isadjustablespace(it->g)) {
+                                off += spsp;
+
+                                if(extraspsp-->0)
+                                    off++;
+                            }
+
+                            if(it->g != '\t' && internal::isspaced(it->g)) {
+                                off += gs;
+                            }
+                        }
+
+                        totalw = wrapwidth - target;
+                    }
                     
                 }
-                else if(wrapwidth > 0) {
+                
+                if(wrapwidth > 0) {
                     switch(align(printer->GetDefaultAlign())) {
                     case TextAlignment::Right:
                         xoff = wrapwidth - totalw;
