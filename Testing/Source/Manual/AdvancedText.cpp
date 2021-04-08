@@ -19,7 +19,7 @@ std::string helptext =
 
 
 int main() {
-    basic_Application<Gorgon::UI::Window> app("generictest", "Test", helptext, 25, 0xe0);
+    basic_Application<Gorgon::UI::Window> app("generictest", "Test", helptext, 25, 0x20);
 
     Graphics::Layer l;
     app.wind.Add(l);
@@ -45,7 +45,13 @@ int main() {
            .ResetFormatting()
            .Append("e = mc")
            .UseSubscript()
+           .SetColor(Gorgon::Graphics::Color::DarkAqua)
            .Append("Hello there")
+           .UseDefaultColor()
+           .ScriptOff()
+           .Append("And")
+           .UseSubscript()
+           .Append("back")
            .ScriptOff()
            .LineBreak()
            .SetWrapWidth(200)
@@ -63,7 +69,9 @@ int main() {
     printer.RegisterFont(Graphics::NamedFont::Small, reg.InfoFont);
     printer.RegisterFont(Graphics::NamedFont::Script, reg.SmallFont);
     
+    printer.RegisterColor(2, Gorgon::Graphics::Color::Red, Gorgon::Graphics::Color::LightYellow);
     
+    l.Draw(reg.Background.Regular);
     printer.AdvancedPrint(l, builder, {25, 25}, 150);
     
     while(true) {

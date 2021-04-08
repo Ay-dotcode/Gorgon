@@ -47,7 +47,7 @@ namespace Gorgon { namespace Graphics {
     namespace internal {
         inline Glyph decode_impl(std::string::const_iterator &it, std::string::const_iterator end) {
             Byte b = *it;
-            if(b < 127) {
+            if(b <= 127) {
                 if(b == '\r') {
                     if(it+1 != end && *(it+1) == '\n') {
                         ++it;

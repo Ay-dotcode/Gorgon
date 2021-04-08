@@ -14,7 +14,7 @@ namespace Gorgon { namespace Graphics {
             
             bool ctrl = g == 0x9b;
             
-            while(ctrl || (g >= 0x0e && g < 0x20) || (g == 0x86 || g == 0x87) || (g >= 0x90 && g < 0xa0)) {
+            while(ctrl || (g >= 0x0e && g < 0x20) || (g == 0x86 || g == 0x87) || (g >= 0x8e && g < 0xa0)) {
                 ++it;
                 
                 if(it == end) {

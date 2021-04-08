@@ -186,10 +186,10 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &UseHeader(HeaderLevel level) { return C1(0x10 + char(level)); }
         
         /// Switch to superscript, use ScriptOff to switch off
-        AdvancedTextBuilder &UseSuperscript() { return SCI(5); }
+        AdvancedTextBuilder &UseSuperscript() { return SCI(6); }
         
         /// Switch to subscript, use ScriptOff to switch off
-        AdvancedTextBuilder &UseSubscript() { return SCI(6); }
+        AdvancedTextBuilder &UseSubscript() { return SCI(5); }
         
         /// Switches sub and superscript off
         AdvancedTextBuilder &ScriptOff() { return SCI(7); }
@@ -207,52 +207,52 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &UseDefaultColor() { CSI(0x01); return ST(); }
         
         /// Sets the forecolor to the given 7-bit index. 
-        AdvancedTextBuilder &SetColor(Byte index, Byte alpha = 255) { CSI(0x01); Index(index); if(alpha != 255) Byte(alpha); return ST(); }
+        AdvancedTextBuilder &SetColor(Byte index, Byte alpha = 255) { CSI(0x01); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the forecolor to the given index name. 
         AdvancedTextBuilder &SetColor(NamedFontColors index, Byte alpha = 255) { return SetColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the forecolor to the given color. If precise is not set, 7-bits per channel will be
         /// used.
-        AdvancedTextBuilder &SetColor(RGBA color, bool precise = false) { CSI(0x02); Color(color, precise); return ST(); }
+        AdvancedTextBuilder &SetColor(RGBA color) { CSI(0x02); Color(color); return ST(); }
         
         /// Removes tint color that is used for images.
         AdvancedTextBuilder &RemoveTint() { CSI(0x18); return ST(); }
         
         /// Sets the tint color that is used for images to the given 7-bit index. 
-        AdvancedTextBuilder &SetTint(Byte index, Byte alpha = 255) { CSI(0x18); Index(index); if(alpha != 255) Byte(alpha); return ST(); }
+        AdvancedTextBuilder &SetTint(Byte index, Byte alpha = 255) { CSI(0x18); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the tint color that is used for images to the given index name. 
         AdvancedTextBuilder &SetTint(NamedFontColors index, Byte alpha = 255) { return SetTint(Gorgon::Byte(index), alpha); }
         
         /// Sets the tint color that is used for images to the given color. If precise is not set, 
         /// 7-bits per channel will be used.
-        AdvancedTextBuilder &SetTint(RGBA color, bool precise = false) { CSI(0x18); Color(color, precise); return ST(); }
+        AdvancedTextBuilder &SetTint(RGBA color) { CSI(0x18); Color(color); return ST(); }
         
         /// Sets the alpha that is used for images to the given color. If precise is not set, 
         /// 7-bits per channel will be used.
-        AdvancedTextBuilder &SetAlpha(Byte alpha, bool precise = false) { return SetTint(RGBA{255, 255, 255, alpha}, precise); }
+        AdvancedTextBuilder &SetAlpha(Byte alpha) { return SetTint(RGBA{255, 255, 255, alpha}); }
         
         /// Sets the background color to the given 7-bit index. 
-        AdvancedTextBuilder &SetBackgroundColor(Byte index, Byte alpha = 255) { CSI(0x03); Index(index); if(alpha != 255) Byte(alpha); return ST(); }
+        AdvancedTextBuilder &SetBackgroundColor(Byte index, Byte alpha = 255) { CSI(0x03); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the background color to the given index name. 
         AdvancedTextBuilder &SetBackgroundColor(NamedFontColors index, Byte alpha = 255) { return SetBackgroundColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the background color to the given color. If precise is not set, 7-bits per channel 
         /// will be used.
-        AdvancedTextBuilder &SetBackgroundColor(RGBA color, bool precise = false) { CSI(0x04); Color(color, precise); return ST(); }
+        AdvancedTextBuilder &SetBackgroundColor(RGBA color) { CSI(0x04); Color(color); return ST(); }
         
         
         /// Sets the border color to the given 7-bit index. 
-        AdvancedTextBuilder &SetBorderColor(Byte index, Byte alpha = 255) { CSI(0x06); Index(index); if(alpha != 255) Byte(alpha); return ST(); }
+        AdvancedTextBuilder &SetBorderColor(Byte index, Byte alpha = 255) { CSI(0x06); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the border color to the given index name. 
         AdvancedTextBuilder &SetBorderColor(NamedFontColors index, Byte alpha = 255) { return SetBorderColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the border color to the given color. If precise is not set, 7-bits per channel 
         /// will be used.
-        AdvancedTextBuilder &SetBorderColor(RGBA color, bool precise = false) { CSI(0x07); Color(color, precise); return ST(); }
+        AdvancedTextBuilder &SetBorderColor(RGBA color) { CSI(0x07); Color(color); return ST(); }
         
         /// END @}
         
@@ -330,18 +330,18 @@ namespace Gorgon { namespace Graphics {
         /// together. rel is relative to em size.
         AdvancedTextBuilder &SetWrapWidth(short pixels, short rel = 0) { CSI(0x0e); ValAndRel(pixels, rel); return ST(); }
         
-        AdvancedTextBuilder &DefaultWrapWidth() { CSI(0x0e); return ST(); }
+        AdvancedTextBuilder &DefaultWrapWidth() { CSI(0x0e); ValAndRel(); return ST(); }
         
         /// Changes the offset that will be added to each letter. Relative sizing is relative to
         /// character width and line height, the value is in percentage.
         AdvancedTextBuilder &SetLetterOffset(const Geometry::Point &pixels, const Geometry::Point &rel) { 
             CSI(0x14); 
-            ValAndRel(pixels.X, rel.X); RS(); 
+            ValAndRel(pixels.X, rel.X); 
             ValAndRel(pixels.Y, rel.Y);
             return ST(); 
         }
 
-        AdvancedTextBuilder &DefaultLetterOffset() { CSI(0x14); return ST(); }
+        AdvancedTextBuilder &DefaultLetterOffset() { CSI(0x14); ValAndRel(); return ST(); }
         
         /// Changes the offset of underline. rel is relative to line height and in percentage.
         AdvancedTextBuilder &SetUnderlineOffset(short pixels, short rel) { CSI(0x12); ValAndRel(pixels, rel); return ST(); }
@@ -351,7 +351,7 @@ namespace Gorgon { namespace Graphics {
         /// Changes the offset of strike. rel is relative to line height and in percentage.
         AdvancedTextBuilder &SetStrikethroughOffset(short pixels, short rel) { CSI(0x13); ValAndRel(pixels, rel); return ST(); }
         
-        AdvancedTextBuilder &DefaultStrikethroughOffset() { CSI(0x13); return ST(); }
+        AdvancedTextBuilder &DefaultStrikethroughOffset() { CSI(0x13); ValAndRel(); return ST(); }
         
         /// Add letters that will be used to break text from. Useful for code views.
         AdvancedTextBuilder &AddBreakingLetters(std::vector<Char> letters) {
@@ -376,34 +376,34 @@ namespace Gorgon { namespace Graphics {
         /// Changes the spacing between paragraphs. rel is relative to line height and in percentage. This value is applied after line spacing.
         AdvancedTextBuilder &SetParagraphSpacing(short pixels, short rel = 0) { CSI(0x09); ValAndRel(pixels, rel); return ST(); }
         
-        AdvancedTextBuilder &DefaultParagraphSpacing() { CSI(0x09); return ST(); }
+        AdvancedTextBuilder &DefaultParagraphSpacing() { CSI(0x09); ValAndRel(); return ST(); }
         
         /// Changes the spacing between lines. rel is relative to line height and in percentage.
         AdvancedTextBuilder &SetLineSpacing(short pixels, short rel = 0) { CSI(0x0d); ValAndRel(pixels, rel); return ST(); }
         
-        AdvancedTextBuilder &DefaultLineSpacing() { CSI(0x0d); return ST(); }
+        AdvancedTextBuilder &DefaultLineSpacing() { CSI(0x0d); ValAndRel(); return ST(); }
         
         /// Changes the spacing between the letters. rel is relative to em width and in 
         /// percentage.
         AdvancedTextBuilder &SetLetterSpacing(short pixels, short rel = 0) { CSI(0x0c); ValAndRel(pixels, rel); return ST(); }
         
-        AdvancedTextBuilder &DefaultLetterSpacing() { CSI(0x0c); return ST(); }
+        AdvancedTextBuilder &DefaultLetterSpacing() { CSI(0x0c); ValAndRel(); return ST(); }
         
         /// Changes the indent. rel is relative to em width and in percentage.
         AdvancedTextBuilder &SetIndent(short pixels, short rel = 0) { CSI(0x0a); ValAndRel(pixels, rel); return ST(); }
         
-        AdvancedTextBuilder &RemoveIndent() { CSI(0x0a); return ST(); }
+        AdvancedTextBuilder &RemoveIndent() { CSI(0x0a); ValAndRel(); return ST(); }
         
         /// Changes the indent of the start of paragraphs. rel is relative to em width and in 
         /// percentage.
         AdvancedTextBuilder &SetHangingIndent(short pixels, short rel) { CSI(0x0b); ValAndRel(pixels, rel); return ST(); }
         
-        AdvancedTextBuilder &RemoveHangingIndent() { CSI(0x0b); return ST(); }
+        AdvancedTextBuilder &RemoveHangingIndent() { CSI(0x0b); ValAndRel(); return ST(); }
 
         
         /// Place the requested amount of space horizontally. rel is relative to em width and in 
-        /// percentage.
-        AdvancedTextBuilder &HorizontalSpace(short pixels, short rel = 0) { CSI(0x40); ValAndRel(pixels, rel); return ST(); }
+        /// percentage. per is relative to wrap width
+        AdvancedTextBuilder &HorizontalSpace(short pixels, short rel = 0, short per = 0) { CSI(0x40); ValRelAndPer(pixels, rel, per); return ST(); }
         
         /// Place the requested amount of space vertically. rel is relative to line height and in 
         /// percentage.
@@ -411,11 +411,11 @@ namespace Gorgon { namespace Graphics {
         
         /// Changes the spacing between the tab stops. rel is in space widths. per is percentage of
         /// wrap width
-        AdvancedTextBuilder &SetTabWidth(short pixels, short rel = 0, short per = 0) { CSI(0x17); ValAndRel(pixels, rel); US(); Int(per); return ST(); }
+        AdvancedTextBuilder &SetTabWidth(short pixels, short rel = 0, short per = 0) { CSI(0x17); ValRelAndPer(pixels, rel, per); return ST(); }
         
         /// Adds a tabstop. The tabstop with the given index will be located at the specified location.
-        /// It replaces nearest tabstop. rel is in space widths.
-        AdvancedTextBuilder &AddTabStop(Byte index, short pixels, short rel = 0, short per = 0) { CSI(0x25); Index(index); ValAndRel(pixels, rel); US(); Int(per); return ST(); }
+        /// It replaces nearest tabstop. rel is in space widths. per is percentage of wrap width
+        AdvancedTextBuilder &AddTabStop(Byte index, short pixels, short rel = 0, short per = 0) { CSI(0x25); Index(index); ValRelAndPer(pixels, rel, per); return ST(); }
         
         /// Removes the tabstop at the given index.
         AdvancedTextBuilder &RemoveTabStop(Byte index) { CSI(0x26); Index(index); return ST(); }
@@ -450,9 +450,9 @@ namespace Gorgon { namespace Graphics {
         /// and is in percentage. Default padding is pixels = 0, rel = 100
         AdvancedTextBuilder &SetPadding(const Gorgon::Geometry::Margin &pixels, const Gorgon::Geometry::Margin rel) { 
             CSI(0x08); 
-            ValAndRel(pixels.Left, rel.Left); RS();
-            ValAndRel(pixels.Top, rel.Top); RS();
-            ValAndRel(pixels.Right, rel.Right); RS();
+            ValAndRel(pixels.Left, rel.Left);
+            ValAndRel(pixels.Top, rel.Top);
+            ValAndRel(pixels.Right, rel.Right);
             ValAndRel(pixels.Bottom, rel.Bottom);
             return ST(); 
         }
@@ -461,9 +461,9 @@ namespace Gorgon { namespace Graphics {
         /// rel is relative to underline thickness and is in percentage. Default is pixels = 0, rel = 200.
         AdvancedTextBuilder &SetSelectionPadding(const Gorgon::Geometry::Margin &pixels, const Gorgon::Geometry::Margin rel) { 
             CSI(0x016); 
-            ValAndRel(pixels.Left, rel.Left); RS();
-            ValAndRel(pixels.Top, rel.Top); RS();
-            ValAndRel(pixels.Right, rel.Right); RS();
+            ValAndRel(pixels.Left, rel.Left);
+            ValAndRel(pixels.Top, rel.Top);
+            ValAndRel(pixels.Right, rel.Right);
             ValAndRel(pixels.Bottom, rel.Bottom);
             return ST(); 
         }
@@ -474,11 +474,13 @@ namespace Gorgon { namespace Graphics {
         /// @name Image
         /// @{ BEGIN
         
+        //Info map bits: 0-1: align, 2: offset, 3: size, 4: short margins, 5: full margins
+        
         /// Displays the image with the given ID aIf the image is larger than the wrap width
         AdvancedTextBuilder &InlineImage(Byte index) { 
             CSI(0x10);
             Index(index);
-            Byte(0);
+            Index(0); //no additional info
             
             return ST();
         }
@@ -488,11 +490,9 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &InlineImage(Byte index, Geometry::Point offset) { 
             CSI(0x10);
             Index(index);
-            Byte(0);
+            Index(0b100); //only offset is set
             Int((short)offset.X);
-            US();
             Int((short)offset.Y);
-            RS();
             
             return ST();
         }
@@ -503,20 +503,16 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &InlineImage(Byte index, Geometry::Size pixelsize, Geometry::Size relsize, Geometry::Point offset = {0, 0}) {
             CSI(0x10);
             Index(index);
-            Byte(0);
-            if(offset != Geometry::Point{0, 0}) {
+            if(offset == Geometry::Point(0, 0)) {
+                Index(0b1000); //only size
+            }
+            else {
+                Index(0b1100); //size and offset
                 Int((short)offset.X);
-                US();
                 Int((short)offset.Y);
             }
-            RS();
-            Int((short)pixelsize.Width);
-            US();
-            Int((short)pixelsize.Height);
-            US();
-            Int((short)relsize.Width);
-            US();
-            Int((short)relsize.Height);
+            ValAndRel(pixelsize.Width, relsize.Width);
+            ValAndRel(pixelsize.Height, relsize.Height);
             
             return ST();
         }
@@ -527,27 +523,26 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &AlignedImage(Byte index, ImageAlign side, Geometry::Point offset = {0, 0}, Geometry::Margin margins = {0}) {
             CSI(0x10);
             Index(index);
-            Byte(side);
-            if(offset != Geometry::Point{0, 0}) {
+            
+            int margintype = margins == Geometry::Margin{0} ? 0 : ((margins.Left == margins.Top == margins.Right == margins.Bottom) ? 1 : 2);
+            
+            if(offset == Geometry::Point(0, 0)) {
+                Index(side | (margintype << 4)); //side and maybe margin
+            }
+            else {
+                Index(side | 0b100 | (margintype << 4)); //side, offset and maybe margin
                 Int((short)offset.X);
-                US();
                 Int((short)offset.Y);
             }
-            RS();
-            RS();
-            if(margins != Geometry::Margin{0}) {
-                if(margins.Left == margins.Top == margins.Right == margins.Bottom) {
+            
+            if(margintype == 1) {
                     Int((short)margins.Left);
-                }
-                else {
-                    Int((short)margins.Left);
-                    US();
-                    Int((short)margins.Top);
-                    US();
-                    Int((short)margins.Right);
-                    US();
-                    Int((short)margins.Bottom);
-                }
+            }
+            else if(margintype == 2) {
+                Int((short)margins.Left);
+                Int((short)margins.Top);
+                Int((short)margins.Right);
+                Int((short)margins.Bottom);
             }
             
             return ST();
@@ -565,34 +560,29 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &AlignedImage(Byte index, ImageAlign side,  Geometry::Size pixelsize, Geometry::Size relsize, Geometry::Point offset = {0, 0}, Geometry::Margin margins = {0}) {
             CSI(0x10);
             Index(index);
-            Byte(side);
-            if(offset != Geometry::Point{0, 0}) {
+            
+            int margintype = margins == Geometry::Margin{0} ? 0 : ((margins.Left == margins.Top == margins.Right == margins.Bottom) ? 1 : 2);
+            
+            if(offset == Geometry::Point(0, 0)) {
+                Index(side | 0b1000 | (margintype << 4)); //side, size and maybe margin
+            }
+            else {
+                Index(side | 0b1100 | (margintype << 4)); //side, offset, size and maybe margin
                 Int((short)offset.X);
-                US();
                 Int((short)offset.Y);
             }
-            RS();
-            Int((short)pixelsize.Width);
-            US();
-            Int((short)pixelsize.Height);
-            US();
-            Int((short)relsize.Width);
-            US();
-            Int((short)relsize.Height);
-            RS();
-            if(margins != Geometry::Margin{0}) {
-                if(margins.Left == margins.Top == margins.Right == margins.Bottom) {
+            
+            ValAndRel(pixelsize.Width, relsize.Width);
+            ValAndRel(pixelsize.Height, relsize.Height);
+            
+            if(margintype == 1) {
                     Int((short)margins.Left);
-                }
-                else {
-                    Int((short)margins.Left);
-                    US();
-                    Int((short)margins.Top);
-                    US();
-                    Int((short)margins.Right);
-                    US();
-                    Int((short)margins.Bottom);
-                }
+            }
+            else if(margintype == 2) {
+                Int((short)margins.Left);
+                Int((short)margins.Top);
+                Int((short)margins.Right);
+                Int((short)margins.Bottom);
             }
             
             return ST();
@@ -615,13 +605,12 @@ namespace Gorgon { namespace Graphics {
         /// to disable table border. relwidth is relative to wrap width and in percentage.
         AdvancedTextBuilder &BeginTable(std::vector<TableColumn> columns, short pixelwidth, short relwidth, bool drawouterborder = true) {
             CSI(0x20);
-            Byte(drawouterborder);
+            Index(drawouterborder);
             ValAndRel(pixelwidth, relwidth);
             for(auto c : columns) {
                 RS();
-                Byte((Gorgon::Byte)c.Align);
-                if(c.Width != 0 || c.RelWidth != 0)
-                    ValAndRel(c.Width, c.RelWidth);
+                Index((Gorgon::Byte)c.Align);
+                ValAndRel(c.Width, c.RelWidth);
             }
             return ST();
         }
@@ -630,13 +619,13 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &NextCell(Byte colspan = 1, Byte rowspan = 1, TextAlignment spanalign = TextAlignment::Left) { 
             if(colspan > 1) {
                 CSI(0x21);
-                Byte(colspan);
-                Byte(Gorgon::Byte(spanalign));
+                Index(colspan);
+                Index(Gorgon::Byte(spanalign));
                 ST();
             }
             if(rowspan > 1) {
                 CSI(0x22);
-                Byte(rowspan);
+                Index(rowspan);
                 ST();
             }
             
@@ -678,7 +667,7 @@ namespace Gorgon { namespace Graphics {
         /// is relative to wrap width and line height and is in percentage.
         AdvancedTextBuilder &Placeholder(Geometry::Size pixels, Geometry::Size rel) { 
             CSI(0x42); 
-            ValAndRel(pixels.Width, rel.Width); RS();
+            ValAndRel(pixels.Width, rel.Width);
             ValAndRel(pixels.Height, rel.Height);
             
             return ST(); 
@@ -700,44 +689,51 @@ namespace Gorgon { namespace Graphics {
         }
         
         void Int(int16_t val) {
-            char b1 = val & 0x7f;
-            char b2 = (val >> 7) & 0x7f;
-            char b3 = (val >> 14) & 0x03;
-            
-            text.push_back(b1);
-            if(b2 != 0 || b3 != 0)
-                text.push_back(b2);
-            if(b3 != 0)
-                text.push_back(b3);
+            String::AppendUnicode(text, (uint16_t)val);
         }
         
         void Index(Byte ind) {
-            text.push_back(char(ind & 0x7f));
+            text.push_back(ind & 0x7f);
         }
         
-        void Byte(Byte val, bool precise = false) {
-            if(precise) {
-                text.push_back(char(val & 0xf));
-                text.push_back(char(val >> 4));
-            }
-            else
-                text.push_back(char(val >> 1));
+        void Alpha(Byte alpha) {
+            text.push_back(alpha >> 1);
         }
         
-        void Color(RGBA color, bool precise) {
-            Byte(color.R, precise); Byte(color.G, precise); Byte(color.B, precise);
-            if(color.A != 255) Byte(color.A, precise);
+        void Color(RGBA color) {
+            String::AppendUnicode(text, (unsigned int)color&0xffff);
+            String::AppendUnicode(text, ((unsigned int)color>>16)&0xffff);
+        }
+        
+        void ValAndRel() {
+            Index(127);
         }
         
         void ValAndRel(short value, short rel) {
-            if(value != 0 || rel == 0)
+            Index((value != 0) | (rel != 0)<<1);
+            
+            if(value)
                 Int(value);
             
-            if(rel != 0)
-                US();
-            
-            if(rel != 0)
+            if(rel)
                 Int(rel);
+        }
+        
+        void ValRelAndPer() {
+            Index(127);
+        }
+        
+        void ValRelAndPer(short value, short rel, short per) {
+            Index((value != 0) | (rel != 0)<<1 | (per != 0)<<2);
+            
+            if(value)
+                Int(value);
+            
+            if(rel)
+                Int(rel);
+            
+            if(per)
+                Int(per);
         }
         
         AdvancedTextBuilder &SCI(char cmd) { C2('\x9a'); text.push_back(cmd); return *this; }
@@ -820,9 +816,8 @@ namespace Gorgon { namespace Graphics {
             Glyph prev = 0;
             int ind = 0;
 
-            auto end = text.end();
             
-            Geometry::Point cur = location;
+            //state machine
             setvalrel               letterspacing;
             int                     wrapwidth = width; //relative will be calculated instantly
             setvalrel               hangingindent;
@@ -831,9 +826,11 @@ namespace Gorgon { namespace Graphics {
             setvalrel               linespacing;
             setval<bool>            justify;
             setval<TextAlignment>   align;
+            setval<RGBAf>           color;
             
             bool wrap = width != 0;
             
+            //for current font, use changeprinter to update all
             int fontid = 0;
             const StyledPrinter *printer = &fonts.at(0);
             const GlyphRenderer *renderer = nullptr;
@@ -841,10 +838,15 @@ namespace Gorgon { namespace Graphics {
             int baseline = 0; //current font baseline
             int em = 0; //current font size em size
             
+            //for sub/superscript
             float baselineoffset = 0;
+            
+            //added to lines for sub/superscript
             int extralineoffset = 0;
             int extralineheight = 0;
             
+            //for placing letters
+            Geometry::Point cur = location;
             int  lastbreak = 0;
             bool beginparag = true;
             bool newline    = true;
@@ -860,6 +862,10 @@ namespace Gorgon { namespace Graphics {
             
             changeprinter(printer);
             
+            
+            //used in the parsers too
+            auto end = text.end();
+            
             //parse multi character command
             auto CSI = [&](auto &it, auto end) {
                 MOVEIT();
@@ -870,24 +876,44 @@ namespace Gorgon { namespace Graphics {
                 
                 Glyph p = 0;
                 
+                MOVEIT();
+                p = internal::decode_impl(it, end);
+                
                 switch(cmd) {
+                case 0x01: {
+                    int ind = readindex(it, end, p);
+                    if(colors.count(ind)) {
+                        color = setval<RGBAf>{true, colors.at(ind)};
+                        if(p != ST) {
+                            //TODO read alpha
+                        }
+                    }
+                    else {
+                        color.set = false;
+                    }
+                    break;
+                }
+                case 0x02: {
+                    color = setval<RGBAf>{true, readcolor(it, end, p)};
+                    break;
+                }
                 case 0x0c: //letter spacing
-                    letterspacing = readvalrel(it, end, p);
+                    letterspacing = readvalrel(it, end, p, true);
                     break;
                 case 0x0e: //wrap width
-                    wrapwidth = readvalrel(it, end, p)(renderer->GetEMSize(), width);
+                    wrapwidth = readvalrel(it, end, p, false)(renderer->GetEMSize(), width);
                     break;
                 case 0x09: //paragraph spacing
-                    paragraphspacing = readvalrel(it, end, p);
+                    paragraphspacing = readvalrel(it, end, p, true);
                     break;
                 case 0x0a: //set indent
-                    indent = readvalrel(it, end, p);
+                    indent = readvalrel(it, end, p, true);
                     break;
                 case 0x0b:
-                    hangingindent = readvalrel(it, end, p);
+                    hangingindent = readvalrel(it, end, p, true);
                     break;
                 case 0x0d: //line spacing
-                    linespacing = readvalrel(it, end, p);
+                    linespacing = readvalrel(it, end, p, true);
                     break;
                 }
                 
@@ -903,6 +929,17 @@ namespace Gorgon { namespace Graphics {
                 Glyph cmd = internal::decode_impl(it, end);
                 
                 switch(cmd) {
+                case 0x4:
+                    letterspacing.set       = false;
+                    hangingindent.set       = false;
+                    indent.set              = false;
+                    paragraphspacing.set    = false;
+                    linespacing.set         = false;
+                    justify.set             = false;
+                    align.set               = false;
+                    color.set               = false;
+                    changeprinter(&fonts.at(0));
+                    baselineoffset = 0.0f;
                 case 0x5:
                 case 0x6:
                     if(
@@ -963,20 +1000,20 @@ namespace Gorgon { namespace Graphics {
                 
                 switch(cmd) {
                 case 0x5: {
+                    baselineoffset = -0.3f;
+                    
+                    auto height = renderer->GetBaseLine() * 0.3f;
+                    if(height > extralineheight)
+                        extralineheight = height;
+                    
+                    break;
+                }
+                case 0x6: {
                     baselineoffset = 0.4f;
                     
                     auto offset = renderer->GetBaseLine() * 0.4f;
                     if(offset > extralineoffset)
                         extralineoffset = offset;
-                    
-                    break;
-                }
-                case 0x6: {
-                    baselineoffset = -0.3f;
-                    
-                    auto height = renderer->GetBaseLine() * 0.4f;
-                    if(height > extralineheight)
-                        extralineheight = height;
                     
                     break;
                 }
@@ -1028,7 +1065,6 @@ namespace Gorgon { namespace Graphics {
                 int totalw = acc[end-1].location.X + acc[end-1].width - location.X;
                 int xoff = 0;
                 
-                //TODO justify
                 if(nl == 0 && justify(printer->GetJustify()) && wrapwidth) {
                     //count spaces and letters
                     int sps = 0;
@@ -1195,7 +1231,18 @@ namespace Gorgon { namespace Graphics {
                 extralineoffset = 0;
                 extralineheight = 0;
                 lastbreak = 0;
-            };
+                if(baselineoffset < 0) {
+                    auto height = renderer->GetBaseLine() * -baselineoffset;
+                    if(height > extralineheight)
+                        extralineheight = height;
+                }
+                else if(baselineoffset > 0) {
+                    auto offset = renderer->GetBaseLine() * baselineoffset;
+                    
+                    if(offset > extralineoffset)
+                        extralineoffset = offset;
+                }
+            }; //do line
             
             for(auto it=text.begin(); it!=end; ++it) {
                 Glyph g = internal::decode_impl(it, end);
@@ -1286,22 +1333,22 @@ namespace Gorgon { namespace Graphics {
                 cur.X += hspace;
                 
                 if(baselineoffset != 0) {
-                    acc.push_back({g, renderer, cur, {0,0}, printer->GetColor(), 
+                    acc.push_back({g, renderer, cur, {0,0}, color(printer->GetColor()),
                         gw,
                         (int)std::round(baseline*(1+baselineoffset)), 
                         (int)std::round(height + baseline*fabs(baselineoffset))
                     });
                 }
                 else {
-                    acc.push_back({g, renderer, cur, {0,0}, printer->GetColor(), 
+                    acc.push_back({g, renderer, cur, {0,0}, color(printer->GetColor()), 
                         gw, baseline, height
                     });
                 }
                 
-                if(height > maxh)
-                    maxh = height;
                 if(baseline > maxb)
                     maxb = baseline;
+                if(height > maxh)
+                    maxh = height;
                 
                 cur.X += gw;
                 
@@ -1410,6 +1457,23 @@ namespace Gorgon { namespace Graphics {
                 return val + int(std::round(rel * to));
             }
         };
+
+
+        struct setvalrelper {
+            explicit setvalrelper(bool set = false, int val = 0, float rel = 0, float per = 0) : set(set), val(val), rel(rel), per(per) { }
+            bool set;
+            int val;
+            float rel;
+            float per;
+            
+            template<class T_>
+            int operator()(T_ to, T_ perc, int def) {
+                if(!set)
+                    return def;
+                
+                return val + int(std::round(rel * to)) + int(std::round(per * perc));
+            }
+        };
         
         template<class T_>
         struct setval {
@@ -1450,61 +1514,88 @@ namespace Gorgon { namespace Graphics {
                         Geometry::Rectangle location, TextAlignment align) const override {
             AdvancedPrint(target, text, location.TopLeft(), location.Width);
         }
+        
+        int readint(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur) const {
+            int ret = cur;
             
-        int decodeint(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur) const {
-            if(cur > 0x7f)
-                return 0;
-            
-            int num = cur;
-            
-            MOVEIT(num);
+            MOVEIT(ret); //get the byte after
             cur = internal::decode_impl(it, end);
             
-            if(cur > 0x7f) //1 byte data
-                return num;
-            
-            num = num | cur << 7;
-            
-            MOVEIT(num);
-            cur = internal::decode_impl(it, end);
-            
-            if(num > 0x7f) //2 byte data
-                return num;
-            
-            num = num | cur << 14;
-            
-            MOVEIT(num); //get the byte after
-            cur = internal::decode_impl(it, end);
-            
-            return num;
+            return ret;
         }
         
-        setvalrel readvalrel(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur) const {
-            MOVEIT(setvalrel())
+        RGBA readcolor(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur) const {
+            uint32_t col = cur;
+            
+            MOVEIT(col);
             cur = internal::decode_impl(it, end);
             
-            int val = 0;
+            col = col | (cur << 16);
             
-            if(cur == ST) //nothing is in here
+            MOVEIT(col);
+            cur = internal::decode_impl(it, end);
+            
+            return col;
+        }
+        
+        Byte readindex(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur) const {
+            if(cur > 0x7f)
+                return -1;
+            
+            Byte ret = cur;
+            
+            MOVEIT(ret); //get the byte after
+            cur = internal::decode_impl(it, end);
+            
+            return ret;
+        }
+        
+        setvalrel readvalrel(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur, bool relper) const {
+            auto mode = readindex(it, end, cur);
+            
+            if(mode == 127)
                 return setvalrel();
             
-            if(cur == US) { //no val, only rel
-                MOVEIT(setvalrel());
-                cur = internal::decode_impl(it, end);
-                
-                return setvalrel(true, 0, decodeint(it, end, cur) / 100.f);
+            int val = 0;
+            float rel = 0;
+            
+            if(mode&0b1)
+                val = readint(it, end, cur);
+            
+            if(mode&0b10) {
+                if(relper)
+                    rel = readint(it, end, cur)/100.f;
+                else
+                    rel = readint(it, end, cur);
             }
             
-            val = decodeint(it, end, cur);
+            return setvalrel(true, val, rel);
+        }
+        
+        setvalrelper readvalrelper(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur, bool relper) const {
+            auto mode = readindex(it, end, cur);
             
-            if(cur == ST)
-                return setvalrel(true, val, 0);
-            else {
-                MOVEIT(setvalrel(true, val, 0));
-                cur = internal::decode_impl(it, end);
-                
-                return setvalrel(true, val, decodeint(it, end, cur) / 100.f);
+            if(mode == 127)
+                return setvalrelper();
+            
+            int val = 0;
+            float rel = 0;
+            float per = 0;
+            
+            if(mode&0b1)
+                val = readint(it, end, cur);
+            
+            if(mode&0b10) {
+                if(relper)
+                    rel = readint(it, end, cur)/100.f;
+                else
+                    rel = readint(it, end, cur);
             }
+            
+            if(mode&0b100)
+                per = readint(it, end, cur)/100.f;
+            
+            return setvalrelper(true, val, rel, per);
         }
         
         const StyledPrinter *findfont(int f) const {
