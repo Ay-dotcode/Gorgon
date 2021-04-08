@@ -83,7 +83,16 @@ namespace Gorgon { namespace Graphics {
         
         /// Small font that will be used in super and subscripts. Could also be used for other purposes.
         /// This script font will be used for small, info and script fonts
-        SmallScript
+        SmallScript,
+        
+        /// Fixed width font to be used in programming
+        FixedWidth,
+        
+        /// Fixed width font to be used in programming
+        FixedWidthBold,
+        
+        /// Fixed width font to be used in programming
+        FixedWidthItalic,
     };
     
     inline bool operator ==(int l, NamedFont r) {
@@ -402,19 +411,19 @@ namespace Gorgon { namespace Graphics {
 
         
         /// Place the requested amount of space horizontally. rel is relative to em width and in 
-        /// percentage. per is relative to wrap width
+        /// percentage. per is relative to wrap width and in basis points (1/10000)
         AdvancedTextBuilder &HorizontalSpace(short pixels, short rel = 0, short per = 0) { CSI(0x40); ValRelAndPer(pixels, rel, per); return ST(); }
         
         /// Place the requested amount of space vertically. rel is relative to line height and in 
         /// percentage.
         AdvancedTextBuilder &VerticalSpace(short pixels, short rel = 0) { CSI(0x41); ValAndRel(pixels, rel); return ST(); }
         
-        /// Changes the spacing between the tab stops. rel is in space widths. per is percentage of
+        /// Changes the spacing between the tab stops. rel is in space widths. per is basis points of
         /// wrap width
         AdvancedTextBuilder &SetTabWidth(short pixels, short rel = 0, short per = 0) { CSI(0x17); ValRelAndPer(pixels, rel, per); return ST(); }
         
         /// Adds a tabstop. The tabstop with the given index will be located at the specified location.
-        /// It replaces nearest tabstop. rel is in space widths. per is percentage of wrap width
+        /// It replaces nearest tabstop. rel is in space widths. per is basis point of wrap width
         AdvancedTextBuilder &AddTabStop(Byte index, short pixels, short rel = 0, short per = 0) { CSI(0x25); Index(index); ValRelAndPer(pixels, rel, per); return ST(); }
         
         /// Removes the tabstop at the given index.
@@ -669,8 +678,19 @@ namespace Gorgon { namespace Graphics {
             CSI(0x42); 
             ValAndRel(pixels.Width, rel.Width);
             ValAndRel(pixels.Height, rel.Height);
+            ST();
             
-            return ST(); 
+            String::AppendUnicode(text, 0xfffc);
+            
+            return *this;
+        }
+        
+        /// Places a placeholder space. Placeholder will be wrapped as if it is a single glyph. This
+        /// overload will have the same size as the previous placeholder.
+        AdvancedTextBuilder &Placeholder() {
+            String::AppendUnicode(text, 0xfffc);
+            
+            return *this;
         }
         
         /// @}
@@ -824,6 +844,7 @@ namespace Gorgon { namespace Graphics {
             setvalrel               indent;
             setvalrel               paragraphspacing;
             setvalrel               linespacing;
+            setval<int>             tabwidth;
             setval<bool>            justify;
             setval<TextAlignment>   align;
             setval<RGBAf>           color;
@@ -884,9 +905,7 @@ namespace Gorgon { namespace Graphics {
                     int ind = readindex(it, end, p);
                     if(colors.count(ind)) {
                         color = setval<RGBAf>{true, colors.at(ind)};
-                        if(p != ST) {
-                            //TODO read alpha
-                        }
+                        color.val.A = readalpha(it, end, p)/255.f;
                     }
                     else {
                         color.set = false;
@@ -897,12 +916,6 @@ namespace Gorgon { namespace Graphics {
                     color = setval<RGBAf>{true, readcolor(it, end, p)};
                     break;
                 }
-                case 0x0c: //letter spacing
-                    letterspacing = readvalrel(it, end, p, true);
-                    break;
-                case 0x0e: //wrap width
-                    wrapwidth = readvalrel(it, end, p, false)(renderer->GetEMSize(), width);
-                    break;
                 case 0x09: //paragraph spacing
                     paragraphspacing = readvalrel(it, end, p, true);
                     break;
@@ -912,8 +925,27 @@ namespace Gorgon { namespace Graphics {
                 case 0x0b:
                     hangingindent = readvalrel(it, end, p, true);
                     break;
+                case 0x0c: //letter spacing
+                    letterspacing = readvalrel(it, end, p, true);
+                    break;
                 case 0x0d: //line spacing
                     linespacing = readvalrel(it, end, p, true);
+                    break;
+                case 0x0e: //wrap width
+                    wrapwidth = readvalrel(it, end, p, false)(renderer->GetEMSize(), width);
+                    break;
+                    
+                case 0x17: {
+                    auto val = readvalrelper(it, end, p, false);
+                    tabwidth = setval<int>{val.set, val(em, wrapwidth, printer->GetTabWidth())};
+                    break;
+                }
+                case 0x40:
+                    cur.X += readvalrelper(it, end, p, false)(em, wrapwidth, 0);
+                    prev = 0; //no kerning after a spacing like this
+                    break;
+                case 0x41:
+                    cur.Y += readvalrel(it, end, p, true)(height, 0);
                     break;
                 }
                 
@@ -938,6 +970,7 @@ namespace Gorgon { namespace Graphics {
                     justify.set             = false;
                     align.set               = false;
                     color.set               = false;
+                    tabwidth.set            = false;
                     changeprinter(&fonts.at(0));
                     baselineoffset = 0.0f;
                 case 0x5:
@@ -1293,9 +1326,15 @@ namespace Gorgon { namespace Graphics {
                 }
                 
                 if(g == '\t') {
-                    //do tab use hspace from indent if exists
+                    cur.X += hspace;
+                    hspace = 0;
+                    cur.X += tabwidth(printer->GetTabWidth());
+                    cur.X /= tabwidth(printer->GetTabWidth());
+                    cur.X *= tabwidth(printer->GetTabWidth());
+                    
+                    //TODO tab stops
                 }
-                else if(prev && !newline) {
+                else if(prev && !newline && g != '\t') {
                     hspace = (int)renderer->KerningDistance(prev, g).X;
                     
                     if(!internal::isspaced(g)) { //will be drawn on top of previous glyph
@@ -1322,7 +1361,7 @@ namespace Gorgon { namespace Graphics {
                     
                     newline = false;
                 }
-                else {
+                else if(g != '\t') {
                     gw = renderer->GetCursorAdvance(g);
                     
                     newline = false;
@@ -1331,6 +1370,9 @@ namespace Gorgon { namespace Graphics {
 
                 // **** Accumulate
                 cur.X += hspace;
+                
+                if(g == '\t' || (internal::isspace(g) && !renderer->Exists(g)))
+                    g = 0xffff; //dont try to render
                 
                 if(baselineoffset != 0) {
                     acc.push_back({g, renderer, cur, {0,0}, color(printer->GetColor()),
@@ -1392,7 +1434,8 @@ namespace Gorgon { namespace Graphics {
                     const GlyphRenderer &renderer, Glyph g, 
                     const Geometry::Point &location, const RGBAf &color
                 ) {
-                    renderer.Render(g, target, location, color);
+                    if(g != 0xffff)
+                        renderer.Render(g, target, location, color);
                 },
                 []{}, []{}, text, location, width
             );
@@ -1515,8 +1558,8 @@ namespace Gorgon { namespace Graphics {
             AdvancedPrint(target, text, location.TopLeft(), location.Width);
         }
         
-        int readint(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur) const {
-            int ret = cur;
+        int16_t readint(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur) const {
+            int16_t ret = (int16_t)cur;
             
             MOVEIT(ret); //get the byte after
             cur = internal::decode_impl(it, end);
@@ -1543,6 +1586,18 @@ namespace Gorgon { namespace Graphics {
                 return -1;
             
             Byte ret = cur;
+            
+            MOVEIT(ret); //get the byte after
+            cur = internal::decode_impl(it, end);
+            
+            return ret;
+        }
+        
+        Byte readalpha(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur) const {
+            if(cur > 0x7f)
+                return 255;
+            
+            Byte ret = (cur<<1) | ((cur&0x40) != 0);
             
             MOVEIT(ret); //get the byte after
             cur = internal::decode_impl(it, end);
@@ -1593,7 +1648,7 @@ namespace Gorgon { namespace Graphics {
             }
             
             if(mode&0b100)
-                per = readint(it, end, cur)/100.f;
+                per = readint(it, end, cur)/10000.f;
             
             return setvalrelper(true, val, rel, per);
         }
@@ -1654,6 +1709,17 @@ namespace Gorgon { namespace Graphics {
                 
             case NamedFont::Script:
                 return findfont(NamedFont::Small);
+                
+            case NamedFont::FixedWidthBold:
+                if(fonts.count((int)NamedFont::FixedWidth))
+                    return findfont(NamedFont::FixedWidth);
+                
+                return findfont(NamedFont::Bold);
+            case NamedFont::FixedWidthItalic:
+                if(fonts.count((int)NamedFont::FixedWidth))
+                    return findfont(NamedFont::FixedWidth);
+                
+                return findfont(NamedFont::Italic);
             }
         }
         

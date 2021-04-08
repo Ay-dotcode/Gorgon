@@ -929,6 +929,7 @@ namespace Gorgon { namespace Graphics {
                 return true;
 
             switch(g) {
+                case '\t':
                 case 0x20:
                 case 0x1680:
                 case 0x2010:
