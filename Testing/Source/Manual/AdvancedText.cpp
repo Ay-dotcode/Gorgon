@@ -43,7 +43,7 @@ int main() {
            .UseDefaultFont()
            .DefaultLetterSpacing()
            .SetColor(2, 171)
-           .Append("text. ")
+           .Append("t.ext. ")
            .ResetFormatting()
            .Append("e = mc")
            .UseSubscript()
@@ -61,7 +61,24 @@ int main() {
            .SetTabWidth(0, 0, 2500)
            .Append("Not a\tnew\tparagraph. Just a line break\n")
            .UseItalicFont()
-           .Append("New\tparagraph")
+           .Append("New\tparagraph ")
+           .Append("D")
+           .SetLetterOffset({0,2})
+           .Append("a")
+           .SetLetterOffset({0,4})
+           .Append("n")
+           .SetLetterOffset({0,5})
+           .Append("c")
+           .SetLetterOffset({0,6})
+           .Append("i")
+           .SetLetterOffset({0,5})
+           .Append("n")
+           .SetLetterOffset({0,4})
+           .Append("g")
+           .SetLetterOffset({0,2})
+           .Append(".")
+           .SetLetterOffset({0,0})
+           .Append(".")
     ;
     
     auto &reg = (Gorgon::Widgets::SimpleGenerator&)Gorgon::Widgets::Registry::Active();
@@ -72,6 +89,8 @@ int main() {
     printer.RegisterFont(Graphics::NamedFont::H1, reg.TitleFont);
     printer.RegisterFont(Graphics::NamedFont::Small, reg.InfoFont);
     printer.RegisterFont(Graphics::NamedFont::Script, reg.SmallFont);
+    
+    printer.GetBreakingLetters().push_back('.');
     
     printer.RegisterColor(2, Gorgon::Graphics::Color::Red, Gorgon::Graphics::Color::LightYellow);
     

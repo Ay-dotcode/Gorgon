@@ -171,6 +171,9 @@ namespace Gorgon { namespace Graphics {
         /// Appends a line break that does not start a new paragraph.
         AdvancedTextBuilder &LineBreak() { return C2(0x85); }
         
+        /// Appends a zero width breaking space.
+        AdvancedTextBuilder &ZeroWidthSpace() { String::AppendUnicode(text, 0x200b); return *this; }
+        
         /// Resets all formatting instructions.
         AdvancedTextBuilder &ResetFormatting() { return SCI(0x04); }
         
@@ -343,7 +346,7 @@ namespace Gorgon { namespace Graphics {
         
         /// Changes the offset that will be added to each letter. Relative sizing is relative to
         /// character width and line height, the value is in percentage.
-        AdvancedTextBuilder &SetLetterOffset(const Geometry::Point &pixels, const Geometry::Point &rel) { 
+        AdvancedTextBuilder &SetLetterOffset(const Geometry::Point &pixels, const Geometry::Point &rel = {0, 0}) { 
             CSI(0x14); 
             ValAndRel(pixels.X, rel.X); 
             ValAndRel(pixels.Y, rel.Y);
@@ -411,7 +414,8 @@ namespace Gorgon { namespace Graphics {
 
         
         /// Place the requested amount of space horizontally. rel is relative to em width and in 
-        /// percentage. per is relative to wrap width and in basis points (1/10000)
+        /// percentage. per is relative to wrap width and in basis points (1/10000). This space will
+        /// not be breaking. If breaking is desired, you may insert zero width space.
         AdvancedTextBuilder &HorizontalSpace(short pixels, short rel = 0, short per = 0) { CSI(0x40); ValRelAndPer(pixels, rel, per); return ST(); }
         
         /// Place the requested amount of space vertically. rel is relative to line height and in 
@@ -817,6 +821,22 @@ namespace Gorgon { namespace Graphics {
             images.Add(index, image);
         }
         
+        /// Adds breaking glyphs. A line can be wrapped after a breaking letter. Spaces are breaking
+        /// and cannot be removed from the list.
+        void SetBreakingLetters(std::vector<Char> letters) {
+            breakingchars = letters;
+        }
+        
+        /// Returns the list of breaking glyphs. You can change the returned vector.
+        std::vector<Char> &GetBreakingLetters() {
+            return breakingchars;
+        }
+        
+        /// Returns the list of breaking glyphs.
+        const std::vector<Char> &GetBreakingLetters() const {
+            return breakingchars;
+        }
+        
         /// This is the advanced operation which allows user to submit functions that will perform the
         /// rendering. First one is glyph render. It will be given the renderer to be used, the 
         /// second is box renderer, starting point, size, background color, border thickness and 
@@ -837,6 +857,9 @@ namespace Gorgon { namespace Graphics {
             int ind = 0;
 
             
+            std::vector<Glyph> breaking = breakingchars;
+            std::sort(breaking.begin(), breaking.end());
+            
             //state machine
             setvalrel               letterspacing;
             int                     wrapwidth = width; //relative will be calculated instantly
@@ -844,6 +867,8 @@ namespace Gorgon { namespace Graphics {
             setvalrel               indent;
             setvalrel               paragraphspacing;
             setvalrel               linespacing;
+            setvalrel               xoffset;
+            setvalrel               yoffset;
             setval<int>             tabwidth;
             setval<bool>            justify;
             setval<TextAlignment>   align;
@@ -934,17 +959,48 @@ namespace Gorgon { namespace Graphics {
                 case 0x0e: //wrap width
                     wrapwidth = readvalrel(it, end, p, false)(renderer->GetEMSize(), width);
                     break;
-                    
-                case 0x17: {
+                case 0x14: //letter offset
+                    xoffset = readvalrel(it, end, p, true);
+                    yoffset = readvalrel(it, end, p, true);
+                    break;
+                case 0x17: { //set tab width
                     auto val = readvalrelper(it, end, p, false);
                     tabwidth = setval<int>{val.set, val(em, wrapwidth, printer->GetTabWidth())};
                     break;
                 }
-                case 0x40:
+                case 0x23: {
+                    while(p != ST) {
+                        breaking.insert(std::upper_bound(breaking.begin(), breaking.end(), p), p);
+                        MOVEIT();
+                        p = internal::decode_impl(it, end);
+                    }
+                    break;
+                }
+                case 0x24: {
+                    std::vector<Glyph> rem;
+                    while(p != ST) {
+                        rem.insert(std::upper_bound(rem.begin(), rem.end(), p), p);
+                        MOVEIT();
+                        p = internal::decode_impl(it, end);
+                    }
+                    auto rit = rem.begin();
+                    breaking.erase(std::remove_if(breaking.begin(), breaking.end(), [&](auto v) {
+                        while(*rit < v && rit != rem.end())
+                            rit++;
+                        
+                        if(rit == rem.end())
+                            return false;
+                        else
+                            return *rit == v;
+                    }), breaking.end());
+                    break;
+                }
+                case 0x40: //horizontal spacing
                     cur.X += readvalrelper(it, end, p, false)(em, wrapwidth, 0);
                     prev = 0; //no kerning after a spacing like this
+                    
                     break;
-                case 0x41:
+                case 0x41: //vertical spacing
                     cur.Y += readvalrel(it, end, p, true)(height, 0);
                     break;
                 }
@@ -971,6 +1027,8 @@ namespace Gorgon { namespace Graphics {
                     align.set               = false;
                     color.set               = false;
                     tabwidth.set            = false;
+                    xoffset.set             = false;
+                    yoffset.set             = false;
                     changeprinter(&fonts.at(0));
                     baselineoffset = 0.0f;
                 case 0x5:
@@ -1308,7 +1366,7 @@ namespace Gorgon { namespace Graphics {
                 int gw     = 0;
 
                 
-                // **** Wrap check
+                // **** Breaking character check
                 if(internal::isbreaking(g)) {
                     lastbreak = (int)acc.size();
                 }
@@ -1358,15 +1416,12 @@ namespace Gorgon { namespace Graphics {
                     else {
                         gw = (int)internal::defaultspace(g, *renderer);
                     }
-                    
-                    newline = false;
                 }
                 else if(g != '\t') {
                     gw = renderer->GetCursorAdvance(g);
-                    
-                    newline = false;
                 }
                 
+                newline = false;
 
                 // **** Accumulate
                 cur.X += hspace;
@@ -1375,15 +1430,15 @@ namespace Gorgon { namespace Graphics {
                     g = 0xffff; //dont try to render
                 
                 if(baselineoffset != 0) {
-                    acc.push_back({g, renderer, cur, {0,0}, color(printer->GetColor()),
-                        gw,
+                    acc.push_back({g, renderer, cur, {xoffset(em, 0), yoffset(em, 0)}, 
+                        color(printer->GetColor()), gw,
                         (int)std::round(baseline*(1+baselineoffset)), 
                         (int)std::round(height + baseline*fabs(baselineoffset))
                     });
                 }
                 else {
-                    acc.push_back({g, renderer, cur, {0,0}, color(printer->GetColor()), 
-                        gw, baseline, height
+                    acc.push_back({g, renderer, cur, {xoffset(em, 0), yoffset(em, 0)}, 
+                        color(printer->GetColor()), gw, baseline, height
                     });
                 }
                 
@@ -1417,6 +1472,12 @@ namespace Gorgon { namespace Graphics {
                     
                     doline(0);
                 }
+                
+                auto br = std::lower_bound(breaking.begin(), breaking.end(), g);
+                if(br != breaking.end() && *br == g) {
+                    lastbreak = (int)acc.size();
+                }
+
             }
             
             if(!acc.empty())
@@ -1748,6 +1809,8 @@ namespace Gorgon { namespace Graphics {
         
         /// Indexed background colors
         std::map<Byte, RGBA> backcolors;
+        
+        std::vector<Glyph> breakingchars;
     };
     
 } }
