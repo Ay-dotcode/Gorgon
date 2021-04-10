@@ -77,6 +77,29 @@ namespace Gorgon { namespace Geometry {
             return Sign(End.X - Start.X);
         }
         
+        /// Returns the length of the line
+        Float Length() {
+            return End.Distance(Start);
+        }
+        
+        /// Returns the distance from the target point to the line
+        Float Distance(const P_ &target) {
+            auto dx = (End.X - Start.X);
+            auto dy = (End.Y - Start.Y);
+            return 
+                fabs(dx * (Start.Y - target.Y) - (Start.X - target.X) * dy) / 
+                  sqrt(dx*dx + dy*dy);
+        }
+        
+        /// Returns the squared distance from the target point to the line. This can be calculated
+        /// faster than the regular distance.
+        Float DistanceSquare(const P_ &target) {
+            auto dx = (End.X - Start.X);
+            auto dy = (End.Y - Start.Y);
+            auto t = dx * (Start.Y - target.Y) - (Start.X - target.X) * dy;
+            return fabs(t*t / (dx*dx + dy*dy));
+        }
+        
         ///Starting point of the line.
         P_ Start;
         

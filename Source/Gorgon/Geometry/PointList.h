@@ -71,6 +71,16 @@ namespace Gorgon { namespace Geometry {
             return Points.size();
         }
         
+        ///Returns the number of elements in the list
+        auto GetCount() const {
+            return Points.size();
+        }
+        
+        /// Returns if the container is empty
+        bool IsEmpty() const {
+            return Points.empty();
+        }
+        
         ///Begin iterator to underlying points vector
         auto begin() {
             return Points.begin();
