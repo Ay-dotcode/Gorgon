@@ -50,7 +50,8 @@ int main() {
         Circle(bmp2, b.P2*zoom, 3, SolidFill<>(Blue));
         Circle(bmp2, b.P3*zoom, 3, SolidFill<>(Green));
         
-        DrawLines(bmp2, {b.P0*zoom, b.P1*zoom, b.P2*zoom, b.P3*zoom}, 0.75, SolidFill<>(LightBlue));
+        DrawLines(bmp2, {b.P0*zoom, b.P1*zoom}, 0.75, SolidFill<>(LightBlue));
+        DrawLines(bmp2, {b.P2*zoom, b.P3*zoom}, 0.75, SolidFill<>(LightBlue));
     };
     
     

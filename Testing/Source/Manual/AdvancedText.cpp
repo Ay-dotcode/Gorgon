@@ -8,6 +8,7 @@
 #include <Gorgon/ImageProcessing/Filters.h>
 #include <Gorgon/UI/Window.h>
 #include <Gorgon/Widgets/Generator.h>
+#include <Gorgon/CGI/Marking.h>
 
 
 
@@ -29,17 +30,25 @@ int main() {
     Graphics::AdvancedTextBuilder builder;
     builder.UseHeader(Gorgon::Graphics::HeaderLevel::H1)
            .WordWrap(false)
+           .StartRegion(4)
            .Append("Hello world. ")
+           .EndRegion(4)
            .UseDefaultFont()
-           .Append("Not header\n")
+           .StartRegion(5)
+           .Append("Not header")
+           .EndRegion(5)
+           .Append("\n")
            .WordWrap(true)
            .SetHangingIndent(10, 0)
-           .Append("This is ")
+           .Append("This ")
+           .StartRegion(0)
+           .Append("is")
            .UseBoldFont()
-           .SetLetterSpacing(5, 0)
+           .SetLetterSpacing(3, 0)
            .HorizontalSpace(-5)
            .VerticalSpace(15)
-           .Append("a bold ")
+           .Append(" a bold ")
+           .EndRegion(0)
            .UseDefaultFont()
            .DefaultLetterSpacing()
            .SetColor(2, 171)
@@ -48,18 +57,26 @@ int main() {
            .Append("e = mc")
            .UseSubscript()
            .SetColor(Gorgon::Graphics::Color::DarkAqua)
+           .StartRegion(6)
            .Append("Hello there")
+           .EndRegion(6)
            .UseDefaultColor()
            .ScriptOff()
+           .StartRegion(1)
            .Append("And")
-           .UseSubscript()
+           .EndRegion(1)
+           .UseSuperscript()
+           .StartRegion(3)
            .Append("back")
-           .SetParagraphSpacing(0, 0)
+           .EndRegion(3)
+           .SetParagraphSpacing(0, 50)
            .ScriptOff()
            .LineBreak()
            .SetWrapWidth(200)
            .SetTabWidth(0, 0, 2500)
+           .StartRegion(2)
            .Append("Not a\tnew\tparagraph. Just a line break\n")
+           .EndRegion(2)
            .UseItalicFont()
            .Append("New\tparagraph ")
            .Append("D")
@@ -95,8 +112,34 @@ int main() {
     printer.RegisterColor(2, Gorgon::Graphics::Color::Red, Gorgon::Graphics::Color::LightYellow);
     
     l.Draw(reg.Background.Regular);
-    printer.AdvancedPrint(l, builder, {25, 25}, 150);
+
+    Graphics::Bitmap markings(500, 500, Gorgon::Graphics::ColorMode::RGBA);
+    markings.Clear();
+    markings.Prepare();
+    markings.Draw(l, 0, 0);
     
+    auto regions = printer.AdvancedPrint(l, builder, {25, 25}, 150);
+    
+    std::vector<Graphics::RGBA> regioncolor = {
+        Graphics::Color::Red,
+        Graphics::Color::Brown,
+        Graphics::Color::DarkGreen,
+        Graphics::Color::Charcoal,
+        Graphics::Color::Navy,
+        Graphics::Color::Purple,
+        Graphics::Color::Orange,
+    };
+    
+    for(auto r : regions) {
+        Gorgon::CGI::DrawBounds(
+            markings, 
+            r.Bounds,
+            0.5, Gorgon::CGI::SolidFill<>(regioncolor[r.ID])
+        );
+    }
+    
+    markings.Prepare();
+
     while(true) {
         Gorgon::NextFrame();
     }

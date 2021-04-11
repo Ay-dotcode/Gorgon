@@ -786,8 +786,14 @@ namespace Gorgon { namespace Graphics {
         
         class Region {
         public:
-            Byte id;
-            Geometry::Bounds bounds;
+            Region() = default;
+            
+            Region(Byte id, const Geometry::Bounds &bounds) : 
+                ID(id), Bounds(bounds) 
+            { }
+            
+            Byte ID;
+            Geometry::Bounds Bounds;
         };
         
         
@@ -855,6 +861,17 @@ namespace Gorgon { namespace Graphics {
             
             Glyph prev = 0;
             int ind = 0;
+            
+            struct openregioninfo : public Region {
+                openregioninfo() = default;
+                
+                openregioninfo(Byte id, const Geometry::Bounds &bounds, int startat) :
+                    Region(id, bounds), startat(startat) 
+                { }
+                    
+                int    startat =  0;
+                int    doneat  = -1;
+            };
 
             
             std::vector<Glyph> breaking = breakingchars;
@@ -883,6 +900,7 @@ namespace Gorgon { namespace Graphics {
             int height = 0; //current font height, line gap is used
             int baseline = 0; //current font baseline
             int em = 0; //current font size em size
+            float baselineoffsetatlastspace = 0;
             
             //for sub/superscript
             float baselineoffset = 0;
@@ -893,6 +911,7 @@ namespace Gorgon { namespace Graphics {
             
             //for placing letters
             Geometry::Point cur = location;
+            int  starty = cur.Y;
             int  lastbreak = 0;
             bool beginparag = true;
             bool newline    = true;
@@ -908,9 +927,44 @@ namespace Gorgon { namespace Graphics {
             
             changeprinter(printer);
             
+            //bool is for regions that end at the middle of a line
+            std::vector<openregioninfo> openregions; 
+            std::vector<Region> regions;
             
             //used in the parsers too
             auto end = text.end();
+            
+            std::vector<glyphmark> acc;
+            int maxh = 0; //maximum height of a line
+            int maxb = 0; //maximum baseline of a line
+            
+            auto switchtoscript = [&] {
+                if(
+                    fontid == NamedFont::Info || fontid == NamedFont::Small ||  fontid == NamedFont::Script || 
+                    fontid == NamedFont::BoldScript || fontid == NamedFont::SmallScript) 
+                {
+                    changeprinter(findfont(NamedFont::SmallScript));
+                }
+                else if(
+                    fontid == NamedFont::Bold || fontid == NamedFont::BoldItalic || fontid == NamedFont::H3 || 
+                    fontid == NamedFont::H4
+                ) {
+                    changeprinter(findfont(NamedFont::BoldScript));
+                }
+                else if(
+                    fontid == NamedFont::Larger
+                ) {
+                    changeprinter(&fonts.at(0));
+                }
+                else if(
+                    fontid == NamedFont::H1 || fontid == NamedFont::H2
+                ) {
+                    changeprinter(findfont(NamedFont::Bold));
+                }
+                else {
+                    changeprinter(findfont(NamedFont::Script));
+                }
+            };
             
             //parse multi character command
             auto CSI = [&](auto &it, auto end) {
@@ -963,6 +1017,13 @@ namespace Gorgon { namespace Graphics {
                     xoffset = readvalrel(it, end, p, true);
                     yoffset = readvalrel(it, end, p, true);
                     break;
+                case 0x15:
+                    fontid = readindex(it, end, p);
+                    if(baselineoffset != 0)
+                        switchtoscript();
+                    else
+                        changeprinter(findfont(fontid));
+                    break;
                 case 0x17: { //set tab width
                     auto val = readvalrelper(it, end, p, false);
                     tabwidth = setval<int>{val.set, val(em, wrapwidth, printer->GetTabWidth())};
@@ -993,6 +1054,22 @@ namespace Gorgon { namespace Graphics {
                         else
                             return *rit == v;
                     }), breaking.end());
+                    break;
+                }
+                case 0x30:
+                    openregions.push_back({readindex(it, end, p), {cur, 0, 0}, (int)acc.size()});
+                    break;
+                case 0x31: {
+                    auto ind = readindex(it, end, p);
+                    
+                    for(int i=openregions.size()-1; i>=0; i--) {
+                        if(openregions[i].ID == ind && openregions[i].doneat == -1) {
+                            openregions[i].Bounds.Right = cur.X;
+                            openregions[i].Bounds.Bottom = cur.Y + height;
+                            openregions[i].doneat = (int)acc.size();
+                            break;
+                        }
+                    }
                     break;
                 }
                 case 0x40: //horizontal spacing
@@ -1030,34 +1107,11 @@ namespace Gorgon { namespace Graphics {
                     xoffset.set             = false;
                     yoffset.set             = false;
                     changeprinter(&fonts.at(0));
+                    fontid = 0;
                     baselineoffset = 0.0f;
                 case 0x5:
                 case 0x6:
-                    if(
-                        fontid == NamedFont::Info || fontid == NamedFont::Small ||  fontid == NamedFont::Script || 
-                        fontid == NamedFont::BoldScript || fontid == NamedFont::SmallScript) 
-                    {
-                        changeprinter(findfont(NamedFont::SmallScript));
-                    }
-                    else if(
-                        fontid == NamedFont::Bold || fontid == NamedFont::BoldItalic || fontid == NamedFont::H3 || 
-                        fontid == NamedFont::H4
-                    ) {
-                        changeprinter(findfont(NamedFont::BoldScript));
-                    }
-                    else if(
-                        fontid == NamedFont::Larger
-                    ) {
-                        changeprinter(&fonts.at(0));
-                    }
-                    else if(
-                        fontid == NamedFont::H1 || fontid == NamedFont::H2
-                    ) {
-                        changeprinter(findfont(NamedFont::Bold));
-                    }
-                    else {
-                        changeprinter(findfont(NamedFont::Script));
-                    }
+                    switchtoscript();
                     break;
                 case 0x7:
                     changeprinter(findfont(fontid));
@@ -1118,43 +1172,48 @@ namespace Gorgon { namespace Graphics {
                 switch(g) {
                 case 0x0e:
                     changeprinter(findfont(NamedFont::Bold));
+                    fontid = (int)NamedFont::Bold;
                     return true;
                 case 0x0f:
                     changeprinter(findfont(NamedFont::Regular));
+                    fontid = (int)NamedFont::Regular;
                     return true;
                 case 0x91:
                     changeprinter(findfont(NamedFont::Italic));
+                    fontid = (int)NamedFont::Italic;
                     return true;
                 case 0x92:
                     changeprinter(findfont(NamedFont::Small));
+                    fontid = (int)NamedFont::Small;
                     return true;
                 case 0x11:
                     changeprinter(findfont(NamedFont::H1));
+                    fontid = (int)NamedFont::H1;
                     return true;
                 case 0x12:
                     changeprinter(findfont(NamedFont::H2));
+                    fontid = (int)NamedFont::H2;
                     return true;
                 case 0x13:
                     changeprinter(findfont(NamedFont::H3));
+                    fontid = (int)NamedFont::H3;
                     return true;
                 case 0x14:
                     changeprinter(findfont(NamedFont::H4));
+                    fontid = (int)NamedFont::H4;
                     return true;
                 }
                 
                 return false;
             };
             
-            std::vector<glyphmark> acc;
-            int maxh = 0; //maximum height of a line
-            int maxb = 0; //maximum baseline of a line
-            
             auto doline = [&](Glyph nl) {
                 
-                auto end = nl == 0 ? lastbreak : acc.size();
+                int end = nl == 0 ? lastbreak : (int)acc.size();
                 
                 int totalw = acc[end-1].location.X + acc[end-1].width - location.X;
                 int xoff = 0;
+                int lineend = 0;
                 
                 if(nl == 0 && justify(printer->GetJustify()) && wrapwidth) {
                     //count spaces and letters
@@ -1253,14 +1312,17 @@ namespace Gorgon { namespace Graphics {
                     switch(align(printer->GetDefaultAlign())) {
                     case TextAlignment::Right:
                         xoff = wrapwidth - totalw;
+                        lineend = wrapwidth + location.X;
                         
                         break;
                     case TextAlignment::Center:
                         xoff = (wrapwidth - totalw) / 2;
+                        lineend = wrapwidth - xoff + location.X;
                         
                         break;
                     default:
-                        //nothing
+                        lineend = totalw + location.X;
+                        
                         break;
                     }
                 }
@@ -1311,27 +1373,84 @@ namespace Gorgon { namespace Graphics {
                 ind = acc.size();
                 newline = ind == 0;
 
-
                 cur.Y += lineh;
                 
+                //finalize regions before paragraph spacing
+                int rstart = location.X + indent(em, 0) + hangingindent(em, 0) * beginparag;
+                for(auto &r : openregions) {
+                    
+                    if(r.startat >= end) {
+                        r.startat -= end;
+                        
+                        ASSERT(r.startat < acc.size(), "FIX ME");
+                        
+                        r.Bounds.Move(acc[r.startat].location);
+                        continue;
+                    }
+                    else {
+                        r.startat = -1;
+                    }
+                    
+                    r.Bounds.Bottom = cur.Y;
+                    r.Bounds.Top = starty;
+                    
+                    if(r.doneat != -1 && r.doneat <= end) {
+                        regions.push_back(r);
+                        r.doneat = -2;
+                    }
+                    else {
+                        r.Bounds.Right = lineend;
+                        
+                        regions.push_back(r);
+                        
+                        r.Bounds.Left = rstart;
+                        r.Bounds.Top  = cur.Y;
+                        
+                        if(r.doneat != -1) {
+                            r.doneat -= end;
+                            r.Bounds.Right = acc[r.doneat].location.X;
+                        }
+                    }
+                }
+                
+                openregions.erase(
+                    std::remove_if(
+                        openregions.begin(), openregions.end(), 
+                        [](auto r) { return r.doneat == -2; }
+                    ), openregions.end()
+                );
+                
+                //if requested do paragraph
                 if(beginparag)
                     cur.Y += paragraphspacing(maxh, printer->GetParagraphSpacing());
                 
+                //reset
                 maxh = 0;
                 maxb = 0;
+                lastbreak = 0;
                 extralineoffset = 0;
                 extralineheight = 0;
-                lastbreak = 0;
+                starty = cur.Y;
+                baselineoffsetatlastspace = 0;
+                
+                auto backup = printer;
+                changeprinter(findfont(fontid));
+                
+                //if still doing scripts, readjust exta line height and offset
                 if(baselineoffset < 0) {
                     auto height = renderer->GetBaseLine() * -baselineoffset;
                     if(height > extralineheight)
                         extralineheight = height;
+                    
+                    changeprinter(backup);
                 }
                 else if(baselineoffset > 0) {
                     auto offset = renderer->GetBaseLine() * baselineoffset;
                     
                     if(offset > extralineoffset)
                         extralineoffset = offset;
+                    
+                    changeprinter(backup);
                 }
             }; //do line
             
@@ -1369,6 +1488,7 @@ namespace Gorgon { namespace Graphics {
                 // **** Breaking character check
                 if(internal::isbreaking(g)) {
                     lastbreak = (int)acc.size();
+                    baselineoffsetatlastspace = baselineoffset;
                 }
                 
                 // **** Determine spacing
@@ -1470,7 +1590,15 @@ namespace Gorgon { namespace Graphics {
                             break;
                     }
                     
+                    auto blosave = baselineoffset;
+                    baselineoffset = baselineoffsetatlastspace;
+                    
                     doline(0);
+                    
+                    baselineoffset = blosave;
+                    if(baselineoffset == 0 && blosave != 0) {
+                        changeprinter(findfont(fontid));
+                    }
                 }
                 
                 auto br = std::lower_bound(breaking.begin(), breaking.end(), g);
@@ -1483,7 +1611,7 @@ namespace Gorgon { namespace Graphics {
             if(!acc.empty())
                 doline(-1);
             
-            return {};
+            return regions;
         }
         
         std::vector<Region> AdvancedPrint(

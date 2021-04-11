@@ -38,6 +38,10 @@ namespace Gorgon { namespace CGI {
                 s++;
             } while(s < p.GetSize() && l.Start == l.End);
             
+            //nothing to draw here
+            if(l.Start == l.End)
+                return {};
+            
 			auto off = (Geometry::Pointf(l.End) - Geometry::Pointf(l.Start)).Perpendicular().Normalize() * w;
 
 			//if closed the first two points will be added last
