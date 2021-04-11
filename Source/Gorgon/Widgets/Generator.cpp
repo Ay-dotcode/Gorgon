@@ -75,7 +75,7 @@ namespace Gorgon { namespace Widgets {
         regularrenderer = &regular;
         
         RegularFont.SetGlyphRenderer(regular);
-        RegularFont.SetColor(Forecolor.Regular);
+        //RegularFont.SetColor(Forecolor.Regular);
 
         CenteredFont = RegularFont;
         CenteredFont.AlignCenter();
@@ -83,29 +83,29 @@ namespace Gorgon { namespace Widgets {
         auto &bold = *new Graphics::FreeType();
         bold.LoadFile(findfontfile(boldfontname, true), fontsize);
         boldrenderer = &bold;
-        BoldFont.SetColor(Forecolor.Regular);
+        //BoldFont.SetColor(Forecolor.Regular);
         BoldFont.SetGlyphRenderer(bold);
         
         auto &title = *new Graphics::FreeType();
         title.LoadFile(findfontfile(boldfontname, true), int(std::round(fontsize*1.2)));
         titlerenderer = &title;
         TitleFont.SetGlyphRenderer(title);
-        TitleFont.SetColor(Forecolor.Title);
+        //TitleFont.SetColor(Forecolor.Title);
         
         auto &subtitle = *new Graphics::FreeType();
         subtitle.LoadFile(findfontfile(boldfontname, true), int(std::round(fontsize*1.1)));
         subtitlerenderer = &subtitle;
         SubtitleFont.SetGlyphRenderer(subtitle);
-        SubtitleFont.SetColor(Forecolor.Title);
+        //SubtitleFont.SetColor(Forecolor.Title);
         
         auto &small = *new Graphics::FreeType();
         small.LoadFile(findfontfile(fontname, false), int(std::round(fontsize*0.85)));
         smallrenderer = &small;
-        SmallFont.SetColor(Forecolor.Regular);
+        //SmallFont.SetColor(Forecolor.Regular);
         SmallFont.SetGlyphRenderer(small);
         
         InfoFont.SetGlyphRenderer(small);
-        InfoFont.SetColor(Forecolor.Info);
+        //InfoFont.SetColor(Forecolor.Info);
         InfoFont.SetParagraphSpacing(Spacing);
         
         UpdateDimensions();
