@@ -20,7 +20,7 @@ std::string helptext =
 
 
 int main() {
-    basic_Application<Gorgon::UI::Window> app("generictest", "Test", helptext, 25, 0x20);
+    basic_Application<Gorgon::UI::Window> app("generictest", "Test", helptext, 25, 0x10);
 
     Graphics::Layer l;
     app.wind.Add(l);
@@ -29,15 +29,21 @@ int main() {
     
     Graphics::AdvancedTextBuilder builder;
     builder.UseHeader(Gorgon::Graphics::HeaderLevel::H1)
+           .Strikethrough()
            .WordWrap(false)
            .StartRegion(4)
            .Append("Hello world. ")
            .EndRegion(4)
            .UseDefaultFont()
            .StartRegion(5)
+           .Justify(true)
+           .UnderlineSettings(false, false)
+           //.Underline()
            .Append("Not header")
+           //.Underline(false)
            .EndRegion(5)
            .Append("\n")
+           .SetUnderlineColor(2)
            .WordWrap(true)
            .SetHangingIndent(10, 0)
            .Append("This ")
@@ -56,7 +62,7 @@ int main() {
            .ResetFormatting()
            .Append("e = mc")
            .UseSubscript()
-           .SetColor(Gorgon::Graphics::Color::DarkAqua)
+           .SetColor(Gorgon::Graphics::Color::Aqua)
            .StartRegion(6)
            .Append("Hello there")
            .EndRegion(6)
@@ -109,9 +115,9 @@ int main() {
     
     printer.GetBreakingLetters().push_back('.');
     
-    printer.RegisterColor(2, Gorgon::Graphics::Color::Red, Gorgon::Graphics::Color::LightYellow);
+    printer.RegisterColor(2, Gorgon::Graphics::Color::BrightRed, Gorgon::Graphics::Color::DarkOlive);
     
-    l.Draw(reg.Background.Regular);
+    //l.Draw(reg.Background.Regular);
 
     Graphics::Bitmap markings(500, 500, Gorgon::Graphics::ColorMode::RGBA);
     markings.Clear();
@@ -122,22 +128,22 @@ int main() {
     
     std::vector<Graphics::RGBA> regioncolor = {
         Graphics::Color::Red,
-        Graphics::Color::Brown,
-        Graphics::Color::DarkGreen,
-        Graphics::Color::Charcoal,
-        Graphics::Color::Navy,
-        Graphics::Color::Purple,
-        Graphics::Color::Orange,
+        Graphics::Color::LightBrown,
+        Graphics::Color::Green,
+        Graphics::Color::Grey,
+        Graphics::Color::LightBlue,
+        Graphics::Color::Magenta,
+        Graphics::Color::BrightPurple,
     };
-    
+    /*
     for(auto r : regions) {
         Gorgon::CGI::DrawBounds(
             markings, 
             r.Bounds,
-            0.5, Gorgon::CGI::SolidFill<>(regioncolor[r.ID])
+            1, Gorgon::CGI::SolidFill<>(regioncolor[r.ID])
         );
     }
-    
+    */
     markings.Prepare();
 
     while(true) {

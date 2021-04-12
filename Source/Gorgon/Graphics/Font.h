@@ -144,6 +144,10 @@ namespace Gorgon { namespace Graphics {
         /// line up. 
         virtual void Render(Glyph chr, TextureTarget &target, Geometry::Pointf location, RGBAf color) const = 0;
 
+        /// This function should return the render offset of the requested glyph. If it does not 
+        /// exists, 0, 0 should be returned
+        virtual Geometry::Point GetOffset(Glyph chr) const = 0;
+        
         /// This function should return the size of the requested glyph. If it does not exists,
         /// 0x0 should be returned
         virtual Geometry::Size GetSize(Glyph chr) const = 0;
@@ -666,7 +670,7 @@ namespace Gorgon { namespace Graphics {
         /// Returns current strike position
         int GetStrikePosition() const {
             if(strikepos == INT_MIN)
-                return (int)std::round( (renderer->GetHeight() - renderer->GetLineThickness()) * .6f );
+                return (int)std::round( (renderer->GetBaseLine() - renderer->GetLineThickness()) * .7f );
             else
                 return strikepos;
         }

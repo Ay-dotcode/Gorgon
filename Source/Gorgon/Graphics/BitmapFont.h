@@ -200,6 +200,8 @@ namespace Gorgon { namespace Graphics {
         
         virtual Geometry::Size GetSize(Glyph chr) const override;
         
+        virtual Geometry::Point GetOffset(Glyph chr) const override;
+        
         virtual void Render(Glyph chr, TextureTarget &target, Geometry::Pointf location, RGBAf color) const override;
 
 		virtual bool IsFixedWidth() const override { return isfixedw; }

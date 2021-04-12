@@ -34,7 +34,7 @@ namespace Gorgon { namespace Graphics {
         H3,
         H4
     };
-            
+    
     /// Constants for fonts. Font indices are 7-bit integers 0-127. First few are named as
     /// follows.
     enum class NamedFont {
@@ -224,8 +224,7 @@ namespace Gorgon { namespace Graphics {
         /// Sets the forecolor to the given index name. 
         AdvancedTextBuilder &SetColor(NamedFontColors index, Byte alpha = 255) { return SetColor(Gorgon::Byte(index), alpha); }
         
-        /// Sets the forecolor to the given color. If precise is not set, 7-bits per channel will be
-        /// used.
+        /// Sets the forecolor to the given color.
         AdvancedTextBuilder &SetColor(RGBA color) { CSI(0x02); Color(color); return ST(); }
         
         /// Removes tint color that is used for images.
@@ -237,12 +236,10 @@ namespace Gorgon { namespace Graphics {
         /// Sets the tint color that is used for images to the given index name. 
         AdvancedTextBuilder &SetTint(NamedFontColors index, Byte alpha = 255) { return SetTint(Gorgon::Byte(index), alpha); }
         
-        /// Sets the tint color that is used for images to the given color. If precise is not set, 
-        /// 7-bits per channel will be used.
+        /// Sets the tint color that is used for images to the given color. 
         AdvancedTextBuilder &SetTint(RGBA color) { CSI(0x18); Color(color); return ST(); }
         
-        /// Sets the alpha that is used for images to the given color. If precise is not set, 
-        /// 7-bits per channel will be used.
+        /// Sets the alpha that is used for images to the given color. 
         AdvancedTextBuilder &SetAlpha(Byte alpha) { return SetTint(RGBA{255, 255, 255, alpha}); }
         
         /// Sets the background color to the given 7-bit index. 
@@ -251,8 +248,7 @@ namespace Gorgon { namespace Graphics {
         /// Sets the background color to the given index name. 
         AdvancedTextBuilder &SetBackgroundColor(NamedFontColors index, Byte alpha = 255) { return SetBackgroundColor(Gorgon::Byte(index), alpha); }
         
-        /// Sets the background color to the given color. If precise is not set, 7-bits per channel 
-        /// will be used.
+        /// Sets the background color to the given color.
         AdvancedTextBuilder &SetBackgroundColor(RGBA color) { CSI(0x04); Color(color); return ST(); }
         
         
@@ -262,9 +258,31 @@ namespace Gorgon { namespace Graphics {
         /// Sets the border color to the given index name. 
         AdvancedTextBuilder &SetBorderColor(NamedFontColors index, Byte alpha = 255) { return SetBorderColor(Gorgon::Byte(index), alpha); }
         
-        /// Sets the border color to the given color. If precise is not set, 7-bits per channel 
-        /// will be used.
+        /// Sets the border color to the given color.
         AdvancedTextBuilder &SetBorderColor(RGBA color) { CSI(0x07); Color(color); return ST(); }
+        
+        
+        AdvancedTextBuilder &UseDefaultUnderlineColor() { CSI(0x1c); return ST(); }
+        
+        /// Sets the underline color to the given 7-bit index. 
+        AdvancedTextBuilder &SetUnderlineColor(Byte index, Byte alpha = 255) { CSI(0x1c); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
+        
+        /// Sets the underline color to the given index name. 
+        AdvancedTextBuilder &SetUnderlineColor(NamedFontColors index, Byte alpha = 255) { return SetUnderlineColor(Gorgon::Byte(index), alpha); }
+        
+        /// Sets the underline color to the given color.
+        AdvancedTextBuilder &SetUnderlineColor(RGBA color) { CSI(0x1d); Color(color); return ST(); }
+        
+        AdvancedTextBuilder &UseDefaultStrikethroughColor() { CSI(0x1e); return ST(); }
+        
+        /// Sets the strikethrough color to the given 7-bit index. 
+        AdvancedTextBuilder &SetStrikethroughColor(Byte index, Byte alpha = 255) { CSI(0x1e); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
+        
+        /// Sets the strikethrough color to the given index name. 
+        AdvancedTextBuilder &SetStrikethroughColor(NamedFontColors index, Byte alpha = 255) { return SetStrikethroughColor(Gorgon::Byte(index), alpha); }
+        
+        /// Sets the strikethrough collor to the given color.
+        AdvancedTextBuilder &SetStrikethroughColor(RGBA color) { CSI(0x1f); Color(color); return ST(); }
         
         /// END @}
         
@@ -328,7 +346,13 @@ namespace Gorgon { namespace Graphics {
         
         AdvancedTextBuilder &Underline(bool enable = true) { return SCI(enable ? 0x10 : 0x11); }
         
+        /// Uses the style default for underline on/off state
+        AdvancedTextBuilder &DefaultUnderline() { return SCI(0x16); }
+        
         AdvancedTextBuilder &Strikethrough(bool enable = true) { return SCI(enable ? 0x12 : 0x13); }
+
+        /// Uses the style default for strikethrough on/off state
+        AdvancedTextBuilder &DefaultStrikethrough() { return SCI(0x17); }
         
         /// END @}
         
@@ -360,10 +384,41 @@ namespace Gorgon { namespace Graphics {
         
         AdvancedTextBuilder &DefaultUnderlineOffset() { CSI(0x12); return ST(); }
         
+        /// Changes underline settings. Thickness will be set to default. If no parameters are given,
+        /// will set all of them to defaults.
+        AdvancedTextBuilder &UnderlineSettings(bool descenders = false, bool spaces = true, bool tabs = false, bool gaps = false, bool placeholders = false) { 
+            CSI(0x1a); 
+            Index(1 | descenders<<2 | spaces<<3 | tabs<<4 | gaps<<5 | placeholders<<6);
+            return ST();
+        }
+        
+        /// Changes underline thickness. rel is relative to line thickness and is in percentage
+        AdvancedTextBuilder &UnderlineThickness(short pixels, short rel) { 
+            CSI(0x1a); 
+            Index(0b10);
+            ValAndRel(pixels, rel);
+            return ST();
+        }
+        
         /// Changes the offset of strike. rel is relative to line height and in percentage.
         AdvancedTextBuilder &SetStrikethroughOffset(short pixels, short rel) { CSI(0x13); ValAndRel(pixels, rel); return ST(); }
         
         AdvancedTextBuilder &DefaultStrikethroughOffset() { CSI(0x13); ValAndRel(); return ST(); }
+        
+        /// Changes strike settings. If no parameters are given, will set them to defaults.
+        AdvancedTextBuilder &StrikeSettings(bool spaces = true, bool tabs = false, bool gaps = false, bool placeholders = false) { 
+            CSI(0x1b); 
+            Index(1 | 1<<2 | spaces<<3 | tabs<<4 | gaps<<5 | placeholders<<6);
+            return ST();
+        }
+        
+        /// Changes strike thickness. rel is relative to line thickness and is in percentage
+        AdvancedTextBuilder &StrikethroughThickness(short pixels, short rel) { 
+            CSI(0x1b); 
+            Index(0b10);
+            ValAndRel(pixels, rel);
+            return ST();
+        }
         
         /// Add letters that will be used to break text from. Useful for code views.
         AdvancedTextBuilder &AddBreakingLetters(std::vector<Char> letters) {
@@ -863,14 +918,29 @@ namespace Gorgon { namespace Graphics {
             int ind = 0;
             
             struct openregioninfo : public Region {
-                openregioninfo() = default;
-                
-                openregioninfo(Byte id, const Geometry::Bounds &bounds, int startat) :
+                openregioninfo(Byte id, const Geometry::Bounds &bounds, long startat) :
                     Region(id, bounds), startat(startat) 
                 { }
                     
-                int    startat =  0;
-                int    doneat  = -1;
+                long    startat  =  0;
+                long    finishat = -1;
+            };
+            
+            struct lineinfo {
+                lineinfo(long startat, int thickness, int yoffset, const RGBAf &color) : 
+                    startat(startat), thickness(thickness), yoffset(yoffset), color(color)
+                { }
+                
+                long startat;
+                long finishat = -1;
+                
+                int thickness;
+                int yoffset;
+                
+                int start, end;
+                int y;
+                
+                RGBAf color;
             };
 
             
@@ -888,19 +958,29 @@ namespace Gorgon { namespace Graphics {
             setvalrel               yoffset;
             setval<int>             tabwidth;
             setval<bool>            justify;
+            setval<bool>            underline;
+            setval<bool>            strike;
             setval<TextAlignment>   align;
             setval<RGBAf>           color;
+            linesettings            underlinesettings;
+            linesettings            strikesettings;
             
             bool wrap = width != 0;
             
             //for current font, use changeprinter to update all
-            int fontid = 0;
+            int   fontid = 0;
             const StyledPrinter *printer = &fonts.at(0);
             const GlyphRenderer *renderer = nullptr;
-            int height = 0; //current font height, line gap is used
-            int baseline = 0; //current font baseline
-            int em = 0; //current font size em size
+            
+            int   height = 0; //current font height, line gap is used
+            int   baseline = 0; //current font baseline
+            int   em = 0; //current font size em size
+            int   lineth = 0; //current line thickness
             float baselineoffsetatlastspace = 0;
+            bool  underlineon = false;
+            bool  strikeon = false;
+            int   curunderlineoff = 0;
+            int   curstrikeoff = 0;
             
             //for sub/superscript
             float baselineoffset = 0;
@@ -917,19 +997,11 @@ namespace Gorgon { namespace Graphics {
             bool newline    = true;
             int  lastadvance = 0;
             
-            auto changeprinter = [&](auto p) {
-                printer = p;
-                renderer = &printer->GetGlyphRenderer();
-                height   = renderer->GetLineGap();
-                baseline = renderer->GetBaseLine();
-                em       = renderer->GetEMSize();
-            };
-            
-            changeprinter(printer);
-            
-            //bool is for regions that end at the middle of a line
             std::vector<openregioninfo> openregions; 
             std::vector<Region> regions;
+            
+            std::vector<lineinfo> underlines;
+            std::vector<lineinfo> strikes;
             
             //used in the parsers too
             auto end = text.end();
@@ -937,6 +1009,25 @@ namespace Gorgon { namespace Graphics {
             std::vector<glyphmark> acc;
             int maxh = 0; //maximum height of a line
             int maxb = 0; //maximum baseline of a line
+            
+            auto changeprinter = [&](auto p) {
+                printer = p;
+                renderer = &printer->GetGlyphRenderer();
+                height   = renderer->GetLineGap();
+                baseline = renderer->GetBaseLine();
+                em       = renderer->GetEMSize();
+                lineth   = std::min(1, (int)std::round(renderer->GetLineThickness()));
+                
+                if(underlineon) {
+                    underlines.back().finishat = (long)acc.size();
+                    underlineon = false;
+                }
+                if(strikeon) {
+                    strikes.back().finishat = (long)acc.size();
+                    strikeon = false;
+                }
+
+            };
             
             auto switchtoscript = [&] {
                 if(
@@ -1029,6 +1120,64 @@ namespace Gorgon { namespace Graphics {
                     tabwidth = setval<int>{val.set, val(em, wrapwidth, printer->GetTabWidth())};
                     break;
                 }
+                case 0x1a: {
+                    auto m = readindex(it, end, p);
+                    if(m&1) {
+                        underlinesettings.descenders   = m&0b0000100;
+                        underlinesettings.spaces       = m&0b0001000;
+                        underlinesettings.tabs         = m&0b0010000;
+                        underlinesettings.gaps         = m&0b0100000;
+                        underlinesettings.placeholders = m&0b1000000;
+                    }
+                    if(m&2) {
+                        underlinesettings.thickness = readvalrel(it, end, p, true);
+                    }
+                    break;
+                }
+                case 0x1b: {
+                    auto m = readindex(it, end, p);
+                    if(m&1) {
+                        strikesettings.descenders   = 1;
+                        strikesettings.spaces       = m&0b0001000;
+                        strikesettings.tabs         = m&0b0010000;
+                        strikesettings.gaps         = m&0b0100000;
+                        strikesettings.placeholders = m&0b1000000;
+                    }
+                    if(m&2) {
+                        strikesettings.thickness = readvalrel(it, end, p, true);
+                    }
+                    break;
+                }
+                case 0x1c: {
+                    int ind = readindex(it, end, p);
+                    if(colors.count(ind)) {
+                        underlinesettings.color = setval<RGBAf>{true, colors.at(ind)};
+                        underlinesettings.color.val.A = readalpha(it, end, p)/255.f;
+                    }
+                    else {
+                        underlinesettings.color.set = false;
+                    }
+                    break;
+                }
+                case 0x1d: {
+                    underlinesettings.color = setval<RGBAf>{true, readcolor(it, end, p)};
+                    break;
+                }
+                case 0x1e: {
+                    int ind = readindex(it, end, p);
+                    if(colors.count(ind)) {
+                        strikesettings.color = setval<RGBAf>{true, colors.at(ind)};
+                        strikesettings.color.val.A = readalpha(it, end, p)/255.f;
+                    }
+                    else {
+                        strikesettings.color.set = false;
+                    }
+                    break;
+                }
+                case 0x1f: {
+                    strikesettings.color = setval<RGBAf>{true, readcolor(it, end, p)};
+                    break;
+                }
                 case 0x23: {
                     while(p != ST) {
                         breaking.insert(std::upper_bound(breaking.begin(), breaking.end(), p), p);
@@ -1057,16 +1206,14 @@ namespace Gorgon { namespace Graphics {
                     break;
                 }
                 case 0x30:
-                    openregions.push_back({readindex(it, end, p), {cur, 0, 0}, (int)acc.size()});
+                    openregions.push_back({readindex(it, end, p), {cur, 0, 0}, (long)acc.size()});
                     break;
                 case 0x31: {
                     auto ind = readindex(it, end, p);
                     
                     for(int i=openregions.size()-1; i>=0; i--) {
-                        if(openregions[i].ID == ind && openregions[i].doneat == -1) {
-                            openregions[i].Bounds.Right = cur.X;
-                            openregions[i].Bounds.Bottom = cur.Y + height;
-                            openregions[i].doneat = (int)acc.size();
+                        if(openregions[i].ID == ind && openregions[i].finishat == -1) {
+                            openregions[i].finishat = (int)acc.size();
                             break;
                         }
                     }
@@ -1115,6 +1262,36 @@ namespace Gorgon { namespace Graphics {
                     break;
                 case 0x7:
                     changeprinter(findfont(fontid));
+                    break;
+                case 0x10:
+                    underline = setval<bool>{true, true};
+                    break;
+                case 0x11:
+                    underline = setval<bool>{true, false};
+                    if(underlineon) {
+                        underlines.back().finishat = (long)acc.size();
+                    }
+                    break;
+                case 0x12:
+                    strike = setval<bool>{true, true};
+                    break;
+                case 0x13:
+                    strike = setval<bool>{true, false};
+                    if(strikeon) {
+                        strikes.back().finishat = (long)acc.size();
+                    }
+                    break;
+                case 0x16:
+                    underline.set = false;
+                    if(!printer->GetUnderline() && underlineon) {
+                        underlines.back().finishat = (long)acc.size();
+                    }
+                    break;
+                case 0x17:
+                    strike.set = false;
+                    if(!printer->GetStrike() && strikeon) {
+                        strikes.back().finishat = (long)acc.size();
+                    }
                     break;
                 case 0x20:
                     justify = setval<bool>{true, true};
@@ -1208,7 +1385,6 @@ namespace Gorgon { namespace Graphics {
             };
             
             auto doline = [&](Glyph nl) {
-                
                 int end = nl == 0 ? lastbreak : (int)acc.size();
                 
                 int totalw = acc[end-1].location.X + acc[end-1].width - location.X;
@@ -1329,22 +1505,66 @@ namespace Gorgon { namespace Graphics {
                 
                 //render
                 for(int i=0; i<end; i++) {
-                    //this changes the location but modified ones are erased promptly.
                     Translate(acc[i].location, xoff, maxb-acc[i].baseline+extralineoffset);
-                    glyphr(*acc[i].renderer, acc[i].g, acc[i].location + acc[i].offset, acc[i].color);
+                    if(acc[i].g != '\t' && (!internal::isspace(acc[i].g) || renderer->Exists(acc[i].g)))
+                        glyphr(*acc[i].renderer, acc[i].g, acc[i].location + acc[i].offset, acc[i].color);
                 }
                 
-                //clean spaces at the start of the next line
-                for(; end<acc.size(); end++) {
-                    if(!internal::isspace(acc[end].g))
-                        break;
+                if(nl == 0) {
+                    //clean spaces at the start of the next line
+                    for(; end<acc.size(); end++) {
+                        if(!internal::isspace(acc[end].g) && acc[end].g != '\t')
+                            break;
+                        else {
+                            Translate(acc[end].location, xoff, maxb-acc[end].baseline+extralineoffset);
+                        }
+                    }
                 }
+                
+                //region X locations determined here
+                for(auto &r : openregions) {
+                    if(r.startat >= 0 && r.startat < end) {
+                        r.Bounds.Left = acc[r.startat].location.X;
+                    }
+                    if(r.finishat >= 0 && r.finishat < end) {
+                        r.Bounds.Right = acc[r.finishat].location.X;
+                    }
+                }
+                
+                //line X locations determined here
+                for(auto &u : underlines) {
+                    if(u.startat >= 0 && u.startat < end) {
+                        u.start = acc[u.startat].location.X;
+                        u.y     = acc[u.startat].location.Y;
+                    }
+                    else if(u.startat == -1 && end != 0) {
+                        u.y = acc[0].location.Y;
+                    }
+                    
+                    if(u.finishat >= 0 && u.finishat < end) {
+                        u.end = acc[u.finishat].location.X;
+                    }
+                }
+                
+                for(auto &s : strikes) {
+                    if(s.startat >= 0 && s.startat < end) {
+                        s.start = acc[s.startat].location.X;
+                        s.y     = acc[s.startat].location.Y;
+                    }
+                    else if(s.startat == -1 && end != 0) {
+                        s.y = acc[0].location.Y;
+                    }
+                    
+                    if(s.finishat >= 0 && s.finishat < end) {
+                        s.end = acc[s.finishat].location.X;
+                    }
+                }
+
                 
                 //clean consumed glyphs
                 acc.erase(acc.begin(), acc.begin()+end);
                 
                 int lineh = linespacing(maxh, printer->GetLineSpacing() * (maxh + extralineoffset + extralineheight));
-                //reset index
 
                 beginparag = nl != 0 && nl != 0x85;
                 
@@ -1375,16 +1595,13 @@ namespace Gorgon { namespace Graphics {
 
                 cur.Y += lineh;
                 
-                //finalize regions before paragraph spacing
-                int rstart = location.X + indent(em, 0) + hangingindent(em, 0) * beginparag;
+                int nextlinexstart = location.X + indent(em, 0) + hangingindent(em, 0) * beginparag;
+                
+                //BEGIN finalize regions before paragraph spacing
                 for(auto &r : openregions) {
-                    
                     if(r.startat >= end) {
                         r.startat -= end;
                         
-                        ASSERT(r.startat < acc.size(), "FIX ME");
-                        
-                        r.Bounds.Move(acc[r.startat].location);
                         continue;
                     }
                     else {
@@ -1394,21 +1611,24 @@ namespace Gorgon { namespace Graphics {
                     r.Bounds.Bottom = cur.Y;
                     r.Bounds.Top = starty;
                     
-                    if(r.doneat != -1 && r.doneat <= end) {
+                    if(r.finishat != -1 && r.finishat <= end) {
+                        if(r.finishat == end) {
+                            r.Bounds.Right = lineend;
+                        }
+                        
                         regions.push_back(r);
-                        r.doneat = -2;
+                        r.finishat = -2;
                     }
                     else {
                         r.Bounds.Right = lineend;
                         
                         regions.push_back(r);
                         
-                        r.Bounds.Left = rstart;
+                        r.Bounds.Left = nextlinexstart;
                         r.Bounds.Top  = cur.Y;
                         
-                        if(r.doneat != -1) {
-                            r.doneat -= end;
-                            r.Bounds.Right = acc[r.doneat].location.X;
+                        if(r.finishat != -1) {
+                            r.finishat -= end;
                         }
                     }
                 }
@@ -1416,9 +1636,102 @@ namespace Gorgon { namespace Graphics {
                 openregions.erase(
                     std::remove_if(
                         openregions.begin(), openregions.end(), 
-                        [](auto r) { return r.doneat == -2; }
+                        [](auto r) { return r.finishat == -2; }
                     ), openregions.end()
                 );
+                //END
+                
+                //BEGIN Draw underlines
+                for(auto &u : underlines) {
+                    if(u.startat >= end) {
+                        u.startat -= end;
+                        
+                        if(u.finishat >= end)
+                            u.finishat -= end;
+                        
+                        continue;
+                    }
+                    else {
+                        u.startat = 0;
+                    }
+                    
+                    if(u.finishat != -1 && u.finishat <= end) {
+                        if(u.finishat == end) {
+                            u.end = lineend;
+                        }
+                        
+                        if(u.start < u.end)
+                            liner(u.start, u.end, u.y + u.yoffset, u.thickness, u.color);
+                        
+                        u.finishat = -2;
+                    }
+                    else {
+                        u.end = lineend;
+                        
+                        if(u.start < u.end)
+                            liner(u.start, u.end, u.y + u.yoffset, u.thickness, u.color);
+                        
+                        u.start = nextlinexstart;
+                        
+                        if(u.finishat != -1) {
+                            u.finishat -= end;
+                        }
+                    }
+                }
+                
+                underlines.erase(
+                    std::remove_if(
+                        underlines.begin(), underlines.end(), 
+                        [](auto u) { return u.finishat == -2; }
+                    ), underlines.end()
+                );
+                //END
+                
+                //BEGIN Draw strikes
+                for(auto &s : strikes) {
+                    if(s.startat >= end) {
+                        s.startat -= end;
+                        
+                        if(s.finishat >= end)
+                            s.finishat -= end;
+                        
+                        continue;
+                    }
+                    else {
+                        s.startat = 0;
+                    }
+                    
+                    if(s.finishat != -1 && s.finishat <= end) {
+                        if(s.finishat == end) {
+                            s.end = lineend;
+                        }
+                        
+                        if(s.start < s.end)
+                            liner(s.start, s.end, s.y + s.yoffset, s.thickness, s.color);
+                        
+                        s.finishat = -2;
+                    }
+                    else {
+                        s.end = lineend;
+                        
+                        if(s.start < s.end)
+                            liner(s.start, s.end, s.y + s.yoffset, s.thickness, s.color);
+                        
+                        s.start = nextlinexstart;
+                        
+                        if(s.finishat != -1) {
+                            s.finishat -= end;
+                        }
+                    }
+                }
+                
+                strikes.erase(
+                    std::remove_if(
+                        strikes.begin(), strikes.end(), 
+                        [](auto u) { return u.finishat == -2; }
+                    ), strikes.end()
+                );
+                //END
                 
                 //if requested do paragraph
                 if(beginparag)
@@ -1454,6 +1767,8 @@ namespace Gorgon { namespace Graphics {
                 }
             }; //do line
             
+            
+            changeprinter(printer);
             for(auto it=text.begin(); it!=end; ++it) {
                 Glyph g = internal::decode_impl(it, end);
                 
@@ -1504,11 +1819,13 @@ namespace Gorgon { namespace Graphics {
                 }
                 
                 if(g == '\t') {
-                    cur.X += hspace;
+                    auto off = cur.X + hspace;
                     hspace = 0;
-                    cur.X += tabwidth(printer->GetTabWidth());
-                    cur.X /= tabwidth(printer->GetTabWidth());
-                    cur.X *= tabwidth(printer->GetTabWidth());
+                    off += tabwidth(printer->GetTabWidth());
+                    off /= tabwidth(printer->GetTabWidth());
+                    off *= tabwidth(printer->GetTabWidth());
+                    
+                    gw = off - cur.X;
                     
                     //TODO tab stops
                 }
@@ -1546,19 +1863,118 @@ namespace Gorgon { namespace Graphics {
                 // **** Accumulate
                 cur.X += hspace;
                 
-                if(g == '\t' || (internal::isspace(g) && !renderer->Exists(g)))
-                    g = 0xffff; //dont try to render
+                Geometry::Point curoff = {xoffset(em, 0), yoffset(em, 0)};
+                auto curcolor = color(printer->GetColor());
+                
+                //TODO gaps
+                
+                //BEGIN underline
+                
+                bool dounderline = underline(printer->GetUnderline());
+                
+                if(dounderline) {
+                    if(g == '\t' && !underlinesettings.tabs) {
+                        dounderline = false;
+                    }
+                    else if(!underlinesettings.descenders && renderer->GetOffset(g).Y+renderer->GetSize(g).Height > 0) {
+                        dounderline = false;
+                    }
+                    else if(!underlinesettings.spaces && internal::isspace(g)) {
+                        dounderline = false;
+                    }
+                }
+                
+                if(dounderline) {
+                    auto underlineoffset = underlinesettings.offset(height, renderer->GetUnderlineOffset()) + curoff.Y;
+                    auto ucolor = underlinesettings.color(curcolor);
+                    
+                    if(!underlineon) {
+                        underlines.push_back({
+                            (long)acc.size(),
+                            underlinesettings.thickness(renderer->GetLineThickness(), lineth),
+                            underlineoffset, ucolor
+                        });
+                        
+                        underlineon = true;
+                        curunderlineoff = underlineoffset + cur.Y;
+                    }
+                    else if(underlineoffset + cur.Y != curunderlineoff || ucolor != underlines.back().color) {
+                        underlines.back().finishat = (long)acc.size();
+                        
+                        underlines.push_back({
+                            (long)acc.size(),
+                            underlinesettings.thickness(renderer->GetLineThickness(), lineth),
+                            underlineoffset, ucolor
+                        });
+                        
+                        curunderlineoff = underlineoffset + cur.Y;
+                    }
+                }
+                else {
+                    if(underlineon) {
+                        underlines.back().finishat = (long)acc.size();
+                        underlineon = false;
+                    }
+                }
+                //END
+                
+                //BEGIN strike                
+                bool dostrike = strike(printer->GetStrike());
+                
+                if(dostrike) {
+                    if(g == '\t' && !strikesettings.tabs) {
+                        dostrike = false;
+                    }
+                    else if(!strikesettings.spaces && internal::isspace(g)) {
+                        dostrike = false;
+                    }
+                }
+
+                if(dostrike) {
+                    auto strikeoffset = strikesettings.offset(height, printer->GetStrikePosition()) + curoff.Y;
+                    auto ucolor = strikesettings.color(curcolor);
+                    
+                    if(!strikeon) {
+                        strikes.push_back({
+                            (long)acc.size(),
+                            strikesettings.thickness(renderer->GetLineThickness(), lineth),
+                            strikeoffset, ucolor
+                        });
+                        
+                        strikeon = true;
+                        curstrikeoff = strikeoffset + cur.Y;
+                    }
+                    else if(strikeoffset + cur.Y != curstrikeoff || ucolor != strikes.back().color) {
+                        strikes.back().finishat = (long)acc.size();
+                        
+                        strikes.push_back({
+                            (long)acc.size(),
+                            strikesettings.thickness(renderer->GetLineThickness(), lineth),
+                            strikeoffset, ucolor
+                        });
+                        
+                        curstrikeoff = strikeoffset + cur.Y;
+                    }
+                }
+                else {
+                    if(strikeon) {
+                        strikes.back().finishat = (long)acc.size();
+                        strikeon = false;
+                    }
+                }
+                //END
+                
                 
                 if(baselineoffset != 0) {
-                    acc.push_back({g, renderer, cur, {xoffset(em, 0), yoffset(em, 0)}, 
-                        color(printer->GetColor()), gw,
+                    acc.push_back({g, renderer, cur, curoff, 
+                        curcolor, gw,
                         (int)std::round(baseline*(1+baselineoffset)), 
                         (int)std::round(height + baseline*fabs(baselineoffset))
                     });
                 }
                 else {
-                    acc.push_back({g, renderer, cur, {xoffset(em, 0), yoffset(em, 0)}, 
-                        color(printer->GetColor()), gw, baseline, height
+                    acc.push_back({g, renderer, cur, curoff, 
+                        curcolor, gw, baseline, height
                     });
                 }
                 
@@ -1626,7 +2042,10 @@ namespace Gorgon { namespace Graphics {
                     if(g != 0xffff)
                         renderer.Render(g, target, location, color);
                 },
-                []{}, []{}, text, location, width
+                []{}, 
+                [&target](int xstart, int xend, int y, int thickness, RGBAf color) {
+                    target.Draw(xstart, y, xend-xstart, thickness, color);
+                }, text, location, width
             );
         }
         
@@ -1720,6 +2139,17 @@ namespace Gorgon { namespace Graphics {
                 
                 return val;
             }
+        };
+        
+        struct linesettings {
+            bool descenders  = false;
+            bool spaces      = true;
+            bool tabs        = false;
+            bool gaps        = false;
+            bool placeholders= false;
+            setvalrel thickness;
+            setvalrel offset;
+            setval<RGBAf> color;
         };
         
         

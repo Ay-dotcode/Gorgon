@@ -70,6 +70,15 @@ namespace Gorgon { namespace Graphics {
 		else
 			return{0, 0};
 	}
+	
+	Geometry::Point BitmapFont::GetOffset(Glyph chr) const {
+		if(glyphmap.count(chr))
+			return glyphmap.at(chr).offset;
+		else if(glyphmap.count(0) && !internal::isspace(chr) && !internal::isnewline(chr) && chr != '\t')
+			return glyphmap.at(0).offset;
+		else
+			return{0, 0};
+    }
 
 	void BitmapFont::Render(Glyph chr, TextureTarget& target, Geometry::Pointf location, RGBAf color) const {
         if(glyphmap.count(chr)) {
