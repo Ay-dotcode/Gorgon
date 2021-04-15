@@ -11,8 +11,6 @@
 #include <Gorgon/CGI/Marking.h>
 
 
-
-
 std::string helptext = 
     "Key list:\n"
     "esc\tClose\n"
@@ -29,24 +27,28 @@ int main() {
     
     Graphics::AdvancedTextBuilder builder;
     builder.UseHeader(Gorgon::Graphics::HeaderLevel::H1)
-           .Strikethrough()
            .WordWrap(false)
            .StartRegion(4)
+           .SetSelectedTextColor(Graphics::Color::Black)
+           .SetSelectionPadding(12)
+           .SetSelectionImage(0)
+           .SetSelectedBackgroundColor(Graphics::Color::BrightYellow)//overrides
+           .SetSelectionPadding(0)
            .Append("Hello world. ")
            .EndRegion(4)
            .UseDefaultFont()
            .StartRegion(5)
            .Justify(true)
            .UnderlineSettings(false, false)
-           //.Underline()
            .Append("Not header")
-           //.Underline(false)
            .EndRegion(5)
            .Append("\n")
            .SetUnderlineColor(2)
            .WordWrap(true)
            .SetHangingIndent(10, 0)
+           .StartSelection()
            .Append("This ")
+           .EndSelection()
            .StartRegion(0)
            .Append("is")
            .UseBoldFont()
@@ -112,6 +114,10 @@ int main() {
     printer.RegisterFont(Graphics::NamedFont::H1, reg.TitleFont);
     printer.RegisterFont(Graphics::NamedFont::Small, reg.InfoFont);
     printer.RegisterFont(Graphics::NamedFont::Script, reg.SmallFont);
+    
+    auto icon = Triangle(5, 5);
+    icon.Prepare();
+    printer.RegisterImage(0, icon); //leak!
     
     printer.GetBreakingLetters().push_back('.');
     

@@ -288,4 +288,5 @@ namespace Gorgon { namespace Geometry {
 
 
 	typedef basic_Margin<int> Margin;
+	typedef basic_Margin<float> Marginf;
 } }

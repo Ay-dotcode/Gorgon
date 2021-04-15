@@ -25,6 +25,7 @@ namespace Gorgon { namespace Graphics {
         Code,
         Keyword,
         Comment,
+        Selection,
     };
     
     /// Constants for headings
@@ -284,6 +285,30 @@ namespace Gorgon { namespace Graphics {
         /// Sets the strikethrough collor to the given color.
         AdvancedTextBuilder &SetStrikethroughColor(RGBA color) { CSI(0x1f); Color(color); return ST(); }
         
+        /// Sets the text color of the selection. Default is NamedFontColors::Selection
+        AdvancedTextBuilder &SetSelectedTextColor(Byte index, Byte alpha = 255) { CSI(0x11); Index(0b00010); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
+        
+        /// Sets the text color of the selection. Default is NamedFontColors::Selection
+        AdvancedTextBuilder &SetSelectedTextColor(NamedFontColors index, Byte alpha = 255) { return SetSelectedTextColor(Gorgon::Byte(index), alpha); }
+        
+        /// Sets the text color of the selection. Default is NamedFontColors::Selection
+        AdvancedTextBuilder &SetSelectedTextColor(RGBA color) { CSI(0x11); Index(0b00100); Color(color); return ST(); }
+        
+        /// Sets the background color of the selection. Default is NamedFontColors::Selection. 
+        /// Disables selection image
+        AdvancedTextBuilder &SetSelectedBackgroundColor(Byte index, Byte alpha = 255) { CSI(0x11); Index(0b01000); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
+        
+        /// Sets the background color of the selection. Default is NamedFontColors::Selection. 
+        /// Disables selection image
+        AdvancedTextBuilder &SetSelectedBackgroundColor(NamedFontColors index, Byte alpha = 255) { return SetSelectedBackgroundColor(Gorgon::Byte(index), alpha); }
+        
+        /// Sets the background color of the selection. Default is NamedFontColors::Selection. 
+        /// Disables selection image
+        AdvancedTextBuilder &SetSelectedBackgroundColor(RGBA color) { CSI(0x11); Index(0b10000); Color(color); return ST(); }
+        
+        /// Uses default background color if no image is set.
+        AdvancedTextBuilder &DefaultSelectedBackgroundColor() { CSI(0x11); Index(0b10000); return ST(); }
+        
         /// END @}
         
         
@@ -488,6 +513,8 @@ namespace Gorgon { namespace Graphics {
         /// Removes the tabstop at the given index.
         AdvancedTextBuilder &RemoveTabStop(Byte index) { CSI(0x26); Index(index); return ST(); }
         
+        
+        
         /// END @}
         
         
@@ -512,11 +539,7 @@ namespace Gorgon { namespace Graphics {
         
         /// Sets the padding of the text from the border. rel is relative to underline thickness 
         /// and is in percentage. Default padding is pixels = 0, rel = 100
-        AdvancedTextBuilder &SetPadding(short pixels, short rel) { CSI(0x08); ValAndRel(pixels, rel); return ST(); }
-        
-        /// Sets the padding of the text from the border. rel is relative to underline thickness 
-        /// and is in percentage. Default padding is pixels = 0, rel = 100
-        AdvancedTextBuilder &SetPadding(const Gorgon::Geometry::Margin &pixels, const Gorgon::Geometry::Margin rel) { 
+        AdvancedTextBuilder &SetPadding(const Gorgon::Geometry::Margin &pixels, const Gorgon::Geometry::Margin &rel = {0}) { 
             CSI(0x08); 
             ValAndRel(pixels.Left, rel.Left);
             ValAndRel(pixels.Top, rel.Top);
@@ -526,9 +549,9 @@ namespace Gorgon { namespace Graphics {
         }
         
         /// Sets the padding of the selected text from the selected image border. This includes the width of the border.
-        /// rel is relative to underline thickness and is in percentage. Default is pixels = 0, rel = 200.
-        AdvancedTextBuilder &SetSelectionPadding(const Gorgon::Geometry::Margin &pixels, const Gorgon::Geometry::Margin rel) { 
-            CSI(0x016); 
+        /// rel is relative to line thickness and is in percentage. Default is pixels = 0, rel = 0.
+        AdvancedTextBuilder &SetSelectionPadding(const Gorgon::Geometry::Margin &pixels, const Gorgon::Geometry::Margin &rel = {0}) { 
+            CSI(0x16); 
             ValAndRel(pixels.Left, rel.Left);
             ValAndRel(pixels.Top, rel.Top);
             ValAndRel(pixels.Right, rel.Right);
@@ -711,7 +734,12 @@ namespace Gorgon { namespace Graphics {
         /// These functions help to display selection marker
         /// @{
         
-        AdvancedTextBuilder &SetSelectionImage(Byte index) { CSI(0x11); Index(index); return ST(); }
+        /// Sets the selection image, disables selection background color.
+        AdvancedTextBuilder &SetSelectionImage(Byte index) { CSI(0x11); Index(0b01001); Index(index); return ST(); }
+        
+        /// Removes the selection image and color. Calling this function will effectively remove all
+        /// background from the selected text.
+        AdvancedTextBuilder &NoSelectionBackground() { CSI(0x11); Index(0b100000); return ST(); }
         
         AdvancedTextBuilder &StartSelection() { return C2(0x86); }
         
@@ -882,6 +910,9 @@ namespace Gorgon { namespace Graphics {
             images.Add(index, image);
         }
         
+        /// Registers the given image to be used in the advanced print
+        void RegisterImage(Byte index, RectangularDrawable &&image) = delete;
+        
         /// Adds breaking glyphs. A line can be wrapped after a breaking letter. Spaces are breaking
         /// and cannot be removed from the list.
         void SetBreakingLetters(std::vector<Char> letters) {
@@ -900,12 +931,12 @@ namespace Gorgon { namespace Graphics {
         
         /// This is the advanced operation which allows user to submit functions that will perform the
         /// rendering. First one is glyph render. It will be given the renderer to be used, the 
-        /// second is box renderer, starting point, size, background color, border thickness and 
+        /// second is box renderer, bounds, background color, border thickness and 
         /// border color will be given to this function. The final one draws a horizontal line from 
         /// a point with the given width and thickness.
-        template<class GF_, class BF_, class LF_>
+        template<class GF_, class BF_, class LF_, class IF_>
         std::vector<Region> AdvancedOperation(
-            GF_ glyphr, BF_ boxr, LF_ liner, 
+            GF_ glyphr, BF_ boxr, LF_ liner, IF_ imgr,
             const std::string &text, Geometry::Point location, int width
         ) const {
             
@@ -943,6 +974,17 @@ namespace Gorgon { namespace Graphics {
                 RGBAf color;
             };
 
+            struct selectioninfo {
+                long                startat;
+                
+                setval<RGBAf>       selcolor;
+                RGBAf               selbg;
+                bool                noselbg;
+                setval<Byte>        selimg;
+                Geometry::Margin    selpadding;
+                long                finishat = -1;
+            };
+            
             
             std::vector<Glyph> breaking = breakingchars;
             std::sort(breaking.begin(), breaking.end());
@@ -958,10 +1000,18 @@ namespace Gorgon { namespace Graphics {
             setvalrel               yoffset;
             setval<int>             tabwidth;
             setval<bool>            justify;
-            setval<bool>            underline;
-            setval<bool>            strike;
             setval<TextAlignment>   align;
             setval<RGBAf>           color;
+
+            setval<bool>            underline;
+            setval<bool>            strike;
+            
+            setval<RGBAf>           selcolor;
+            setval<RGBAf>           selbg;
+            bool                    noselbg = false;
+            setval<Byte>            selimg;
+            setvalrelmargin         selpadding;
+            
             linesettings            underlinesettings;
             linesettings            strikesettings;
             
@@ -1003,6 +1053,8 @@ namespace Gorgon { namespace Graphics {
             std::vector<lineinfo> underlines;
             std::vector<lineinfo> strikes;
             
+            std::vector<selectioninfo> selections;
+            
             //used in the parsers too
             auto end = text.end();
             
@@ -1013,6 +1065,10 @@ namespace Gorgon { namespace Graphics {
             auto changeprinter = [&](auto p) {
                 printer = p;
                 renderer = &printer->GetGlyphRenderer();
+                
+                if(baseline != renderer->GetBaseLine())
+                    prev = 0; //font size changed, do not use kerning
+                    
                 height   = renderer->GetLineGap();
                 baseline = renderer->GetBaseLine();
                 em       = renderer->GetEMSize();
@@ -1026,7 +1082,6 @@ namespace Gorgon { namespace Graphics {
                     strikes.back().finishat = (long)acc.size();
                     strikeon = false;
                 }
-
             };
             
             auto switchtoscript = [&] {
@@ -1104,6 +1159,54 @@ namespace Gorgon { namespace Graphics {
                 case 0x0e: //wrap width
                     wrapwidth = readvalrel(it, end, p, false)(renderer->GetEMSize(), width);
                     break;
+                case 0x11: {
+                    auto bits = readindex(it, end, p);
+                    
+                    if(bits&0b100000) {
+                        noselbg = true;
+                    }
+                    else {
+                        noselbg = false;
+                    }
+                    
+                    if(bits & 0b00001) {
+                        auto ind = readindex(it, end, p);
+                        if(ind != -1) {
+                            selimg.set = true;
+                            selimg.val = ind;
+                        }
+                        else {
+                            selimg.set = false;
+                        }
+                    }
+                    if(bits & 0b00010) {
+                        int ind = readindex(it, end, p);
+                        if(colors.count(ind)) {
+                            selcolor = setval<RGBAf>{true, colors.at(ind)};
+                            selcolor.val.A = readalpha(it, end, p)/255.f;
+                        }
+                        else {
+                            selcolor.set = false;
+                        }
+                    }
+                    if(bits & 0b00100) {
+                        selcolor = setval<RGBAf>{true, readcolor(it, end, p)};
+                    }
+                    if(bits & 0b01000) {
+                        int ind = readindex(it, end, p);
+                        if(backcolors.count(ind)) {
+                            selbg= setval<RGBAf>{true, backcolors.at(ind)};
+                            selbg.val.A = readalpha(it, end, p)/255.f;
+                        }
+                        else {
+                            selbg.set = false;
+                        }
+                    }
+                    if(bits & 0b10000) {
+                        selbg = setval<RGBAf>{true, readcolor(it, end, p)};
+                    }
+                    break;
+                }
                 case 0x14: //letter offset
                     xoffset = readvalrel(it, end, p, true);
                     yoffset = readvalrel(it, end, p, true);
@@ -1115,6 +1218,14 @@ namespace Gorgon { namespace Graphics {
                     else
                         changeprinter(findfont(fontid));
                     break;
+                case 0x16: {
+                    selpadding = setvalrelmargin(
+                        readvalrel(it, end, p, true), readvalrel(it, end, p, true), 
+                        readvalrel(it, end, p, true), readvalrel(it, end, p, true)
+                    );
+                    
+                    break;
+                }
                 case 0x17: { //set tab width
                     auto val = readvalrelper(it, end, p, false);
                     tabwidth = setval<int>{val.set, val(em, wrapwidth, printer->GetTabWidth())};
@@ -1379,6 +1490,30 @@ namespace Gorgon { namespace Graphics {
                     changeprinter(findfont(NamedFont::H4));
                     fontid = (int)NamedFont::H4;
                     return true;
+                case 0x86: {
+                    RGBAf curbgcol = color(printer->GetColor());
+                    curbgcol.A *= 0.2;
+                    
+                    auto curim = selimg;
+                    if(selbg.set) {
+                        curim.set = false;
+                        curbgcol = selbg({0.0f, 0.0f});
+                    }
+                    else if(backcolors.count((int)NamedFontColors::Selection)) {
+                        curbgcol = backcolors.at((int)NamedFontColors::Selection);
+                    }
+                    
+                    selections.push_back({
+                        (long)acc.size(), selcolor, 
+                        curbgcol, noselbg, curim, selpadding(lineth, 0), -1
+                    });
+                    return true;
+                }
+                case 0x87:
+                    if(selections.size()) {
+                        selections.back().finishat = (long)acc.size();
+                    }
+                    return true;
                 }
                 
                 return false;
@@ -1503,6 +1638,52 @@ namespace Gorgon { namespace Graphics {
                     }
                 }
                 
+                int lineh = linespacing(maxh, printer->GetLineSpacing() * (maxh + extralineoffset + extralineheight));
+
+                //selection handling
+                for(auto &s : selections) {
+                    Geometry::Bounds bnds;
+                    //not started yet
+                    if(s.startat >= end) {
+                        continue;
+                    }
+                    
+                    //find left
+                    if(s.startat >= 0 && s.startat < end) {
+                        bnds.Left   = acc[s.startat].location.X;
+                        s.startat = -1;
+                    }
+                    else if(s.startat == -1 && end != 0) {
+                        bnds.Left = acc[0].location.X + xoff;
+                    }
+                    else {
+                        bnds.Left = location.X + xoff;
+                    }
+                    
+                    //find right
+                    if(s.finishat != -1 && s.finishat < end) {
+                        bnds.Right = acc[s.finishat].location.X + xoff;
+                    }
+                    else {
+                        bnds.Right = lineend;
+                    }
+                    
+                    bnds.Top     = starty;
+                    bnds.Bottom  = cur.Y+lineh;
+                    
+                    //add margins
+                    bnds = bnds + s.selpadding;
+                    
+                    //render
+                    if(s.selimg.set) {
+                        imgr(s.selimg.val, bnds, 1.0f, false);
+                    }
+                    else {
+                        boxr(bnds, s.selbg, 0, {0.0f});
+                    }
+                }
+                
+                
                 //render
                 for(int i=0; i<end; i++) {
                     Translate(acc[i].location, xoff, maxb-acc[i].baseline+extralineoffset);
@@ -1521,6 +1702,27 @@ namespace Gorgon { namespace Graphics {
                     }
                 }
                 
+                //cleanup selections
+                for(auto &s : selections) {
+                    if(s.startat >= end) {
+                        s.startat -= end;
+                    }
+                    
+                    if(s.finishat > end) {
+                        s.finishat -= end;
+                    }
+                    else if(s.finishat != -1) {
+                        s.finishat = -2;
+                    }
+                }
+                
+                selections.erase(
+                    std::remove_if(
+                        selections.begin(), selections.end(), 
+                        [](auto s) { return s.finishat == -2; }
+                    ), selections.end()
+                );
+
                 //region X locations determined here
                 for(auto &r : openregions) {
                     if(r.startat >= 0 && r.startat < end) {
@@ -1559,13 +1761,10 @@ namespace Gorgon { namespace Graphics {
                         s.end = acc[s.finishat].location.X;
                     }
                 }
-
                 
                 //clean consumed glyphs
                 acc.erase(acc.begin(), acc.begin()+end);
                 
-                int lineh = linespacing(maxh, printer->GetLineSpacing() * (maxh + extralineoffset + extralineheight));
-
                 beginparag = nl != 0 && nl != 0x85;
                 
                 cur.X = location.X;
@@ -1737,7 +1936,7 @@ namespace Gorgon { namespace Graphics {
                 if(beginparag)
                     cur.Y += paragraphspacing(maxh, printer->GetParagraphSpacing());
                 
-                //reset
+                //BEGIN Reset
                 maxh = 0;
                 maxb = 0;
                 lastbreak = 0;
@@ -1765,9 +1964,10 @@ namespace Gorgon { namespace Graphics {
                     
                     changeprinter(backup);
                 }
+                //END
             }; //do line
             
-            
+            //Iterate glyphs
             changeprinter(printer);
             for(auto it=text.begin(); it!=end; ++it) {
                 Glyph g = internal::decode_impl(it, end);
@@ -1966,15 +2166,25 @@ namespace Gorgon { namespace Graphics {
                 
                 
                 if(baselineoffset != 0) {
-                    acc.push_back({g, renderer, cur, curoff, 
-                        curcolor, gw,
+                    acc.push_back({
+                        (!selections.empty() && selections.back().finishat == -1) ? 
+                            selcolor(curcolor) :
+                            curcolor
+                        , 
+                        renderer, cur, curoff, 
+                        g, gw, 
                         (int)std::round(baseline*(1+baselineoffset)), 
                         (int)std::round(height + baseline*fabs(baselineoffset))
                     });
                 }
                 else {
-                    acc.push_back({g, renderer, cur, curoff, 
-                        curcolor, gw, baseline, height
+                    acc.push_back({ 
+                        (!selections.empty() && selections.back().finishat == -1) ? 
+                            selcolor(curcolor) :
+                            curcolor
+                        , 
+                        renderer, cur, curoff, 
+                        g, gw, baseline, height
                     });
                 }
                 
@@ -2042,10 +2252,24 @@ namespace Gorgon { namespace Graphics {
                     if(g != 0xffff)
                         renderer.Render(g, target, location, color);
                 },
-                []{}, 
+                [&target](const Geometry::Bounds &bounds, const RGBAf &bg, int thickness, RGBAf border) { 
+                    target.Draw(bounds, bg);
+                    if(thickness != 0) {
+                        //TODO render border
+                    }
+                }, 
                 [&target](int xstart, int xend, int y, int thickness, RGBAf color) {
                     target.Draw(xstart, y, xend-xstart, thickness, color);
-                }, text, location, width
+                }, 
+                [&target, this](Byte index, const Geometry::Bounds &bounds, const RGBAf &tint, bool stretch) {
+                    if(images.Exists(index)) {
+                        if(stretch)
+                            images[index].DrawStretched(target, bounds.TopLeft(), bounds.GetSize(), tint);
+                        else
+                            images[index].DrawIn(target, bounds.TopLeft(), bounds.GetSize(), tint);
+                    }
+                },
+                text, location, width
             );
         }
         
@@ -2084,10 +2308,10 @@ namespace Gorgon { namespace Graphics {
         
     protected:
         struct glyphmark {
-            Glyph g;
+            RGBAf color;
             const GlyphRenderer *renderer;
             Geometry::Point location, offset;
-            RGBAf color;
+            Glyph g;
             int width;
             int baseline;
             int height;
@@ -2109,6 +2333,25 @@ namespace Gorgon { namespace Graphics {
             }
         };
 
+        struct setvalrelmargin {
+            setvalrelmargin() = default;
+            
+            explicit setvalrelmargin(const setvalrel &left, const setvalrel &top, const setvalrel &right, const setvalrel &bottom) : 
+                set(left.set), val({left.val, top.val, right.val, bottom.val}), 
+                rel({left.rel, top.rel, right.rel, bottom.rel}) 
+            { }
+            
+            bool set = false;
+            Geometry::Margin val;
+            Geometry::Marginf rel;
+            
+            Geometry::Margin operator()(Geometry::Margin to, Geometry::Margin def) {
+                if(!set)
+                    return def;
+                
+                return {val.Left + int(std::round(rel.Left* to.Left)), val.Top + int(std::round(rel.Top * to.Top)), val.Right + int(std::round(rel.Right * to.Right)), val.Bottom + int(std::round(rel.Bottom * to.Bottom))};
+            }
+        };
 
         struct setvalrelper {
             explicit setvalrelper(bool set = false, int val = 0, float rel = 0, float per = 0) : set(set), val(val), rel(rel), per(per) { }
