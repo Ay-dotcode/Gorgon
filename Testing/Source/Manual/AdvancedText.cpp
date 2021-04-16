@@ -67,6 +67,9 @@ int main() {
            .SetColor(Gorgon::Graphics::Color::Aqua)
            .StartRegion(6)
            .Append("Hello there")
+        ;
+        auto myind = String::UnicodeGlyphCount(builder)-1;
+        builder
            .EndRegion(6)
            .UseDefaultColor()
            .ScriptOff()
@@ -103,7 +106,7 @@ int main() {
            .SetLetterOffset({0,2})
            .Append(".")
            .SetLetterOffset({0,0})
-           .Append(".")
+           .Append("!")
     ;
     
     auto &reg = (Gorgon::Widgets::SimpleGenerator&)Gorgon::Widgets::Registry::Active();
@@ -130,7 +133,6 @@ int main() {
     markings.Prepare();
     markings.Draw(l, 0, 0);
     
-    auto regions = printer.AdvancedPrint(l, builder, {25, 25}, 150);
     
     std::vector<Graphics::RGBA> regioncolor = {
         Graphics::Color::Red,
@@ -141,6 +143,20 @@ int main() {
         Graphics::Color::Magenta,
         Graphics::Color::BrightPurple,
     };
+    
+    auto rect = printer.GetPosition(builder, 150, myind);
+    rect.X += 25;
+    rect.Y += 25;
+    
+    auto sz = printer.GetSize(builder, 150);
+    Gorgon::CGI::DrawBounds(
+        markings, 
+        (Geometry::Bounds)rect,
+        1, Gorgon::CGI::SolidFill<>(regioncolor[0])
+    );
+
+    auto regions = printer.AdvancedPrint(l, builder, {25, 25}, 150);
+    
     /*
     for(auto r : regions) {
         Gorgon::CGI::DrawBounds(

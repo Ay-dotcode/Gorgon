@@ -268,7 +268,7 @@ namespace Gorgon { namespace Graphics {
 		/// 0x0 should be returned
 		virtual Geometry::Size GetSize(Glyph chr) const override;
         
-        virtual Geometry::Point GetOffset(Glyph chr) const;
+        virtual Geometry::Point GetOffset(Glyph chr) const override;
         
         /// This function should return the number of pixels the cursor should advance after this
         /// glyph. This value will be added to kerning distance.

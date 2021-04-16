@@ -933,11 +933,12 @@ namespace Gorgon { namespace Graphics {
         /// rendering. First one is glyph render. It will be given the renderer to be used, the 
         /// second is box renderer, bounds, background color, border thickness and 
         /// border color will be given to this function. The final one draws a horizontal line from 
-        /// a point with the given width and thickness.
+        /// a point with the given width and thickness. For wordwrap to work, width should be set
+        /// to a positive value
         template<class GF_, class BF_, class LF_, class IF_>
         std::vector<Region> AdvancedOperation(
             GF_ glyphr, BF_ boxr, LF_ liner, IF_ imgr,
-            const std::string &text, Geometry::Point location, int width
+            const std::string &text, Geometry::Point location, int width, bool wrap = true
         ) const {
             
             for(auto &sty : fonts) {
@@ -1015,7 +1016,7 @@ namespace Gorgon { namespace Graphics {
             linesettings            underlinesettings;
             linesettings            strikesettings;
             
-            bool wrap = width != 0;
+            wrap = wrap && (width != 0);
             
             //for current font, use changeprinter to update all
             int   fontid = 0;
@@ -1061,6 +1062,7 @@ namespace Gorgon { namespace Graphics {
             std::vector<glyphmark> acc;
             int maxh = 0; //maximum height of a line
             int maxb = 0; //maximum baseline of a line
+            long curindex = 0;
             
             auto changeprinter = [&](auto p) {
                 printer = p;
@@ -1116,6 +1118,7 @@ namespace Gorgon { namespace Graphics {
             auto CSI = [&](auto &it, auto end) {
                 MOVEIT();
                 Glyph cmd = internal::decode_impl(it, end);
+                curindex++;
                 
                 if(cmd == ST)
                     return;
@@ -1124,13 +1127,14 @@ namespace Gorgon { namespace Graphics {
                 
                 MOVEIT();
                 p = internal::decode_impl(it, end);
+                curindex++;
                 
                 switch(cmd) {
                 case 0x01: {
-                    int ind = readindex(it, end, p);
+                    int ind = readindex(it, end, p, curindex);
                     if(colors.count(ind)) {
                         color = setval<RGBAf>{true, colors.at(ind)};
-                        color.val.A = readalpha(it, end, p)/255.f;
+                        color.val.A = readalpha(it, end, p, curindex)/255.f;
                     }
                     else {
                         color.set = false;
@@ -1138,29 +1142,29 @@ namespace Gorgon { namespace Graphics {
                     break;
                 }
                 case 0x02: {
-                    color = setval<RGBAf>{true, readcolor(it, end, p)};
+                    color = setval<RGBAf>{true, readcolor(it, end, p, curindex)};
                     break;
                 }
                 case 0x09: //paragraph spacing
-                    paragraphspacing = readvalrel(it, end, p, true);
+                    paragraphspacing = readvalrel(it, end, p, true, curindex);
                     break;
                 case 0x0a: //set indent
-                    indent = readvalrel(it, end, p, true);
+                    indent = readvalrel(it, end, p, true, curindex);
                     break;
                 case 0x0b:
-                    hangingindent = readvalrel(it, end, p, true);
+                    hangingindent = readvalrel(it, end, p, true, curindex);
                     break;
                 case 0x0c: //letter spacing
-                    letterspacing = readvalrel(it, end, p, true);
+                    letterspacing = readvalrel(it, end, p, true, curindex);
                     break;
                 case 0x0d: //line spacing
-                    linespacing = readvalrel(it, end, p, true);
+                    linespacing = readvalrel(it, end, p, true, curindex);
                     break;
                 case 0x0e: //wrap width
-                    wrapwidth = readvalrel(it, end, p, false)(renderer->GetEMSize(), width);
+                    wrapwidth = readvalrel(it, end, p, false, curindex)(renderer->GetEMSize(), width);
                     break;
                 case 0x11: {
-                    auto bits = readindex(it, end, p);
+                    auto bits = readindex(it, end, p, curindex);
                     
                     if(bits&0b100000) {
                         noselbg = true;
@@ -1170,7 +1174,7 @@ namespace Gorgon { namespace Graphics {
                     }
                     
                     if(bits & 0b00001) {
-                        auto ind = readindex(it, end, p);
+                        auto ind = readindex(it, end, p, curindex);
                         if(ind != -1) {
                             selimg.set = true;
                             selimg.val = ind;
@@ -1180,39 +1184,39 @@ namespace Gorgon { namespace Graphics {
                         }
                     }
                     if(bits & 0b00010) {
-                        int ind = readindex(it, end, p);
+                        int ind = readindex(it, end, p, curindex);
                         if(colors.count(ind)) {
                             selcolor = setval<RGBAf>{true, colors.at(ind)};
-                            selcolor.val.A = readalpha(it, end, p)/255.f;
+                            selcolor.val.A = readalpha(it, end, p, curindex)/255.f;
                         }
                         else {
                             selcolor.set = false;
                         }
                     }
                     if(bits & 0b00100) {
-                        selcolor = setval<RGBAf>{true, readcolor(it, end, p)};
+                        selcolor = setval<RGBAf>{true, readcolor(it, end, p, curindex)};
                     }
                     if(bits & 0b01000) {
-                        int ind = readindex(it, end, p);
+                        int ind = readindex(it, end, p, curindex);
                         if(backcolors.count(ind)) {
                             selbg= setval<RGBAf>{true, backcolors.at(ind)};
-                            selbg.val.A = readalpha(it, end, p)/255.f;
+                            selbg.val.A = readalpha(it, end, p, curindex)/255.f;
                         }
                         else {
                             selbg.set = false;
                         }
                     }
                     if(bits & 0b10000) {
-                        selbg = setval<RGBAf>{true, readcolor(it, end, p)};
+                        selbg = setval<RGBAf>{true, readcolor(it, end, p, curindex)};
                     }
                     break;
                 }
                 case 0x14: //letter offset
-                    xoffset = readvalrel(it, end, p, true);
-                    yoffset = readvalrel(it, end, p, true);
+                    xoffset = readvalrel(it, end, p, true, curindex);
+                    yoffset = readvalrel(it, end, p, true, curindex);
                     break;
                 case 0x15:
-                    fontid = readindex(it, end, p);
+                    fontid = readindex(it, end, p, curindex);
                     if(baselineoffset != 0)
                         switchtoscript();
                     else
@@ -1220,19 +1224,19 @@ namespace Gorgon { namespace Graphics {
                     break;
                 case 0x16: {
                     selpadding = setvalrelmargin(
-                        readvalrel(it, end, p, true), readvalrel(it, end, p, true), 
-                        readvalrel(it, end, p, true), readvalrel(it, end, p, true)
+                        readvalrel(it, end, p, true, curindex), readvalrel(it, end, p, true, curindex), 
+                        readvalrel(it, end, p, true, curindex), readvalrel(it, end, p, true, curindex)
                     );
                     
                     break;
                 }
                 case 0x17: { //set tab width
-                    auto val = readvalrelper(it, end, p, false);
+                    auto val = readvalrelper(it, end, p, false, curindex);
                     tabwidth = setval<int>{val.set, val(em, wrapwidth, printer->GetTabWidth())};
                     break;
                 }
                 case 0x1a: {
-                    auto m = readindex(it, end, p);
+                    auto m = readindex(it, end, p, curindex);
                     if(m&1) {
                         underlinesettings.descenders   = m&0b0000100;
                         underlinesettings.spaces       = m&0b0001000;
@@ -1241,12 +1245,12 @@ namespace Gorgon { namespace Graphics {
                         underlinesettings.placeholders = m&0b1000000;
                     }
                     if(m&2) {
-                        underlinesettings.thickness = readvalrel(it, end, p, true);
+                        underlinesettings.thickness = readvalrel(it, end, p, true, curindex);
                     }
                     break;
                 }
                 case 0x1b: {
-                    auto m = readindex(it, end, p);
+                    auto m = readindex(it, end, p, curindex);
                     if(m&1) {
                         strikesettings.descenders   = 1;
                         strikesettings.spaces       = m&0b0001000;
@@ -1255,15 +1259,15 @@ namespace Gorgon { namespace Graphics {
                         strikesettings.placeholders = m&0b1000000;
                     }
                     if(m&2) {
-                        strikesettings.thickness = readvalrel(it, end, p, true);
+                        strikesettings.thickness = readvalrel(it, end, p, true, curindex);
                     }
                     break;
                 }
                 case 0x1c: {
-                    int ind = readindex(it, end, p);
+                    int ind = readindex(it, end, p, curindex);
                     if(colors.count(ind)) {
                         underlinesettings.color = setval<RGBAf>{true, colors.at(ind)};
-                        underlinesettings.color.val.A = readalpha(it, end, p)/255.f;
+                        underlinesettings.color.val.A = readalpha(it, end, p, curindex)/255.f;
                     }
                     else {
                         underlinesettings.color.set = false;
@@ -1271,14 +1275,14 @@ namespace Gorgon { namespace Graphics {
                     break;
                 }
                 case 0x1d: {
-                    underlinesettings.color = setval<RGBAf>{true, readcolor(it, end, p)};
+                    underlinesettings.color = setval<RGBAf>{true, readcolor(it, end, p, curindex)};
                     break;
                 }
                 case 0x1e: {
-                    int ind = readindex(it, end, p);
+                    int ind = readindex(it, end, p, curindex);
                     if(colors.count(ind)) {
                         strikesettings.color = setval<RGBAf>{true, colors.at(ind)};
-                        strikesettings.color.val.A = readalpha(it, end, p)/255.f;
+                        strikesettings.color.val.A = readalpha(it, end, p, curindex)/255.f;
                     }
                     else {
                         strikesettings.color.set = false;
@@ -1286,7 +1290,7 @@ namespace Gorgon { namespace Graphics {
                     break;
                 }
                 case 0x1f: {
-                    strikesettings.color = setval<RGBAf>{true, readcolor(it, end, p)};
+                    strikesettings.color = setval<RGBAf>{true, readcolor(it, end, p, curindex)};
                     break;
                 }
                 case 0x23: {
@@ -1294,6 +1298,7 @@ namespace Gorgon { namespace Graphics {
                         breaking.insert(std::upper_bound(breaking.begin(), breaking.end(), p), p);
                         MOVEIT();
                         p = internal::decode_impl(it, end);
+                        curindex++;
                     }
                     break;
                 }
@@ -1303,6 +1308,7 @@ namespace Gorgon { namespace Graphics {
                         rem.insert(std::upper_bound(rem.begin(), rem.end(), p), p);
                         MOVEIT();
                         p = internal::decode_impl(it, end);
+                        curindex++;
                     }
                     auto rit = rem.begin();
                     breaking.erase(std::remove_if(breaking.begin(), breaking.end(), [&](auto v) {
@@ -1317,10 +1323,10 @@ namespace Gorgon { namespace Graphics {
                     break;
                 }
                 case 0x30:
-                    openregions.push_back({readindex(it, end, p), {cur, 0, 0}, (long)acc.size()});
+                    openregions.push_back({readindex(it, end, p, curindex), {cur, 0, 0}, (long)acc.size()});
                     break;
                 case 0x31: {
-                    auto ind = readindex(it, end, p);
+                    auto ind = readindex(it, end, p, curindex);
                     
                     for(int i=openregions.size()-1; i>=0; i--) {
                         if(openregions[i].ID == ind && openregions[i].finishat == -1) {
@@ -1331,12 +1337,12 @@ namespace Gorgon { namespace Graphics {
                     break;
                 }
                 case 0x40: //horizontal spacing
-                    cur.X += readvalrelper(it, end, p, false)(em, wrapwidth, 0);
+                    cur.X += readvalrelper(it, end, p, false, curindex)(em, wrapwidth, 0);
                     prev = 0; //no kerning after a spacing like this
                     
                     break;
                 case 0x41: //vertical spacing
-                    cur.Y += readvalrel(it, end, p, true)(height, 0);
+                    cur.Y += readvalrel(it, end, p, true, curindex)(height, 0);
                     break;
                 }
                 
@@ -1344,12 +1350,14 @@ namespace Gorgon { namespace Graphics {
                 while(p != ST) {
                     MOVEIT();
                     p = internal::decode_impl(it, end);
+                    curindex++;
                 }
             };
             
             auto SCI = [&](auto &it, auto end) {
                 MOVEIT();
                 Glyph cmd = internal::decode_impl(it, end);
+                curindex++;
                 
                 switch(cmd) {
                 case 0x4:
@@ -1616,7 +1624,6 @@ namespace Gorgon { namespace Graphics {
 
                         totalw = wrapwidth - target;
                     }
-                    
                 }
                 
                 if(wrapwidth > 0) {
@@ -1688,7 +1695,16 @@ namespace Gorgon { namespace Graphics {
                 for(int i=0; i<end; i++) {
                     Translate(acc[i].location, xoff, maxb-acc[i].baseline+extralineoffset);
                     if(acc[i].g != '\t' && (!internal::isspace(acc[i].g) || renderer->Exists(acc[i].g)))
-                        glyphr(*acc[i].renderer, acc[i].g, acc[i].location + acc[i].offset, acc[i].color);
+                        if(!
+                            glyphr(
+                                *acc[i].renderer, acc[i].g, 
+                                acc[i].location + acc[i].offset, 
+                                acc[i].color, acc[i].index
+                            )
+                        ) {
+                            acc.clear();
+                            return false;
+                        }
                 }
                 
                 if(nl == 0) {
@@ -1965,12 +1981,15 @@ namespace Gorgon { namespace Graphics {
                     changeprinter(backup);
                 }
                 //END
+                
+                return true;
             }; //do line
             
             //Iterate glyphs
             changeprinter(printer);
             for(auto it=text.begin(); it!=end; ++it) {
                 Glyph g = internal::decode_impl(it, end);
+                curindex++;
                 
                 if(g == 0xffff)
                     continue;
@@ -2019,13 +2038,13 @@ namespace Gorgon { namespace Graphics {
                 }
                 
                 if(g == '\t') {
-                    auto off = cur.X + hspace;
+                    auto off = cur.X + hspace - location.X;
                     hspace = 0;
                     off += tabwidth(printer->GetTabWidth());
                     off /= tabwidth(printer->GetTabWidth());
                     off *= tabwidth(printer->GetTabWidth());
                     
-                    gw = off - cur.X;
+                    gw = off - cur.X + location.X;
                     
                     //TODO tab stops
                 }
@@ -2043,7 +2062,9 @@ namespace Gorgon { namespace Graphics {
                 
                 // **** Determine glyph size
                 if(internal::isnewline(g)) {
-                    doline(g);
+                    if(!doline(g))
+                        break;
+                    
                     continue;
                 }
                 else if(internal::isspace(g)) {
@@ -2172,7 +2193,7 @@ namespace Gorgon { namespace Graphics {
                             curcolor
                         , 
                         renderer, cur, curoff, 
-                        g, gw, 
+                        g, curindex-1, gw, 
                         (int)std::round(baseline*(1+baselineoffset)), 
                         (int)std::round(height + baseline*fabs(baselineoffset))
                     });
@@ -2184,7 +2205,7 @@ namespace Gorgon { namespace Graphics {
                             curcolor
                         , 
                         renderer, cur, curoff, 
-                        g, gw, baseline, height
+                        g, curindex-1, gw, baseline, height
                     });
                 }
                 
@@ -2219,7 +2240,8 @@ namespace Gorgon { namespace Graphics {
                     auto blosave = baselineoffset;
                     baselineoffset = baselineoffsetatlastspace;
                     
-                    doline(0);
+                    if(!doline(0))
+                        break;
                     
                     baselineoffset = blosave;
                     if(baselineoffset == 0 && blosave != 0) {
@@ -2247,10 +2269,12 @@ namespace Gorgon { namespace Graphics {
             return AdvancedOperation(
                 [&target](
                     const GlyphRenderer &renderer, Glyph g, 
-                    const Geometry::Point &location, const RGBAf &color
+                    const Geometry::Point &location, const RGBAf &color, int
                 ) {
                     if(g != 0xffff)
                         renderer.Render(g, target, location, color);
+                    
+                    return true;
                 },
                 [&target](const Geometry::Bounds &bounds, const RGBAf &bg, int thickness, RGBAf border) { 
                     target.Draw(bounds, bg);
@@ -2269,7 +2293,7 @@ namespace Gorgon { namespace Graphics {
                             images[index].DrawIn(target, bounds.TopLeft(), bounds.GetSize(), tint);
                     }
                 },
-                text, location, width
+                text, location, width, true
             );
         }
         
@@ -2293,17 +2317,135 @@ namespace Gorgon { namespace Graphics {
             return fonts.at(0).GetHeight();
         }
         
-        virtual Geometry::Size GetSize(const std::string &text) const override { Utils::NotImplemented(); }
+        virtual Geometry::Size GetSize(const std::string &text) const override { 
+            Geometry::Size sz = {0, 0};
+            
+            AdvancedOperation(
+                [&sz](
+                    const GlyphRenderer &renderer, Glyph g, 
+                    const Geometry::Point &location, const RGBAf &, int
+                ) {
+                    if(g != 0xffff) {
+                        auto p = location + (Geometry::Point)renderer.GetSize(g) + renderer.GetOffset(g);
+                        p.Y += renderer.GetBaseLine();
+                        
+                        if(p.X > sz.Width)
+                            sz.Width = p.X;
+                        
+                        if(p.Y > sz.Height)
+                            sz.Height = p.Y;
+                    }
+                    
+                    return true;
+                },
+                [](const Geometry::Bounds &, const RGBAf &, int , RGBAf ) {
+                }, 
+                [](int , int , int , int , RGBAf ) {
+                }, 
+                [](Byte , const Geometry::Bounds &, const RGBAf &, bool ) {
+                },
+                text, {0,0}, 0, false
+            );
+            
+            return sz;
+        }
         
-        virtual Geometry::Size GetSize(const std::string &text, int width) const override { Utils::NotImplemented(); }
+        virtual Geometry::Size GetSize(const std::string &text, int width) const override { 
+            Geometry::Size sz = {0, 0};
+            
+            AdvancedOperation(
+                [&sz](
+                    const GlyphRenderer &renderer, Glyph g, 
+                    const Geometry::Point &location, const RGBAf &, int
+                ) {
+                    if(g != 0xffff) {
+                        if(g == '!')
+                            g = '!';
+                        auto p = location + (Geometry::Point)renderer.GetSize(g) + renderer.GetOffset(g);
+                        p.Y += renderer.GetBaseLine();
+                        
+                        if(p.X > sz.Width)
+                            sz.Width = p.X;
+                        
+                        if(p.Y > sz.Height)
+                            sz.Height = p.Y;
+                    }
+                    return true;
+                },
+                [](const Geometry::Bounds &, const RGBAf &, int , RGBAf ) {
+                }, 
+                [](int , int , int , int , RGBAf ) {
+                }, 
+                [](Byte , const Geometry::Bounds &, const RGBAf &, bool ) {
+                },
+                text, {0,0}, width, true
+            );
+            
+            return sz;            
+        }
         
         virtual int GetCharacterIndex(const std::string &text, Geometry::Point location) const override { Utils::NotImplemented(); }
         
         virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location, bool wrap = true) const override { Utils::NotImplemented(); }
         
-        virtual Geometry::Rectangle GetPosition(const std::string& text, int index) const override { Utils::NotImplemented(); }
+        virtual Geometry::Rectangle GetPosition(const std::string& text, int index) const override { 
+            Geometry::Rectangle cur = {std::numeric_limits<int>::min(), std::numeric_limits<int>::min(), 0, 0};
+            
+            AdvancedOperation(
+                [index, &cur](
+                    const GlyphRenderer &renderer, Glyph g, 
+                    const Geometry::Point &location, const RGBAf &, long ind
+                ) {
+                    if(index == ind) {
+                        cur.Move(location);
+                        cur.Resize(renderer.GetSize(g));
+                        
+                        return false;
+                    }
+                    
+                    return true;
+                },
+                [](const Geometry::Bounds &, const RGBAf &, int , RGBAf ) {
+                }, 
+                [](int , int , int , int , RGBAf ) {
+                }, 
+                [](Byte , const Geometry::Bounds &, const RGBAf &, bool ) {
+                },
+                text, {0,0}, 0, false
+            );
+            
+            return cur;
+        }
         
-        virtual Geometry::Rectangle GetPosition(const std::string& text, int w, int index, bool wrap = true) const override { Utils::NotImplemented(); }
+        virtual Geometry::Rectangle GetPosition(const std::string& text, int w, int index, bool wrap = true) const override {
+            
+            Geometry::Rectangle cur = {std::numeric_limits<int>::min(), std::numeric_limits<int>::min(), 0, 0};
+            
+            AdvancedOperation(
+                [index, &cur](
+                    const GlyphRenderer &renderer, Glyph g, 
+                    const Geometry::Point &location, const RGBAf &, long ind
+                ) {
+                    if(index == ind) {
+                        cur.Move(location + renderer.GetOffset(g) + Geometry::Point(0, renderer.GetBaseLine()));
+                        cur.Resize(renderer.GetSize(g));
+                        
+                        return false;
+                    }
+                    
+                    return true;
+                },
+                [](const Geometry::Bounds &, const RGBAf &, int , RGBAf ) {
+                }, 
+                [](int , int , int , int , RGBAf ) {
+                }, 
+                [](Byte , const Geometry::Bounds &, const RGBAf &, bool ) {
+                },
+                text, {0,0}, w, wrap
+            );
+            
+            return cur;            
+        }
         
         
     protected:
@@ -2312,6 +2454,7 @@ namespace Gorgon { namespace Graphics {
             const GlyphRenderer *renderer;
             Geometry::Point location, offset;
             Glyph g;
+            long index;
             int width;
             int baseline;
             int height;
@@ -2420,30 +2563,33 @@ namespace Gorgon { namespace Graphics {
             AdvancedPrint(target, text, location.TopLeft(), location.Width);
         }
         
-        int16_t readint(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur) const {
+        int16_t readint(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur, long &curindex) const {
             int16_t ret = (int16_t)cur;
             
             MOVEIT(ret); //get the byte after
             cur = internal::decode_impl(it, end);
+            curindex++;
             
             return ret;
         }
         
-        RGBA readcolor(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur) const {
+        RGBA readcolor(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur, long &curindex) const {
             uint32_t col = cur;
             
             MOVEIT(col);
             cur = internal::decode_impl(it, end);
+            curindex++;
             
             col = col | (cur << 16);
             
             MOVEIT(col);
             cur = internal::decode_impl(it, end);
+            curindex++;
             
             return col;
         }
         
-        Byte readindex(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur) const {
+        Byte readindex(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur, long &curindex) const {
             if(cur > 0x7f)
                 return -1;
             
@@ -2451,11 +2597,12 @@ namespace Gorgon { namespace Graphics {
             
             MOVEIT(ret); //get the byte after
             cur = internal::decode_impl(it, end);
+            curindex++;
             
             return ret;
         }
         
-        Byte readalpha(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur) const {
+        Byte readalpha(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur, long &curindex) const {
             if(cur > 0x7f)
                 return 255;
             
@@ -2463,12 +2610,13 @@ namespace Gorgon { namespace Graphics {
             
             MOVEIT(ret); //get the byte after
             cur = internal::decode_impl(it, end);
+            curindex++;
             
             return ret;
         }
         
-        setvalrel readvalrel(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur, bool relper) const {
-            auto mode = readindex(it, end, cur);
+        setvalrel readvalrel(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur, bool relper, long &curindex) const {
+            auto mode = readindex(it, end, cur, curindex);
             
             if(mode == 127)
                 return setvalrel();
@@ -2477,20 +2625,20 @@ namespace Gorgon { namespace Graphics {
             float rel = 0;
             
             if(mode&0b1)
-                val = readint(it, end, cur);
+                val = readint(it, end, cur, curindex);
             
             if(mode&0b10) {
                 if(relper)
-                    rel = readint(it, end, cur)/100.f;
+                    rel = readint(it, end, cur, curindex)/100.f;
                 else
-                    rel = readint(it, end, cur);
+                    rel = readint(it, end, cur, curindex);
             }
             
             return setvalrel(true, val, rel);
         }
         
-        setvalrelper readvalrelper(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur, bool relper) const {
-            auto mode = readindex(it, end, cur);
+        setvalrelper readvalrelper(std::string::const_iterator &it, std::string::const_iterator end, Glyph &cur, bool relper, long &curindex) const {
+            auto mode = readindex(it, end, cur, curindex);
             
             if(mode == 127)
                 return setvalrelper();
@@ -2500,17 +2648,17 @@ namespace Gorgon { namespace Graphics {
             float per = 0;
             
             if(mode&0b1)
-                val = readint(it, end, cur);
+                val = readint(it, end, cur, curindex);
             
             if(mode&0b10) {
                 if(relper)
-                    rel = readint(it, end, cur)/100.f;
+                    rel = readint(it, end, cur, curindex)/100.f;
                 else
-                    rel = readint(it, end, cur);
+                    rel = readint(it, end, cur, curindex);
             }
             
             if(mode&0b100)
-                per = readint(it, end, cur)/10000.f;
+                per = readint(it, end, cur, curindex)/10000.f;
             
             return setvalrelper(true, val, rel, per);
         }
