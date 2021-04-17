@@ -21,7 +21,10 @@ int main() {
     basic_Application<Gorgon::UI::Window> app("generictest", "Test", helptext, 25, 0x10);
 
     Graphics::Layer l;
+    Input::Layer mouse;
     app.wind.Add(l);
+    app.wind.Add(mouse);
+    mouse.Move(25, 25);
     
     using namespace Gorgon::Graphics;
     
@@ -167,6 +170,21 @@ int main() {
     }
     */
     markings.Prepare();
+    
+    mouse.SetClick([&](Geometry::Point location) {
+        int c = printer.GetCharacterIndex(builder, 150, location);
+        std::cout << c << std::endl;
+        auto rect = printer.GetPosition(builder, 150, c);    
+        rect.X += 25;
+        rect.Y += 25;
+
+        Gorgon::CGI::DrawBounds(
+            markings, 
+            (Geometry::Bounds)rect,
+            1, Gorgon::CGI::SolidFill<>(regioncolor[0])
+        );
+        markings.Prepare();
+    });
 
     while(true) {
         Gorgon::NextFrame();

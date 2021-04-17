@@ -2359,8 +2359,6 @@ namespace Gorgon { namespace Graphics {
                     const Geometry::Point &location, const RGBAf &, int
                 ) {
                     if(g != 0xffff) {
-                        if(g == '!')
-                            g = '!';
                         auto p = location + (Geometry::Point)renderer.GetSize(g) + renderer.GetOffset(g);
                         p.Y += renderer.GetBaseLine();
                         
@@ -2378,15 +2376,93 @@ namespace Gorgon { namespace Graphics {
                 }, 
                 [](Byte , const Geometry::Bounds &, const RGBAf &, bool ) {
                 },
-                text, {0,0}, width, true
+                text, {0,0}, width, false
             );
             
             return sz;            
         }
         
-        virtual int GetCharacterIndex(const std::string &text, Geometry::Point location) const override { Utils::NotImplemented(); }
+        virtual int GetCharacterIndex(const std::string &text, Geometry::Point location) const override {
+            int maxdoney = -1;
+            int nearestind = -1;
+            bool done = false;
+            
+            AdvancedOperation(
+                [&](
+                    const GlyphRenderer &renderer, Glyph g, 
+                    const Geometry::Point &l, const RGBAf &, int index
+                ) {
+                    if(done)
+                        return false;
+                    
+                    if(l.Y >= location.Y) {
+                        done = true;
+                        return false;
+                    }
+                    
+                    if(maxdoney < l.Y) {
+                        if(l.X >= location.X+renderer.GetCursorAdvance(g)/2) {
+                            maxdoney = l.Y;
+                        }
+                        else {
+                            nearestind = index;
+                        }
+                    }
+                    
+                    return true;
+                },
+                [](const Geometry::Bounds &, const RGBAf &, int , RGBAf ) {
+                }, 
+                [](int , int , int , int , RGBAf ) {
+                }, 
+                [](Byte , const Geometry::Bounds &, const RGBAf &, bool ) {
+                },
+                text, {0,0}, 0, false
+            );
+            
+            return nearestind;
+        }
         
-        virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location, bool wrap = true) const override { Utils::NotImplemented(); }
+        virtual int GetCharacterIndex(const std::string &text, int w, Geometry::Point location, bool wrap = true) const override { 
+            int maxdoney = -1;
+            int nearestind = -1;
+            bool done = false;
+            
+            AdvancedOperation(
+                [&](
+                    const GlyphRenderer &renderer, Glyph g, 
+                    const Geometry::Point &l, const RGBAf &, int index
+                ) {
+                    if(done)
+                        return false;
+                    
+                    if(l.Y >= location.Y) {
+                        done = true;
+                        return false;
+                    }
+                    
+                    if(maxdoney < l.Y) {
+                        if(l.X >= location.X+renderer.GetCursorAdvance(g)/2) {
+                            maxdoney = l.Y;
+                        }
+                        else {
+                            nearestind = index;
+                        }
+                    }
+                    
+                    return true;
+                },
+                [](const Geometry::Bounds &, const RGBAf &, int , RGBAf ) {
+                }, 
+                [](int , int , int , int , RGBAf ) {
+                }, 
+                [](Byte , const Geometry::Bounds &, const RGBAf &, bool ) {
+                },
+                text, {0,0}, w, wrap
+            );
+            
+            return nearestind;
+        }
         
         virtual Geometry::Rectangle GetPosition(const std::string& text, int index) const override { 
             Geometry::Rectangle cur = {std::numeric_limits<int>::min(), std::numeric_limits<int>::min(), 0, 0};
