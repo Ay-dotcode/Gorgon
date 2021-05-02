@@ -43,7 +43,9 @@ int main() {
            .StartRegion(5)
            .Justify(true)
            .UnderlineSettings(false, false)
+           .Underline()
            .Append("Not header")
+           .Underline(false)
            .EndRegion(5)
            .Append("\n")
            .SetUnderlineColor(2)
@@ -123,7 +125,7 @@ int main() {
     
     auto icon = Triangle(5, 5);
     icon.Prepare();
-    printer.RegisterImage(0, icon); //leak!
+    printer.RegisterImage(0, icon);
     
     printer.GetBreakingLetters().push_back('.');
     

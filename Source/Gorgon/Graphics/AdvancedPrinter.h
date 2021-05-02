@@ -13,20 +13,6 @@
 #define MOVEIT(x) ++it; if(it == end) { --it; return x; }
 
 namespace Gorgon { namespace Graphics {
-            
-    /// Constants for colors. Color indices are 7-bit integers 0-127. First few are named as
-    /// follows. Each named color has forecolor and backcolor pairs.
-    enum class NamedFontColors {
-        Regular,
-        Title,
-        Emphasis,
-        Info,
-        Inverted,
-        Code,
-        Keyword,
-        Comment,
-        Selection,
-    };
     
     /// Constants for headings
     enum class HeaderLevel {
@@ -34,66 +20,6 @@ namespace Gorgon { namespace Graphics {
         H2,
         H3,
         H4
-    };
-    
-    /// Constants for fonts. Font indices are 7-bit integers 0-127. First few are named as
-    /// follows.
-    enum class NamedFont {
-        /// Default font
-        Normal,
-        
-        /// Default font
-        Regular = Normal,
-        
-        /// Bold font
-        Bold,
-        
-        /// First level heading
-        H1,
-        
-        /// Second level heading
-        H2,
-        
-        /// Third level heading
-        H3,
-        
-        /// Fourth level heading
-        H4,
-        
-        /// Italic font
-        Italic,
-        
-        /// Smaller font, usually 75% of full size
-        Small,
-        
-        /// Bold and italic font
-        BoldItalic,
-        
-        /// Font style used to display information, usually smaller and uses different colors.
-        Info,
-        
-        /// A large font, usually 125% of the original size
-        Larger,
-        
-        /// Small font that will be used in super and subscripts. Could also be used for other purposes.
-        Script,
-        
-        /// Small font that will be used in super and subscripts for fonts that is known to be bold.
-        /// Could also be used for other purposes.
-        BoldScript,
-        
-        /// Small font that will be used in super and subscripts. Could also be used for other purposes.
-        /// This script font will be used for small, info and script fonts
-        SmallScript,
-        
-        /// Fixed width font to be used in programming
-        FixedWidth,
-        
-        /// Fixed width font to be used in programming
-        FixedWidthBold,
-        
-        /// Fixed width font to be used in programming
-        FixedWidthItalic,
     };
     
     inline bool operator ==(int l, NamedFont r) {
@@ -223,7 +149,7 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &SetColor(Byte index, Byte alpha = 255) { CSI(0x01); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the forecolor to the given index name. 
-        AdvancedTextBuilder &SetColor(NamedFontColors index, Byte alpha = 255) { return SetColor(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetColor(Color::Designation index, Byte alpha = 255) { return SetColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the forecolor to the given color.
         AdvancedTextBuilder &SetColor(RGBA color) { CSI(0x02); Color(color); return ST(); }
@@ -235,7 +161,7 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &SetTint(Byte index, Byte alpha = 255) { CSI(0x18); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the tint color that is used for images to the given index name. 
-        AdvancedTextBuilder &SetTint(NamedFontColors index, Byte alpha = 255) { return SetTint(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetTint(Color::Designation index, Byte alpha = 255) { return SetTint(Gorgon::Byte(index), alpha); }
         
         /// Sets the tint color that is used for images to the given color. 
         AdvancedTextBuilder &SetTint(RGBA color) { CSI(0x18); Color(color); return ST(); }
@@ -247,7 +173,7 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &SetBackgroundColor(Byte index, Byte alpha = 255) { CSI(0x03); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the background color to the given index name. 
-        AdvancedTextBuilder &SetBackgroundColor(NamedFontColors index, Byte alpha = 255) { return SetBackgroundColor(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetBackgroundColor(Color::Designation index, Byte alpha = 255) { return SetBackgroundColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the background color to the given color.
         AdvancedTextBuilder &SetBackgroundColor(RGBA color) { CSI(0x04); Color(color); return ST(); }
@@ -257,7 +183,7 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &SetBorderColor(Byte index, Byte alpha = 255) { CSI(0x06); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the border color to the given index name. 
-        AdvancedTextBuilder &SetBorderColor(NamedFontColors index, Byte alpha = 255) { return SetBorderColor(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetBorderColor(Color::Designation index, Byte alpha = 255) { return SetBorderColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the border color to the given color.
         AdvancedTextBuilder &SetBorderColor(RGBA color) { CSI(0x07); Color(color); return ST(); }
@@ -269,7 +195,7 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &SetUnderlineColor(Byte index, Byte alpha = 255) { CSI(0x1c); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the underline color to the given index name. 
-        AdvancedTextBuilder &SetUnderlineColor(NamedFontColors index, Byte alpha = 255) { return SetUnderlineColor(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetUnderlineColor(Color::Designation index, Byte alpha = 255) { return SetUnderlineColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the underline color to the given color.
         AdvancedTextBuilder &SetUnderlineColor(RGBA color) { CSI(0x1d); Color(color); return ST(); }
@@ -280,7 +206,7 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &SetStrikethroughColor(Byte index, Byte alpha = 255) { CSI(0x1e); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the strikethrough color to the given index name. 
-        AdvancedTextBuilder &SetStrikethroughColor(NamedFontColors index, Byte alpha = 255) { return SetStrikethroughColor(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetStrikethroughColor(Color::Designation index, Byte alpha = 255) { return SetStrikethroughColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the strikethrough collor to the given color.
         AdvancedTextBuilder &SetStrikethroughColor(RGBA color) { CSI(0x1f); Color(color); return ST(); }
@@ -289,7 +215,7 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &SetSelectedTextColor(Byte index, Byte alpha = 255) { CSI(0x11); Index(0b00010); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the text color of the selection. Default is NamedFontColors::Selection
-        AdvancedTextBuilder &SetSelectedTextColor(NamedFontColors index, Byte alpha = 255) { return SetSelectedTextColor(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetSelectedTextColor(Color::Designation index, Byte alpha = 255) { return SetSelectedTextColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the text color of the selection. Default is NamedFontColors::Selection
         AdvancedTextBuilder &SetSelectedTextColor(RGBA color) { CSI(0x11); Index(0b00100); Color(color); return ST(); }
@@ -300,7 +226,7 @@ namespace Gorgon { namespace Graphics {
         
         /// Sets the background color of the selection. Default is NamedFontColors::Selection. 
         /// Disables selection image
-        AdvancedTextBuilder &SetSelectedBackgroundColor(NamedFontColors index, Byte alpha = 255) { return SetSelectedBackgroundColor(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetSelectedBackgroundColor(Color::Designation index, Byte alpha = 255) { return SetSelectedBackgroundColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the background color of the selection. Default is NamedFontColors::Selection. 
         /// Disables selection image
@@ -887,22 +813,53 @@ namespace Gorgon { namespace Graphics {
         
         AdvancedPrinter &operator =(AdvancedPrinter &&) = default;
         
-        
+        /// Sets the font for the given index
         void RegisterFont(Byte index, const StyledPrinter &renderer) {
             fonts[index] = renderer;
         }
         
+        /// Sets the font for the given index
         void RegisterFont(NamedFont index, const StyledPrinter &renderer) { 
             RegisterFont((Byte)index, renderer); 
         }
         
+        /// Returns the font at the given index
+        const StyledPrinter &GetFont(Byte index) const {
+            return *findfont(index);
+        }
+        
+        /// Returns the font at the given index
+        const StyledPrinter &GetFont(NamedFont index) const {
+            return *findfont(index);
+        }
+
+        /// Registers a pair of fore and background colors with the given index. Use indexes
+        /// starting from Color::User for custom colors
         void RegisterColor(Byte index, const RGBA &forecolor, const RGBA &backcolor) {
             colors[index] = forecolor;
             backcolors[index] = backcolor;
         }
         
-        void RegisterColor(NamedFont index, const RGBA &forecolor, const RGBA &backcolor) { 
-            RegisterColor((Byte)index, forecolor, backcolor); 
+        /// Registers a pair of fore and background colors with the given index.
+        void RegisterColor(Color::Designation index, const RGBA &forecolor, const RGBA &backcolor) {
+            RegisterColor(Byte(index), forecolor, backcolor);
+        }
+        
+        /// Registers all colors from the supplied pack.
+        void RegisterColors(const Color::PairPack &pack) {
+            for(auto p : pack) {
+                RegisterColor(p.first, p.second.Forecolor, p.second.Backcolor);
+            }
+        }
+        
+        /// Replaces all registed colors with the supplied pack.
+        void UseColors(const Color::PairPack &pack) {
+            colors = {};
+            backcolors = {};
+            
+            for(auto p : pack) {
+                RegisterColor(p.first, p.second.Forecolor, p.second.Backcolor);
+            }
         }
         
         /// Registers the given image to be used in the advanced print
@@ -1507,8 +1464,8 @@ namespace Gorgon { namespace Graphics {
                         curim.set = false;
                         curbgcol = selbg({0.0f, 0.0f});
                     }
-                    else if(backcolors.count((int)NamedFontColors::Selection)) {
-                        curbgcol = backcolors.at((int)NamedFontColors::Selection);
+                    else if(backcolors.count((int)Color::Designation::Selection)) {
+                        curbgcol = backcolors.at((int)Color::Designation::Selection);
                     }
                     
                     selections.push_back({

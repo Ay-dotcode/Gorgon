@@ -176,6 +176,169 @@ namespace Gorgon { namespace Widgets {
     class SimpleGenerator : public Generator {
     public:
         
+        /// Identifies and helps with the creation of assets used in a generator
+        struct AssetID {
+            enum AssetType {
+                Rectangle,
+                Background,
+                Frame,
+                UpArrow,
+                DownArrow,
+                Box,
+                Tick, //sized to fit into the box
+                EmptyCircle,
+                CircleFill, //sized to fit into the empty circle
+                Cross,
+                White,
+                Checkered,
+                Focus,
+                Edit, //rectangle with background set to edit
+                FgFilled,
+                BorderFilled
+            };
+            
+            enum BorderSide {
+                None,
+                Left,
+                Top,
+                Right,
+                Bottom,
+                AllExceptLeft,
+                AllExceptTop,
+                AllExceptRight,
+                AllExceptBottom,
+                Horizontal,
+                Vertical,
+                All
+            };
+            
+            static int HBorders(BorderSide b) {
+                switch(b) {
+                case None:
+                case Top:
+                case Bottom:
+                case Vertical:
+                    return 0;
+                case Left:
+                case Right:
+                case AllExceptLeft:
+                case AllExceptRight:
+                    return 1;
+                default:
+                    return 2;
+                }
+            }
+            
+            static int VBorders(BorderSide b) {
+                switch(b) {
+                case None:
+                case Left:
+                case Right:
+                case Horizontal:
+                    return 0;
+                case Top:
+                case Bottom:
+                case AllExceptTop:
+                case AllExceptBottom:
+                    return 1;
+                default:
+                    return 2;
+                }
+            }
+            
+            static int TotalBorders(BorderSide b) {
+                switch(b) {
+                case None:
+                    return 0;
+                case Left:
+                case Right:
+                case Top:
+                case Bottom:
+                    return 1;
+                case Horizontal:
+                case Vertical:
+                    return 2;
+                case AllExceptTop:
+                case AllExceptBottom:
+                case AllExceptLeft:
+                case AllExceptRight:
+                    return 3;
+                default:
+                    return 4;
+                }
+            }
+            
+            static bool HasLeft(BorderSide b) {
+                switch(b) {
+                case Left:
+                case AllExceptTop:
+                case AllExceptRight:
+                case AllExceptBottom:
+                case Vertical:
+                case All:
+                    return true;
+                default:
+                    return false;
+                }
+            }
+            
+            static bool HasTop(BorderSide b) {
+                switch(b) {
+                case Top:
+                case AllExceptLeft:
+                case AllExceptRight:
+                case AllExceptBottom:
+                case Vertical:
+                case All:
+                    return true;
+                default:
+                    return false;
+                }
+            }
+            
+            static bool HasRight(BorderSide b) {
+                switch(b) {
+                case Right:
+                case AllExceptLeft:
+                case AllExceptTop:
+                case AllExceptBottom:
+                case Vertical:
+                case All:
+                    return true;
+                default:
+                    return false;
+                }
+            }
+            
+            static bool HasBottom(BorderSide b) {
+                switch(b) {
+                case Bottom:
+                case AllExceptLeft:
+                case AllExceptTop:
+                case AllExceptRight:
+                case Vertical:
+                case All:
+                    return true;
+                default:
+                    return false;
+                }
+            }
+            
+            AssetID(AssetType type, Graphics::Color::Designation color = Graphics::Color::Regular, BorderSide border = All, float radius = std::numeric_limits<float>::max(), float thickness = std::numeric_limits<float>::max()) :
+                Type(type),
+                Color(color),
+                Border(border),
+                BorderRadius(radius),
+                BorderWidth(thickness)
+            { }
+            
+            AssetType Type;
+            Graphics::Color::Designation Color;
+            BorderSide Border;
+            float BorderRadius = std::numeric_limits<float>::max();
+            float BorderWidth = std::numeric_limits<float>::max();
+        };
+        
         /// Initializes the generator. Density controls the spacing between elements
         explicit SimpleGenerator(int fontsize, std::string fontname = "", std::string boldfontname = "", bool activate = true, float density = 7.5);
         
@@ -273,59 +436,32 @@ namespace Gorgon { namespace Widgets {
             return lettervsize.first + lettervsize.second;
         }
         
-        virtual int GetUnitWidth() const override {
+        virtual int GetUnitSize() const override {
             return BorderedWidgetHeight; //UnitWidth = Bordered height
         }
-
-        Graphics::BitmapRectangleProvider &NormalBorder(int missingedge = 0);
-        Graphics::BitmapRectangleProvider &HoverBorder(int missingedge = 0);
-        Graphics::BitmapRectangleProvider &DownBorder(int missingedge = 0);
-        Graphics::BitmapRectangleProvider &DisabledBorder(int missingedge = 0);
-
-        Graphics::BitmapRectangleProvider &ActiveWindowBorder();
-        Graphics::BitmapRectangleProvider &PassiveWindowBorder();
         
-        Graphics::BitmapRectangleProvider &DialogDefaultBorder();
+        /// Returns the foreground color for the requested designation.
+        virtual Graphics::RGBA Forecolor(Graphics::Color::Designation designation) const override {
+            return Colors[designation].Forecolor;
+        }
         
-        Graphics::BitmapRectangleProvider &PanelBorder(int missingedge = 0);
+        /// Returns the background for the requested designation.
+        virtual Graphics::RGBA Backcolor(Graphics::Color::Designation designation) const override {
+            return Colors[designation].Backcolor;
+        }
         
-        Graphics::BitmapRectangleProvider &PanelBG(int missingedge = 0);
+        /// Returns an printer instance that will render the requested text style
+        virtual const Graphics::StyledPrinter &Printer(const Graphics::NamedFont &type) const override {
+            Utils::NotImplemented();
+        }
         
-        Graphics::BitmapRectangleProvider &GrooveBorder();
+        /// Returns an advanced printer instance that will be able to render any text style
+        virtual const Graphics::AdvancedPrinter &Printer() const override {
+            Utils::NotImplemented();
+        }
         
-        Graphics::BitmapRectangleProvider &NormalEditBorder();
-        Graphics::BitmapRectangleProvider &HoverEditBorder();
-        Graphics::BitmapRectangleProvider &ReadonlyBorder();
+        Graphics::AnimationProvider &GetAsset(const AssetID &id);
         
-        Graphics::BitmapRectangleProvider &NormalEmptyBorder();
-        
-        Graphics::BitmapRectangleProvider &InfoBorder();
-        
-        Graphics::BitmapRectangleProvider &NormalBG(int missingedge = 0);
-        Graphics::BitmapRectangleProvider &HoverBG(int missingedge = 0);
-        Graphics::BitmapRectangleProvider &DownBG(int missingedge = 0);
-        Graphics::BitmapRectangleProvider &DisabledBG(int missingedge = 0);
-        
-        Graphics::BitmapRectangleProvider &WhiteBG();
-        Graphics::BitmapRectangleProvider &CheckeredBG();
-
-        Graphics::BitmapRectangleProvider &NormalStraightBG();
-        Graphics::BitmapRectangleProvider &AltStraightBG();
-        Graphics::BitmapRectangleProvider &HoverStraightBG();
-        Graphics::BitmapRectangleProvider &DownStraightBG();
-        Graphics::BitmapRectangleProvider &DisabledStraightBG();
-
-        Graphics::BitmapRectangleProvider &NormalRBG();
-        Graphics::BitmapRectangleProvider &HoverRBG();
-        Graphics::BitmapRectangleProvider &DownRBG();
-        Graphics::BitmapRectangleProvider &DisabledRBG();
-        Graphics::BitmapRectangleProvider &ObjectShape();
-        Graphics::MaskedObjectProvider &InnerObjectShape();
-
-        
-        Graphics::BitmapRectangleProvider &GrooveBG();
-        
-        Graphics::RectangleProvider &FocusBorder();
         
         int Spacing       = 4;
         int ObjectHeight  = 15;
@@ -348,7 +484,6 @@ namespace Gorgon { namespace Widgets {
         Graphics::StyledPrinter InfoFont;
 
         struct FocusInfo {
-            Graphics::RGBA  Color   = {Graphics::Color::Charcoal, 0.7};
             int             Width   = 1;
             //focus to content spacing
             int             Spacing = 1;
@@ -358,41 +493,26 @@ namespace Gorgon { namespace Widgets {
             int Width                    = 2;
             int Radius                   = 0;
             int Divisions                = 1;
-            Graphics::RGBA Color         = Graphics::Color::Charcoal;
-            Graphics::RGBA Info          = Graphics::Color::Charcoal;
-            Graphics::RGBA Disabled      = {Graphics::Color::Charcoal, 0.5};
-            Graphics::RGBA PassiveWindow = {Graphics::Color::SemiDarkGrey, 0.9};
-            Graphics::RGBA ActiveWindow  = {Graphics::Color::Charcoal, 0.9};
         } Border;
         
-        struct BackgroundInfo {
-            Graphics::RGBA Regular  = {Graphics::Color::Ivory, 0.8};
-            Graphics::RGBA Alternate= {Graphics::Color::DarkGrey, 0.2};
-            Graphics::RGBA Hover    = {Graphics::Color::Tan, 0.5};
-            Graphics::RGBA Down     = {Graphics::Color::Crimson, 0.2};
-            Graphics::RGBA Disabled =  Graphics::Color::LightGrey;
-            
-            Graphics::RGBA Edit    = {Graphics::Color::White};
-            Graphics::RGBA Panel   = {Graphics::Color::Grey, Graphics::Color::Ivory, 0.5};
-            
-            Graphics::RGBA Groove  = {Graphics::Color::Charcoal, 0.5};
-            
-            Graphics::RGBA Selected= {Graphics::Color::Charcoal, 0.4};
-            
-            Graphics::RGBA Info    = {Graphics::Color::BabyBlue, 0.8};
-        } Background;
-        
-        struct ForecolorInfo {
-            Graphics::RGBA Regular = Graphics::Color::Charcoal;
-            Graphics::RGBA Title   = Graphics::Color::DarkGreen;
-            Graphics::RGBA Disabled= {Graphics::Color::Grey, 0.5};
-            Graphics::RGBA Hover   = Graphics::Color::Black;
-            Graphics::RGBA Down    = Graphics::Color::Black;
-            Graphics::RGBA Error   = Graphics::Color::Red;
-            Graphics::RGBA Inverted= {Graphics::Color::White, 0.8};
-            Graphics::RGBA InvertedActive  = Graphics::Color::White;
-            Graphics::RGBA Info    = {Graphics::Color::DarkBlue, 0.9};
-        } Forecolor;
+        Graphics::Color::TripletPack Colors = {
+            {Graphics::Color::Regular, {Graphics::Color::Charcoal, {Graphics::Color::Ivory, 0.8}}},
+            {Graphics::Color::Hover, {Graphics::Color::Charcoal, {Graphics::Color::Tan, Graphics::Color::Ivory, 0.5}}},
+            {Graphics::Color::Down, {Graphics::Color::Charcoal, {Graphics::Color::Crimson, Graphics::Color::Ivory, 0.8}}},
+            {Graphics::Color::Disabled, {{Graphics::Color::Grey, 0.8}, Graphics::Color::LightGrey}},
+            {Graphics::Color::Edit, {Graphics::Color::Charcoal, Graphics::Color::White}},
+            {Graphics::Color::Container, {Graphics::Color::Charcoal, {Graphics::Color::Grey, Graphics::Color::Ivory, 0.5}}},
+            {Graphics::Color::PassiveContiner, {{Graphics::Color::White, 0.8}, {Graphics::Color::SemiDarkGrey, 0.9}, Graphics::Color::SemiDarkGrey}},
+            {Graphics::Color::ActiveContainer, {{Graphics::Color::White, 0.9}, {Graphics::Color::Charcoal, 0.9}, Graphics::Color::Charcoal}},
+            {Graphics::Color::Selection, {Graphics::Color::Charcoal, {Graphics::Color::Charcoal, 0.4}, Graphics::Color::Transparent}},
+            {Graphics::Color::Groove, {{Graphics::Color::White, 0.9}, {Graphics::Color::Charcoal, 0.5}, Graphics::Color::Transparent}},
+            {Graphics::Color::Info, {{Graphics::Color::DarkBlue, 0.9}, {Graphics::Color::BabyBlue, 0.8}, Graphics::Color::Charcoal}},
+            {Graphics::Color::Odd, {Graphics::Color::Charcoal, {Graphics::Color::Ivory, 0.2}}},
+            {Graphics::Color::Even, {{Graphics::Color::DarkBlue, 0.9}, {Graphics::Color::DarkGrey, 0.2}}},
+            {Graphics::Color::Active, {Graphics::Color::Ivory, {Graphics::Color::Charcoal, 0.8}, Graphics::Color::Transparent}},
+            {Graphics::Color::Error, {Graphics::Color::DarkRed, {Graphics::Color::White, 0.2}}},
+            {Graphics::Color::Title, {Graphics::Color::DarkGreen, Graphics::Color::Transparent}},
+        };
         
         
         /// This is the width of a three cell widget
@@ -404,17 +524,31 @@ namespace Gorgon { namespace Widgets {
         /// This is the height of a non-bordered widget
         int WidgetHeight = 24;
         
-        /// This controls the automatic spacing. After chaning this member
+        /// This controls the automatic spacing. After changing this member
         /// you need to call UpdateDimensions to get the desired effect.
         float Density = 7.5;
 
     private:
-        Graphics::BitmapRectangleProvider *makeborder(Graphics::RGBA border, Graphics::RGBA bg, int missingedge = 0, int borderwidth = -1, int borderradius = -1);
+        Graphics::BitmapRectangleProvider *makeborder(Graphics::RGBA border, Graphics::RGBA bg, AssetID::BorderSide borders, int borderwidth = -1, int borderradius = -1);
         Graphics::BitmapRectangleProvider *makecheckeredbg();
         Graphics::RectangleProvider *makefocusborder();
-        UI::Template makepanel(int missingedge, bool scrollers);
-        Graphics::Bitmap *arrow(Graphics::RGBA color, bool upwards);
-        Graphics::Bitmap *cross(Graphics::RGBA color);
+        UI::Template makepanel(SimpleGenerator::AssetID::BorderSide edge, bool scrollers, bool spacing = true);
+        //rotation 0 is up
+        Graphics::Bitmap *arrow(Graphics::RGBA color, Geometry::Size size, float rotation);
+        Graphics::Bitmap *cross(Graphics::RGBA color, Geometry::Size size);
+        Graphics::Bitmap *box(Graphics::RGBA color, Geometry::Size size);
+        //will fit into the box of the same size
+        Graphics::Bitmap *tick(Graphics::RGBA color, Geometry::Size size);
+        Graphics::Bitmap *emptycircle(Graphics::RGBA color, Geometry::Size size);
+        //will fit into the box of the same size
+        Graphics::Bitmap *circlefill(Graphics::RGBA color, Geometry::Size size);
+        
+        float expandedradius(float pixels) {
+            if(Border.Radius)
+                return Border.Radius+pixels;
+            else
+                return (float)Border.Radius;
+        }
         
         UI::Template maketemplate();
         
@@ -428,57 +562,12 @@ namespace Gorgon { namespace Widgets {
         
         Containers::Collection<Graphics::Drawable> drawables;
         Containers::Collection<Graphics::AnimationProvider> providers;
-        
-        Graphics::BitmapRectangleProvider *normalborder[5] = {};
-        Graphics::BitmapRectangleProvider *hoverborder[5] = {};
-        Graphics::BitmapRectangleProvider *downborder[5] = {};
-        Graphics::BitmapRectangleProvider *disabledborder[5] = {};
-        Graphics::BitmapRectangleProvider *passivewindowborder = nullptr;
-        Graphics::BitmapRectangleProvider *activewindowborder = nullptr;
-        Graphics::BitmapRectangleProvider *dialogdefaultborder = nullptr;
-        
-        Graphics::BitmapRectangleProvider *panelborders[5] = {};
-        Graphics::BitmapRectangleProvider *panelbgs[5] = {};
-        
-        Graphics::BitmapRectangleProvider *grooveborder = nullptr;
-        
-        Graphics::BitmapRectangleProvider *normaleditborder = nullptr;
-        Graphics::BitmapRectangleProvider *hovereditborder = nullptr;
-        Graphics::BitmapRectangleProvider *readonlyborder = nullptr;
-        
-        Graphics::BitmapRectangleProvider *normalemptyborder = nullptr;
-        
-        Graphics::BitmapRectangleProvider *infoborder = nullptr;
-        
-        Graphics::BitmapRectangleProvider *normalrbg = nullptr;
-        Graphics::BitmapRectangleProvider *hoverrbg = nullptr;
-        Graphics::BitmapRectangleProvider *downrbg = nullptr;
-        Graphics::BitmapRectangleProvider *disabledrbg = nullptr;
-        
-        Graphics::BitmapRectangleProvider *normalbg[5] = {};
-        Graphics::BitmapRectangleProvider *hoverbg[5] = {};
-        Graphics::BitmapRectangleProvider *downbg[5] = {};
-        Graphics::BitmapRectangleProvider *disabledbg[5] = {};
-        
-        Graphics::BitmapRectangleProvider *white = nullptr;
-        Graphics::BitmapRectangleProvider *checkered = nullptr;
-        
-        Graphics::BitmapRectangleProvider *normalstraight = nullptr;
-        Graphics::BitmapRectangleProvider *altstraight = nullptr;
-        Graphics::BitmapRectangleProvider *hoverstraight = nullptr;
-        Graphics::BitmapRectangleProvider *downstraight = nullptr;
-        Graphics::BitmapRectangleProvider *disabledstraight = nullptr;
-        Graphics::BitmapRectangleProvider *groovebg = nullptr;
-        Graphics::BitmapRectangleProvider *objectshape = nullptr;
-        Graphics::MaskedObjectProvider *innerobjectshape = nullptr;
-        
-        
-        Graphics::RectangleProvider *focusborder = nullptr;
+        Containers::Hashmap<AssetID, Graphics::AnimationProvider> assets;
         
         UI::Template listbox_listitem;
         UI::Template empty;
 
         std::pair<int, int> lettervsize, asciivsize;
     };
-
+    
 }}

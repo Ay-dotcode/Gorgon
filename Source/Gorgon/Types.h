@@ -127,9 +127,27 @@ namespace Gorgon {
 		return (T_{} < val) - (val < T_{});
 	}
 	
+	/// Returns positive modulus as in case in maths
 	template <typename T_>
 	T_ PositiveMod(T_ value, T_ mod) {
         return ((value%mod)+mod)%mod;
+    }
+    
+    /// Performs a multi-tiered comparison. Supplied the values of current object and other object
+    /// in alternating fashion.
+    template<class T1_, class T2_>
+    bool MultiLess(const T1_ &left, const T2_ &right) {
+        return left < right;
+    }
+    
+    template<class T1_, class T2_, class ...A_>
+    bool MultiLess(const T1_ &left, const T2_ &right, const A_ & ...rest) {
+        if(left < right)
+            return true;
+        else if(left > right)
+            return false;
+        else
+            return MultiLess(rest...);
     }
 
 	/// Where acceptable, denotes that the object will assume the ownership

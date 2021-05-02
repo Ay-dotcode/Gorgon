@@ -456,14 +456,16 @@ namespace Gorgon {
 
 		/// Scales the given point by the given factor
 		template <class T_, class O_>
-		void Scale(basic_Point<T_> &point, const O_ &size) {
+		typename std::enable_if<std::is_arithmetic<O_>::value>::type
+		Scale(basic_Point<T_> &point, const O_ &size) {
 			point.X = T_(point.X*size);
 			point.Y = T_(point.Y*size);
 		}
 
 		/// Scales the given point by the given factors for x and y coordinates.
-		template <class T_, class O1_, class O2_>
-		void Scale(basic_Point<T_> &point, const O1_ &sizex, const O2_ &sizey) {
+		template <class T_, class O_>
+		typename std::enable_if<std::is_arithmetic<O_>::value>::type
+		Scale(basic_Point<T_> &point, const O_ &sizex, const O_ &sizey) {
 			point.X = T_(point.X*sizex);
 			point.Y = T_(point.Y*sizey);
 		}
@@ -471,15 +473,17 @@ namespace Gorgon {
 		/// Scales the given point by the given factor, considering given point
 		/// as origin
 		template <class T_, class O_>
-		void Scale(basic_Point<T_> &point, const O_ &size, const basic_Point<T_> &origin) {
+		typename std::enable_if<std::is_arithmetic<O_>::value>::type
+		Scale(basic_Point<T_> &point, const O_ &size, const basic_Point<T_> &origin) {
 			point.X = T_((point.X-origin.X)*size+origin.X);
 			point.Y = T_((point.Y-origin.Y)*size+origin.Y);
 		}
 
 		/// Scales the given point by the given factor, considering given point
 		/// as origin.
-		template <class T_, class O1_, class O2_>
-		void Scale(basic_Point<T_> &point, const O1_ &sizex, const O2_ &sizey, const basic_Point<T_> &origin) {
+		template <class T_, class O_>
+		typename std::enable_if<std::is_arithmetic<O_>::value>::type
+		Scale(basic_Point<T_> &point, const O_ &sizex, const O_ &sizey, const basic_Point<T_> &origin) {
 			point.X = T_((point.X-origin.X)*sizex+origin.X);
 			point.Y = T_((point.Y-origin.Y)*sizey+origin.Y);
 		}

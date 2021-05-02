@@ -112,7 +112,7 @@ namespace Gorgon { namespace Widgets {
             return unitwidth;
         }
         else {
-            return Widgets::Registry::Active().GetUnitWidth();
+            return Widgets::Registry::Active().GetUnitSize();
         }
     }
     
@@ -125,7 +125,7 @@ namespace Gorgon { namespace Widgets {
             s = GetParent().GetSpacing();
         }
         else {
-            w = Registry::Active().GetUnitWidth();
+            w = Registry::Active().GetUnitSize();
             s = Registry::Active().GetSpacing();
         }
 
@@ -220,7 +220,7 @@ namespace Gorgon { namespace Widgets {
             return unitwidth;
         }
         else {
-            return Widgets::Registry::Active().GetUnitWidth();
+            return Widgets::Registry::Active().GetUnitSize();
         }
     }
 
@@ -232,7 +232,7 @@ namespace Gorgon { namespace Widgets {
             s = GetParent().GetSpacing();
         }
         else {
-            w = Registry::Active().GetUnitWidth();
+            w = Registry::Active().GetUnitSize();
             s = Registry::Active().GetSpacing();
         }
 

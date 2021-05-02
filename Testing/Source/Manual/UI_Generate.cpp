@@ -226,13 +226,13 @@ int main() {
         
         std::cout << list[index] << ": " << status << std::endl;
         
-        if(index >= 1)
-            list.Remove(index - 1);
+        /*if(index >= 1)
+            list.Remove(index - 1);*/
     });
     list.EnsureVisible(11);
     list.EnsureVisible(1);
-    list.Clear();
-    list.FitHeight(list.GetHeight());
+    //list.Clear();
+    //list.FitHeight(list.GetHeight());
     list.Tooltip = "This is the list";
     
     Widgets::DropdownList<DaysOfWeek> dlist(begin(Enumerate<DaysOfWeek>()), end(Enumerate<DaysOfWeek>()));
@@ -310,6 +310,7 @@ int main() {
             std::cout << "Click once more to close." << std::endl;
     });
     btn.Move(0,0);
+    btn.Disable();
     Widgets::Checkbox enableclosebtn("Enable close button", true);
     enableclosebtn.SetAutosize(Gorgon::UI::Autosize::Unit, Gorgon::UI::Autosize::Automatic);
     enableclosebtn.ChangedEvent.Register([&] { wind.SetCloseButtonEnabled(bool(enableclosebtn)); });

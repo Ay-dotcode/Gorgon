@@ -406,7 +406,157 @@ namespace Gorgon { namespace Geometry {
     void swap(PointList<P_> &left, PointList<P_> &right) {
         left.Swap(right);
     }
-    
-    //non-member operations: translate, scale, rotate, etc...
-    
+
+    /// Translation moves the given point *by* the given amount
+    template<class P_, class O_>
+    void Translate(PointList<P_> &pointlist, O_ x, O_ y) {
+        for(auto &p : pointlist)
+            Translate(p, x, y);
+    }
+
+    /// Translation moves the given pointlist *by* the given amount
+    template<class P_>
+    void Translate(PointList<P_> &pointlist, const P_ &other) {
+        for(auto &p : pointlist)
+            Translate(p, other);
+    }
+
+    /// Scales the given pointlist by the given factor
+    template <class P_, class O_>
+    void Scale(PointList<P_> &pointlist, const O_ &size) {
+        for(auto &p : pointlist)
+            Scale(p, size);
+    }
+
+    /// Scales the given pointlist by the given factors for x and y coordinates.
+    template <class P_, class O_>
+    void Scale(PointList<P_> &pointlist, const O_ &sizex, const O_ &sizey) {
+        for(auto &p : pointlist)
+            Scale(p, sizex, sizey);
+    }
+
+    /// Scales the given pointlist by the given factor, considering given pointlist
+    /// as origin
+    template <class P_, class O_>
+    void Scale(PointList<P_> &pointlist, const O_ &size, const PointList<P_> &origin) {
+        for(auto &p : pointlist)
+            Scale(p, size, origin);
+    }
+
+    /// Scales the given pointlist by the given factor, considering given pointlist
+    /// as origin.
+    template <class P_, class O_>
+    void Scale(PointList<P_> &pointlist, const O_ &sizex, const O_ &sizey, const PointList<P_> &origin) {
+        for(auto &p : pointlist)
+            Scale(p, sizex, sizey, origin);
+    }
+
+
+    /// Rotates the given pointlist by the given angle.
+    /// @param  pointlist the pointlist to rotate
+    /// @param  angle is the Euler rotation angle in radians
+    template<class P_>
+    void Rotate(PointList<P_> &pointlist, Float angle) {
+        for(auto &p : pointlist)
+            Rotate(p, angle);
+    }
+
+    /// Rotates the given pointlist by the given angle around the given origin.
+    /// @param  pointlist the pointlist to rotate
+    /// @param  angle is the Euler rotation angle in radians
+    /// @param  origin is the origin of rotation
+    template<class P_>
+    void Rotate(PointList<P_> &pointlist, Float angle, const P_ &origin) {
+        for(auto &p : pointlist)
+            Rotate(p, angle, origin);
+    }
+
+    /// Skews the given pointlist with the given rate along X axis. Skew
+    /// operation transforms objects in a way that it converts
+    /// a rectangle to a parallelogram.
+    template <class P_, class O_>
+    void SkewX(PointList<P_> &pointlist, const O_ &rate) {
+        for(auto &p : pointlist)
+            SkewX(p, rate);
+    }
+
+    /// Skews the given pointlist with the given rate along Y axis. Skew
+    /// operation transforms objects in a way that it converts
+    /// a rectangle to a parallelogram.
+    template <class P_, class O_>
+    void SkewY(PointList<P_> &pointlist, const O_ &rate) {
+        for(auto &p : pointlist)
+            SkewY(p, rate);
+    }
+
+    /// Skews the given pointlist with the given rate along X axis considering
+    /// given pointlist as the origin. Skew operation transforms objects in 
+    /// a way that it converts a rectangle to a parallelogram.
+    template <class P_, class O_>
+    void SkewX(PointList<P_> &pointlist, const O_ &rate, const PointList<P_> &origin) {
+        for(auto &p : pointlist)
+            SkewX(p, rate, origin);
+    }
+
+    /// Skews the given pointlist with the given rate along Y axis considering
+    /// given pointlist as the origin. Skew operation transforms objects in 
+    /// a way that it converts a rectangle to a parallelogram.
+    template <class P_, class O_>
+    void SkewY(PointList<P_> &pointlist, const O_ &rate, const PointList<P_> &origin) {
+        for(auto &p : pointlist)
+            SkewY(p, rate, origin);
+    }
+
+    /// Reflects the given pointlist along the X axis
+    template<class P_>
+    void ReflectX(PointList<P_> &pointlist) {
+        for(auto &p : pointlist)
+            ReflectX(p);
+    }
+
+    /// Reflects the given pointlist along the Y axis
+    template<class P_>
+    void ReflectY(PointList<P_> &pointlist) {
+        for(auto &p : pointlist)
+            ReflectY(p);
+    }
+
+    /// Reflects the given pointlist horizontally
+    template<class P_>
+    void HorizontalMirror(PointList<P_> &pointlist) {
+        ReflectX(pointlist);
+    }
+
+    /// Reflects the given pointlist vertically
+    template<class P_>
+    void VerticalMirror(PointList<P_> &pointlist) {
+        ReflectY(pointlist);
+    }
+
+    /// Reflects the given pointlist along the X axis considering given origin
+    template<class P_>
+    void ReflectX(PointList<P_> &pointlist, const PointList<P_> &origin) {
+        for(auto &p : pointlist)
+            ReflectX(p, origin);
+    }
+
+    /// Reflects the given pointlist along the Y axis considering given origin
+    template<class P_>
+    void ReflectY(PointList<P_> &pointlist, const PointList<P_> &origin) {
+        for(auto &p : pointlist)
+            ReflectY(p, origin);
+    }
+
+    /// Reflects the given pointlist horizontally considering given origin
+    template<class P_>
+    void HorizontalMirror(PointList<P_> &pointlist, const PointList<P_> &origin) {
+        ReflectX(pointlist, origin);
+    }
+
+    /// Reflects the given pointlist vertically considering given origin
+    template<class P_>
+    void VerticalMirror(PointList<P_> &pointlist, const PointList<P_> &origin) {
+        ReflectY(pointlist, origin);
+    }
+
 } }

@@ -28,7 +28,7 @@ namespace Gorgon { namespace UI {
             return unitwidth;
         }
         else {
-            return Widgets::Registry::Active().GetUnitWidth();
+            return Widgets::Registry::Active().GetUnitSize();
         }
     }
 

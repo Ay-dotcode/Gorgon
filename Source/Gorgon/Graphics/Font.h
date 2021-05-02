@@ -14,6 +14,65 @@ namespace Gorgon { namespace Graphics {
     /// Glyph is a symbol for a character. In Gorgon, glyphs are UTF32 chars.
     using Glyph = Gorgon::Char;
     
+    /// Constants for fonts.
+    enum class NamedFont {
+        /// Default font
+        Normal,
+        
+        /// Default font
+        Regular = Normal,
+        
+        /// Bold font
+        Bold,
+        
+        /// First level heading
+        H1,
+        
+        /// Second level heading
+        H2,
+        
+        /// Third level heading
+        H3,
+        
+        /// Fourth level heading
+        H4,
+        
+        /// Italic font
+        Italic,
+        
+        /// Smaller font, usually 75% of full size
+        Small,
+        
+        /// Bold and italic font
+        BoldItalic,
+        
+        /// Font style used to display information, usually smaller and uses different colors.
+        Info,
+        
+        /// A large font, usually 125% of the original size
+        Larger,
+        
+        /// Small font that will be used in super and subscripts. Could also be used for other purposes.
+        Script,
+        
+        /// Small font that will be used in super and subscripts for fonts that is known to be bold.
+        /// Could also be used for other purposes.
+        BoldScript,
+        
+        /// Small font that will be used in super and subscripts. Could also be used for other purposes.
+        /// This script font will be used for small, info and script fonts
+        SmallScript,
+        
+        /// Fixed width font to be used in programming
+        FixedWidth,
+        
+        /// Fixed width font to be used in programming
+        FixedWidthBold,
+        
+        /// Fixed width font to be used in programming
+        FixedWidthItalic,
+    };
+    
     /// This class represents a range of glyphs. Both start and end is included.
     class GlyphRange {
     public:        

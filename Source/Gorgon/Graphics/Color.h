@@ -1,14 +1,16 @@
 #pragma once
 
+#include "../Types.h"
+
 #include <string.h>
 #include <vector>
+#include <map>
 #include <sstream>
 #include <iostream>
 #include <iomanip>
 #include <stdint.h>
 #include <stdexcept>
 
-#include "../Types.h"
 #include <cmath>
 
 namespace Gorgon { namespace Graphics {
@@ -43,7 +45,7 @@ namespace Gorgon { namespace Graphics {
         /// 16bit gray scale image color mode with an alpha channel. Alpha channel is in the high byte
         Grayscale_Alpha = Grayscale | Alpha
     };
-
+    
     /// Returns bytes per pixel for the given color mode
     inline unsigned long GetChannelsPerPixel(ColorMode mode) {
         switch(mode) {
@@ -611,6 +613,7 @@ namespace Gorgon { namespace Graphics {
     /// Contains commonly used colors identified by XKCD survey containing 140000 people.
     /// List is truncated to 300 most popular entries and cleaned up.
     namespace Color {
+                
         constexpr RGBA Transparent	= 0x0;
         constexpr RGBA Purple	= 0xff9c1e7e;
         constexpr RGBA Green	= 0xff1ab015;
@@ -903,5 +906,320 @@ namespace Gorgon { namespace Graphics {
         
         /// Returns the color of a named color. Returns transparent if the color does not exist.
         Gorgon::Graphics::RGBA GetNamedColor(std::string name);
+
+        /// Constants for color designations. Often named colors are used in pairs of background
+        /// and foreground colors.
+        enum Designation {
+            /// Regular commonly used color. If the system has background image, background color
+            /// should match the image
+            Regular,
+            
+            /// Alternate colors, often used alternating lists
+            Alternate,
+            
+            /// Color for title fonts
+            Title,
+            
+            /// A color to emphasize a piece of text
+            Emphasis,
+            
+            /// Inverted text or object
+            Inverted,
+            
+            /// A color to highlight a piece of code, often a border is drawn around code segments
+            Code,
+            
+            /// Keyword in a code segment
+            Keyword,
+            
+            /// Comment in a code segment
+            Comment,
+            
+            /// Selection color, both background and foreground. Generally, selection background is drawn
+            /// on top of regular background color
+            Selection,
+            
+            /// Used to denote something is disabled
+            Disabled,
+            
+            /// Used to highlight a portion of text
+            Highlight,
+            
+            /// Used for editable text
+            Edit,
+            
+            /// Used to separate pieces. Often forecolor is used as a border, backcolor is ignored
+            Separator,
+            
+            /// Used for containers, often forecolor is used for border.
+            Container,
+            
+            /// A container that is activated. Often used for windows
+            ActiveContainer,
+            
+            /// A container that is passive/unfocused. Often used for windows
+            PassiveContiner,
+            
+            /// Used to denote an information section
+            Info,
+            
+            /// Used to denote a message section
+            Message,
+            
+            /// Used to denote warnings
+            Warning,
+            
+            /// Used to denote errors
+            Error,
+            
+            /// Used to denote success messages
+            Success,
+            
+            /// Link to a page or an operation
+            Link,
+            
+            /// Used when the mouse hovers over an interactive object
+            Hover,
+            
+            /// Used when the mouse is pressed on an activatable object
+            Down,
+            
+            /// Used to denote that a link is visited
+            Visited,
+            
+            /// Used to mark active objects
+            Active,
+            
+            /// Used to mark focused objects
+            Focus,
+            
+            /// Colors for a part which could be used a placeholder or a more pronounced separator
+            Groove,
+            
+            /// Color pair that has a higher contrast then regular color pair
+            HighContrast,
+            
+            /// A color that is used to draw non-text objects. Often regular color is used for these
+            /// and in some cases, this might be ignored
+            Object,
+            
+            /// A color that is used for readonly edit fields
+            Readonly,
+            
+            /// A color that is used for list items
+            Odd,
+            
+            /// A color that is used for alternate list items
+            Even,
+            
+            /// User defined colors should start from this index. Some systems support user defined 
+            /// colors.
+            User = 64
+        };
+        
+        template<class C_ = RGBA>
+        struct Pair {
+            Pair() = default;
+            
+            explicit Pair(const C_ &forecolor, const C_ &backcolor = Transparent) :
+                Forecolor(forecolor),
+                Backcolor(backcolor)
+            { }
+            
+            template <class C2_>
+            explicit Pair(const Pair<C2_> &other) :
+                Forecolor(other.Forecolor),
+                Backcolor(other.Backcolor)
+            { }
+            
+            Pair(const Pair &other) = default;
+            
+            operator std::pair<C_, C_>() const {
+                return {Forecolor, Backcolor};
+            }
+            
+            bool operator ==(const Pair &other) {
+                return Forecolor == other.Forecolor && Backcolor == other.Backcolor;
+            }
+            
+            bool operator !=(const Pair &other) {
+                return !(*this == other);
+            }
+            
+            C_ Forecolor;
+            C_ Backcolor;
+        };
+        
+        template<class C_ = RGBA>
+        struct Triplet {
+            Triplet() = default;
+            
+            explicit Triplet(const C_ &forecolor) :
+                Forecolor(forecolor),
+                Backcolor(Transparent),
+                Bordercolor(forecolor)
+            { }
+            
+            Triplet(const C_ &forecolor, const C_ &backcolor) :
+                Forecolor(forecolor),
+                Backcolor(backcolor),
+                Bordercolor(forecolor)
+            { }
+            
+            Triplet(const C_ &forecolor, const C_ &backcolor, const C_ &bordercolor) :
+                Forecolor(forecolor),
+                Backcolor(backcolor),
+                Bordercolor(bordercolor)
+            { }
+            
+            template <class C2_>
+            explicit Triplet(const Pair<C2_> &other) :
+                Forecolor(other.Forecolor),
+                Backcolor(other.Backcolor),
+                Bordercolor(other.Forecolor)
+            { }
+            
+            template <class C2_>
+            explicit Triplet(const Triplet<C2_> &other) :
+                Forecolor(other.Forecolor),
+                Backcolor(other.Backcolor),
+                Bordercolor(other.Bordercolor)
+            { }
+            
+            Triplet(const Triplet &other) = default;
+            
+            operator std::tuple<C_, C_>() const {
+                return {Forecolor, Backcolor, Bordercolor};
+            }
+            
+            bool operator ==(const Triplet &other) {
+                return Forecolor == other.Forecolor && Backcolor == other.Backcolor && Bordercolor == other.Bordercolor;
+            }
+            
+            bool operator !=(const Triplet &other) {
+                return !(*this == other);
+            }
+            
+            C_ Forecolor;
+            C_ Backcolor;
+            C_ Bordercolor;
+        };
+        
+        /**
+        * This class stores a list of colors. You may use PairPack for forecolor, backcolor pairs.
+        * If a requested color does not exist in the pack, regular color will be returned. If 
+        * regular color does not exist, Black will be returned instead.
+        */
+        template<class C_ = RGBA>
+        class Pack {
+        public:
+            /// This constructor creates an empty pack, which may not be suitable for use
+            Pack() = default;
+            
+            /// This constructor initializes the pack with a regular color, which then will be used
+            /// for every color combination.
+            explicit Pack(const C_ &forecolor);
+            
+            /// Initializes the pack using designation, color pairs. You may use
+            /// this constructor to pass color list as an argument. Example use:
+            ///     
+            ///    namespace Color = Gorgon::Graphics::Color;
+            ///    Color::Pack pack = {
+            ///        {Color::Regular  , Color::Black},
+            ///        {Color::Inverted , Color::White}
+            ///    };
+            Pack(const std::initializer_list<std::pair<Designation, C_>> &colors) {
+                for(auto &c : colors)
+                    this->colors[c.first] = c.second;
+            }
+            
+            /// Adds or replaces the color at the supplied designation
+            void Set(Designation index, const C_ &color) {
+                colors[index] = color;
+            }
+            
+            /// Removes the color at the supplied designation
+            void Unset(Designation index) {
+                colors.erase(index);
+            }
+            
+            /// Returns the color at the given designation.
+            C_ &Get(Designation index) {
+                auto it = colors.find(index);
+                
+                if(it == colors.end()) {
+                    it = colors.find(Regular);
+                    
+                    if(it == colors.end()) {
+                        it = colors.insert({index, C_{Black}}).first;
+                    }
+                    else {
+                        it = colors.insert({index, it->second}).first;
+                    }
+                }
+
+                return it->second;
+            }
+            
+            /// Returns the color at the given designation.
+            C_ Get(Designation index) const {
+                auto it = colors.find(index);
+                
+                if(it == colors.end()) {
+                    it = colors.find(Regular);
+                    
+                    if(it == colors.end())
+                        return C_{Black};
+                }
+
+                return it->second;
+            }
+            
+            /// Returns the color at the given designation.
+            C_ &operator [](Designation index) {
+                return Get(index);
+            }
+            
+            /// Returns the color at the given designation.
+            C_ operator [](Designation index) const {
+                return Get(index);
+            }
+            
+            /// Returns if the color at the given designation exists.
+            bool Has(Designation index) const {
+                return colors.count(index);
+            }
+            
+            
+            /// For iteration
+            auto begin() {
+                return colors.begin();
+            }
+            
+            /// For iteration
+            auto begin() const {
+                return colors.begin();
+            }
+            
+            /// For iteration
+            auto end() {
+                return colors.end();
+            }
+            
+            /// For iteration
+            auto end() const {
+                return colors.end();
+            }
+            
+        private:
+            std::map<Designation, C_> colors;
+        };
+        
+        using RGBAPack = Pack<>;
+        using RGBAfPack = Pack<RGBAf>;
+        using PairPack = Pack<Pair<>>;
+        using PairfPack = Pack<Pair<RGBAf>>;
+        using TripletPack = Pack<Triplet<>>;
+        using TripletfPack = Pack<Triplet<RGBAf>>;
     }
 } }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../UI/Template.h"
+#include "../Graphics/AdvancedPrinter.h"
 
 namespace Gorgon { namespace Widgets {
 
@@ -8,6 +9,7 @@ namespace Gorgon { namespace Widgets {
     /**
     * This class stores templates for elements. Once a registry is active
     * all created widgets will use the specified registry for templates.
+    * Active registry will be used automatically.
     */
     class Registry {
     public:
@@ -97,6 +99,18 @@ namespace Gorgon { namespace Widgets {
             
             return *templates[type];
         }
+        
+        /// Returns the foreground color for the requested designation.
+        virtual Graphics::RGBA Forecolor(Graphics::Color::Designation designation) const = 0;
+        
+        /// Returns the background for the requested designation.
+        virtual Graphics::RGBA Backcolor(Graphics::Color::Designation designation) const = 0;
+        
+        /// Returns an printer instance that will render the requested text style
+        virtual const Graphics::StyledPrinter &Printer(const Graphics::NamedFont &type) const = 0;
+        
+        /// Returns an advanced printer instance that will be able to render any text style
+        virtual const Graphics::AdvancedPrinter &Printer() const = 0;
     
         /// The spacing should be left between widgets
         virtual int GetSpacing() const = 0;
@@ -104,18 +118,18 @@ namespace Gorgon { namespace Widgets {
         /// The size of EM space. Roughly the same size as the height of a character.
         virtual int GetEmSize() const = 0;
         
-        /// Returns the unit width for a widget. This size is enough to
+        /// Returns the unit size for a widget. This size is enough to
         /// have a bordered icon. Widgets should be sized according to unit
         /// width and spacing. A single unit width would be too small for
-        /// most widgets. Multiple units can be obtained by GetUnitWidth(n)
-        virtual int GetUnitWidth() const = 0;
+        /// most widgets. Multiple units can be obtained by GetUnitSize(n)
+        virtual int GetUnitSize() const = 0;
         
         /// Returns the width for a n-sized widget. Generally, 1 is for icons,
         /// 2 is for numberbox, 3 can be used for buttons, labels, short textboxes
         /// 4 for textboxes, 6 is for checkboxes. Standard panels can contain
         /// 6 units and they are less than 7 units wide.
-        int GetUnitWidth(int n) const {
-            return n * GetUnitWidth() + (n-1) * GetSpacing();
+        int GetUnitSize(int n) const {
+            return n * GetUnitSize() + (n-1) * GetSpacing();
         }
 
     protected:
@@ -167,11 +181,45 @@ namespace Gorgon { namespace Widgets {
         virtual int GetEmSize()const override {
             return emsize;
         }
+        
+        /// Sets the colors that will be provided by this registry
+        virtual void SetColors(Graphics::Color::PairPack colors) {
+            using std::swap;
+            
+            swap(colors, this->colors);
+        }
+        
+        /// Returns the foreground color for the requested designation.
+        virtual Graphics::RGBA Forecolor(Graphics::Color::Designation designation) const override {
+            return colors[designation].Forecolor;
+        }
+        
+        /// Returns the background for the requested designation.
+        virtual Graphics::RGBA Backcolor(Graphics::Color::Designation designation) const override {
+            return colors[designation].Backcolor;
+        }
+        
+        /// Returns a styled printer that is designed to print supplied style
+        virtual const Graphics::StyledPrinter &Printer(const Graphics::NamedFont &type) const override {
+            return Printer().GetFont(type);
+        }
+        
+        /// Returns an advanced printer instance that will be able to print any text style
+        virtual const Graphics::AdvancedPrinter &Printer() const override {
+            if(printer == nullptr)
+                throw std::runtime_error("Font printer not set");
+            
+            return *printer;
+        }
 
     protected:
         virtual UI::Template &generate(Gorgon::Widgets::Registry::TemplateType) override {
             return *new UI::Template();
         }
+        
+        Graphics::Color::PairPack colors;
+        
+        const Graphics::AdvancedPrinter *printer = nullptr;
         
         int spacing = 5;
 
