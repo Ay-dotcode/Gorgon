@@ -226,7 +226,7 @@ namespace Gorgon { namespace Widgets {
         if(1000*target.ManhattanDistance(cur)/scrollspeed > maxscrolltime) {
             //due to integer division, this value would be scrollspeed at some points, which will reset smooth speed
             //if not, when scrolling is finished it will be reset
-            curspeed = 1000*target.ManhattanDistance(cur) / maxscrolltime;
+            curspeed = int(1000*target.ManhattanDistance(cur) / maxscrolltime);
         
             auto vscroller = dynamic_cast<VScroller<int>*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
             if(vscroller)

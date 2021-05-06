@@ -176,7 +176,7 @@ namespace vorbis {
                 
                 processed += sz;
                 
-                if(target - processed < sz)
+                if(long(target - processed) < sz)
                     break;
             }
         }
@@ -249,13 +249,13 @@ namespace vorbis {
         
         ov_pcm_seek(ogg, 0);
         
-        ret.Samples    = samples;
+        ret.Samples    = (unsigned long)samples;
         ret.SampleRate = info->rate;
         ret.Channels   = vorbis::vorbischannels(info->channels);
         
         total          = ret.Samples;
         samplerate     = ret.SampleRate;
-        channelcount   = ret.Channels.size();
+        channelcount   = (int)ret.Channels.size();
         
         return ret;
     }

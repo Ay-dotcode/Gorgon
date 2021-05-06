@@ -19,7 +19,7 @@ namespace Gorgon { namespace Widgets {
     * 
     * Moving mouse over a subwidget will trigger a leave event from the Composer.
     */
-    class Composer : virtual public UI::Widget, protected UI::WidgetContainer {
+    class Composer : public UI::Widget, protected UI::WidgetContainer {
         friend class UI::WidgetContainer;
     public:
         ~Composer() { }

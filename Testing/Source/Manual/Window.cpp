@@ -193,7 +193,7 @@ int main() {
     Graphics::PointerStack::Token ptrtoken;
     
 
-	Graphics::StyledRenderer sty(fnt);
+	Graphics::StyledPrinter sty(fnt);
 	sty.UseFlatShadow({0.f, 1.0f}, {1.f, 1.f});
 	sty.SetColor({0.6f, 1.f, 1.f});
 	sty.JustifyLeft();

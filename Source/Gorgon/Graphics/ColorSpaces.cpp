@@ -53,7 +53,7 @@ namespace Gorgon { namespace Graphics {
             c /= 100.f;
             
             if(c > 0.0031308f)
-                c = 1.055 * pow(c, 1/2.4f) - 0.055f;
+                c = 1.055f * pow(c, 1/2.4f) - 0.055f;
             else
                 c *= 12.92f;
             
@@ -128,7 +128,7 @@ namespace Gorgon { namespace Graphics {
             if(c > 0.008856)
                 c = std::pow(c, 1.f/3);
             else
-                c = (7.787 * c) + (16.f/116.f);
+                c = (7.787f * c) + (16.f/116.f);
         };
         
         c.A = color.A;

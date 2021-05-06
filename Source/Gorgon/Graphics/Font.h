@@ -72,7 +72,16 @@ namespace Gorgon { namespace Graphics {
         /// Fixed width font to be used in programming
         FixedWidthItalic,
     };
-    
+
+    /// Constants for headings
+    enum class HeaderLevel {
+        H1 = 1,
+        H2,
+        H3,
+        H4
+    };
+
+
     /// This class represents a range of glyphs. Both start and end is included.
     class GlyphRange {
     public:        

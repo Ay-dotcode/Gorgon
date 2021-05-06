@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <stdint.h>
 #include <stdexcept>
+#include <array>
 
 #include <cmath>
 

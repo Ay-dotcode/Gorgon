@@ -11,7 +11,7 @@ namespace Gorgon { namespace UI {
     * This class acts as a widget base that uses component stack to handle
     * rendering, resizing and other operations.
     */
-    class ComponentStackWidget : virtual public Widget {
+    class ComponentStackWidget : public Widget {
     public:
         ComponentStackWidget(const Template &temp, std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> generators = {}) : stack(*new ComponentStack(temp, temp.GetSize(), generators)) {
             stack.SetCeilToUnitSize([this](int s) {

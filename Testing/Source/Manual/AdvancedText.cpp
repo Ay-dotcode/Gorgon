@@ -4,6 +4,7 @@
 #include <Gorgon/Resource/Font.h>
 
 #include <Gorgon/Graphics/AdvancedPrinter.h>
+#include <Gorgon/Graphics/AdvancedTextBuilder.h>
 
 #include <Gorgon/ImageProcessing/Filters.h>
 #include <Gorgon/UI/Window.h>

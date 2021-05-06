@@ -22,11 +22,16 @@
 
 namespace Gorgon {
 
+	template<class C_, class T_>
+	using PropertyGetter = T_(C_:: *)() const;
+	template<class C_, class T_>
+	using PropertySetter = void(C_:: *)(const T_ &);
+
 	/// This is generic property that can be set and retrieved
 	/// good for enums mostly, its ok to use with POD structs
 	/// for direct assignment but better not to use it with 
 	/// complex data types.
-	template<class C_, class T_, T_(C_::*Getter_)() const = &C_::get, void(C_::*Setter_)(const T_ &) = &C_::set>
+	template<class C_, class T_, PropertyGetter<C_, T_> Getter_, PropertySetter<C_, T_> Setter_>
 	class Property {
 	public:
 		using Type = T_;
@@ -104,7 +109,7 @@ namespace Gorgon {
 	/// ==, <, >
 	/// but not &, &&
 	/// float, int, double, math/Complex
-	template<class C_, class T_, T_(C_::*Getter_)() const, void(C_::*Setter_)(const T_ &)>
+	template<class C_, class T_, PropertyGetter<C_, T_> Getter_, PropertySetter<C_, T_> Setter_>
 	class NumericProperty : public Property<C_, T_, Getter_, Setter_> {
 	public:
 		using Type = T_;
@@ -226,7 +231,7 @@ namespace Gorgon {
 
 	/// Supports logic operators. Mostly designed to be used with bool
 	/// &&, ||, !, and equalities ==, !=
-	template<class C_, class T_, T_(C_::*Getter_)() const, void(C_::*Setter_)(const T_ &)>
+	template<class C_, class T_, PropertyGetter<C_, T_> Getter_, PropertySetter<C_, T_> Setter_>
 	class BooleanProperty : public Property<C_, T_, Getter_, Setter_> {
 	public:
 		using Type = T_;
@@ -271,7 +276,7 @@ namespace Gorgon {
 	/// Supports all operators that the numeric property supports.
 	/// Additionally supports and |, &, ~, ...
 	/// Use with unsigned int, Gorgon::Byte
-	template<class C_, class T_, T_(C_::*Getter_)() const, void(C_::*Setter_)(const T_ &)>
+	template<class C_, class T_, PropertyGetter<C_, T_> Getter_, PropertySetter<C_, T_> Setter_>
 	class BinaryProperty : public NumericProperty<C_, T_, Getter_, Setter_> {
 	public:
 		using Type = T_;
@@ -315,7 +320,7 @@ namespace Gorgon {
 			return (this->Object.*Getter_)();
 		}
 	};
-
+	
 	/// Object property allows the consumers of the property
 	/// to be able to access object's member functions and 
 	/// data members in a const manner
@@ -356,7 +361,7 @@ namespace Gorgon {
 			return &(this->Object.*Getter_)();
 		}
 	};
-
+	
 	/// @cond internal
 	namespace internal {
 		template <class T_>
@@ -373,7 +378,7 @@ namespace Gorgon {
 	/// member of the object is accessed, even if it is not
 	/// changed. However, usage of dereferencing operator
 	/// cannot be tracked.
-	template<class C_, class T_, T_(C_::*Getter_)() const, void(C_::*Setter_)(const T_ &)>
+	template<class C_, class T_, PropertyGetter<C_, T_> Getter_, PropertySetter<C_, T_> Setter_>
 	class MutableObjectProperty : public Property<C_, T_, Getter_, Setter_> {
 	public:
 		using Type = T_;
@@ -558,7 +563,7 @@ namespace Gorgon {
 	}
 
 	/// Supports everything that string class supports including +, +=, length()
-	template<class C_, class T_, T_(C_::*Getter_)() const, void(C_::*Setter_)(const T_ &)>
+	template<class C_, class T_, PropertyGetter<C_, T_> Getter_, PropertySetter<C_, T_> Setter_>
 	class TextualProperty : public Property<C_, T_, Getter_, Setter_> {
 	public:
 		TextualProperty(C_ *Object) : Property<C_,T_, Getter_, Setter_>(Object) 

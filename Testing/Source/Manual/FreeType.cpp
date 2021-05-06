@@ -66,8 +66,8 @@ int main() {
 	auto &ff2 = file.Root().Get<Resource::Font>(1).GetRenderer();
 	file.Prepare();
 
-	BasicFont f3(ff);
-	BasicFont f4(ff2);
+	BasicPrinter f3(ff);
+    BasicPrinter f4(ff2);
 
 
     f3.Print(l, "This is a test text\nwith second line jj\nWith kerning: AV T. Ta.\nTürkçe ve Unicode desteği!!", 

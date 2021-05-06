@@ -2,6 +2,7 @@
 #include "../OS.h"
 #include "../Filesystem.h"
 #include "../Graphics/FreeType.h"
+#include "../Graphics/Color.h"
 #include "../Graphics/BitmapFont.h"
 #include "../Graphics/BlankImage.h"
 #include "../Graphics/Animations.h"
@@ -21,13 +22,24 @@ namespace Gorgon { namespace OS {
 #endif
 #include "../Graphics/EmptyImage.h"
 
-#define A1(type) GetAsset({AssetID::type})
-#define A2(type, color) GetAsset({AssetID::type, Graphics::Color::color})
-#define A3(type, color, borderside) GetAsset({AssetID::type, Graphics::Color::color, AssetID::borderside})
-#define A4(type, color, borderside, borderwidth) GetAsset({AssetID::type, Graphics::Color::color, AssetID::borderside, borderwidth})
-#define A5(type, color, borderside, borderwidth, borderradius) GetAsset({AssetID::type, Graphics::Color::color, AssetID::borderside, borderwidth, borderradius})
-#define GET_MACRO(_1,_2,_3,_4,_5,NAME,...) NAME
-#define A(...) GET_MACRO(__VA_ARGS__, A5, A4, A3, A2, A1)(__VA_ARGS__)
+#define MSVC_BUG(MACRO, ARGS) MACRO ARGS  // name to remind that bug fix is due to MSVC :-)
+
+#define CONCATE_(X,Y) X##Y
+#define CONCATE(X,Y) CONCATE_(X,Y)
+#define UNIQUE(NAME) CONCATE(NAME, __LINE__)
+
+#define NUM_ARGS_2(_1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11, _12, _13, _14, TOTAL, ...) TOTAL
+#define NUM_ARGS_1(...) MSVC_BUG(NUM_ARGS_2, (__VA_ARGS__))
+#define NUM_ARGS(...) NUM_ARGS_1(__VA_ARGS__, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1)
+#define VA_MACRO(MACRO, ...) MSVC_BUG(CONCATE, (MACRO, NUM_ARGS(__VA_ARGS__)))(__VA_ARGS__)
+
+#define _A1(type) GetAsset({AssetID::type})
+#define _A2(type, color) GetAsset({AssetID::type, Graphics::Color::color})
+#define _A3(type, color, borderside) GetAsset({AssetID::type, Graphics::Color::color, AssetID::borderside})
+#define _A4(type, color, borderside, borderwidth) GetAsset({AssetID::type, Graphics::Color::color, AssetID::borderside, borderwidth})
+#define _A5(type, color, borderside, borderwidth, borderradius) GetAsset({AssetID::type, Graphics::Color::color, AssetID::borderside, borderwidth, borderradius})
+
+#define A(...) VA_MACRO(_A, __VA_ARGS__)
 
 #define FgC(c) Colors[Graphics::Color::c].Forecolor
 #define BgC(c) Colors[Graphics::Color::c].Backcolor

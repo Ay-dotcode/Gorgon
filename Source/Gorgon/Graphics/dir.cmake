@@ -1,5 +1,9 @@
 SET(Local
 	../Graphics.h
+	AdvancedPrinter.h
+	AdvancedPrinterImpl.h
+	AdvancedPrinter.cpp
+	AdvancedTextBuilder.h
 	Animations.h
 	Bitmap.h
 	Bitmap.cpp
