@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include "Enum.h"
 
 namespace Gorgon {
 	/// This namespace contains operating system related functionality.
@@ -67,36 +68,36 @@ namespace Gorgon {
 
 		/// This structure represents the version of the operating system
 		struct Info {
-			enum Type {
+			enum OSType {
 				Windows,
 				Linux
 			};
 
 			/// Identifier for the current operating system
-			Type type;
+			OSType Type;
 			
 			/// Name of the current operating system
-			std::string name;
+			std::string Name;
 
 			/// Major version
-			int major;
+			int Major;
 			
 			/// Minor version
-			int minor;
+			int Minor;
 			
 			/// Revision
-			int revision;
+			int Revision;
 			
 			/// Build number
-			int buildnumber;
+			int BuildNumber;
 			
 			/// Number of bits in the architecture, this number is independent of compiled platform
 			/// of Gorgon Library
-			int archbits;
+			int ArchBits;
 			
-			/// The name  of the architecture, this number is independent of compiled platform
+			/// The name  of the architecture, this information is independent of compiled platform
 			/// of Gorgon Library
-			std::string arch;
+			std::string Arch;
 		};
 		
 		/// Returns information related with the operating system, including version, name, and architecture.
@@ -120,5 +121,121 @@ namespace Gorgon {
 		/// This method will notify the system should process any messages that coming from the operating
 		/// system. Internally used. Should only be used when necessary.
 		void processmessages();
+        
+        enum class FontWeight {
+            Thin        = 100,
+            ExtraLight  = 200,
+            Light       = 300,
+            Regular     = 400,
+            Medium      = 500,
+            SemiBold    = 600,
+            Bold        = 700,
+            ExtraBold   = 800,
+            Heavy       = 900,
+        };
+        
+        DefineEnumStrings(FontWeight, {
+            {FontWeight::Thin, "Thin"},
+            {FontWeight::ExtraLight, "Extra light"},
+            {FontWeight::ExtraLight, "ExtraLight"},
+            {FontWeight::Light, "Light"},
+            {FontWeight::Regular, "Regular"},
+            {FontWeight::Medium, "Medium"},
+            {FontWeight::SemiBold, "Semi bold"},
+            {FontWeight::SemiBold, "SemiBold"},
+            {FontWeight::Bold, "Bold"},
+            {FontWeight::ExtraBold, "Extra bold"},
+            {FontWeight::ExtraBold, "ExtraBold"},
+            {FontWeight::Heavy, "Heavy"},
+        });
+        
+        /// This class represents a single font. 
+        class Font {
+        public:
+            
+            /// Returns the named weight of the font.
+            FontWeight GetWeight() const {
+                if(Weight <= 150) {
+                    return FontWeight::Thin;
+                }
+                else if(Weight <= 250) {
+                    return FontWeight::ExtraLight;
+                }
+                else if(Weight <= 350) {
+                    return FontWeight::Light;
+                }
+                else if(Weight > 850) {
+                    return FontWeight::Heavy;
+                }
+                else if(Weight > 750) {
+                    return FontWeight::ExtraBold;
+                }
+                else if(Weight > 650) {
+                    return FontWeight::Bold;
+                }
+                else if(Weight > 550) {
+                    return FontWeight::SemiBold;
+                }
+                else if(Weight > 450) {
+                    return FontWeight::Medium;
+                }
+                else {
+                    return FontWeight::Regular;
+                }
+            }
+            
+            /// Returns CSS usable weight of the font.
+            std::string GetCSSWeight() const {
+                if(Weight == 400)
+                    return "normal";
+                else if(Weight == 600)
+                    return "bold";
+                else
+                    return std::to_string(Weight);
+            }
+            
+            /// This is the style name of the font. Apart form Regular, Bold, Italic
+            /// it could have different names such as narrow, Extra-bold
+            std::string Style = "Regular";
+            
+            /// If this is a bold font
+            bool Bold = false;
+            
+            /// Weight of the font. This is same as CSS3, 400 is regular
+            int  Weight = (int)FontWeight::Regular;
+            
+            /// Width of the font, 100 is regular, 75 is condensed and 125 is expanded.
+            int Width   = 100;
+            
+            /// Whether the font is italic or not
+            bool Italic = false;
+            
+            /// Whether the font is monospaced
+            bool Monospaced = false;
+            
+            /// Name of the font family
+            std::string Family = "";
+            
+            /// Filename of the font
+            std::string Filename = "";
+        };
+        
+        /**
+         * This structure stores information about a font family installed in the system. Once a
+         * family is obtained, its type faces can be queried. In some systems, all faces will be
+         * loaded along with the families
+         */
+        class FontFamily {
+        public:
+            /// Name of the font family
+            std::string Family;
+            
+            /// Individual fonts in the family
+            std::vector<Font> Faces;
+        };
+        
+        std::vector<FontFamily> GetFontFamilies();
+        
+        void DumpFontFamilies(std::ostream &out);
 	}
 }

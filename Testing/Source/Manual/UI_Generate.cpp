@@ -26,6 +26,7 @@
 #include <Gorgon/Widgets/Window.h>
 #include <Gorgon/Widgets/DialogWindow.h>
 #include <Gorgon/UI/Dialog.h>
+#include <Gorgon/OS.h>
 
 enum DaysOfWeek {
     Monday,
@@ -213,6 +214,10 @@ int main() {
     list.AddToSelection(1, 4);
     list.InvertSelection();
     list.SetWidthInUnits(5);
+    std::ofstream file("fonts.txt");
+    OS::DumpFontFamilies(file);
+    file.close();
+    OS::Open("fonts.txt");
     list.ChangedEvent.Register([&](long index, bool status) {
         std::cout << "Selected items: ";
         for(auto &s : list.Selection) {

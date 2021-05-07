@@ -11,6 +11,11 @@
 
 #include "../Filesystem.h"
 
+#ifdef FREETYPE_SUPPORT
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include FT_TRUETYPE_TABLES_H
+#endif
 
 #define WINDOWS_LEAN_AND_MEAN
 #define SECURITY_WIN32
@@ -71,7 +76,7 @@ namespace Gorgon {
 	}
 
 	//https://social.msdn.microsoft.com/Forums/en-US/41f3fa1c-d7cd-4ba6-a3bf-a36f16641e37/conversion-from-multibyte-to-unicode-character-set?forum=vcgeneral
-	std::string UnicodeToMByte(LPWSTR unicodeStr) {
+	std::string UnicodeToMByte(LPCWSTR unicodeStr) {
 		// Get the required size of the buffer that receives the multiByte string. 
 		DWORD minSize;
 		minSize = WideCharToMultiByte(CP_UTF8, NULL, unicodeStr, -1, NULL, 0, NULL, FALSE);
@@ -401,532 +406,123 @@ namespace Gorgon {
 				c = '/';
 	}
 
-} }
-/*	HINSTANCE Instance;
+	std::vector<FontFamily> GetFontFamilies() {
+#ifndef FREETYPE_SUPPORT
+		Utils::AssertFalse("Listing fonts require freetype library.");
+#else
+		std::vector<FontFamily> list;
 
-	extern int Application(std::vector<std::string> &arguments);
+		//Collect font filenames
+		HKEY fontskey;
 
-	int __stdcall WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
-		Instance=hInstance;
+		if(RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+			L"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts",
+			0, KEY_READ, &fontskey) != ERROR_SUCCESS
+		) 
+			throw std::runtime_error("Cannot reach to list of fonts");
 
-		std::vector<std::string> arguments;
+		DWORD fontcount = 0;
+		DWORD maxnamelen = 0;
+		DWORD maxsize = 0;
 
-		for(int i=0;i<__argc;i++)
-			arguments.push_back(__argv[i]);
+		auto result = RegQueryInfoKey(
+			fontskey,
+			NULL, NULL, NULL, NULL, NULL, NULL,
+			&fontcount, &maxnamelen, &maxsize, 
+			NULL, NULL
+		);
 
-		return Application(arguments);
-	}
+		if(result != ERROR_SUCCESS)
+			throw std::runtime_error("Cannot reach to list of fonts");
 
-	namespace gge { namespace os {
-		bool quiting=false;
+		WCHAR *valname = new WCHAR[maxnamelen + 1]; 
+		WCHAR *data = new WCHAR[maxsize / sizeof(WCHAR) + 1];
 
+		std::vector<std::string> filenames;
 
-		void Quit(int ret) {
-			PostQuitMessage(ret);
-			CloseWindow((HWND)Main.GetWindow());
-			quiting=true;
-			exit(ret);
+		for(int i = 0; i<fontcount; i++) {
+			DWORD type, size = maxsize, nl = maxnamelen;
+
+			result = RegEnumValue(fontskey, i,
+				valname, &nl,
+				NULL,
+				&type, (LPBYTE)data, &size
+			);
+
+			filenames.push_back(UnicodeToMByte(data));
 		}
-		void Cleanup() {
-			CloseWindow((HWND)Main.GetWindow());
-			quiting=true;
-		}
-		void Initialize() {
-			system::pointerdisplayed=true;
-		}
 
-		namespace system { 
-			class mutex_data { 
-			public: 
-				HANDLE mutex; 
-				mutex_data() {
-					mutex=CreateMutex(NULL,0,NULL);
-				}
-				~mutex_data() {
-					CloseHandle(mutex);
-				}
-			}; 
-		}
+		delete[] data;
+		delete[] valname;
 
+		auto curdir = Filesystem::CurrentDirectory();
+		Filesystem::ChangeDirectory(GetEnvVar("WINDIR") + "/fonts");
+		FT_Library library = nullptr; 
+		FT_Face    face = nullptr;
 
-		namespace system {
-			CursorHandle defaultcursor;
-			bool pointerdisplayed;
-			
-			class GGEDropTarget : public IDropTarget
-			{
-			public:
-				GGEDropTarget() : m_lRefCount(0) {
-					object=&inlayer.MouseEvents.RegisterLambda([&]() -> bool {
-						this->dragfinished();
-						return true;
-					}, utils::Bounds2D(0,0,10000,10000), gge::input::mouse::Event::DragCanceled | gge::input::mouse::Event::DragAccepted);
-				}
+		FT_Init_FreeType(&library);
 
-				// IUnknown implementation
-				HRESULT __stdcall QueryInterface (REFIID iid, void ** ppvObject) { return S_OK; }
-				ULONG   __stdcall AddRef (void) {return ++m_lRefCount;}
-				ULONG   __stdcall Release (void) {return --m_lRefCount;}
+		if(!library)
+			throw std::runtime_error("Cannot initialize freetype");
 
-				// IDropTarget implementation
-				HRESULT __stdcall DragEnter(IDataObject * pDataObject, DWORD grfKeyState, POINTL pt, DWORD * pdwEffect) {
-					// does the dataobject contain data we want?
-					FORMATETC fileformat = { CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
-					FORMATETC textformat = { CF_TEXT, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
-
-					if(pDataObject->QueryGetData(&fileformat)==S_OK) {
-						gge::Pointers.Hide();
-						auto data=new gge::input::mouse::FileListDragData();
-
-						STGMEDIUM stgmed;
-						std::string name;
-						pDataObject->GetData(&fileformat, &stgmed);
-						DROPFILES *fdata=(DROPFILES*)GlobalLock(stgmed.hGlobal);
-
-
-						wchar_t *widetext=(wchar_t*)((char*)(fdata)+fdata->pFiles);
-
-						while(widetext[0]) {
-							name.resize(wcslen(widetext));
-
-							wcstombs(&name[0], widetext, wcslen(widetext)+1);
-							winslashtonormal(name);
-							data->data.push_back(name);
-
-							widetext+=wcslen(widetext)+1;
-						}
-
-						GlobalUnlock(stgmed.hGlobal);
-						ReleaseStgMedium(&stgmed);
-
-
-						gge::input::mouse::BeginDrag(*data, *object);
-						*pdwEffect = DROPEFFECT_MOVE;
-					}
-					else if(pDataObject->QueryGetData(&textformat) == S_OK) {
-						gge::Pointers.Hide();
-						auto data=new gge::input::mouse::TextDragData();
-
-						STGMEDIUM stgmed;
-						std::string name;
-						pDataObject->GetData(&textformat, &stgmed);
-						char *text=(char*)GlobalLock(stgmed.hGlobal);
-
-						name=text;
-
-						data->data=name;
-
-
-						GlobalUnlock(stgmed.hGlobal);
-						ReleaseStgMedium(&stgmed);
-
-
-						gge::input::mouse::BeginDrag(*data, *object);
-						*pdwEffect = DROPEFFECT_COPY;
-					}
-					else {
-						*pdwEffect = DROPEFFECT_NONE;
-					}
-
-					return S_OK;
-				}
-				HRESULT __stdcall DragOver(DWORD grfKeyState, POINTL pt, DWORD * pdwEffect){
-					if(gge::input::mouse::HasDragTarget() && dynamic_cast<gge::input::mouse::FileListDragData*>(&gge::input::mouse::GetDraggedObject())) {
-						auto &data=dynamic_cast<gge::input::mouse::FileListDragData&>(gge::input::mouse::GetDraggedObject());
-
-						if(data.GetAction()==data.Move)
-							*pdwEffect=DROPEFFECT_MOVE;
-						else
-							*pdwEffect=DROPEFFECT_COPY;
-					}
-					else if(gge::input::mouse::HasDragTarget() && dynamic_cast<gge::input::mouse::TextDragData*>(&gge::input::mouse::GetDraggedObject())) {
-						*pdwEffect=DROPEFFECT_COPY;
-					}
-					else {
-						*pdwEffect=DROPEFFECT_NONE;
-					}
-
-					return S_OK;
-				}
-				HRESULT __stdcall DragLeave(void) {
-					gge::input::mouse::CancelDrag();
-					gge::Pointers.Show();
-					return S_OK;
-				}
-				HRESULT __stdcall Drop(IDataObject * pDataObject, DWORD grfKeyState, POINTL pt, DWORD * pdwEffect){
-					gge::input::mouse::DropDrag();
-					gge::Pointers.Show();
-
-					return S_OK;
-				}
-
-				// Constructor
-				~GGEDropTarget() {}
-
-			private:
-				void dragfinished() {
-					if(dynamic_cast<gge::input::mouse::FileListDragData*>(&gge::input::mouse::GetDraggedObject())) {
-						auto &data=dynamic_cast<gge::input::mouse::FileListDragData&>(gge::input::mouse::GetDraggedObject());
-
-						delete &data;
-					}
-				}
-
-				// Private member variables
-				long   m_lRefCount;
-				gge::input::mouse::Event::Target *object;
-				InputLayer inlayer;
-
-
-			};
-		}
-			
-
-		namespace window {
-			Point cursorlocation=Point(0,0);
-
-			LRESULT __stdcall WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-			{
-				if(quiting)
-					return NULL;
-
-				switch(message)
-				{
-				case WM_ACTIVATE:
-					if(LOWORD(wParam))  {
-						Activated();
-					}
-					else {
-						ReleaseAll();
-						Deactivated();
-					}
-					break;
-				case WM_ERASEBKGND:
-					return true;
-				case WM_CLOSE:
-					bool allow;
-					allow=true;
-					Closing(allow);
-					if(allow)
-						return DefWindowProc(hWnd, message, wParam, lParam);
-
-					break;
-
-				case WM_MOUSEWHEEL:
-					{
-						int x=lParam%0x10000;
-						int y=lParam>>16;
-						
-						ProcessVScroll(GET_WHEEL_DELTA_WPARAM(wParam)/120,cursorlocation.x,cursorlocation.y);
-					}
-					break;
-				case WM_MOUSEHWHEEL:
-					{
-						int x=lParam%0x10000;
-						int y=lParam>>16;
-						
-						ProcessHScroll(GET_WHEEL_DELTA_WPARAM(wParam)/120,cursorlocation.x,cursorlocation.y);
-					}
-					break;
-
-				case WM_KEYDOWN:
-					if(lParam&1<<24) //Ctrl & Alt
-						keyboard::Modifier::isAlternate=true;
-					else
-						keyboard::Modifier::isAlternate=false;
-
-					if(lParam==0x360001) //Shift
-						keyboard::Modifier::isAlternate=true;
-
-					if(wParam==VK_RWIN) { //Win
-						keyboard::Modifier::isAlternate=true;
-						wParam=VK_LWIN;
-					}
-
-					ProcessKeyDown(wParam);
-					keyboard::Modifier::isAlternate=false;
-
-					switch(wParam) {
-					case VK_CONTROL:
-						keyboard::Modifier::Add(keyboard::Modifier::Ctrl);
-						break;
-					case VK_SHIFT:
-						keyboard::Modifier::Add(keyboard::Modifier::Shift);
-						break;
-					case VK_LWIN:
-						keyboard::Modifier::Add(keyboard::Modifier::Super);
-						break;
-					case VK_RWIN:
-						keyboard::Modifier::Add(keyboard::Modifier::Super);
-						break;
-					}
-						
-					break; 
-				case WM_KEYUP:
-					if(lParam&1<<24)
-						keyboard::Modifier::isAlternate=true;
-					else
-						keyboard::Modifier::isAlternate=false;
-
-					if(lParam==0x360001)
-						keyboard::Modifier::isAlternate=true;
-
-					if(wParam==VK_RWIN) {
-						keyboard::Modifier::isAlternate=true;
-						wParam=VK_LWIN;
-					}
-
-					ProcessKeyUp(wParam);
-					keyboard::Modifier::isAlternate=false;
-
-					switch(wParam) {
-					case VK_CONTROL:
-						keyboard::Modifier::Remove(keyboard::Modifier::Ctrl);
-						break;
-					case VK_SHIFT:
-						keyboard::Modifier::Remove(keyboard::Modifier::Shift);
-						break;
-					case VK_MENU:
-						keyboard::Modifier::Remove(keyboard::Modifier::Alt);
-						break;
-					case VK_LWIN:
-						keyboard::Modifier::Remove(keyboard::Modifier::Super);
-						break;
-					case VK_RWIN:
-						keyboard::Modifier::Remove(keyboard::Modifier::Super);
-						break;
-					}
-					
-					break; 
-				case WM_CHAR:
-					if(lParam&1<<24)
-						AddModifier(&KeyboardModifier,KEYB_MOD_ALTERNATIVE);
-					else
-						RemoveModifier(&KeyboardModifier,KEYB_MOD_ALTERNATIVE);
-
-					ProcessChar(wParam);
-					break; 
-				case WM_SYSKEYDOWN:
-					keyboard::Modifier::Add(keyboard::Modifier::Alt);
-					break; 
-				case WM_SYSKEYUP:
-					keyboard::Modifier::Remove(keyboard::Modifier::Alt);
-					break; 
-				case WM_SYSCHAR:
-					keyboard::Modifier::Add(keyboard::Modifier::Alt);
-					ProcessChar(wParam);
-					keyboard::Modifier::Remove(keyboard::Modifier::Alt);
-					break;
-				case WM_DESTROY:
-					ReleaseAll();
-					Destroyed();
-					break;
-				default:
-					return DefWindowProc(hWnd, message, wParam, lParam);
-				}
-				return 0;
+		for(auto filename : filenames) {
+			if(face) {
+				FT_Done_Face(face);
+				face = nullptr;
 			}
 
-			WindowHandle CreateWindow(std::string Name, std::string Title, os::IconHandle Icon, int Left, int Top, int Width, int Height, int BitDepth, bool Show, bool &FullScreen) {
-				WNDCLASSEX windclass;
+			filename = Filesystem::Canonical(filename);
+			auto error = FT_New_Face(library, filename.c_str(), 0, &face);
 
-				HWND ret;
+			if(error != FT_Err_Ok || face == nullptr)
+				continue;
 
-				//Creating window class
-				windclass.cbClsExtra=0;
-				windclass.cbSize=sizeof(WNDCLASSEX);
-				windclass.cbWndExtra=0;
-				windclass.hbrBackground=(HBRUSH)16;
-				windclass.hCursor=LoadCursor(NULL, NULL);
-				windclass.hInstance=Instance;
-				windclass.lpfnWndProc=WndProc;
-				windclass.lpszClassName=Name.c_str();
-				windclass.lpszMenuName=NULL;
-				windclass.hIcon=(HICON)Icon;
-				windclass.hIconSm=(HICON)Icon;
-				windclass.style=3;
-				RegisterClassEx(&windclass);
+			auto family = face->family_name;
 
-				//Setting fullscreen parameters
-				if (FullScreen) {
-					DEVMODE dmScreenSettings;									// device mode
-					memset(&dmScreenSettings,0,sizeof(dmScreenSettings));
-					dmScreenSettings.dmSize       = sizeof(dmScreenSettings); 
-					dmScreenSettings.dmPelsWidth  = Width;						// screen width
-					dmScreenSettings.dmPelsHeight = Height;						// screen height
-					dmScreenSettings.dmBitsPerPel = BitDepth;					// bits per pixel
-					dmScreenSettings.dmFields	  = DM_BITSPERPEL|DM_PELSWIDTH|DM_PELSHEIGHT;
-					if(ChangeDisplaySettings(&dmScreenSettings, CDS_FULLSCREEN)!= DISP_CHANGE_SUCCESSFUL) {
-						MessageBox(NULL,"Cannot run in fullscreen, reverting to windowed mode\nTam ekran modu çalýþmamakta, pencerede gösterim modu seçildi","Initialize / Baþlangýç",0);
-						FullScreen=false;
-					}
-				}
+			//search if we have the same family already
+			auto it = std::find_if(begin(list), end(list), [&family](const auto &fam) {
+				return fam.Family == (char *)family;
+			});
 
-				//Creating window
-				if(!FullScreen)
-					ret=CreateWindowExA(WS_EX_APPWINDOW | WS_EX_WINDOWEDGE, Name.c_str(), Title.c_str(), WS_MINIMIZEBOX | WS_SYSMENU | WS_CLIPSIBLINGS |WS_CLIPCHILDREN ,CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, (HINSTANCE)Instance, NULL);
-				else																							   
-					ret=CreateWindowA(Name.c_str(), Title.c_str(), WS_POPUP, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, NULL, NULL, (HINSTANCE)Instance, NULL);
-
-				//Adjusting window size and position
-				if(Show)
-					::ShowWindow(ret,1);
-
-				if(!FullScreen) {
-					RECT cr,wr;
-					GetClientRect(ret,&cr);
-					GetWindowRect(ret,&wr);
-
-					SetWindowPos(ret, 0, 0, 0, 
-						Width + ( (wr.right-wr.left) - (cr.right-cr.left) ),
-						Height + ( (wr.bottom-wr.top) - (cr.bottom-cr.top) ),0);
-				}
-				else
-					SetWindowPos(ret, 0, Left, Top, Width, Height, 0);
-
-				UpdateWindow(ret);
-				curwin=ret;
-
-				HCURSOR cursor=LoadCursor(NULL, IDC_ARROW);
-				system::defaultcursor=(CursorHandle)cursor;
-
-				overhead.x=0;
-				overhead.y=0;
-
-				if(!FullScreen)
-					ClientToScreen(ret,&overhead);
-
-				if(!FullScreen)
-					SetWindowPos(ret, 0, Left, Top, 0, 0,SWP_NOSIZE | SWP_NOZORDER);
-
-				OleInitialize(NULL);
-				RegisterDragDrop(ret, new system::GGEDropTarget());
-
-				return (WindowHandle)ret;
+			if(it == end(list)) {
+				FontFamily ff;
+				ff.Family = family;
+				list.push_back(ff);
+				it = list.begin() + list.size() - 1;
 			}
 
 
-		IconHandle IconFromImage(graphics::ImageData &image) {
-			DWORD dwWidth, dwHeight;
-			BITMAPV5HEADER bi;
-			HBITMAP hBitmap;
-			void *lpBits;
-			DWORD x,y;
-			HICON hAlphaIcon = NULL;
+			Font font;
 
-			dwWidth  = image.GetWidth();  // width of cursor
-			dwHeight = image.GetHeight();  // height of cursor
+			font.Filename = filename;
+			font.Family = it->Family;
+			font.Style = face->style_name;
 
-			ZeroMemory(&bi,sizeof(BITMAPV5HEADER));
-			bi.bV5Size           = sizeof(BITMAPV5HEADER);
-			bi.bV5Width           = dwWidth;
-			bi.bV5Height          = dwHeight;
-			bi.bV5Planes = 1;
-			bi.bV5BitCount = 32;
-			bi.bV5Compression = BI_BITFIELDS;
-			// The following mask specification specifies a supported 32 BPP
-			// alpha format for Windows XP.
-			bi.bV5RedMask   =  0x00FF0000;
-			bi.bV5GreenMask =  0x0000FF00;
-			bi.bV5BlueMask  =  0x000000FF;
-			bi.bV5AlphaMask =  0xFF000000; 
+			auto tbl = FT_Get_Sfnt_Table(face, FT_SFNT_OS2);
+			if(tbl != nullptr) {
+				TT_OS2 *os2 = (TT_OS2 *)tbl;
 
-			HDC hdc;
-			hdc = GetDC(NULL);
-
-			// Create the DIB section with an alpha channel.
-			hBitmap = CreateDIBSection(hdc, (BITMAPINFO *)&bi, DIB_RGB_COLORS, 
-				(void **)&lpBits, NULL, (DWORD)0);
+				font.Weight = os2->usWeightClass;
+				font.Italic = (os2->fsSelection & 0b1000000001) != 0;
+				font.Bold   = (os2->fsSelection & 0b100000) != 0;
+				font.Monospaced = os2->panose[0] == 2 && os2->panose[3] == 9;
+                font.Width  = os2->usWidthClass;
+			}
+			
+			/*face.Bold = weight > FC_WEIGHT_NORMAL;
+			face.Italic = slant > 0;
+			face.Monospaced = spacing == FC_MONO;
+			face.Weight = fctocss(weight);*/
 
 			
 
-			// Create an empty mask bitmap.
-			HBITMAP hMonoBitmap = CreateBitmap(dwWidth,dwHeight,1,1,NULL);
-
-			// Set the alpha values for each pixel in the cursor so that
-			// the complete cursor is semi-transparent.
-			DWORD *lpdwPixel;
-			lpdwPixel = (DWORD *)lpBits;
-			DWORD *source=(DWORD *)image.RawData();
-			for (y=0;y<dwHeight;y++)
-			{
-				for (x=0;x<dwWidth;x++) {
-					// Clear the alpha bits
-					*lpdwPixel = source[x+(dwHeight-y-1)*dwWidth];
-
-					lpdwPixel++;
-				}
-			}
-
-			ICONINFO ii;
-			ii.fIcon = TRUE;  // Change fIcon to TRUE to create an alpha icon
-			ii.xHotspot = 0;
-			ii.yHotspot = 0;
-			ii.hbmMask = hMonoBitmap;
-			ii.hbmColor = hBitmap;
-
-			// Create the alpha cursor with the alpha DIB section.
-			hAlphaIcon = CreateIconIndirect(&ii);
-
-			DeleteObject(hBitmap);          
-			DeleteObject(hMonoBitmap); 
-
-			return (IconHandle)hAlphaIcon;
+			it->Faces.push_back(font);
 		}
 
-		namespace user {
-		}
+		FT_Done_FreeType(library);
+		Filesystem::ChangeDirectory(curdir);
 
-
-	} 
-
-	namespace input {
-		const keyboard::Key keyboard::KeyCodes::Shift		= VK_SHIFT;
-		const keyboard::Key keyboard::KeyCodes::Control	= VK_CONTROL;
-		const keyboard::Key keyboard::KeyCodes::Alt		= VK_MENU;
-		const keyboard::Key keyboard::KeyCodes::Super		= VK_LWIN;
-
-		const keyboard::Key keyboard::KeyCodes::Home		= VK_HOME;
-		const keyboard::Key keyboard::KeyCodes::End		= VK_END;
-		const keyboard::Key keyboard::KeyCodes::Insert	= VK_INSERT;
-		const keyboard::Key keyboard::KeyCodes::Delete	= VK_DELETE;
-		const keyboard::Key keyboard::KeyCodes::PageUp	= VK_PRIOR;
-		const keyboard::Key keyboard::KeyCodes::PageDown	= VK_NEXT;
-
-		const keyboard::Key keyboard::KeyCodes::Left		= VK_LEFT;
-		const keyboard::Key keyboard::KeyCodes::Up		= VK_UP;
-		const keyboard::Key keyboard::KeyCodes::Right		= VK_RIGHT;
-		const keyboard::Key keyboard::KeyCodes::Down		= VK_DOWN;
-
-		const keyboard::Key keyboard::KeyCodes::PrintScreen=VK_SNAPSHOT;
-		const keyboard::Key keyboard::KeyCodes::Pause		= VK_PAUSE;
-
-		const keyboard::Key keyboard::KeyCodes::CapsLock	= VK_CAPITAL;
-		const keyboard::Key keyboard::KeyCodes::NumLock	= VK_NUMLOCK;
-
-		const keyboard::Key keyboard::KeyCodes::Enter		= VK_RETURN;
-		const keyboard::Key keyboard::KeyCodes::Backspace	= VK_BACK;
-		const keyboard::Key keyboard::KeyCodes::Escape	= VK_ESCAPE;
-		const keyboard::Key keyboard::KeyCodes::Tab		= VK_TAB;
-		const keyboard::Key keyboard::KeyCodes::Space		= VK_SPACE;
-
-		const keyboard::Key keyboard::KeyCodes::F1		= VK_F1;
-		const keyboard::Key keyboard::KeyCodes::F2		= VK_F2;
-		const keyboard::Key keyboard::KeyCodes::F3		= VK_F3;
-		const keyboard::Key keyboard::KeyCodes::F4		= VK_F4;
-		const keyboard::Key keyboard::KeyCodes::F5		= VK_F5;
-		const keyboard::Key keyboard::KeyCodes::F6		= VK_F6;
-		const keyboard::Key keyboard::KeyCodes::F7		= VK_F7;
-		const keyboard::Key keyboard::KeyCodes::F8		= VK_F8;
-		const keyboard::Key keyboard::KeyCodes::F9		= VK_F9;
-		const keyboard::Key keyboard::KeyCodes::F10		= VK_F10;
-		const keyboard::Key keyboard::KeyCodes::F11		= VK_F11;
-		const keyboard::Key keyboard::KeyCodes::F12		= VK_F12;
-
-	}
-
-}
-
-
+		return list;
 #endif
-*/
+	}
+} }

@@ -67,14 +67,27 @@ endif()
 set_property(CACHE FREETYPE PROPERTY STRINGS ${gorgon_external_options})
 
 if(WIN32)
-	set(VORBIS BUILTIN CACHE STRING "Enable FreeType font support")
+	set(VORBIS BUILTIN CACHE STRING "Enable Vorbis audio support")
 else()
-	set(VORBIS SYSTEM CACHE STRING "Enable FreeType font support")
+	set(VORBIS SYSTEM CACHE STRING "Enable Vorbis audio support")
 endif()
 if(NOT VORBIS IN_LIST gorgon_external_options)
     message(FATAL_ERROR "VORBIS should be set to one of ${gorgon_external_options}")
 endif()
 set_property(CACHE VORBIS PROPERTY STRINGS ${gorgon_external_options})
+
+if(WIN32)
+	set(FONTCONFIG NONE CACHE STRING "Enable Font config support")
+else()
+	set(FONTCONFIG SYSTEM CACHE STRING "Enable Font config support")
+endif()
+if("${FONTCONFIG}" STREQUAL "ON") #upgrading old options
+	set(FONTCONFIG SYSTEM CACHE STRING "Enable FreeType font support" FORCE)
+endif()
+if(NOT FONTCONFIG IN_LIST gorgon_external_options)
+    message(FATAL_ERROR "FONTCONFIG should be set to one of ${gorgon_external_options}")
+endif()
+set_property(CACHE FONTCONFIG PROPERTY STRINGS ${gorgon_external_options})
 
 OPTION(FORCE_32_BIT "Force 32 bit compilation" OFF)
 
@@ -128,6 +141,11 @@ endif()
 if(VORBIS STREQUAL "SYSTEM" OR VORBIS STREQUAL "BUILTIN")
     add_definitions("-DVORBIS_SUPPORT")
     string(APPEND ADDITIONAL_CLIENT_FLAGS " -DVORBIS_SUPPORT")
+endif()
+
+if(FONTCONFIG STREQUAL "SYSTEM" OR FONTCONFIG STREQUAL "BUILTIN")
+    add_definitions("-DFONTCONFIG_SUPPORT")
+    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DFONTCONFIG_SUPPORT")
 endif()
 
 if(SCRIPTING)
@@ -272,6 +290,10 @@ if(VORBIS STREQUAL "BUILTIN")
 	add_subdirectory(Source/External/ogg)
 	
 	include_directories(Source/External/ogg/include)
+endif()
+
+if(FONTCONFIG STREQUAL "BUILTIN")
+	message(FATAL_ERROR "Built-in fontconfig is not supported yet.")
 endif()
 
 if(WIN32)

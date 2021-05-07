@@ -24,7 +24,7 @@ namespace Gorgon {
 
 	std::string MByteToUnicode(const std::string &multiByteStr);
 
-	std::string UnicodeToMByte(LPWSTR unicodeStr);
+	std::string UnicodeToMByte(LPCWSTR unicodeStr);
 
 namespace internal {
 	struct windowdata;

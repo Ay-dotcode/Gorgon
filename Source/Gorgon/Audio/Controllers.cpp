@@ -34,7 +34,7 @@ namespace Gorgon { namespace Audio {
             Seek(0);
         }
         else {
-            Seek(position);
+            Seek((float)position);
         }
         
         datachanged();
@@ -77,7 +77,7 @@ namespace Gorgon { namespace Audio {
     
     BasicController &BasicController::Seek(float target) {
         if(wavedata) {
-            auto ret = wavedata->StartSeeking(target * wavedata->GetSampleRate());
+            auto ret = wavedata->StartSeeking(long(target * wavedata->GetSampleRate()));
             
             if(ret == Source::Done) {
                 position = target;
@@ -118,12 +118,12 @@ namespace Gorgon { namespace Audio {
     }
 
     float BasicController::GetCurrentTime() const {
-        return position;
+        return (float)position;
     }
 
     float BasicController::GetCurrentFraction() const {
         if(wavedata)
-            return position / wavedata->GetLength();
+            return float(position / wavedata->GetLength());
         else
             return 0;
     }

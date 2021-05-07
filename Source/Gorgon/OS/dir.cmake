@@ -1,5 +1,6 @@
 SET(Local
 	../OS.h
+	OS.cpp
 )
 
 IF(${WIN32})
@@ -16,3 +17,9 @@ ELSE()
 	)	
 ENDIF()
 
+IF(FONTCONFIG STREQUAL "SYSTEM")
+    find_package(Fontconfig)
+    
+    include_directories(${Fontconfig_INCLUDE_DIRS})
+    LIST(APPEND Libs ${Fontconfig_LIBRARIES})
+ENDIF()
