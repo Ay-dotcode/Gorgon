@@ -47,3 +47,4 @@ syntax: regexp
 .ccls-cache
 compile_commands.json
 .directory
+.cache
