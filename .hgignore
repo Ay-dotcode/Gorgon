@@ -9,6 +9,14 @@ Testing/Tests
 Testing/Runtime
 Docs/HTML
 
+clang
+ninja
+codeblocks
+Source/External/curl/
+Package/
+codelite/
+Docs/xml
+
 syntax: glob
 
 *.obj
@@ -17,14 +25,8 @@ ipch
 *.sdf
 *.opensdf
 .kdev_include_paths
-build
-clang
-ninja
-codeblocks
-Source/External/curl/
-Package/
-codelite/
-Docs/xml
+#build
+
 *.gen
 
 # produced by doxygen
