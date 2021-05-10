@@ -23,7 +23,7 @@ namespace Gorgon { namespace Widgets {
         virtual UI::Template Button() = 0;
         
         /// Generates a button template with the given default size.
-        virtual UI::Template IconButton(Geometry::Size iconsize = {-1, -1}) = 0;
+        virtual UI::Template IconButton() = 0;
         
         /// Generates a button template
         virtual UI::Template DialogButton() = 0;
@@ -550,7 +550,7 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template Button() override { return Button(true); }
         
-        virtual UI::Template IconButton(Geometry::Size iconsize = {-1, -1}) override;
+        virtual UI::Template IconButton() override;
         
         virtual UI::Template DialogButton() override;
         
@@ -667,7 +667,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::BitmapRectangleProvider *makeborder(Graphics::RGBA border, Graphics::RGBA bg, AssetID::BorderSide borders, int borderwidth = -1, int borderradius = -1);
         Graphics::BitmapRectangleProvider *makecheckeredbg();
         Graphics::RectangleProvider *makefocusborder();
-        UI::Template makepanel(SimpleGenerator::AssetID::BorderSide edge, bool scrollers, bool spacing = true);
+        UI::Template makepanel(SimpleGenerator::AssetID::BorderSide edge, bool scrollers, bool spacing = true, bool nobg = false);
         //rotation 0 is up
         Graphics::Bitmap *arrow(Graphics::RGBA color, Geometry::Size size, float rotation);
         Graphics::Bitmap *cross(Graphics::RGBA color, Geometry::Size size);
@@ -695,8 +695,8 @@ namespace Gorgon { namespace Widgets {
         
         Graphics::Color::TripletPack colors = {
             {Graphics::Color::Regular, {Graphics::Color::Charcoal, {Graphics::Color::Ivory, 0.8}}},
-            {Graphics::Color::Hover, {Graphics::Color::Charcoal, {Graphics::Color::Tan, Graphics::Color::Ivory, 0.5}}},
-            {Graphics::Color::Down, {Graphics::Color::Charcoal, {Graphics::Color::Crimson, Graphics::Color::Ivory, 0.8}}},
+            {Graphics::Color::Hover, {Graphics::Color::Black, {Graphics::Color::Tan, Graphics::Color::Ivory, 0.5}}},
+            {Graphics::Color::Down, {Graphics::Color::Black, {Graphics::Color::Crimson, Graphics::Color::Ivory, 0.8}}},
             {Graphics::Color::Disabled, {{Graphics::Color::Grey, 0.8}, Graphics::Color::LightGrey}},
             {Graphics::Color::Edit, {Graphics::Color::Charcoal, Graphics::Color::White}},
             {Graphics::Color::Container, {Graphics::Color::Charcoal, {Graphics::Color::Grey, Graphics::Color::Ivory, 0.5}}},
@@ -707,7 +707,7 @@ namespace Gorgon { namespace Widgets {
             {Graphics::Color::Info, {{Graphics::Color::DarkBlue, 0.9}, {Graphics::Color::BabyBlue, 0.8}, Graphics::Color::Charcoal}},
             {Graphics::Color::Odd, {Graphics::Color::Charcoal, {Graphics::Color::Ivory, 0.2}}},
             {Graphics::Color::Even, {{Graphics::Color::DarkBlue, 0.9}, {Graphics::Color::DarkGrey, 0.2}}},
-            {Graphics::Color::Active, {Graphics::Color::Ivory, {Graphics::Color::Charcoal, 0.8}, Graphics::Color::Transparent}},
+            {Graphics::Color::Active, {Graphics::Color::Ivory, {Graphics::Color::Charcoal, 0.8}}},
             {Graphics::Color::Error, {Graphics::Color::DarkRed, {Graphics::Color::White, 0.2}}},
             {Graphics::Color::Title, {Graphics::Color::DarkGreen, Graphics::Color::Transparent}},
         };

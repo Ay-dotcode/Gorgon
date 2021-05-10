@@ -105,7 +105,7 @@ int main() {
 //     generator.UpdateDimensions();
 //     generator.Activate();
 
-    Widgets::Window blank;
+    Widgets::Panel blank(Widgets::Registry::Panel_Right);
     blank.Move(5, 50);
     blank.SetHeight(300);
     auto icon = Triangle(5, 10);
@@ -214,10 +214,10 @@ int main() {
     list.AddToSelection(1, 4);
     list.InvertSelection();
     list.SetWidthInUnits(5);
-    std::ofstream file("fonts.txt");
-    OS::DumpFontFamilies(file);
-    file.close();
-    OS::Open("fonts.txt");
+//     std::ofstream file("fonts.txt");
+//     OS::DumpFontFamilies(file);
+//     file.close();
+//     OS::Open("fonts.txt");
     list.ChangedEvent.Register([&](long index, bool status) {
         std::cout << "Selected items: ";
         for(auto &s : list.Selection) {
@@ -292,8 +292,8 @@ int main() {
     org << 9 << plane << org.Break
         << 2 << "Label" << 2 << "" << Coffee << l2
         << list << 2 << org.Break
-        << icnbtn2 << 1 << "" << dlist
-        << icnbtn3 << radio << icnbtn << 5 << "Hello"
+        << icnbtn2 << icnbtn3 << dlist
+        <<  radio << icnbtn << 5 << "Hello"
         << chk << chk2 << chkbutton
         << input
         << bar

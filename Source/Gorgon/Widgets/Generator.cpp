@@ -614,9 +614,9 @@ namespace Gorgon { namespace Widgets {
             float angperdivision = -PI/2/div;
             float angstart = -PI/2;
             
-            int missingedge = AssetID::TotalBorders(borders) == 3 ? borders - AssetID::AllExceptLeft : 0;
+            int missingedge = AssetID::TotalBorders(borders) == 3 ? borders - AssetID::AllExceptLeft : -1;
             
-            if(missingedge) {
+            if(missingedge != -1) {
                 list.Push({off, 0});
             }
             else {
@@ -638,7 +638,7 @@ namespace Gorgon { namespace Widgets {
                 list.Push(Geometry::Pointf::FromVector((float)r, ang, Geometry::Pointf{bsize-off-r, bsize-off-r}));
             }
             
-            if(missingedge) {
+            if(missingedge != -1) {
                 list.Push({bsize-off, 0});
             }
             else {
@@ -652,20 +652,20 @@ namespace Gorgon { namespace Widgets {
             CGI::Polyfill(bi.GetData(), list, CGI::SolidFill<>(bg));
             
             
-            if(!missingedge) {
+            if(missingedge == -1) {
                 list.Push(list.Front());
             }
             
             if(border.A != 0)
                 CGI::DrawLines(bi.GetData(), list, (float)w, CGI::SolidFill<>(border));
             
-            if(missingedge == 2) {
+            if(missingedge == 0) {
                 bi = bi.Rotate90();
             }
             else if(missingedge == 3) {
                 bi = bi.Rotate180();
             }
-            else if(missingedge == 4) {
+            else if(missingedge == 2) {
                 bi = bi.Rotate270();
             }
         }
@@ -1051,29 +1051,11 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
-    UI::Template SimpleGenerator::IconButton(Geometry::Size iconsize) {
-        if(iconsize.Width == -1) {
-            iconsize.Width = borderlessheight;
-        }
-        else {
-            iconsize.Width += Focus.Spacing * 2 + Focus.Width * 2;
-        }
-        
-        if(iconsize.Height == -1) {
-            iconsize.Height = borderlessheight;
-        }
-        else {
-            iconsize.Height += Focus.Spacing * 2 + Focus.Width * 2;
-        }
-        
-        auto externalspacing = Border.Width + std::max(Border.Radius / 2, Focus.Spacing);
-        
-        iconsize += Geometry::Size(externalspacing) * 2;
-        
+    UI::Template SimpleGenerator::IconButton() {
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
         
-        temp.SetSize(iconsize);
+        temp.SetSize(GetUnitSize(), GetUnitSize());
         
         temp.AddContainer(0, UI::ComponentCondition::Always)
             .AddIndex(1) //background
@@ -1089,9 +1071,9 @@ namespace Gorgon { namespace Widgets {
         };
         
         setupbg(A(Background, Regular), UI::ComponentCondition::Always);
-        setupbg(A(Background, Regular), UI::ComponentCondition::Hover);
-        setupbg(A(Background, Regular), UI::ComponentCondition::Down);
-        setupbg(A(Background, Regular), UI::ComponentCondition::Disabled);
+        setupbg(A(Rectangle, Hover), UI::ComponentCondition::Hover);
+        setupbg(A(Rectangle, Down), UI::ComponentCondition::Down);
+        setupbg(A(Background, Disabled), UI::ComponentCondition::Disabled);
         
         //boxed content
         auto &boxed = temp.AddContainer(2, UI::ComponentCondition::Always)
@@ -1347,7 +1329,7 @@ namespace Gorgon { namespace Widgets {
         border.SetValueModification(UI::ComponentTemplate::ModifyAlpha, UI::ComponentTemplate::UseTransition);
         border.SetValueRange(0, 0.25, 1);
         border.SetReversible(true);
-        border.Background.SetAnimation(A(Frame, Regular));        
+        border.Background.SetAnimation(A(Frame, Hover));        
         
         //boxed content
         auto &boxed = temp.AddContainer(2, UI::ComponentCondition::Always)
@@ -1408,6 +1390,7 @@ namespace Gorgon { namespace Widgets {
         setuptext(FgC(Hover), UI::ComponentCondition::Hover);
         setuptext(FgC(Down), UI::ComponentCondition::Down);
         setuptext(FgC(Disabled), UI::ComponentCondition::Disabled);
+        setuptext(FgC(Hover), UI::ComponentCondition::State2);
 
         return temp;
     }
@@ -1755,10 +1738,10 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
 
-    UI::Template SimpleGenerator::makepanel(SimpleGenerator::AssetID::BorderSide edge, bool scrollers, bool spacing) {
+    UI::Template SimpleGenerator::makepanel(SimpleGenerator::AssetID::BorderSide edge, bool scrollers, bool spaced, bool nobg) {
         Geometry::Size defsize = {
-            GetUnitSize(6) + Border.Width * 2 + spacing * 2, 
-            GetUnitSize(10) + Border.Width * 2 + spacing * 2
+            GetUnitSize(6) + Border.Width * 2 * spaced + spacing * 2,
+            GetUnitSize(10) + Border.Width * 2 * spaced + spacing * 2
         };
         
         if(AssetID::VBorders(edge) == 1) {
@@ -1766,7 +1749,7 @@ namespace Gorgon { namespace Widgets {
         }
         
         if(AssetID::HBorders(edge) == 1) {
-            defsize.Width = GetUnitSize(3) * 2 + spacing + Border.Width + spacing * 2;
+            defsize.Width = GetUnitSize(6) + Border.Width * 1 * spaced + spacing * 2;
         }
         
         UI::Template temp = maketemplate();
@@ -1777,14 +1760,15 @@ namespace Gorgon { namespace Widgets {
             .AddIndex(1)
         ;
         
-        bg.Background.SetAnimation(GetAsset({
-            AssetID::Rectangle, Graphics::Color::Container, edge, 
-            float(Border.Radius > 0 ? Border.Radius + spacing : 0)
-        }));
+        if(!nobg)
+            bg.Background.SetAnimation(GetAsset({
+                AssetID::Rectangle, Graphics::Color::Container, edge, 
+                float(Border.Radius > 0 ? Border.Radius + spacing : 0)
+            }));
         
         
         Geometry::Margin padding(spacing);
-        if(!spacing)
+        if(!spaced)
             padding = 0;
         else {
             if(AssetID::HasLeft(edge))
@@ -1818,7 +1802,7 @@ namespace Gorgon { namespace Widgets {
             auto &vst = operator[](Scrollbar_Vertical);
             auto &hst = operator[](Scrollbar_Horizontal);
             
-            temp.SetSize(temp.GetWidth()+vst.GetWidth()+spacing, temp.GetHeight());
+            temp.SetSize(temp.GetWidth() + vst.GetWidth() + spacing, temp.GetHeight());
             
             bg
                 .AddIndex(3) //VScroll
@@ -1856,7 +1840,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::BlankPanel() {
-        auto tmp = makepanel(AssetID::None, true, false);
+        auto tmp = makepanel(AssetID::None, true, false, true);
         
         return tmp;
     }
@@ -1868,19 +1852,19 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::TopPanel() {
-        return makepanel(AssetID::Top, false);
+        return makepanel(AssetID::AllExceptTop, false);
     }
     
     UI::Template SimpleGenerator::LeftPanel() {
-        return makepanel(AssetID::Left, true);
+        return makepanel(AssetID::AllExceptLeft, true);
     }
     
     UI::Template SimpleGenerator::RightPanel() {
-        return makepanel(AssetID::Right, true);
+        return makepanel(AssetID::AllExceptRight, true);
     }
     
     UI::Template SimpleGenerator::BottomPanel() {
-        return makepanel(AssetID::Bottom, false);
+        return makepanel(AssetID::AllExceptBottom, false);
     }
     
     UI::Template SimpleGenerator::Inputbox() {
@@ -2279,7 +2263,7 @@ namespace Gorgon { namespace Widgets {
             .AddIndex(10)
         ;
         
-        textbg.Background.SetAnimation(A(Rectangle, Active, All, 0));
+        textbg.Background.SetAnimation(A(Background, Active, All, 0));
         textbg.SetMargin(0, -Focus.Spacing);
         textbg.SetPadding(0, Focus.Spacing);
 

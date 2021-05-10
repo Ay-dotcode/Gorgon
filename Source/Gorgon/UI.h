@@ -30,6 +30,4 @@ namespace UI {
     /// more or less standard density.
     int FontHeight(float density = 7.5, int min = 9);
     
-    
-    
 } }
