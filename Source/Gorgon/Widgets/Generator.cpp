@@ -2029,7 +2029,7 @@ namespace Gorgon { namespace Widgets {
         
         
         auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
-        bg.Background.SetAnimation(A(Rectangle, Regular));
+        bg.Background.SetAnimation(A(Rectangle, Container));
         bg.AddIndex(1);
         bg.SetClip(true);
         
