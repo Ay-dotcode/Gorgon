@@ -71,6 +71,9 @@ namespace Gorgon { namespace Graphics {
         
         /// Fixed width font to be used in programming
         FixedWidthItalic,
+        
+        /// Fixed width font to be used in programming
+        FixedWidthBoldItalic,
     };
 
     /// Constants for headings

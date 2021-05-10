@@ -117,12 +117,7 @@ int main() {
     
     auto &reg = (Gorgon::Widgets::SimpleGenerator&)Gorgon::Widgets::Registry::Active();
     
-    Graphics::AdvancedPrinter printer;
-    printer.RegisterFont(0, reg.RegularFont);
-    printer.RegisterFont(Graphics::NamedFont::Bold, reg.BoldFont);
-    printer.RegisterFont(Graphics::NamedFont::H1, reg.TitleFont);
-    printer.RegisterFont(Graphics::NamedFont::Small, reg.InfoFont);
-    printer.RegisterFont(Graphics::NamedFont::Script, reg.SmallFont);
+    Graphics::AdvancedPrinter printer = reg.Printer();
     
     auto icon = Triangle(5, 5);
     icon.Prepare();
@@ -132,7 +127,7 @@ int main() {
     
     printer.RegisterColor(2, Gorgon::Graphics::Color::BrightRed, Gorgon::Graphics::Color::DarkOlive);
     
-    //l.Draw(reg.Background.Regular);
+    l.Draw(reg.Colors.Get(Gorgon::Graphics::Color::Regular).Backcolor);
 
     Graphics::Bitmap markings(500, 500, Gorgon::Graphics::ColorMode::RGBA);
     markings.Clear();

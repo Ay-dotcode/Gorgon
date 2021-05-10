@@ -10,17 +10,12 @@
 #include "../CGI/Polygon.h"
 #include "../CGI/Circle.h"
 
-//This should be fixed
-#ifdef LINUX
-#include <unistd.h>
-#include <wait.h>
-
-namespace Gorgon { namespace OS {
-    bool Start(const std::string &name, std::streambuf *&buf, const std::vector<std::string> &args);
-} }
-
-#endif
 #include "../Graphics/EmptyImage.h"
+#include "../UI.h"
+
+#ifdef FONTCONFIG_SUPPORT
+#   include <fontconfig/fontconfig.h>
+#endif
 
 #define MSVC_BUG(MACRO, ARGS) MACRO ARGS  // name to remind that bug fix is due to MSVC :-)
 
@@ -56,164 +51,405 @@ namespace Gorgon { namespace Widgets {
             l.BorderWidth, r.BorderWidth
         );
     }
-
-    SimpleGenerator::SimpleGenerator(int fontsize, std::string fontname, std::string boldfontname, bool activate, float density) : Generator(activate), Density(density) {
-        Init(fontsize, fontname, boldfontname);
-    }
     
-    std::string findfontfile(std::string fontname, bool bold) {
-#ifdef WIN32
-        if(fontname.find_last_of('.') == fontname.npos)
-            fontname = Filesystem::Join(Filesystem::Join(OS::GetEnvVar("WINDIR"), "Fonts"), fontname == "" ? (bold ? "Tahomabd.ttf" : "Tahoma.ttf") : fontname + ".ttf");
-#else
-        if(fontname.find_last_of('.') == fontname.npos) {
-            bool found = false;
+    std::string FindDefaultFontFamily(bool mono, const std::vector<Gorgon::OS::FontFamily> &list) {
+#ifdef FONTCONFIG_SUPPORT
+        if(!FcInit())
+            goto nofc;
+        
+        FcPattern *pat;
+        pat = FcPatternCreate();
+        if(!pat)
+            goto nofc;
+        
+        FcPatternAddString(pat, FC_FAMILY, (const unsigned char*)(mono ? "mono" : ""));
+        
+        FcObjectSet *os;
+        os = FcObjectSetBuild(FC_FAMILY, (char *) 0);
+        
+        if(!os) {
+            FcPatternDestroy(pat);
+            goto nofc;
+        }
+        
+        FcFontSet *fs;
+        fs = FcFontList(nullptr, pat, os);
+        
+        if(fs && fs->nfont > 0) {
+            FcPattern *font = fs->fonts[0];
+            FcChar8 *family= nullptr;
+            FcPatternGetString(font, FC_FAMILY, 0, &family);
+            std::string fam = (const char*)family;
             
-            try {
-                std::streambuf *buf;
-                OS::Start("fc-match", buf, {"-v", fontname == "" ? (bold ? "sans:bold" : "sans") : fontname});
+            FcPatternDestroy(pat);
+            FcObjectSetDestroy(os);
+            
+            return fam;
+        }
+        else {
+            FcPatternDestroy(pat);
+            FcObjectSetDestroy(os);
+        }
 
-                if(buf) {
-                    std::istream in(buf);
-                    std::string line;
-                    while(getline(in, line)) {
-                        line = String::Trim(line);
-                        auto name = String::Extract(line, ':', true);
-                        if(name == "file") {
-                            String::Extract(line, '"', true);
-                            auto fname = String::Extract(line, '"', true);
-                            fontname = fname;
-                            found = true;
-                            break;
-                        }
-                    }
-                    
-                    delete buf;
+#endif
+    nofc:
+        static const std::string regularlist[] = {"dejavu sans", "freesans", "liberation sans", "tahoma", "arial"};
+        static const std::string monolist[] = {"dejavu sans mono", "free mono", "liberation mono", "consolas", "courier new"};
+        
+        auto &l = mono ? monolist : regularlist;
+        for(auto r : l) {
+            for(auto &f : list) {
+                if(String::ToLower(f.Family) == r)
+                    return f.Family;
+            }
+        }
+        
+        if(mono) {
+            for(auto &f : list) {
+                for(auto &face : f.Faces) {
+                    if(face.Monospaced)
+                        return f.Family;
                 }
             }
-            catch(...) {
-                found = false;
-            }
-
-            if(!found)
-                fontname = bold ? "/usr/share/fonts/gnu-free/FreeSansBold.ttf" : "/usr/share/fonts/gnu-free/FreeSans.ttf";
         }
-#endif
+        else if(list.size()) {
+            return list.front().Family;
+        }
         
-        return fontname;
+        return "";
     }
     
-    void SimpleGenerator::Init(int fontsize, std::string fontname, std::string boldfontname) {
-        auto &regular = *new Graphics::FreeType();
-        regular.LoadFile(findfontfile(fontname, false), fontsize);
-        regularrenderer = &regular;
+    std::string FindFontFile(std::string family, bool bold, bool italic, const std::vector<Gorgon::OS::FontFamily> &list) {
+        family = String::ToLower(family);
+    retry:
+        for(auto &f : list) {
+            if(String::ToLower(f.Family) == family) {
+                for(auto &face : f.Faces) {
+                    if(face.Weight == (bold ? 700 : 400) && face.Italic == italic && face.Width == 100)
+                        return face.Filename;
+                }
+            }
+        }
         
-        RegularFont.SetGlyphRenderer(regular);
-        //RegularFont.SetColor(FgC(Regular));
-
-        CenteredFont = RegularFont;
-        CenteredFont.AlignCenter();
+        //try again with more relaxed requirements
+        for(auto &f : list) {
+            if(String::ToLower(f.Family) == family) {
+                for(auto &face : f.Faces) {
+                    if(face.Bold == bold && face.Italic == italic)
+                        return face.Filename;
+                }
+            }
+        }
         
-        auto &bold = *new Graphics::FreeType();
-        bold.LoadFile(findfontfile(boldfontname, true), fontsize);
-        boldrenderer = &bold;
-        //BoldFont.SetColor(FgC(Regular));
-        BoldFont.SetGlyphRenderer(bold);
+        //switch to default font
+        auto fam = FindDefaultFontFamily(false, list);
         
-        auto &title = *new Graphics::FreeType();
-        title.LoadFile(findfontfile(boldfontname, true), int(std::round(fontsize*1.2)));
-        titlerenderer = &title;
-        TitleFont.SetGlyphRenderer(title);
-        //TitleFont.SetColor(Forecolor.Title);
+        if(fam != family) {
+            family = fam;
+            goto retry;
+        }
         
-        auto &subtitle = *new Graphics::FreeType();
-        subtitle.LoadFile(findfontfile(boldfontname, true), int(std::round(fontsize*1.1)));
-        subtitlerenderer = &subtitle;
-        SubtitleFont.SetGlyphRenderer(subtitle);
-        //SubtitleFont.SetColor(Forecolor.Title);
+        //get rid of italic
+        if(italic) {
+            italic = false;
+            goto retry;
+        }
         
-        auto &small = *new Graphics::FreeType();
-        small.LoadFile(findfontfile(fontname, false), int(std::round(fontsize*0.85)));
-        smallrenderer = &small;
-        //SmallFont.SetColor(FgC(Regular));
-        SmallFont.SetGlyphRenderer(small);
+        //get rid of bold
+        if(bold) {
+            bold = false;
+            goto retry;
+        }
         
-        InfoFont.SetGlyphRenderer(small);
-        //InfoFont.SetColor(Forecolor.Info);
-        InfoFont.SetParagraphSpacing(Spacing);
-        
-        UpdateDimensions();
-        UpdateBorders();
-        UpdateDimensions();
-    }
-    
-    UI::Template SimpleGenerator::maketemplate() {
-        UI::Template temp;
-        temp.SetSpacing(Spacing);
-        temp.SetUnitWidth(BorderedWidgetHeight); //BorderedHeight = UnitWidth
-        
-        return temp;
+        return "";
     }
     
     SimpleGenerator::~SimpleGenerator() {
         delete regularrenderer;
         delete boldrenderer;
-        delete titlerenderer;
-        delete subtitlerenderer;
+        delete italicrenderer;
+        delete bolditalicrenderer;
+        delete h1renderer;
+        delete h2renderer;
+        delete h3renderer;
         delete smallrenderer;
+        delete largerrenderer;
+        delete scriptrenderer;
+        delete boldscriptrenderer;
+        delete smallscriptrenderer;
+        delete fixedwidthrenderer;
+        delete fixedwidthboldrenderer;
+        delete fixedwidthitalicrenderer;
+        delete fixedwidthbolditalicrenderer;
         
         providers.DeleteAll();
         drawables.DeleteAll();
         assets.DeleteAll();
     }
+
+    void SimpleGenerator::SetColors(Graphics::Color::TripletPack pack) {
+        colors = std::move(pack);
+        Graphics::Color::PairPack pairs;
+        
+        for(auto &t : colors) {
+            pairs.Set(t.first, {t.second.Forecolor, t.second.Backcolor});
+        }
+        
+        printer.UseColors(pairs);
+    }
+
+    void SimpleGenerator::InitFonts(std::string family, std::string mono, float density) {
+        InitFonts(UI::FontHeight(density), family, mono);
+    }
+
+
+    void SimpleGenerator::InitFonts(const std::string& regular, const std::string& bold, const std::string& italic, const std::string& bolditalic, const std::string& mono, const std::string& monobold, const std::string& monoitalic, const std::string& monobolditalic, float density) {
+        InitFonts(UI::FontHeight(density), regular, bold, italic,
+                bolditalic, mono, monobold, monoitalic, monobolditalic);
+    }
+
+
+    void SimpleGenerator::InitFonts(const std::string& regular, const std::string& bold, const std::string& italic, const std::string& bolditalic, std::string mono, float density) {
+        InitFonts(UI::FontHeight(density), regular, bold, italic, bolditalic, mono);
+    }
+
     
-    void SimpleGenerator::UpdateDimensions() {
+    void SimpleGenerator::InitFonts(int size, std::string family, std::string mono) {
+        bool init = fontlist.empty();
+        if(init) fontlist = OS::GetFontFamilies();
+        
+        //todo check file types, if family is a gor file load all from there.
+        
+        if(family == "")
+            family = FindDefaultFontFamily(false, fontlist);
+        
+        InitFonts(
+            size, 
+            FindFontFile(family, false, false, fontlist),
+            FindFontFile(family, true, false, fontlist),
+            FindFontFile(family, false, true, fontlist),
+            FindFontFile(family, true, true, fontlist),
+            mono
+        );
+        
+        if(init) fontlist = {};
+    }
+    
+    /// Loads the specified fonts, while using supplied or default family for monospaced fonts.
+    void SimpleGenerator::InitFonts(
+        int size,
+        const std::string &regular, const std::string &bold, 
+        const std::string &italic,  const std::string &bolditalic,
+        std::string mono
+    ) {
+        bool init = fontlist.empty();
+        if(init) fontlist = OS::GetFontFamilies();
+        
+        if(mono == "")
+            mono = FindDefaultFontFamily(true, fontlist);
+        
+        InitFonts(
+            size, 
+            regular, bold, italic, bolditalic,
+            FindFontFile(mono, false, false, fontlist),
+            FindFontFile(mono, true, false, fontlist),
+            FindFontFile(mono, false, true, fontlist),
+            FindFontFile(mono, true, true, fontlist)
+        );
+        
+        if(init) fontlist = {};
+    }
+
+    void SimpleGenerator::InitFonts(
+        int size,
+        const std::string &regular,    const std::string &bold, 
+        const std::string &italic,     const std::string &bolditalic,
+        const std::string &mono,       const std::string &monobold,
+        const std::string &monoitalic, const std::string &monobolditalic
+    ) {
+        //TODO check file types
+        //TODO if filenames are the same, don't load again
+        regularrenderer = new Graphics::FreeType(regular, size);
+        boldrenderer = new Graphics::FreeType(bold, size);
+        italicrenderer = new Graphics::FreeType(italic, size);
+        bolditalicrenderer = new Graphics::FreeType(bolditalic, size);
+        h1renderer = new Graphics::FreeType(bold, int(std::round(size * 1.3)));
+        h2renderer = new Graphics::FreeType(bold, int(std::round(size * 1.2)));
+        h3renderer = new Graphics::FreeType(bold, int(std::round(size * 1.1)));
+        smallrenderer = new Graphics::FreeType(regular, int(std::round(size * 0.85)));
+        largerrenderer = new Graphics::FreeType(regular, int(std::round(size * 1.25)), false);
+        scriptrenderer = new Graphics::FreeType(regular, int(std::round(size * 0.75)), false);
+        boldscriptrenderer = new Graphics::FreeType(bold, int(std::round(size * 0.75)), false);
+        smallscriptrenderer = new Graphics::FreeType(regular, int(std::round(size * 0.67)), false);
+        fixedwidthrenderer = new Graphics::FreeType(mono, size, false);
+        fixedwidthboldrenderer = new Graphics::FreeType(monobold, size, false);
+        fixedwidthitalicrenderer = new Graphics::FreeType(monoitalic, size, false);
+        fixedwidthbolditalicrenderer = new Graphics::FreeType(monobolditalic, size, false);
+        
+        initfontrelated();
+    }
+    
+    void SimpleGenerator::initfontrelated() {
+        regular.SetGlyphRenderer(*regularrenderer);
+        bold.SetGlyphRenderer(*boldrenderer);
+        
+        h2 = dynamic_cast<Graphics::BasicPrinter*>(h2renderer);
+        h3 = dynamic_cast<Graphics::BasicPrinter*>(h3renderer);
+        info = dynamic_cast<Graphics::BasicPrinter*>(smallrenderer);
+        
+        centered.SetGlyphRenderer(*regularrenderer);
+        centered.AlignCenter();
+        
+        auto regcol = colors.Get(Graphics::Color::Regular).Forecolor;
+        
+        auto regularfnt = regular;
+        regularfnt.SetColor(regcol);
+        printer.RegisterFont(Graphics::NamedFont::Regular, regularfnt);
+        
+        auto boldfnt = bold;
+        boldfnt.SetColor(regcol);
+        printer.RegisterFont(Graphics::NamedFont::Regular, boldfnt);
+        
+        Graphics::StyledPrinter italicfnt(*italicrenderer, regcol);
+        printer.RegisterFont(Graphics::NamedFont::Italic, italicfnt);
+        
+        Graphics::StyledPrinter bolditalicfnt(*bolditalicrenderer, regcol);
+        printer.RegisterFont(Graphics::NamedFont::BoldItalic, bolditalicfnt);
+        
+        Graphics::StyledPrinter h1fnt(*h1renderer, colors.Get(Graphics::Color::Title).Forecolor);
+        printer.RegisterFont(Graphics::NamedFont::H1, h1fnt);
+        
+        Graphics::StyledPrinter h2fnt(*h2renderer, colors.Get(Graphics::Color::Title).Forecolor);
+        printer.RegisterFont(Graphics::NamedFont::H2, h2fnt);
+        
+        Graphics::StyledPrinter h3fnt(*h3renderer, colors.Get(Graphics::Color::Title).Forecolor);
+        printer.RegisterFont(Graphics::NamedFont::H3, h3fnt);
+        
+        Graphics::StyledPrinter h4fnt(*boldrenderer, colors.Get(Graphics::Color::Title).Forecolor);
+        printer.RegisterFont(Graphics::NamedFont::H4, h4fnt);
+        
+        Graphics::StyledPrinter smallfnt(*smallrenderer, regcol);
+        printer.RegisterFont(Graphics::NamedFont::Small, smallfnt);
+        
+        Graphics::StyledPrinter infofnt(*smallrenderer, colors.Get(Graphics::Color::Info).Forecolor);
+        printer.RegisterFont(Graphics::NamedFont::Small, infofnt);
+        
+        Graphics::StyledPrinter largerfnt(*largerrenderer, regcol);
+        printer.RegisterFont(Graphics::NamedFont::Larger, largerfnt);
+        
+        Graphics::StyledPrinter scriptfnt(*scriptrenderer, regcol);
+        printer.RegisterFont(Graphics::NamedFont::Script, scriptfnt);
+        
+        Graphics::StyledPrinter boldscriptfnt(*boldscriptrenderer, regcol);
+        printer.RegisterFont(Graphics::NamedFont::BoldScript, boldscriptfnt);
+        
+        Graphics::StyledPrinter smallscriptfnt(*smallscriptrenderer, regcol);
+        printer.RegisterFont(Graphics::NamedFont::SmallScript, smallscriptfnt);
+        
+        Graphics::StyledPrinter fixedwidthfnt(*fixedwidthrenderer, regcol);
+        printer.RegisterFont(Graphics::NamedFont::FixedWidth, fixedwidthfnt);
+        
+        Graphics::StyledPrinter fixedwidthboldfnt(*fixedwidthboldrenderer, regcol);
+        printer.RegisterFont(Graphics::NamedFont::FixedWidthBold, fixedwidthboldfnt);
+        
+        Graphics::StyledPrinter fixedwidthitalicfnt(*fixedwidthitalicrenderer, regcol);
+        printer.RegisterFont(Graphics::NamedFont::FixedWidthItalic, fixedwidthitalicfnt);
+        
+        Graphics::StyledPrinter fixedwidthbolditalicfnt(*fixedwidthbolditalicrenderer, regcol);
+        printer.RegisterFont(Graphics::NamedFont::FixedWidthBoldItalic, fixedwidthbolditalicfnt);
+    }
+    
+    void SimpleGenerator::InitDimensions(float density, float bordersize, CornerStyle corners) {
         lettervsize = regularrenderer->GetLetterHeight();
         asciivsize = regularrenderer->GetLetterHeight(true);
         
         int totalh = (int)regularrenderer->GetLineGap();
         
-        Spacing = (int)std::round((float)totalh / (2 * Density / 3));
-        Focus.Spacing = std::max(1, Spacing / 2);
-
-        BorderedWidgetHeight = 
+        spacing = (int)std::round((float)totalh / (2 * density / 3));
+        focus.Spacing = std::max(1, spacing / 2);
+        
+        unitsize = 
             totalh + Border.Width * 2 + 
             std::max(Border.Radius/2, Focus.Spacing) * 2 + 
             Focus.Width * 2 + Focus.Spacing * 2
         ;
         
-        WidgetHeight = totalh + Focus.Width * 2 + Focus.Spacing * 2;
+        borderlessheight = totalh + Focus.Width * 2 + Focus.Spacing * 2;
         
-        WidgetWidth = 3 * BorderedWidgetHeight + 2 * Spacing;
+        objectheight = totalh;
+        regular.SetTabWidth(totalh + spacing + Focus.Spacing + Focus.Width);
+        bold.SetTabWidth(totalh + spacing + Focus.Spacing + Focus.Width);
         
-        ObjectHeight = totalh;
+        if(bordersize == -1) {
+            border.Width = (int)std::max(std::round(regularrenderer->GetLineThickness()*2.6f), 1.f);
+            border.Shape = std::max((regularrenderer->GetLineThickness()+objectheight/18.f)*1.3f, 1.f);
+            
+            //if thickness is more than 2, slightly reduce it
+            if(border.Width > 2) {
+                border.Width = (int)std::max(std::round(
+                    regularrenderer->GetLineThickness()*2.4f), 
+                1.f);
+            }
+            
+            if(border.Shape > 2.f) {
+                border.Shape = std::max((
+                    regularrenderer->GetLineThickness()+objectheight/18.f)*1.2f, 
+                1.f);
+
+                if(border.Shape < 2.f)
+                    border.Shape = 2.f;
+            }
+        }
+        else {
+            border.Width = bordersize;
+            border.Shape = bordersize / 2.f + objectheight/18.f;
+        }
         
-        RegularFont.SetTabWidth(totalh + Spacing + Focus.Spacing + Focus.Width); //Align with checkbox radio button
+        border.Object  = border.Width;
+        
+        switch(corners) {
+        case LessChamfered:
+        case LessRounded:
+            border.Radius = (int)std::round(asciivsize.second / 6.f);
+            break;
+        case Chamfered:
+        case Rounded:
+            border.Radius = (int)std::round(asciivsize.second / 4.f);
+            break;
+        case ExtraChamfered:
+        case ExtraRounded:
+            border.Radius = (int)std::round(asciivsize.second / 3.f);
+            break;
+        case Straight:
+            ; //nothing
+        }
+        
+        switch(corners) {
+        case LessChamfered:
+        case Chamfered:
+        case ExtraChamfered:
+        case Straight:
+            border.Divisions = 0;
+            break;
+        case LessRounded:
+        case Rounded:
+        case ExtraRounded:
+            border.Divisions = Border.Radius  / 2;
+            break;
+        }
+        
+        focus.Width = std::max(1, Border.Width / 2);
     }
     
-    void SimpleGenerator::UpdateBorders(bool smooth) {
-        Border.Width  = (int)std::max(std::round(regularrenderer->GetLineThickness()*2.6f), 1.f);
-        ShapeBorder   = std::max((regularrenderer->GetLineThickness()+ObjectHeight/18.f)*1.3f, 1.f);
-
-        //limit the thickness after 2.
-        if(Border.Width > 2) {
-            Border.Width = (int)std::max(std::round(regularrenderer->GetLineThickness()*2.4f), 1.f);
-        }
-        if(ShapeBorder > 2.f) {
-            ShapeBorder = std::max((regularrenderer->GetLineThickness()+ObjectHeight/18.f)*1.2f, 1.f);
-
-            if(ShapeBorder < 2.f)
-                ShapeBorder = 2.f;
-        }
-
-        ObjectBorder  = Border.Width;
-        Border.Radius = (int)std::round(asciivsize.second / 4.f);
-        Border.Divisions = smooth * Border.Radius  / 2;
+    UI::Template SimpleGenerator::maketemplate() {
+        UI::Template temp;
+        temp.SetSpacing(spacing);
+        temp.SetUnitWidth(unitsize); //BorderedHeight = UnitWidth
         
-        Focus.Width = std::max(1, Border.Width / 2);
+        return temp;
     }
     
-    Graphics::AnimationProvider &SimpleGenerator::GetAsset(const SimpleGenerator::AssetID &id) {
+    Graphics::RectangularAnimationProvider &SimpleGenerator::GetAsset(const SimpleGenerator::AssetID &id) {
         if(assets.Exists(id)) {
             return assets[id];
         }
@@ -226,11 +462,11 @@ namespace Gorgon { namespace Widgets {
         auto br = id.BorderRadius == std::numeric_limits<float>::max() ? Border.Radius : id.BorderRadius;
         
         Geometry::Size shapesize = {
-            (int)std::round(ObjectHeight - AssetID::HBorders(id.Border) * (bw+Spacing)), 
-            (int)std::round(ObjectHeight - AssetID::VBorders(id.Border) * (bw+Spacing)),
+            (int)std::round(objectheight - AssetID::HBorders(id.Border) * (bw+spacing)), 
+            (int)std::round(objectheight - AssetID::VBorders(id.Border) * (bw+spacing)),
         };
         
-        Graphics::AnimationProvider *prov = nullptr;
+        Graphics::RectangularAnimationProvider *prov = nullptr;
         
         switch(id.Type) {
         case AssetID::Rectangle:
@@ -280,6 +516,9 @@ namespace Gorgon { namespace Widgets {
             break;
         case AssetID::Checkered:
             prov = makecheckeredbg();
+            break;
+        case AssetID::Caret:
+            prov = caret();
             break;
         }
         
@@ -446,7 +685,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     Graphics::BitmapRectangleProvider *SimpleGenerator::makecheckeredbg() {
-        //TODO: Use maked object
+        //TODO: Use masked object
         auto r = Border.Radius;
         
         int coff = r;
@@ -538,6 +777,28 @@ namespace Gorgon { namespace Widgets {
         return new Graphics::RectangleProvider(cri, hi, cri, vi, ci, vi, cri, hi, cri);
     }
     
+    Graphics::BitmapAnimationProvider *SimpleGenerator::caret() {
+        auto &anim = *new Graphics::BitmapAnimationProvider();
+        auto &img = *new Graphics::Bitmap({std::min((int)std::round(Border.Width/2.f), 1), objectheight});
+        img.ForAllPixels([&img, this](int x, int y) {
+            img.SetRGBAAt(x, y, BdC(Object));
+        });
+        
+        img.Prepare();
+        
+        auto &img2 = *new Graphics::Bitmap({std::min((int)std::round(Border.Width/2.f), 1), regularrenderer->GetHeight()});
+        img2.Clear();
+        img2.Prepare();
+        
+        anim.Add(img, 700);
+        anim.Add(img2, 300);
+        
+        anim.Own(img);
+        anim.Own(img2);
+        
+        return &anim;
+    }
+    
     void SimpleGenerator::setupfocus(UI::GraphicsTemplate &foc) {
         foc.Content.SetAnimation(A(Focus));
         foc.SetSize(100, 100, UI::Dimension::Percent);
@@ -574,7 +835,7 @@ namespace Gorgon { namespace Widgets {
         
         icon->Clear();
         
-        float off = ObjectBorder/2.f;
+        float off = Border.Object/2.f;
         float s = float(int(std::min(size.Width, size.Height)));
         float mid = s/2.f;
         
@@ -604,21 +865,21 @@ namespace Gorgon { namespace Widgets {
         auto icon = new Graphics::Bitmap(size);
         
         icon->ForAllPixels([&](auto x, auto y) {
-            if(x>=ObjectBorder && x<size.Width-ObjectBorder && y>=ObjectBorder && y<size.Height-ObjectBorder)
+            if(x>=Border.Object && x<size.Width-Border.Object && y>=Border.Object && y<size.Height-Border.Object)
                 icon->SetRGBAAt(x, y, BgC(Regular));
             else
                 icon->SetRGBAAt(x, y, 0x0);
         });
         
         Geometry::PointList<Geometry::Pointf> border ={
-            {ObjectBorder/2.f, ObjectBorder/2.f},
-            {size.Width-ObjectBorder/2.f, ObjectBorder/2.f},
-            {size.Width-ObjectBorder/2.f, size.Height-ObjectBorder/2.f},
-            {ObjectBorder/2.f, size.Height-ObjectBorder/2.f},
-            {ObjectBorder/2.f, ObjectBorder/2.f},
+            {Border.Object/2.f, Border.Object/2.f},
+            {size.Width-Border.Object/2.f, Border.Object/2.f},
+            {size.Width-Border.Object/2.f, size.Height-Border.Object/2.f},
+            {Border.Object/2.f, size.Height-Border.Object/2.f},
+            {Border.Object/2.f, Border.Object/2.f},
         };
         
-        CGI::DrawLines(*icon, border, (float)ObjectBorder, CGI::SolidFill<>(color));
+        CGI::DrawLines(*icon, border, (float)Border.Object, CGI::SolidFill<>(color));
         icon->Prepare();
         drawables.Add(icon);
         
@@ -635,22 +896,22 @@ namespace Gorgon { namespace Widgets {
         //these coordinates are designed to look good across many different
         //sizes covering a wide range
         
-        if(size.Width - ShapeBorder*4.6f < 3) {
+        if(size.Width - Border.Shape*4.6f < 3) {
             CGI::Polyfill(*icon, Geometry::PointList<Geometry::Pointf>{
-                {ObjectBorder*2.f, ObjectBorder*2.f},
-                {size.Width - ObjectBorder*2.f, ObjectBorder*2.f},
-                {size.Width - ObjectBorder*2.f, size.Height - ObjectBorder*2.f},
-                {ObjectBorder*2.f, size.Height - ObjectBorder*2.f},
+                {Border.Object*2.f, Border.Object*2.f},
+                {size.Width - Border.Object*2.f, Border.Object*2.f},
+                {size.Width - Border.Object*2.f, size.Height - Border.Object*2.f},
+                {Border.Object*2.f, size.Height - Border.Object*2.f},
             }, CGI::SolidFill<>(color));
         }
         else {
             Geometry::PointList<Geometry::Pointf> tick ={
-                {ShapeBorder*2.2f, size.Height/2.f},
-                {size.Width*0.45f, size.Height-ShapeBorder*2.2f},
-                {size.Width-ShapeBorder*2.4f, ShapeBorder*2.2f}
+                {Border.Shape*2.2f, size.Height/2.f},
+                {size.Width*0.45f, size.Height-Border.Shape*2.2f},
+                {size.Width-Border.Shape*2.4f, Border.Shape*2.2f}
             };
 
-            CGI::DrawLines(*icon, tick, 1.2f*ShapeBorder, CGI::SolidFill<>(color));
+            CGI::DrawLines(*icon, tick, 1.2f*Border.Shape, CGI::SolidFill<>(color));
         }
         
         icon->Prepare();
@@ -660,7 +921,7 @@ namespace Gorgon { namespace Widgets {
     
     Graphics::Bitmap *SimpleGenerator::emptycircle(Graphics::RGBA color, Geometry::Size size) {
         float outer_r = std::min(size.Width, size.Height) / 2.f - 0.5f;
-        int borderstart_r = int(ceil(outer_r - ObjectBorder));
+        int borderstart_r = int(ceil(outer_r - Border.Object));
         
         Geometry::Size bmpsize = {std::min(size.Width, size.Height) + 2, std::min(size.Width, size.Height) + 2};
         Geometry::Pointf center = {float(outer_r + 1.5f), float(outer_r + 1.5f)};
@@ -669,7 +930,7 @@ namespace Gorgon { namespace Widgets {
         
         icon->Clear();
         
-        CGI::Circle<16>(*icon, center, (float)borderstart_r, (float)ObjectBorder, CGI::SolidFill<>(color));
+        CGI::Circle<16>(*icon, center, (float)borderstart_r, (float)Border.Object, CGI::SolidFill<>(color));
 
         icon->Prepare();
         drawables.Add(icon);
@@ -679,7 +940,7 @@ namespace Gorgon { namespace Widgets {
     
     Graphics::Bitmap *SimpleGenerator::circlefill(Graphics::RGBA color, Geometry::Size size) {
         float outer_r = std::min(size.Width, size.Height) / 2.f - 0.5f;
-        float inner_r = std::max(outer_r - ObjectBorder - std::max(Spacing / 2.f, 1.5f), 1.5f);
+        float inner_r = std::max(outer_r - Border.Object - std::max(spacing / 2.f, 1.5f), 1.5f);
         
         Geometry::Size bmpsize = {std::min(size.Width, size.Height) + 2, std::min(size.Width, size.Height) + 2};
         Geometry::Pointf center = {float(outer_r + 1.5f), float(outer_r + 1.5f)};
@@ -697,7 +958,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::Button(bool border) {
-        Geometry::Size defsize = {WidgetWidth, border ? BorderedWidgetHeight : WidgetHeight};
+        Geometry::Size defsize = {GetUnitSize(3), border ? unitsize : borderlessheight};
         
         UI::Template temp = maketemplate();
         temp.SetSize(defsize);
@@ -756,7 +1017,7 @@ namespace Gorgon { namespace Widgets {
         auto &iconcont = temp.AddContainer(6, UI::ComponentCondition::Icon1IsSet)
             .AddIndex(8)
         ;
-        iconcont.SetMargin(0, 0, Spacing, 0);
+        iconcont.SetMargin(0, 0, spacing, 0);
         iconcont.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         iconcont.SetSizing(UI::ComponentTemplate::Automatic);
         
@@ -773,7 +1034,7 @@ namespace Gorgon { namespace Widgets {
         //Text
         auto setuptext = [&](Graphics::RGBA color, UI::ComponentCondition condition) {
             auto &txt = temp.AddTextholder(7, condition);
-            txt.SetRenderer(CenteredFont);
+            txt.SetRenderer(centered);
             txt.SetColor(color);
             txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             txt.SetDataEffect(UI::ComponentTemplate::Text);
@@ -792,14 +1053,14 @@ namespace Gorgon { namespace Widgets {
     
     UI::Template SimpleGenerator::IconButton(Geometry::Size iconsize) {
         if(iconsize.Width == -1) {
-            iconsize.Width = WidgetHeight;
+            iconsize.Width = borderlessheight;
         }
         else {
             iconsize.Width += Focus.Spacing * 2 + Focus.Width * 2;
         }
         
         if(iconsize.Height == -1) {
-            iconsize.Height = WidgetHeight;
+            iconsize.Height = borderlessheight;
         }
         else {
             iconsize.Height += Focus.Spacing * 2 + Focus.Width * 2;
@@ -810,7 +1071,7 @@ namespace Gorgon { namespace Widgets {
         iconsize += Geometry::Size(externalspacing) * 2;
         
         UI::Template temp = maketemplate();
-        temp.SetSpacing(Spacing);
+        temp.SetSpacing(spacing);
         
         temp.SetSize(iconsize);
         
@@ -879,7 +1140,7 @@ namespace Gorgon { namespace Widgets {
         //Text only visible when no icon is set
         auto setuptext = [&](Graphics::RGBA color, UI::ComponentCondition condition) {
             auto &txt = temp.AddTextholder(7, condition);
-            txt.SetRenderer(CenteredFont);
+            txt.SetRenderer(centered);
             txt.SetColor(color);
             txt.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
             txt.SetDataEffect(UI::ComponentTemplate::Text);
@@ -896,7 +1157,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::DialogButton() {
-        Geometry::Size defsize = {WidgetWidth, BorderedWidgetHeight};
+        Geometry::Size defsize = {GetUnitSize(3), unitsize};
         
         UI::Template temp = maketemplate();
         temp.SetSize(defsize);
@@ -960,7 +1221,7 @@ namespace Gorgon { namespace Widgets {
         auto &iconcont = temp.AddContainer(6, UI::ComponentCondition::Icon1IsSet)
             .AddIndex(8)
         ;
-        iconcont.SetMargin(0, 0, Spacing, 0);
+        iconcont.SetMargin(0, 0, spacing, 0);
         iconcont.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         iconcont.SetSizing(UI::ComponentTemplate::Automatic);
         
@@ -977,7 +1238,7 @@ namespace Gorgon { namespace Widgets {
         //Text
         auto setuptext = [&](Graphics::RGBA color, UI::ComponentCondition condition) {
             auto &txt = temp.AddTextholder(7, condition);
-            txt.SetRenderer(CenteredFont);
+            txt.SetRenderer(centered);
             txt.SetColor(color);
             txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             txt.SetDataEffect(UI::ComponentTemplate::Text);
@@ -995,10 +1256,10 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::Checkbox() {
-        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight};
+        Geometry::Size defsize = {GetUnitSize(6), borderlessheight};
         
         UI::Template temp = maketemplate();
-        temp.SetSpacing(Spacing);
+        temp.SetSpacing(spacing);
         temp.SetSize(defsize);
         
         temp.AddContainer(0, UI::ComponentCondition::Always)
@@ -1036,9 +1297,9 @@ namespace Gorgon { namespace Widgets {
             tic.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             
             auto &tt = temp.AddTextholder(5, condition);
-            tt.SetRenderer(RegularFont);
+            tt.SetRenderer(regular);
             tt.SetColor(Colors[color].Forecolor);
-            tt.SetMargin(Spacing, 0, 0, 0);
+            tt.SetMargin(spacing, 0, 0, 0);
             tt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             tt.SetDataEffect(UI::ComponentTemplate::Text);
             tt.SetSize(100, 100, UI::Dimension::Percent);
@@ -1058,8 +1319,8 @@ namespace Gorgon { namespace Widgets {
     UI::Template SimpleGenerator::CheckboxButton() {
         
         UI::Template temp = maketemplate();
-        temp.SetSpacing(Spacing);
-        temp.SetSize(BorderedWidgetHeight, BorderedWidgetHeight);
+        temp.SetSpacing(spacing);
+        temp.SetSize(unitsize, unitsize);
         
 
         temp.AddContainer(0, UI::ComponentCondition::Always)
@@ -1135,7 +1396,7 @@ namespace Gorgon { namespace Widgets {
         //Text only visible when no icon is set
         auto setuptext = [&](Graphics::RGBA color, UI::ComponentCondition condition) {
             auto &txt = temp.AddTextholder(7, condition);
-            txt.SetRenderer(CenteredFont);
+            txt.SetRenderer(centered);
             txt.SetColor(color);
             txt.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
             txt.SetDataEffect(UI::ComponentTemplate::Text);
@@ -1152,10 +1413,10 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::RadioButton() {
-        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight};
+        Geometry::Size defsize = {GetUnitSize(6), borderlessheight};
         
         UI::Template temp = maketemplate();
-        temp.SetSpacing(Spacing);
+        temp.SetSpacing(spacing);
         temp.SetSize(defsize);
         
         temp.AddContainer(0, UI::ComponentCondition::Always)
@@ -1195,9 +1456,9 @@ namespace Gorgon { namespace Widgets {
             tic.SetMargin(-1, 0, -1, 0);
             
             auto &tt = temp.AddTextholder(5, condition);
-            tt.SetRenderer(RegularFont);
+            tt.SetRenderer(regular);
             tt.SetColor(Colors[color].Forecolor);
-            tt.SetMargin(Spacing, 0, 0, 0);
+            tt.SetMargin(spacing, 0, 0, 0);
             tt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             tt.SetDataEffect(UI::ComponentTemplate::Text);
             tt.SetSize(100, 100, UI::Dimension::Percent);
@@ -1215,10 +1476,10 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::Label() {
-        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight};
+        Geometry::Size defsize = {GetUnitSize(6), borderlessheight};
         
         UI::Template temp = maketemplate();
-        temp.SetSpacing(Spacing);
+        temp.SetSpacing(spacing);
         temp.SetSize(defsize);
         
         auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always, UI::ComponentCondition::Disabled)
@@ -1235,10 +1496,10 @@ namespace Gorgon { namespace Widgets {
         icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         icon.SetSize(100, 100, UI::Dimension::Percent);
         icon.SetSizing(UI::ComponentTemplate::ShrinkOnly);
-        icon.SetMargin(0, 0, Spacing, 0);
+        icon.SetMargin(0, 0, spacing, 0);
         
         auto &txt = temp.AddTextholder(2, UI::ComponentCondition::Always);
-        txt.SetRenderer(RegularFont);
+        txt.SetRenderer(regular);
         txt.SetColor(FgC(Regular));
         txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         txt.SetDataEffect(UI::ComponentTemplate::Text);
@@ -1249,10 +1510,10 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::ErrorLabel() {
-        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight};
+        Geometry::Size defsize = {GetUnitSize(6), borderlessheight};
         
         UI::Template temp = maketemplate();
-        temp.SetSpacing(Spacing);
+        temp.SetSpacing(spacing);
         temp.SetSize(defsize);
         
         auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always, UI::ComponentCondition::Disabled)
@@ -1269,10 +1530,10 @@ namespace Gorgon { namespace Widgets {
         icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         icon.SetSize(100, 100, UI::Dimension::Percent);
         icon.SetSizing(UI::ComponentTemplate::ShrinkOnly);
-        icon.SetMargin(0, 0, Spacing, 0);
+        icon.SetMargin(0, 0, spacing, 0);
         
         auto &txt = temp.AddTextholder(2, UI::ComponentCondition::Always);
-        txt.SetRenderer(RegularFont);
+        txt.SetRenderer(regular);
         txt.SetColor(FgC(Error));
         txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         txt.SetDataEffect(UI::ComponentTemplate::Text);
@@ -1285,10 +1546,10 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::BoldLabel() {
-        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight};
+        Geometry::Size defsize = {GetUnitSize(6), borderlessheight};
         
         UI::Template temp = maketemplate();
-        temp.SetSpacing(Spacing);
+        temp.SetSpacing(spacing);
         temp.SetSize(defsize);
         
         auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always, UI::ComponentCondition::Disabled)
@@ -1305,10 +1566,10 @@ namespace Gorgon { namespace Widgets {
         icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         icon.SetSize(100, 100, UI::Dimension::Percent);
         icon.SetSizing(UI::ComponentTemplate::ShrinkOnly);
-        icon.SetMargin(0, 0, Spacing, 0);
+        icon.SetMargin(0, 0, spacing, 0);
         
         auto &txt = temp.AddTextholder(2, UI::ComponentCondition::Always);
-        txt.SetRenderer(BoldFont);
+        txt.SetRenderer(bold);
         txt.SetColor(FgC(Regular));
         txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         txt.SetDataEffect(UI::ComponentTemplate::Text);
@@ -1319,10 +1580,10 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::TitleLabel() {
-        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight + TitleFont.GetHeight() - RegularFont.GetHeight()};
+        Geometry::Size defsize = {GetUnitSize(6), borderlessheight + h1renderer->GetHeight() - regularrenderer->GetHeight()};
         
         UI::Template temp = maketemplate();
-        temp.SetSpacing(Spacing);
+        temp.SetSpacing(spacing);
         temp.SetSize(defsize);
         
         auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always, UI::ComponentCondition::Disabled)
@@ -1340,10 +1601,10 @@ namespace Gorgon { namespace Widgets {
         icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         icon.SetSize(100, 100, UI::Dimension::Percent);
         icon.SetSizing(UI::ComponentTemplate::ShrinkOnly);
-        icon.SetMargin(0, 0, Spacing, 0);
+        icon.SetMargin(0, 0, spacing, 0);
         
         auto &txt = temp.AddTextholder(2, UI::ComponentCondition::Always);
-        txt.SetRenderer(TitleFont);
+        txt.SetRenderer(*h2);
         txt.SetColor(FgC(Title));
         txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         txt.SetDataEffect(UI::ComponentTemplate::Text);
@@ -1354,17 +1615,17 @@ namespace Gorgon { namespace Widgets {
         ln.Content.SetAnimation(Graphics::BlankImage::Get());
         ln.SetColor(BdC(Title));
         ln.SetSize({100, UI::Dimension::Percent}, Border.Width);
-        ln.SetMargin(Spacing*2, 0, 0, 0);
+        ln.SetMargin(spacing*2, 0, 0, 0);
         ln.SetAnchor(UI::Anchor::FirstBaselineRight, UI::Anchor::BottomLeft, UI::Anchor::BottomLeft);
         
         return temp;
     }
 
     UI::Template SimpleGenerator::SubtitleLabel() {
-        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight + SubtitleFont.GetHeight() - RegularFont.GetHeight()};
+        Geometry::Size defsize = {GetUnitSize(6), borderlessheight + h3renderer->GetHeight() - regularrenderer->GetHeight()};
         
         UI::Template temp = maketemplate();
-        temp.SetSpacing(Spacing);
+        temp.SetSpacing(spacing);
         temp.SetSize(defsize);
         
         auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always, UI::ComponentCondition::Disabled)
@@ -1382,10 +1643,10 @@ namespace Gorgon { namespace Widgets {
         icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         icon.SetSize(100, 100, UI::Dimension::Percent);
         icon.SetSizing(UI::ComponentTemplate::ShrinkOnly);
-        icon.SetMargin(0, 0, Spacing, 0);
+        icon.SetMargin(0, 0, spacing, 0);
         
         auto &txt = temp.AddTextholder(2, UI::ComponentCondition::Always);
-        txt.SetRenderer(SubtitleFont);
+        txt.SetRenderer(*h3);
         txt.SetColor(FgC(Title));
         txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         txt.SetDataEffect(UI::ComponentTemplate::Text);
@@ -1396,7 +1657,7 @@ namespace Gorgon { namespace Widgets {
         ln.Content.SetAnimation(Graphics::BlankImage::Get());
         ln.SetColor(BdC(Title));
         ln.SetSize({100, UI::Dimension::Percent}, std::max(1, int(std::round(Border.Width/2.f))));
-        ln.SetMargin(Spacing*2, 0, BorderedWidgetHeight, 0);
+        ln.SetMargin(spacing*2, 0, unitsize, 0);
         ln.SetAnchor(UI::Anchor::FirstBaselineRight, UI::Anchor::BottomLeft, UI::Anchor::BottomLeft);
         
         
@@ -1404,10 +1665,10 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::LeadingLabel() {
-        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, WidgetHeight + SubtitleFont.GetHeight() - RegularFont.GetHeight()};
+        Geometry::Size defsize = {GetUnitSize(6), borderlessheight + bold.GetHeight() - regularrenderer->GetHeight()};
         
         UI::Template temp = maketemplate();
-        temp.SetSpacing(Spacing);
+        temp.SetSpacing(spacing);
         temp.SetSize(defsize);
         
         auto &cont = temp.AddContainer(0, UI::ComponentCondition::Always, UI::ComponentCondition::Disabled)
@@ -1425,10 +1686,10 @@ namespace Gorgon { namespace Widgets {
         icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         icon.SetSize(100, 100, UI::Dimension::Percent);
         icon.SetSizing(UI::ComponentTemplate::ShrinkOnly);
-        icon.SetMargin(0, 0, Spacing, 0);
+        icon.SetMargin(0, 0, spacing, 0);
         
         auto &txt = temp.AddTextholder(2, UI::ComponentCondition::Always);
-        txt.SetRenderer(BoldFont);
+        txt.SetRenderer(bold);
         txt.SetColor(FgC(Title));
         txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         txt.SetDataEffect(UI::ComponentTemplate::Text);
@@ -1439,7 +1700,7 @@ namespace Gorgon { namespace Widgets {
         ln.Content.SetAnimation(Graphics::BlankImage::Get());
         ln.SetColor(BdC(Title));
         ln.SetSize({100, UI::Dimension::Percent}, std::max(1, int(std::round(Border.Width/2.f))));
-        ln.SetMargin(Spacing*2, 0, BorderedWidgetHeight, 0);
+        ln.SetMargin(spacing*2, 0, unitsize, 0);
         ln.SetAnchor(UI::Anchor::FirstBaselineRight, UI::Anchor::BottomLeft, UI::Anchor::BottomLeft);
         
         
@@ -1447,10 +1708,10 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::InfoLabel() {
-        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, BorderedWidgetHeight};
+        Geometry::Size defsize = {GetUnitSize(6), unitsize};
         
         UI::Template temp = maketemplate();
-        temp.SetSpacing(Spacing);
+        temp.SetSpacing(spacing);
         temp.SetSize(defsize);
         
         temp.AddContainer(0, UI::ComponentCondition::Always)
@@ -1471,7 +1732,7 @@ namespace Gorgon { namespace Widgets {
         cont.SetValueRange(0, 1, 0.5);
         cont.SetReversible(true);
         cont.SetClip(true);
-        cont.SetPadding(Spacing);
+        cont.SetPadding(spacing);
         cont.SetBorderSize(Border.Width + Border.Radius/2);
         cont.SetPositioning(UI::ComponentTemplate::Absolute);
         
@@ -1480,10 +1741,10 @@ namespace Gorgon { namespace Widgets {
         icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         icon.SetSize(100, 100, UI::Dimension::Percent);
         icon.SetSizing(UI::ComponentTemplate::ShrinkOnly);
-        icon.SetMargin(0, 0, Spacing, 0);
+        icon.SetMargin(0, 0, spacing, 0);
         
         auto &txt = temp.AddTextholder(2, UI::ComponentCondition::Always);
-        txt.SetRenderer(InfoFont);
+        txt.SetRenderer(*info);
         txt.SetColor(FgC(Info));
         txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         txt.SetDataEffect(UI::ComponentTemplate::Text);
@@ -1496,16 +1757,16 @@ namespace Gorgon { namespace Widgets {
 
     UI::Template SimpleGenerator::makepanel(SimpleGenerator::AssetID::BorderSide edge, bool scrollers, bool spacing) {
         Geometry::Size defsize = {
-            WidgetWidth * 2 + Spacing + Border.Width * 2 + Spacing * 2, 
-            BorderedWidgetHeight * 10 + Spacing * 9 + Border.Width * 2 + Spacing * 2
+            GetUnitSize(6) + Border.Width * 2 + spacing * 2, 
+            GetUnitSize(10) + Border.Width * 2 + spacing * 2
         };
         
         if(AssetID::VBorders(edge) == 1) {
-            defsize.Height = BorderedWidgetHeight + Border.Width + Spacing * 2;
+            defsize.Height = unitsize + Border.Width + spacing * 2;
         }
         
         if(AssetID::HBorders(edge) == 1) {
-            defsize.Width = WidgetWidth * 2 + Spacing + Border.Width + Spacing * 2;
+            defsize.Width = GetUnitSize(3) * 2 + spacing + Border.Width + spacing * 2;
         }
         
         UI::Template temp = maketemplate();
@@ -1518,11 +1779,11 @@ namespace Gorgon { namespace Widgets {
         
         bg.Background.SetAnimation(GetAsset({
             AssetID::Rectangle, Graphics::Color::Container, edge, 
-            float(Border.Radius > 0 ? Border.Radius + Spacing : 0)
+            float(Border.Radius > 0 ? Border.Radius + spacing : 0)
         }));
         
         
-        Geometry::Margin padding(Spacing);
+        Geometry::Margin padding(spacing);
         if(!spacing)
             padding = 0;
         else {
@@ -1557,7 +1818,7 @@ namespace Gorgon { namespace Widgets {
             auto &vst = operator[](Scrollbar_Vertical);
             auto &hst = operator[](Scrollbar_Horizontal);
             
-            temp.SetSize(temp.GetWidth()+vst.GetWidth()+Spacing, temp.GetHeight());
+            temp.SetSize(temp.GetWidth()+vst.GetWidth()+spacing, temp.GetHeight());
             
             bg
                 .AddIndex(3) //VScroll
@@ -1570,7 +1831,7 @@ namespace Gorgon { namespace Widgets {
             vs.SetSize(vst.GetWidth(), {100, UI::Dimension::Percent});
             vs.SetSizing(UI::ComponentTemplate::Fixed);
             vs.SetAnchor(UI::Anchor::TopRight, UI::Anchor::TopRight, UI::Anchor::TopLeft);
-            vs.SetMargin(Spacing, 0, 0, 0);
+            vs.SetMargin(spacing, 0, 0, 0);
             
             auto &hs = temp.AddPlaceholder(4, UI::ComponentCondition::HScroll);
             hs.SetPositioning(UI::ComponentTemplate::Absolute);
@@ -1579,7 +1840,7 @@ namespace Gorgon { namespace Widgets {
             hs.SetSize({100, UI::Dimension::Percent}, hst.GetHeight());
             hs.SetSizing(UI::ComponentTemplate::Fixed);
             hs.SetAnchor(UI::Anchor::None, UI::Anchor::BottomCenter, UI::Anchor::BottomCenter);
-            hs.SetMargin(0, Spacing, vst.GetWidth()+Spacing, 0);
+            hs.SetMargin(0, spacing, vst.GetWidth()+spacing, 0);
             
             auto &vp = temp.AddContainer(1, UI::ComponentCondition::HScroll)
                 .AddIndex(2)
@@ -1588,7 +1849,7 @@ namespace Gorgon { namespace Widgets {
             vp.SetSize(100, 100, UI::Dimension::Percent);
             vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
             vp.SetClip(true);
-            vp.SetIndent(0, 0, 0, hst.GetHeight()+Spacing);
+            vp.SetIndent(0, 0, 0, hst.GetHeight()+spacing);
         }
         
         return temp;
@@ -1623,10 +1884,10 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::Inputbox() {
-        Geometry::Size defsize = {WidgetWidth, BorderedWidgetHeight};
+        Geometry::Size defsize = {GetUnitSize(3), unitsize};
         
         UI::Template temp = maketemplate();
-        temp.SetSpacing(Spacing);
+        temp.SetSpacing(spacing);
         temp.SetSize(defsize);
         
         
@@ -1679,7 +1940,7 @@ namespace Gorgon { namespace Widgets {
         //Text
         auto setuptext = [&](Graphics::RGBA color, UI::ComponentCondition condition) {
             auto &txt = temp.AddTextholder(6, condition);
-            txt.SetRenderer(RegularFont);
+            txt.SetRenderer(regular);
             txt.SetColor(color);
             txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             txt.SetDataEffect(UI::ComponentTemplate::Text);
@@ -1694,31 +1955,14 @@ namespace Gorgon { namespace Widgets {
         setuptext(FgC(Disabled), UI::ComponentCondition::Disabled);
         
         {
-            //:MOVE
-            auto &anim = *new Graphics::BitmapAnimationProvider();
-            auto &img = *new Graphics::Bitmap({std::min((int)std::round(Border.Width/2.f), 1), ObjectHeight});
-            img.ForAllPixels([&img, this](int x, int y) {
-                img.SetRGBAAt(x, y, BdC(Object));
-            });
-            drawables.Add(img);
-            img.Prepare();
-            auto &img2 = *new Graphics::Bitmap({std::min((int)std::round(Border.Width/2.f), 1), RegularFont.GetGlyphRenderer().GetHeight()});
-            img2.Clear();
-            img2.Prepare();
-            drawables.Add(img2);
-            
-            anim.Add(img, 700);
-            anim.Add(img2, 300);
-            providers.Add(anim);
-            
             auto &caret = temp.AddGraphics(8, UI::ComponentCondition::Focused);
-            caret.Content.SetAnimation(anim);
+            caret.Content.SetAnimation(A(Caret));
             caret.SetPosition(0, 0, UI::Dimension::Pixel);
             caret.SetPositioning(caret.Absolute);
             caret.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             caret.SetTag(caret.CaretTag);
             caret.SetSizing(caret.Fixed);
-            caret.SetSize(img.GetWidth(), img.GetHeight());
+            caret.SetSize(A(Caret).GetSize());
         }
         
         {
@@ -1728,7 +1972,7 @@ namespace Gorgon { namespace Widgets {
             selection.SetPositioning(selection.Absolute);
             selection.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             selection.SetTag(selection.SelectionTag);
-            selection.SetSize(0, ObjectHeight);
+            selection.SetSize(0, objectheight);
             selection.SetSizing(UI::ComponentTemplate::Fixed);
         }
         
@@ -1738,18 +1982,18 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::Progressbar() {
-        int h = std::max(Border.Radius * 2 + Border.Width * 2 + 4, Spacing * 3);
-        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, h};
+        int h = std::max(Border.Radius * 2 + Border.Width * 2 + 4, spacing * 3);
+        Geometry::Size defsize = {GetUnitSize(6), h};
         
         UI::Template temp = maketemplate();
-        temp.SetSpacing(Spacing);
+        temp.SetSpacing(spacing);
         temp.SetSize(defsize);
         
         {
             auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always);
          
             bg.Background.SetAnimation(A(Rectangle, Regular));
-            bg.SetPadding(Border.Width + Spacing/2);
+            bg.SetPadding(Border.Width + spacing/2);
             
             bg.AddIndex(1);
         }
@@ -1772,7 +2016,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::BlankLayerbox() {
-        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 3, WidgetHeight * 4 + Spacing * 3};
+        Geometry::Size defsize = {GetUnitSize(6), GetUnitSize(4)};
         
         UI::Template temp = maketemplate();
         temp.SetSize(defsize);
@@ -1794,7 +2038,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::Layerbox() {
-        Geometry::Size defsize = {WidgetWidth * 4 + Spacing * 3, WidgetHeight * 4 + Spacing * 3};
+        Geometry::Size defsize = {GetUnitSize(6), GetUnitSize(4)};
         
         UI::Template temp = maketemplate();
         temp.SetSize(defsize);
@@ -1805,7 +2049,7 @@ namespace Gorgon { namespace Widgets {
         bg.AddIndex(1);
         bg.SetClip(true);
         
-        bg.SetPadding(Border.Width + Spacing);
+        bg.SetPadding(Border.Width + spacing);
         
         auto &cont = temp.AddContainer(1, UI::ComponentCondition::Always);
         cont.SetTag(UI::ComponentTemplate::ContentsTag);
@@ -1819,10 +2063,10 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::VScrollbar() {
-        auto dist = int(std::round(Spacing / 3.f));
-        int w = std::max(Border.Radius * 2 + std::max(0, dist - Border.Radius / 2) * 2, Spacing * 2);
+        auto dist = int(std::round(spacing / 3.f));
+        int w = std::max(Border.Radius * 2 + std::max(0, dist - Border.Radius / 2) * 2, spacing * 2);
         
-        Geometry::Size defsize = {w, BorderedWidgetHeight * 3 - Border.Width * 2};
+        Geometry::Size defsize = {w, unitsize * 3 - Border.Width * 2};
         
         UI::Template temp = maketemplate();
         temp.SetSize(defsize);
@@ -1857,10 +2101,10 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::HScrollbar() {
-        auto dist = int(std::round(Spacing / 3.f));
-        int h = std::max(Border.Radius * 2 + std::max(0, dist - Border.Radius / 2) * 2, Spacing * 2);
+        auto dist = int(std::round(spacing / 3.f));
+        int h = std::max(Border.Radius * 2 + std::max(0, dist - Border.Radius / 2) * 2, spacing * 2);
         
-        Geometry::Size defsize = {WidgetWidth * 2 + Spacing, h};
+        Geometry::Size defsize = {GetUnitSize(6), h};
         
         UI::Template temp = maketemplate();
         temp.SetSize(defsize);
@@ -1894,11 +2138,11 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::Listbox() {
-        Geometry::Size defsize = {WidgetWidth*2+Spacing, BorderedWidgetHeight*8};
+        Geometry::Size defsize = {GetUnitSize(6), GetUnitSize(8)};
         
         UI::Template temp = maketemplate();
         
-        temp.SetSpacing(Spacing);
+        temp.SetSpacing(spacing);
         temp.SetSize(defsize);
         
         auto &vst = operator[](Scrollbar_Vertical);
@@ -1940,13 +2184,13 @@ namespace Gorgon { namespace Widgets {
         vs.SetSize(vst.GetWidth(), {100, UI::Dimension::Percent});
         vs.SetSizing(UI::ComponentTemplate::Fixed);
         vs.SetAnchor(UI::Anchor::TopRight, UI::Anchor::TopRight, UI::Anchor::TopLeft);
-        vs.SetMargin(Spacing, 0, 0, 0);
+        vs.SetMargin(spacing, 0, 0, 0);
         
         
         //****** listitem
         
         //TODO fix height
-        listbox_listitem.SetSize(defsize.Width - (Border.Width + std::max(Border.Radius / 2, Focus.Spacing)) * 2, WidgetHeight);
+        listbox_listitem.SetSize(defsize.Width - (Border.Width + std::max(Border.Radius / 2, Focus.Spacing)) * 2, borderlessheight);
         
         listbox_listitem.AddContainer(0, UI::ComponentCondition::Always)
             .AddIndex(1) //background
@@ -2000,7 +2244,7 @@ namespace Gorgon { namespace Widgets {
         auto &iconcont = listbox_listitem.AddContainer(6, UI::ComponentCondition::Icon1IsSet)
             .AddIndex(8)
         ;
-        iconcont.SetMargin(0, 0, Spacing, 0);
+        iconcont.SetMargin(0, 0, spacing, 0);
         iconcont.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         iconcont.SetSizing(UI::ComponentTemplate::Automatic);
         
@@ -2017,7 +2261,7 @@ namespace Gorgon { namespace Widgets {
         //Text
         auto setuptext = [&](Graphics::RGBA color, UI::ComponentCondition condition, int index = 7) {
             auto &txt = listbox_listitem.AddTextholder(index, condition);
-            txt.SetRenderer(RegularFont);
+            txt.SetRenderer(regular);
             txt.SetColor(color);
             txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             txt.SetDataEffect(UI::ComponentTemplate::Text);
@@ -2047,7 +2291,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::Dropdown() {
-        Geometry::Size defsize = {BorderedWidgetHeight * 4 + Spacing * 3, BorderedWidgetHeight};
+        Geometry::Size defsize = {GetUnitSize(4), GetUnitSize()};
         
         UI::Template temp = maketemplate();
         temp.SetSize(defsize);
@@ -2095,7 +2339,7 @@ namespace Gorgon { namespace Widgets {
                 break;
             }
             btn.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-            btn.SetMargin(0, icon!=2 ? Spacing/2 : 0, Spacing*2, 0);
+            btn.SetMargin(0, icon!=2 ? spacing/2 : 0, spacing*2, 0);
             btn.SetSizing(UI::ComponentTemplate::Automatic);
         };
         
@@ -2114,7 +2358,7 @@ namespace Gorgon { namespace Widgets {
         
         auto maketext = [&](auto color, UI::ComponentCondition cond) {
             auto &tt = temp.AddTextholder(6, cond);
-            tt.SetRenderer(RegularFont);
+            tt.SetRenderer(regular);
             tt.SetColor(color);
             tt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             tt.SetDataEffect(UI::ComponentTemplate::Text);
@@ -2139,13 +2383,13 @@ namespace Gorgon { namespace Widgets {
     
     UI::Template SimpleGenerator::Window() {
         auto tmp = makepanel(AssetID::All, true, false);
-        tmp.SetSize({WidgetWidth*3+Spacing*2+BorderedWidgetHeight, BorderedWidgetHeight*10});
+        tmp.SetSize({GetUnitSize(9), GetUnitSize(10)});
         
         auto &cbg = dynamic_cast<UI::ContainerTemplate&>(tmp[0]);
         cbg.Background.SetAnimation(A(Background, Container));
         cbg.SetIndex(6);
         cbg.SetSize(100, 100, UI::Dimension::Percent);
-        cbg.SetPadding(Spacing);
+        cbg.SetPadding(spacing);
         cbg.SetPositioning(UI::ComponentTemplate::Relative);
         cbg.SetAnchor(UI::Anchor::BottomCenter, UI::Anchor::TopCenter, UI::Anchor::TopCenter);
         
@@ -2160,8 +2404,8 @@ namespace Gorgon { namespace Widgets {
             bg.SetTag(UI::ComponentTemplate::ResizeTag);            
         };
         
-        addborder(UI::ComponentCondition::Always, A(Rectangle, PassiveContiner, All, expandedradius(Spacing)));
-        addborder(UI::ComponentCondition::Focused, A(Rectangle, ActiveContainer, All, expandedradius(Spacing)));
+        addborder(UI::ComponentCondition::Always, A(Rectangle, PassiveContiner, All, expandedradius(spacing)));
+        addborder(UI::ComponentCondition::Focused, A(Rectangle, ActiveContainer, All, expandedradius(spacing)));
         
         auto &titlebar = tmp.AddContainer(5, UI::ComponentCondition::Always)
             .AddIndex(7) //icon
@@ -2169,7 +2413,7 @@ namespace Gorgon { namespace Widgets {
             .AddIndex(9) //close button
         ;
         titlebar.SetTag(UI::ComponentTemplate::DragTag);
-        titlebar.SetSize({100, UI::Dimension::Percent}, WidgetHeight);
+        titlebar.SetSize({100, UI::Dimension::Percent}, borderlessheight);
         //titlebar.Background.SetAnimation(NormalBG());
         titlebar.SetMargin(0, 0, 0, Border.Width);
         
@@ -2178,7 +2422,7 @@ namespace Gorgon { namespace Widgets {
         icon.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         
         auto &text = tmp.AddTextholder(8, UI::ComponentCondition::Always);
-        text.SetRenderer(CenteredFont);
+        text.SetRenderer(centered);
         text.SetSize(100, 100, UI::Dimension::Percent);
         text.SetDataEffect(UI::ComponentTemplate::Title);
         text.SetSizing(UI::ComponentTemplate::Fixed);
@@ -2188,18 +2432,18 @@ namespace Gorgon { namespace Widgets {
         
         //close button
         auto &cb = tmp.AddPlaceholder(9, UI::ComponentCondition::Always);
-        cb.SetSize(ObjectHeight, ObjectHeight);
+        cb.SetSize(objectheight, objectheight);
         cb.SetSizing(UI::ComponentTemplate::Fixed);
         cb.SetTag(UI::ComponentTemplate::CloseTag);
         cb.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-        cb.SetPosition(0, -ObjectHeight/6);
+        cb.SetPosition(0, -objectheight/6);
         
         
         //close button template
         UI::Template &closebtn = *new UI::Template;
-        closebtn.SetSize(ObjectHeight, ObjectHeight);
-        closebtn.SetSpacing(Spacing);
-        closebtn.SetUnitWidth(BorderedWidgetHeight);
+        closebtn.SetSize(objectheight, objectheight);
+        closebtn.SetSpacing(spacing);
+        closebtn.SetUnitWidth(unitsize);
         closebtn.AddContainer(0, UI::ComponentCondition::Always)
             .AddIndex(1)
             .Background.SetAnimation(A(Rectangle, Regular))
@@ -2239,7 +2483,7 @@ namespace Gorgon { namespace Widgets {
     
     UI::Template SimpleGenerator::DialogWindow() {
         auto temp = Window();
-        temp.SetSize({WidgetWidth*2+Spacing+BorderedWidgetHeight, BorderedWidgetHeight*5});
+        temp.SetSize({GetUnitSize(6) + Border.Width*2 + spacing*2, GetUnitSize(5)});
         
         auto &cbg = dynamic_cast<UI::ContainerTemplate&>(temp[0]);
         //auto tmp = makepanel(AssetID::AllExceptBottom, true);
@@ -2266,7 +2510,7 @@ namespace Gorgon { namespace Widgets {
         
         auto &btnplace = temp.AddContainer(maxind, UI::ComponentCondition::Always);
         btnplace.SetSize({100, UI::Dimension::Percent}, btndiag.GetHeight());
-        btnplace.SetMargin(0, Spacing, 0, 0);
+        btnplace.SetMargin(0, spacing, 0, 0);
         btnplace.SetPositioning(UI::ComponentTemplate::Relative);
         btnplace.SetAnchor(UI::Anchor::BottomCenter, UI::Anchor::TopCenter, UI::Anchor::TopCenter);
         btnplace.SetTag(UI::ComponentTemplate::DialogButtonsTag);
@@ -2281,7 +2525,7 @@ namespace Gorgon { namespace Widgets {
     
     UI::Template SimpleGenerator::ColorPlane() {
         auto temp = Layerbox();
-        auto w = BorderedWidgetHeight * 6 + Spacing * 5;
+        auto w = GetUnitSize(6);
         auto h = (w-26)/12*9 + 22;
         temp.SetSize(w, h);
         
@@ -2289,10 +2533,10 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::ColorPicker() {
-        Geometry::Size defsize = {BorderedWidgetHeight * 4 + Spacing * 3, BorderedWidgetHeight};
+        Geometry::Size defsize = {GetUnitSize(4), GetUnitSize()};
         
         UI::Template temp = maketemplate();
-        temp.SetSpacing(Spacing);
+        temp.SetSpacing(spacing);
         temp.SetSize(defsize);
         
         
@@ -2346,7 +2590,7 @@ namespace Gorgon { namespace Widgets {
         //Text
         auto setuptext = [&](Graphics::RGBA color, UI::ComponentCondition condition) {
             auto &txt = temp.AddTextholder(6, condition);
-            txt.SetRenderer(RegularFont);
+            txt.SetRenderer(regular);
             txt.SetColor(color);
             txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             txt.SetDataEffect(UI::ComponentTemplate::Text);
@@ -2360,55 +2604,35 @@ namespace Gorgon { namespace Widgets {
         setuptext(FgC(Down), UI::ComponentCondition::Down);
         setuptext(FgC(Disabled), UI::ComponentCondition::Disabled);
         
-        //:MOVE
-        //Caret
-        {
-            auto &anim = *new Graphics::BitmapAnimationProvider();
-            auto &img = *new Graphics::Bitmap({std::min((int)std::round(Border.Width/2.f), 1), ObjectHeight});
-            img.ForAllPixels([&img, this](int x, int y) {
-                img.SetRGBAAt(x, y, BdC(Object));
-            });
-            drawables.Add(img);
-            img.Prepare();
-            auto &img2 = *new Graphics::Bitmap({std::min((int)std::round(Border.Width/2.f), 1), RegularFont.GetGlyphRenderer().GetHeight()});
-            img2.Clear();
-            img2.Prepare();
-            drawables.Add(img2);
-            
-            anim.Add(img, 700);
-            anim.Add(img2, 300);
-            providers.Add(anim);
-            
-            auto &caret = temp.AddGraphics(8, UI::ComponentCondition::Focused);
-            caret.Content.SetAnimation(anim);
-            caret.SetPosition(0, 0, UI::Dimension::Pixel);
-            caret.SetPositioning(caret.Absolute);
-            caret.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-            caret.SetTag(caret.CaretTag);
-            caret.SetSizing(caret.Fixed);
-            caret.SetSize(img.GetWidth(), img.GetHeight());
-        }
         
-        //Selection
-        {
-            auto &selection = temp.AddGraphics(7, UI::ComponentCondition::Focused);
-            selection.Content.SetAnimation(A(Rectangle, Selection, None, 0));
-            selection.SetPosition(0, 0, UI::Dimension::Pixel);
-            selection.SetPositioning(selection.Absolute);
-            selection.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-            selection.SetTag(selection.SelectionTag);
-            selection.SetSize(0, ObjectHeight);
-            selection.SetSizing(UI::ComponentTemplate::Fixed);
-        }
+        auto &caret = temp.AddGraphics(8, UI::ComponentCondition::Focused);
+        caret.Content.SetAnimation(A(Caret));
+        caret.SetPosition(0, 0, UI::Dimension::Pixel);
+        caret.SetPositioning(caret.Absolute);
+        caret.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        caret.SetTag(caret.CaretTag);
+        caret.SetSizing(caret.Fixed);
+        caret.SetSize(A(Caret).GetSize());
+    
+    
+        auto &selection = temp.AddGraphics(7, UI::ComponentCondition::Focused);
+        selection.Content.SetAnimation(A(Rectangle, Selection, None, 0));
+        selection.SetPosition(0, 0, UI::Dimension::Pixel);
+        selection.SetPositioning(selection.Absolute);
+        selection.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        selection.SetTag(selection.SelectionTag);
+        selection.SetSize(0, objectheight);
+        selection.SetSizing(UI::ComponentTemplate::Fixed);
+        
         
         auto &colorbtn = temp.AddContainer(9, UI::ComponentCondition::Always)
             .AddIndex(10) //checkered
             .AddIndex(11) //color
             .AddIndex(12) //border
         ;
-        colorbtn.SetSize(BorderedWidgetHeight, BorderedWidgetHeight - Border.Width*2 - Spacing*2);
+        colorbtn.SetSize(unitsize, unitsize - Border.Width*2 - spacing*2);
         colorbtn.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
-        colorbtn.SetMargin(0, 0, Border.Width+Spacing, 0);
+        colorbtn.SetMargin(0, 0, Border.Width+spacing, 0);
         
         auto &checkered = temp.AddGraphics(10, UI::ComponentCondition::Always);
         checkered.SetSize(100, 100, UI::Dimension::Percent);
@@ -2422,7 +2646,7 @@ namespace Gorgon { namespace Widgets {
         color.SetSizing(UI::ComponentTemplate::Fixed);
         color.Content.SetAnimation(A(White));
         color.SetPositioning(UI::ComponentTemplate::Absolute);
-        color.SetMargin(Spacing);
+        color.SetMargin(spacing);
         
         auto &bord = temp.AddGraphics(12, UI::ComponentCondition::Always);
         bord.SetSize(100, 100, UI::Dimension::Percent);

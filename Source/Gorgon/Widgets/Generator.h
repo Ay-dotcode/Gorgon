@@ -175,6 +175,32 @@ namespace Gorgon { namespace Widgets {
     */
     class SimpleGenerator : public Generator {
     public:
+
+        struct FocusInfo {
+            int             Width   = 1;
+            //focus to content spacing
+            int             Spacing = 1;
+        };
+        
+        struct BorderInfo {
+            int     Width                    = 2;
+            int     Radius                   = 0;
+            int     Divisions                = 1;
+            int     Object                   = 2;
+            float   Shape                    = 2;
+        };
+        
+        /// Constants to control style of corners
+        enum CornerStyle {
+            Straight,
+            LessChamfered,
+            LessRounded,
+            Chamfered,
+            Rounded,
+            ExtraChamfered,
+            ExtraRounded,
+        };
+        
         
         /// Identifies and helps with the creation of assets used in a generator
         struct AssetID {
@@ -194,7 +220,8 @@ namespace Gorgon { namespace Widgets {
                 Focus,
                 Edit, //rectangle with background set to edit
                 FgFilled,
-                BorderFilled
+                BorderFilled,
+                Caret
             };
             
             enum BorderSide {
@@ -339,16 +366,183 @@ namespace Gorgon { namespace Widgets {
             float BorderWidth = std::numeric_limits<float>::max();
         };
         
-        /// Initializes the generator. Density controls the spacing between elements
-        explicit SimpleGenerator(int fontsize, std::string fontname = "", std::string boldfontname = "", bool activate = true, float density = 7.5);
-        
         /// Creates a non-working simple generator. Calls to any function other than Init
         /// is undefined behaviour.
         SimpleGenerator() : Generator(false) {
         }
         
-        /// Initializes the generator
-        void Init(int fontsize = 14, std::string fontname = "", std::string boldfontname = "");
+        /// Updates a single color. All setup should be performed before any templates are generated
+        void SetColor(Graphics::Color::Designation designation, Graphics::Color::Triplet<> color) {
+            colors.Set(designation, color);
+            printer.RegisterColor(designation, color.Forecolor, color.Backcolor);
+        }
+        
+        /// Replaces the list of colors with the given list. All setup should be performed before
+        /// any templates are generated
+        void SetColors(Graphics::Color::TripletPack pack);
+        
+        /// Finds the requested typeface from the installed fonts. You may query installed fonts
+        /// using OS::GetFontFamilies. Leaving family empty will trigger internal mechanism to find
+        /// an ideal font for the task. On Linux, the font is requested from FontConfig, on Windows,
+        /// we have a list of fonts that will be tried in order.
+        void InitFonts(int size, std::string family = "", std::string mono = "");
+        
+        /// Loads the specified fonts, while using supplied or default family for monospaced fonts.
+        void InitFonts(
+            int size,
+            const std::string &regular, const std::string &bold, 
+            const std::string &italic,  const std::string &bolditalic,
+            std::string mono = ""
+        );
+        
+        /// Loads the specified fonts.
+        void InitFonts(
+            int size,
+            const std::string &regular,    const std::string &bold, 
+            const std::string &italic,     const std::string &bolditalic,
+            const std::string &mono,       const std::string &monobold,
+            const std::string &monoitalic, const std::string &monobolditalic
+        );
+        
+        /// Finds the requested typeface from the installed fonts. You may query installed fonts
+        /// using OS::GetFontFamilies. Leaving family empty will trigger internal mechanism to find
+        /// an ideal font for UI. On Linux, the font is requested from FontConfig, on Windows,
+        /// we have a list of fonts that will be tried in order. Font size will be calculated from
+        /// the monitor size and density
+        void InitFonts(std::string family = "", std::string mono = "", 
+                       float density = 7.5f);
+        
+        /// Loads the specified fonts, while using supplied or default family for monospaced fonts.
+        void InitFonts(
+            const std::string &regular, const std::string &bold, 
+            const std::string &italic,  const std::string &bolditalic,
+            std::string mono = "",
+            float density = 7.5f
+        );
+        
+        /// Loads the specified fonts.
+        void InitFonts(
+            const std::string &regular,    const std::string &bold, 
+            const std::string &italic,     const std::string &bolditalic,
+            const std::string &mono,       const std::string &monobold,
+            const std::string &monoitalic, const std::string &monobolditalic,
+            float density = 7.5f
+        );
+        
+        /// Initializes the dimensions that will be used by the generator. Call after font setup
+        /// is completed. Density controls how dense the widgets will be packed together, effecting
+        /// their spacing. bordersize controls the border of individual widgets. If -1 is supplied
+        /// for border, line thickness from the regular font will be used.
+        void InitDimensions(
+            float density = 7.5f, float bordersize = -1, 
+            CornerStyle corners = Rounded
+        );
+        
+        /// Fully initializes the generator with default colors
+        void Init(
+            const std::string &family = "", const std::string &mono = "", 
+            float density = 7.5f, float bordersize = -1, 
+            CornerStyle corners = Rounded
+        ) {
+            InitFonts(family, mono, density);
+            InitDimensions(density, bordersize, corners);
+        }
+        
+        /// Fully initializes the generator with default colors
+        void Init(
+            int size,
+            const std::string &family = "", const std::string &mono = "", 
+            float density = 7.5f, float bordersize = -1, 
+            CornerStyle corners = Rounded
+        ) {
+            InitFonts(size, family, mono);
+            InitDimensions(density, bordersize, corners);
+        }
+        
+        /// Fully initializes the generator
+        void Init(
+            Graphics::Color::TripletPack colors,
+            const std::string &family = "", const std::string &mono = "", 
+            float density = 7.5f, float bordersize = -1, 
+            CornerStyle corners = Rounded
+        ) {
+            SetColors(std::move(colors));
+            InitFonts(family, mono, density);
+            InitDimensions(density, bordersize, corners);
+        }
+        
+        /// Fully initializes the generator
+        void Init(
+            int size,
+            Graphics::Color::TripletPack colors,
+            const std::string &family = "", const std::string &mono = "", 
+            float density = 7.5f, float bordersize = -1, 
+            CornerStyle corners = Rounded
+        ) {
+            SetColors(std::move(colors));
+            InitFonts(size, family, mono);
+            InitDimensions(density, bordersize, corners);
+        }
+        
+        /// Fully initializes the generator
+        void Init(
+            Graphics::Color::TripletPack colors,
+            const std::string &regular, const std::string &bold, 
+            const std::string &italic, const std::string &bolditalic,
+            const std::string &mono = "", 
+            float density = 7.5f, float bordersize = -1, 
+            CornerStyle corners = Rounded
+        ) {
+            SetColors(std::move(colors));
+            InitFonts(regular, bold, italic, bolditalic, mono, density);
+            InitDimensions(density, bordersize, corners);
+        }
+        
+        /// Fully initializes the generator
+        void Init(
+            int size,
+            Graphics::Color::TripletPack colors,
+            const std::string &regular, const std::string &bold, 
+            const std::string &italic, const std::string &bolditalic, 
+            const std::string &mono = "", 
+            float density = 7.5f, float bordersize = -1, 
+            CornerStyle corners = Rounded
+        ) {
+            SetColors(std::move(colors));
+            InitFonts(size, regular, bold, italic, bolditalic, mono);
+            InitDimensions(density, bordersize, corners);
+        }
+        
+        /// Fully initializes the generator
+        void Init(
+            Graphics::Color::TripletPack colors,
+            const std::string &regular, const std::string &bold, 
+            const std::string &italic, const std::string &bolditalic,
+            const std::string &mono, const std::string &monobold, 
+            const std::string &monoitalic, const std::string &monobolditalic, 
+            float density = 7.5f, float bordersize = -1, 
+            CornerStyle corners = Rounded
+        ) {
+            SetColors(std::move(colors));
+            InitFonts(regular, bold, italic, bolditalic, mono, monobold, monoitalic, monobolditalic, density);
+            InitDimensions(density, bordersize, corners);
+        }
+        
+        /// Fully initializes the generator
+        void Init(
+            int size,
+            Graphics::Color::TripletPack colors,
+            const std::string &regular, const std::string &bold, 
+            const std::string &italic, const std::string &bolditalic, 
+            const std::string &mono, const std::string &monobold, 
+            const std::string &monoitalic, const std::string &monobolditalic, 
+            float density = 7.5f, float bordersize = -1, 
+            CornerStyle corners = Rounded
+        ) {
+            SetColors(std::move(colors));
+            InitFonts(size, regular, bold, italic, bolditalic, mono, monobold, monoitalic, monobolditalic);
+            InitDimensions(density, bordersize, corners);
+        }
         
         virtual ~SimpleGenerator();
         
@@ -429,15 +623,17 @@ namespace Gorgon { namespace Widgets {
         
 
         virtual int GetSpacing() const override {
-            return Spacing;
+            return spacing;
         }
 
         virtual int GetEmSize() const override {
             return lettervsize.first + lettervsize.second;
         }
         
+        using Generator::GetUnitSize;
+        
         virtual int GetUnitSize() const override {
-            return BorderedWidgetHeight; //UnitWidth = Bordered height
+            return unitsize;
         }
         
         /// Returns the foreground color for the requested designation.
@@ -452,50 +648,52 @@ namespace Gorgon { namespace Widgets {
         
         /// Returns an printer instance that will render the requested text style
         virtual const Graphics::StyledPrinter &Printer(const Graphics::NamedFont &type) const override {
-            Utils::NotImplemented();
+            return printer.GetFont(type);
         }
         
         /// Returns an advanced printer instance that will be able to render any text style
         virtual const Graphics::AdvancedPrinter &Printer() const override {
-            Utils::NotImplemented();
+            return printer;
         }
         
-        Graphics::AnimationProvider &GetAsset(const AssetID &id);
+        Graphics::RectangularAnimationProvider &GetAsset(const AssetID &id);
         
+        const Graphics::Color::TripletPack &Colors = colors;
         
-        int Spacing       = 4;
-        int ObjectHeight  = 15;
-        int ObjectBorder  = 2;
-        float ShapeBorder = 2;
-        
-        /// This function will update default widget dimensions. Call this function after
-        /// setting up or changing borders, font size
-        void UpdateDimensions();
-        
-        /// This function will update default widget borders depending on the font size
-        void UpdateBorders(bool smooth = true);
+        const BorderInfo &Border = border;
+        const FocusInfo  &Focus  = focus;
 
-        Graphics::StyledPrinter RegularFont;
-        Graphics::StyledPrinter CenteredFont;
-        Graphics::StyledPrinter BoldFont;
-        Graphics::StyledPrinter TitleFont;
-        Graphics::StyledPrinter SubtitleFont;
-        Graphics::StyledPrinter SmallFont;
-        Graphics::StyledPrinter InfoFont;
-
-        struct FocusInfo {
-            int             Width   = 1;
-            //focus to content spacing
-            int             Spacing = 1;
-        } Focus;
+    private:
+        Graphics::BitmapRectangleProvider *makeborder(Graphics::RGBA border, Graphics::RGBA bg, AssetID::BorderSide borders, int borderwidth = -1, int borderradius = -1);
+        Graphics::BitmapRectangleProvider *makecheckeredbg();
+        Graphics::RectangleProvider *makefocusborder();
+        UI::Template makepanel(SimpleGenerator::AssetID::BorderSide edge, bool scrollers, bool spacing = true);
+        //rotation 0 is up
+        Graphics::Bitmap *arrow(Graphics::RGBA color, Geometry::Size size, float rotation);
+        Graphics::Bitmap *cross(Graphics::RGBA color, Geometry::Size size);
+        Graphics::Bitmap *box(Graphics::RGBA color, Geometry::Size size);
+        //will fit into the box of the same size
+        Graphics::Bitmap *tick(Graphics::RGBA color, Geometry::Size size);
+        Graphics::Bitmap *emptycircle(Graphics::RGBA color, Geometry::Size size);
+        //will fit into the box of the same size
+        Graphics::Bitmap *circlefill(Graphics::RGBA color, Geometry::Size size);
+        Graphics::BitmapAnimationProvider *caret();
         
-        struct BorderInfo {
-            int Width                    = 2;
-            int Radius                   = 0;
-            int Divisions                = 1;
-        } Border;
         
-        Graphics::Color::TripletPack Colors = {
+        /// This is the height of a bordered widget
+        int unitsize = 32;
+        
+        /// This is the height of a non-bordered widget
+        int borderlessheight = 24;
+        
+        
+        int spacing       = 4;
+        int objectheight  = 15;
+        float density     = 7.5;
+        BorderInfo border;
+        FocusInfo  focus;
+        
+        Graphics::Color::TripletPack colors = {
             {Graphics::Color::Regular, {Graphics::Color::Charcoal, {Graphics::Color::Ivory, 0.8}}},
             {Graphics::Color::Hover, {Graphics::Color::Charcoal, {Graphics::Color::Tan, Graphics::Color::Ivory, 0.5}}},
             {Graphics::Color::Down, {Graphics::Color::Charcoal, {Graphics::Color::Crimson, Graphics::Color::Ivory, 0.8}}},
@@ -514,34 +712,7 @@ namespace Gorgon { namespace Widgets {
             {Graphics::Color::Title, {Graphics::Color::DarkGreen, Graphics::Color::Transparent}},
         };
         
-        
-        /// This is the width of a three cell widget
-        int WidgetWidth = 64;
-        
-        /// This is the height of a bordered widget
-        int BorderedWidgetHeight = 32;
-        
-        /// This is the height of a non-bordered widget
-        int WidgetHeight = 24;
-        
-        /// This controls the automatic spacing. After changing this member
-        /// you need to call UpdateDimensions to get the desired effect.
-        float Density = 7.5;
-
-    private:
-        Graphics::BitmapRectangleProvider *makeborder(Graphics::RGBA border, Graphics::RGBA bg, AssetID::BorderSide borders, int borderwidth = -1, int borderradius = -1);
-        Graphics::BitmapRectangleProvider *makecheckeredbg();
-        Graphics::RectangleProvider *makefocusborder();
-        UI::Template makepanel(SimpleGenerator::AssetID::BorderSide edge, bool scrollers, bool spacing = true);
-        //rotation 0 is up
-        Graphics::Bitmap *arrow(Graphics::RGBA color, Geometry::Size size, float rotation);
-        Graphics::Bitmap *cross(Graphics::RGBA color, Geometry::Size size);
-        Graphics::Bitmap *box(Graphics::RGBA color, Geometry::Size size);
-        //will fit into the box of the same size
-        Graphics::Bitmap *tick(Graphics::RGBA color, Geometry::Size size);
-        Graphics::Bitmap *emptycircle(Graphics::RGBA color, Geometry::Size size);
-        //will fit into the box of the same size
-        Graphics::Bitmap *circlefill(Graphics::RGBA color, Geometry::Size size);
+        void initfontrelated();
         
         float expandedradius(float pixels) {
             if(Border.Radius)
@@ -556,16 +727,39 @@ namespace Gorgon { namespace Widgets {
         
         Graphics::GlyphRenderer *regularrenderer = nullptr;
         Graphics::GlyphRenderer *boldrenderer = nullptr;
-        Graphics::GlyphRenderer *titlerenderer = nullptr;
-        Graphics::GlyphRenderer *subtitlerenderer = nullptr;
+        Graphics::GlyphRenderer *italicrenderer = nullptr;
+        Graphics::GlyphRenderer *bolditalicrenderer = nullptr;
+        Graphics::GlyphRenderer *h1renderer = nullptr;
+        Graphics::GlyphRenderer *h2renderer = nullptr;
+        Graphics::GlyphRenderer *h3renderer = nullptr;
+        //h4 = bold different color
         Graphics::GlyphRenderer *smallrenderer = nullptr;
+        //info small with different color
+        Graphics::GlyphRenderer *largerrenderer = nullptr;
+        Graphics::GlyphRenderer *scriptrenderer = nullptr;
+        Graphics::GlyphRenderer *boldscriptrenderer = nullptr;
+        Graphics::GlyphRenderer *smallscriptrenderer = nullptr;
+        Graphics::GlyphRenderer *fixedwidthrenderer = nullptr;
+        Graphics::GlyphRenderer *fixedwidthboldrenderer = nullptr;
+        Graphics::GlyphRenderer *fixedwidthitalicrenderer = nullptr;
+        Graphics::GlyphRenderer *fixedwidthbolditalicrenderer = nullptr;
+        
+        Graphics::StyledPrinter  regular;
+        Graphics::StyledPrinter  bold;
+        Graphics::BasicPrinter  *h2;
+        Graphics::BasicPrinter  *h3;
+        Graphics::BasicPrinter  *info;
+        Graphics::StyledPrinter  centered;
+        
+        Graphics::AdvancedPrinter printer;
         
         Containers::Collection<Graphics::Drawable> drawables;
         Containers::Collection<Graphics::AnimationProvider> providers;
-        Containers::Hashmap<AssetID, Graphics::AnimationProvider> assets;
+        Containers::Hashmap<AssetID, Graphics::RectangularAnimationProvider> assets;
         
         UI::Template listbox_listitem;
         UI::Template empty;
+        std::vector<Gorgon::OS::FontFamily> fontlist;
 
         std::pair<int, int> lettervsize, asciivsize;
     };

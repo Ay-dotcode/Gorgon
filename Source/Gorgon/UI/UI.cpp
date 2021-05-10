@@ -6,12 +6,15 @@
 namespace Gorgon { 
 namespace UI {
     
-    Widgets::Generator *generator = nullptr;
-    
     //create a default widget registry.
-    void Initialize(std::string fontname, std::string boldfontname, float density, int min) {
-        
-        generator = new Widgets::SimpleGenerator(FontHeight(density, min), fontname, boldfontname, true, density);
+    void Initialize(float density, int min) {
+        auto gen = new Widgets::SimpleGenerator();
+        gen->Init(FontHeight(density, min), "", "", density);
+        gen->Activate();
+    }
+    
+    void Initialize(Widgets::Registry &reg) {
+        reg.Activate();
     }
     
     int FontHeight(float density, int min) {
@@ -23,7 +26,6 @@ namespace UI {
         return fh;
     }
 
-    
 }
 
 namespace Widgets {

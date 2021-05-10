@@ -342,9 +342,16 @@ namespace Gorgon { namespace OS {
             throw std::runtime_error("Cannot initialize font config");
         
         FcPattern *pat = FcPatternCreate();
+        
+        if(!pat)
+            throw std::runtime_error("Cannot initialize font config");
+        
         FcLangSet *lang = FcLangSetCreate();
-        FcLangSetAdd(lang, (const unsigned char*)"en-US");
-        FcPatternAddLangSet(pat, FC_LANG, lang);
+        
+        if(lang) {
+            FcLangSetAdd(lang, (const unsigned char*)"en-US");
+            FcPatternAddLangSet(pat, FC_LANG, lang);
+        }
         FcConfig *config = FcConfigGetCurrent();
         FcConfigSetRescanInterval(config, GORGON_FONTCONFIG_INTERVAL);
         

@@ -43,6 +43,20 @@ namespace Gorgon { namespace Graphics {
         };
         
         AdvancedPrinter() = default;
+        AdvancedPrinter(const AdvancedPrinter &other) {
+            
+            fonts       = other.fonts;
+            images      = other.images.Duplicate();
+            tabstops    = other.tabstops;
+        
+        /// Indexed foreground colors
+        std::map<Byte, RGBA> colors;
+        
+        /// Indexed background colors
+        std::map<Byte, RGBA> backcolors;
+        
+        std::vector<Glyph> breakingchars;
+        }
         
         AdvancedPrinter(AdvancedPrinter &&) = default;
 

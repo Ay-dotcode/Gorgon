@@ -1022,7 +1022,12 @@ namespace Gorgon { namespace Graphics {
         struct Pair {
             Pair() = default;
             
-            explicit Pair(const C_ &forecolor, const C_ &backcolor = Transparent) :
+            explicit Pair(const C_ &forecolor) :
+                Forecolor(forecolor),
+                Backcolor(Transparent)
+            { }
+            
+            Pair(const C_ &forecolor, const C_ &backcolor) :
                 Forecolor(forecolor),
                 Backcolor(backcolor)
             { }

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0)
 
 OPTION(BUILD_DOCUMENTATION "Use Doxygen to create the HTML based API documentation" ON)
 OPTION(BUILD_PDF "Use Doxygen to create the PDF API documentation" OFF)
