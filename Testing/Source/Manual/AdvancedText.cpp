@@ -149,15 +149,25 @@ int main() {
     int w = 200;
     std::string str = builder;
     
-    std::tie(str, std::ignore) = String::ParseMarkdown(R"(
-# Header 1
+    std::string md = 
+R"(# Header 1
 Some text here..
-* **Bullet 1**: with a long long long text...
+* **Bullet 1**: with a ~~long long long~~ text...
 * Bullet 2
 
-* After a blank *italic*
-No more ***bullets** continuing* italic
-)", true);
+* After a [blank][1] *italic*
+No more ***bullets** continuing* italic.
+
+A new paragraph. But the next one is not a paragraph  
+  simply a new line.\
+this one too.
+
+[1]: http://google.com
+)";
+    
+    std::vector<String::MarkDownLink> links;
+    
+    std::tie(str, links) = String::ParseMarkdown(md, true);
     
     /*auto rect = printer.GetPosition(str, w, myind);
     rect.X += 25;
@@ -171,8 +181,9 @@ No more ***bullets** continuing* italic
     );*/
 
     auto regions = printer.AdvancedPrint(l, str, {25, 25}, w);
+    printer.GetFont(NamedFont::FixedWidth).Print(l, md, {250, 25}, 800-250);
     
-    /*
+    
     for(auto r : regions) {
         Gorgon::CGI::DrawBounds(
             markings, 
@@ -180,10 +191,18 @@ No more ***bullets** continuing* italic
             1, Gorgon::CGI::SolidFill<>(regioncolor[r.ID])
         );
     }
-    */
+    
     markings.Prepare();
     
     mouse.SetClick([&](Geometry::Point location) {
+        for(auto &reg : regions) {
+            if(IsInside(reg.Bounds, location+Geometry::Point(25, 25))) {
+                if(links.size() > reg.ID) {
+                    std::cout << links[reg.ID].Destination << std::endl;
+                    return;
+                }
+            }
+        }
         int c = printer.GetCharacterIndex(str, w, location);
         std::cout << c << std::endl;
         auto rect = printer.GetPosition(str, w, c);    

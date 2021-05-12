@@ -6,6 +6,17 @@
 namespace Gorgon { namespace String {
    
     /**
+     * Represents a link in markdown text
+     */
+    struct MarkDownLink {
+        int Index;
+        std::string Text;
+        std::string ID;
+        std::string Destination;
+        std::string Title;
+    };
+        
+    /**
      * This function parses markdown formatted text to advanced text formating. Advanced text format
      * can be printed on the screen using AdvancedPrinter which can be provided by the widget 
      * registry: `Gorgon::Widgets::Registry::Active().Printer()`. This function is unicode aware. 
@@ -21,10 +32,11 @@ namespace Gorgon { namespace String {
      * multiline bold and italic statements, terminating them at the end of lines require multiple
      * passes.
      * * Strike using ~~
+     * * Line break without paragraph using double space or \ at the end
+     * * Links: both inline and split links are supported. Titles are also supported but they must
+     * be on a single line. Additionally, autolinks are also supported using <>.
      * 
      * Short term planned features
-     * * Line break without paragraph using \
-     * * Links
      * * Numbered lists
      * * Multi level lists
      * 
@@ -32,6 +44,6 @@ namespace Gorgon { namespace String {
      * link regions that will be returned by AdvancedPrint function, allowing a clicked region to
      * be converted to link without much of a work.
      */
-    std::pair<std::string, std::vector<std::string>> ParseMarkdown(const std::string &markdown, bool useinfofont = false);
+    std::pair<std::string, std::vector<MarkDownLink>> ParseMarkdown(const std::string &markdown, bool useinfofont = false);
     
 } }
