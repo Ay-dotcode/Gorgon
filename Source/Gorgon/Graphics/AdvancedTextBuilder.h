@@ -121,6 +121,9 @@ namespace Gorgon { namespace Graphics {
 
         /// Switches to the given font index. If it doesn't exist, default font will be used.
         AdvancedTextBuilder &SetFont(Byte fontindex) { CSI(0x15); Index(fontindex); return ST(); }
+
+        /// Switches to the given font index. If it doesn't exist, default font will be used.
+        AdvancedTextBuilder &SetFont(NamedFont fontindex) { return SetFont((Byte)fontindex); }
         /// END @}
         
         
@@ -414,9 +417,12 @@ namespace Gorgon { namespace Graphics {
         /// percentage.
         AdvancedTextBuilder &VerticalSpace(short pixels, short rel = 0) { CSI(0x41); ValAndRel(pixels, rel); return ST(); }
         
-        /// Changes the spacing between the tab stops. rel is in space widths. per is basis points of
+        /// Changes the spacing between the tab stops. rel is in em width and is in percentage. per is basis points of
         /// wrap width
         AdvancedTextBuilder &SetTabWidth(short pixels, short rel = 0, short per = 0) { CSI(0x17); ValRelAndPer(pixels, rel, per); return ST(); }
+        
+        /// Uses default tab width
+        AdvancedTextBuilder &UseDefaultTabWidth() { CSI(0x17); ValRelAndPer(); return ST(); }
         
         /// Adds a tabstop. The tabstop with the given index will be located at the specified location.
         /// It replaces nearest tabstop. rel is in space widths. per is basis point of wrap width

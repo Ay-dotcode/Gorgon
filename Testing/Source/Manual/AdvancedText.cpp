@@ -10,6 +10,7 @@
 #include <Gorgon/UI/Window.h>
 #include <Gorgon/Widgets/Generator.h>
 #include <Gorgon/CGI/Marking.h>
+#include <Gorgon/String/Markdown.h>
 
 
 std::string helptext = 
@@ -48,7 +49,7 @@ int main() {
            .Append("Not header")
            .Underline(false)
            .EndRegion(5)
-           .Append("\n")
+           .Append("\n\n")
            .SetUnderlineColor(2)
            .WordWrap(true)
            .SetHangingIndent(10, 0)
@@ -145,18 +146,31 @@ int main() {
         Graphics::Color::BrightPurple,
     };
     
-    auto rect = printer.GetPosition(builder, 150, myind);
+    int w = 200;
+    std::string str = builder;
+    
+    std::tie(str, std::ignore) = String::ParseMarkdown(R"(
+# Header 1
+Some text here..
+* **Bullet 1**: with a long long long text...
+* Bullet 2
+
+* After a blank *italic*
+No more ***bullets** continuing* italic
+)", true);
+    
+    /*auto rect = printer.GetPosition(str, w, myind);
     rect.X += 25;
     rect.Y += 25;
     
-    auto sz = printer.GetSize(builder, 150);
+    auto sz = printer.GetSize(str, w);
     Gorgon::CGI::DrawBounds(
         markings, 
         (Geometry::Bounds)rect,
         1, Gorgon::CGI::SolidFill<>(regioncolor[0])
-    );
+    );*/
 
-    auto regions = printer.AdvancedPrint(l, builder, {25, 25}, 150);
+    auto regions = printer.AdvancedPrint(l, str, {25, 25}, w);
     
     /*
     for(auto r : regions) {
@@ -170,9 +184,9 @@ int main() {
     markings.Prepare();
     
     mouse.SetClick([&](Geometry::Point location) {
-        int c = printer.GetCharacterIndex(builder, 150, location);
+        int c = printer.GetCharacterIndex(str, w, location);
         std::cout << c << std::endl;
-        auto rect = printer.GetPosition(builder, 150, c);    
+        auto rect = printer.GetPosition(str, w, c);    
         rect.X += 25;
         rect.Y += 25;
 

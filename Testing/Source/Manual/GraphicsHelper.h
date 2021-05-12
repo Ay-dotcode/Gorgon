@@ -7,6 +7,7 @@
 #include <Gorgon/Graphics/FreeType.h>
 #include <Gorgon/OS.h>
 #include <Gorgon/UI.h>
+#include <Gorgon/Widgets/Generator.h>
 
 #ifdef LINUX
 #include <unistd.h>
@@ -44,6 +45,9 @@ public:
         //Gorgon::GL::log.InitializeConsole();
 
         Graphics::Initialize();
+        /*auto &gen = *new Gorgon::Widgets::SimpleGenerator;
+        gen.Init("Dejavu serif", "", 7.5);
+        UI::Initialize(gen);*/
         UI::Initialize();
 
         wind.ClosingEvent.Register([] { exit(0); });

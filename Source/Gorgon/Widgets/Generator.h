@@ -695,6 +695,7 @@ namespace Gorgon { namespace Widgets {
         
         Graphics::Color::TripletPack colors = {
             {Graphics::Color::Regular, {Graphics::Color::Charcoal, {Graphics::Color::Ivory, 0.8}}},
+            {Graphics::Color::Code, {Graphics::Color::Black, {Graphics::Color::Tan, 0.8}}},
             {Graphics::Color::Hover, {Graphics::Color::Black, {Graphics::Color::Tan, Graphics::Color::Ivory, 0.5}}},
             {Graphics::Color::Down, {Graphics::Color::Black, {Graphics::Color::Crimson, Graphics::Color::Ivory, 0.8}}},
             {Graphics::Color::Disabled, {{Graphics::Color::Grey, 0.8}, Graphics::Color::LightGrey}},
@@ -734,6 +735,9 @@ namespace Gorgon { namespace Widgets {
         Graphics::GlyphRenderer *h3renderer = nullptr;
         //h4 = bold different color
         Graphics::GlyphRenderer *smallrenderer = nullptr;
+        Graphics::GlyphRenderer *smallboldrenderer = nullptr;
+        Graphics::GlyphRenderer *smallitalicrenderer = nullptr;
+        Graphics::GlyphRenderer *smallbolditalicrenderer = nullptr;
         //info small with different color
         Graphics::GlyphRenderer *largerrenderer = nullptr;
         Graphics::GlyphRenderer *scriptrenderer = nullptr;

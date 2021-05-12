@@ -49,6 +49,15 @@ namespace Gorgon { namespace Graphics {
         /// Font style used to display information, usually smaller and uses different colors.
         Info,
         
+        /// Font style used to display information, usually smaller and uses different colors.
+        BoldInfo,
+        
+        /// Font style used to display information, usually smaller and uses different colors.
+        ItalicInfo,
+        
+        /// Font style used to display information, usually smaller and uses different colors.
+        BoldItalicInfo,
+        
         /// A large font, usually 125% of the original size
         Larger,
         

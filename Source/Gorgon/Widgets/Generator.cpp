@@ -173,6 +173,9 @@ namespace Gorgon { namespace Widgets {
         delete h2renderer;
         delete h3renderer;
         delete smallrenderer;
+        delete smallboldrenderer;
+        delete smallitalicrenderer;
+        delete smallbolditalicrenderer;
         delete largerrenderer;
         delete scriptrenderer;
         delete boldscriptrenderer;
@@ -277,6 +280,9 @@ namespace Gorgon { namespace Widgets {
         h2renderer = new Graphics::FreeType(bold, int(std::round(size * 1.2)));
         h3renderer = new Graphics::FreeType(bold, int(std::round(size * 1.1)));
         smallrenderer = new Graphics::FreeType(regular, int(std::round(size * 0.85)));
+        smallboldrenderer = new Graphics::FreeType(bold, int(std::round(size * 0.85)));
+        smallitalicrenderer = new Graphics::FreeType(italic, int(std::round(size * 0.85)));
+        smallbolditalicrenderer = new Graphics::FreeType(bolditalic, int(std::round(size * 0.85)));
         largerrenderer = new Graphics::FreeType(regular, int(std::round(size * 1.25)), false);
         scriptrenderer = new Graphics::FreeType(regular, int(std::round(size * 0.75)), false);
         boldscriptrenderer = new Graphics::FreeType(bold, int(std::round(size * 0.75)), false);
@@ -308,7 +314,7 @@ namespace Gorgon { namespace Widgets {
         
         auto boldfnt = bold;
         boldfnt.SetColor(regcol);
-        printer.RegisterFont(Graphics::NamedFont::Regular, boldfnt);
+        printer.RegisterFont(Graphics::NamedFont::Bold, boldfnt);
         
         Graphics::StyledPrinter italicfnt(*italicrenderer, regcol);
         printer.RegisterFont(Graphics::NamedFont::Italic, italicfnt);
@@ -332,7 +338,16 @@ namespace Gorgon { namespace Widgets {
         printer.RegisterFont(Graphics::NamedFont::Small, smallfnt);
         
         Graphics::StyledPrinter infofnt(*smallrenderer, colors.Get(Graphics::Color::Info).Forecolor);
-        printer.RegisterFont(Graphics::NamedFont::Small, infofnt);
+        printer.RegisterFont(Graphics::NamedFont::Info, infofnt);
+        
+        Graphics::StyledPrinter infoboldfnt(*smallboldrenderer, colors.Get(Graphics::Color::Info).Forecolor);
+        printer.RegisterFont(Graphics::NamedFont::BoldInfo, infoboldfnt);
+        
+        Graphics::StyledPrinter infoitalicfnt(*smallitalicrenderer, colors.Get(Graphics::Color::Info).Forecolor);
+        printer.RegisterFont(Graphics::NamedFont::ItalicInfo, infoitalicfnt);
+        
+        Graphics::StyledPrinter infobolditalicfnt(*smallbolditalicrenderer, colors.Get(Graphics::Color::Info).Forecolor);
+        printer.RegisterFont(Graphics::NamedFont::BoldItalicInfo, infobolditalicfnt);
         
         Graphics::StyledPrinter largerfnt(*largerrenderer, regcol);
         printer.RegisterFont(Graphics::NamedFont::Larger, largerfnt);
@@ -357,6 +372,9 @@ namespace Gorgon { namespace Widgets {
         
         Graphics::StyledPrinter fixedwidthbolditalicfnt(*fixedwidthbolditalicrenderer, regcol);
         printer.RegisterFont(Graphics::NamedFont::FixedWidthBoldItalic, fixedwidthbolditalicfnt);
+        
+        for(auto &col : colors)
+            printer.RegisterColor(col.first, col.second.Forecolor, col.second.Backcolor);
     }
     
     void SimpleGenerator::InitDimensions(float density, float bordersize, CornerStyle corners) {

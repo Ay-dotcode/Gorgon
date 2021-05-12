@@ -316,7 +316,7 @@ namespace Gorgon { namespace Graphics {
             }
             case 0x17:
             { //set tab width
-                auto val = readvalrelper(it, end, p, false, curindex);
+                auto val = readvalrelper(it, end, p, true, curindex);
                 tabwidth = setval<int>{val.set, val(em, wrapwidth, printer->GetTabWidth())};
                 break;
             }
@@ -431,7 +431,7 @@ namespace Gorgon { namespace Graphics {
                 break;
             }
             case 0x40: //horizontal spacing
-                cur.X += readvalrelper(it, end, p, false, curindex)(em, wrapwidth, 0);
+                cur.X += readvalrelper(it, end, p, true, curindex)(em, wrapwidth, 0);
                 prev = 0; //no kerning after a spacing like this
 
                 break;
@@ -627,9 +627,14 @@ namespace Gorgon { namespace Graphics {
         auto doline = [&](Glyph nl) {
             int end = nl == 0 ? lastbreak : (int)acc.size();
 
-            int totalw = acc[end-1].location.X + acc[end-1].width - location.X;
+            int totalw = end != 0 ? (acc[end-1].location.X + acc[end-1].width - location.X) : 0;
             int xoff = 0;
             int lineend = 0;
+            
+            if(end == 0 || maxh == 0) {
+                maxh = height;
+                maxb = baseline;
+            }
 
             if(nl == 0 && justify(printer->GetJustify()) && wrapwidth) {
                 //count spaces and letters
