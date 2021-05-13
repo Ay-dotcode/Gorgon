@@ -44,6 +44,9 @@ namespace Gorgon { namespace Graphics {
         }
         template<class T_>
         void dodefaulttab(T_ s, T_ &x, T_ w) {
+            if(w <= 0)
+                w = 1;
+            
             x -= s;
             x += w;
             x /= w;

@@ -1141,10 +1141,13 @@ namespace Gorgon { namespace Graphics {
 
             if(g == '\t') {
                 auto off = cur.X + hspace - location.X;
+                int tw = tabwidth(printer->GetTabWidth());
+                if(tw <= 0)
+                    tw = 1;
                 hspace = 0;
-                off += tabwidth(printer->GetTabWidth());
-                off /= tabwidth(printer->GetTabWidth());
-                off *= tabwidth(printer->GetTabWidth());
+                off += tw;
+                off /= tw;
+                off *= tw;
 
                 gw = off - cur.X + location.X;
 

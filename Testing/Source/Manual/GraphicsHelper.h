@@ -46,7 +46,7 @@ public:
 
         Graphics::Initialize();
         auto &gen = *new Gorgon::Widgets::SimpleGenerator;
-        gen.Init("", "", 7.5);
+        gen.Init("xyz", "", 7.5);
         UI::Initialize(gen);
         //UI::Initialize();
 

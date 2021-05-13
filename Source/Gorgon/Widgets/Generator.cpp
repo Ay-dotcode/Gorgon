@@ -119,7 +119,7 @@ namespace Gorgon { namespace Widgets {
         return "";
     }
     
-    std::string FindFontFile(std::string family, bool bold, bool italic, const std::vector<Gorgon::OS::FontFamily> &list) {
+    std::string FindFontFile(std::string family, bool bold, bool italic, const std::vector<Gorgon::OS::FontFamily> &list, bool mono) {
         family = String::ToLower(family);
     retry:
         for(auto &f : list) {
@@ -142,7 +142,7 @@ namespace Gorgon { namespace Widgets {
         }
         
         //switch to default font
-        auto fam = FindDefaultFontFamily(false, list);
+        auto fam = String::ToLower(FindDefaultFontFamily(mono, list));
         
         if(fam != family) {
             family = fam;
@@ -228,10 +228,10 @@ namespace Gorgon { namespace Widgets {
         
         InitFonts(
             size, 
-            FindFontFile(family, false, false, fontlist),
-            FindFontFile(family, true, false, fontlist),
-            FindFontFile(family, false, true, fontlist),
-            FindFontFile(family, true, true, fontlist),
+            FindFontFile(family, false, false, fontlist, false),
+            FindFontFile(family, true, false, fontlist, false),
+            FindFontFile(family, false, true, fontlist, false),
+            FindFontFile(family, true, true, fontlist, false),
             mono
         );
         
@@ -254,10 +254,10 @@ namespace Gorgon { namespace Widgets {
         InitFonts(
             size, 
             regular, bold, italic, bolditalic,
-            FindFontFile(mono, false, false, fontlist),
-            FindFontFile(mono, true, false, fontlist),
-            FindFontFile(mono, false, true, fontlist),
-            FindFontFile(mono, true, true, fontlist)
+            FindFontFile(mono, false, false, fontlist, true),
+            FindFontFile(mono, true, false, fontlist, true),
+            FindFontFile(mono, false, true, fontlist, true),
+            FindFontFile(mono, true, true, fontlist, true)
         );
         
         if(init) fontlist = {};
