@@ -152,17 +152,29 @@ int main() {
     std::string md = 
 R"(# Header 1
 Some text here..
-* **Bullet 1**: with a ~~long long long~~ text...
+* **Eullet 1**: with a ~~long long long~~ text...
 * Bullet 2
+1. Number
+11. Another
+  1. Sub bullet
+  * Another
+    * Even deeper and long and longer
+      0. ...
+      * And deeper and long and longer
+    2. return
+    *  Another
+    3. One more
+* After a [google] *some italic text*
 
-* After a [blank][1] *italic*
-No more ***bullets** continuing* italic.
+No more ***bullets** continuing italic.*
 
 A new paragraph. But the next one is not a paragraph  
   simply a new line.\
-this one too.
+this one too. This is an [inline link](#link title)
 
-[1]: http://google.com
+Please visit <https://darkgaze.org>
+
+[google]: http://google.com
 )";
     
     std::vector<String::MarkDownLink> links;
@@ -198,7 +210,7 @@ this one too.
         for(auto &reg : regions) {
             if(IsInside(reg.Bounds, location+Geometry::Point(25, 25))) {
                 if(links.size() > reg.ID) {
-                    std::cout << links[reg.ID].Destination << std::endl;
+                    std::cout << links[reg.ID].Destination << " " << links[reg.ID].Title << std::endl;
                     return;
                 }
             }

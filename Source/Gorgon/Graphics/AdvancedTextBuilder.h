@@ -317,7 +317,7 @@ namespace Gorgon { namespace Graphics {
             return ST(); 
         }
 
-        AdvancedTextBuilder &DefaultLetterOffset() { CSI(0x14); ValAndRel(); return ST(); }
+        AdvancedTextBuilder &DefaultLetterOffset() { CSI(0x14); ValAndRel(); ValAndRel(); return ST(); }
         
         /// Changes the offset of underline. rel is relative to line height and in percentage.
         AdvancedTextBuilder &SetUnderlineOffset(short pixels, short rel) { CSI(0x12); ValAndRel(pixels, rel); return ST(); }

@@ -49,7 +49,7 @@ namespace Gorgon { namespace String {
         int outchars = 0; //number of visible glyphs in output
         int header = 0;
         int currentheader = 0;
-        bool bullet = false;
+        int bullet = 0;
         bool eatnext = false;
         int emcnt = 0;
         bool bold = false;
@@ -58,6 +58,7 @@ namespace Gorgon { namespace String {
         int tildecnt = 0;
         int regioncount = 0;
         std::vector<MarkDownLink> links;
+        std::string nums;
         
         const char spc = ' ';
         const char newln = '\n';
@@ -110,13 +111,15 @@ namespace Gorgon { namespace String {
             
             if(emcnt > 0 && g != '*') {
                 bool changed = false;
+                bool disallow = (g >= 0x21 && g <= 0x2f) || (g >= 0x3a && g <= 0x40) || (g >= 0x5b && g <= 0x60) || (g >= 0x7b && g <= 0x7e);
+                
                 if(emcnt >= 2) {
                     if(bold && prev != ' ') {
                         bold = false;
                         changed = true;
                         emcnt -= 2;
                     }
-                    else if(!bold && g != ' ') {
+                    else if(!bold && g != ' ' && !disallow && !newline) {
                         bold = true;
                         changed = true;
                         emcnt -= 2;
@@ -129,7 +132,7 @@ namespace Gorgon { namespace String {
                         changed = true;
                         emcnt -= 1;
                     }
-                    else if(!italic && g != ' ') {
+                    else if(!italic && g != ' ' && !disallow && !newline) {
                         italic = true;
                         changed = true;
                         emcnt -= 1;
@@ -158,13 +161,14 @@ namespace Gorgon { namespace String {
                 }
             }
             if(tildecnt > 0 && g != '~') {
+                bool disallow = (g >= 0x21 && g <= 0x2f) || (g >= 0x3a && g <= 0x40) || (g >= 0x5b && g <= 0x60) || (g >= 0x7b && g <= 0x7e);
                 if(tildecnt >= 2) {
                     if(strike && prev != ' ') {
                         strike = false;
                         builder.Strikethrough(false);
                         tildecnt -= 2;
                     }
-                    else if(!strike && g != ' ') {
+                    else if(!strike && g != ' ' && !disallow && !newline) {
                         strike = true;
                         builder.Strikethrough(true);
                         tildecnt -= 2;
@@ -204,6 +208,8 @@ namespace Gorgon { namespace String {
             }
             
             if(newline) {
+                bool done = false;
+                
                 Glyph next = 0;
                 if(it != end) {
                     auto nit = it+1;
@@ -211,53 +217,124 @@ namespace Gorgon { namespace String {
                         next = internal::decode_impl(nit, end);
                 }
                 
-                if(!pre && (g == '*' || g == '+' || g == '-') && (next == ' ' || next == '\t')) {
-                    if(!bullet) {
-                        bullet = true;
-                        builder.SetParagraphSpacing(0, 20);
-                        
-                        builder.SetIndent(0, 75);
-                        builder.SetHangingIndent(0, -50);
-                        builder.SetTabWidth(0, 75);
-                    }
-                    
-                    if(!newpar)
-                        result.push_back('\n');
-                    builder.Append("•\t");
-                    newline = false;
-                    eatnext = true;
+                if(!pre && (g >= '0' && g <= '9')) {
+                    nums.push_back((char)g);
                     continue;
                 }
-                else {
-                    if(bullet) {
-                        bullet = false;
-                        builder.SetParagraphSpacing(0, 40);
-                        builder.SetIndent(0, 0);
-                        builder.SetHangingIndent(0, 0);
-                        builder.UseDefaultTabWidth();
+                else if(!pre && !nums.empty()) {
+                    if((g == '.' || g == ')') && (next == ' ' || next == '\t')) {
+                        g = '*'; //let bullet handle numbering
+                    }
+                    else {
+                        result += nums;
+                        nums = "";
+                        done = true;
+                    }
+                }
+                    
+                if(!done) {
+                    if(!pre && (g == '*' || g == '+' || g == '-') && (next == ' ' || next == '\t')) {
+                        
+                        if(!bullet) {
+                            bullet = 1;
+                            builder.SetParagraphSpacing(0, 20);
+                            
+                            builder.SetIndent(0, 100);
+                            builder.SetHangingIndent(0, -80);
+                        }
+                        else {
+                            int tlevel = spacecount / 2 + 1;
+                            if(tlevel > 4)
+                                tlevel = 4;
+                            if(tlevel > bullet + 1)
+                                tlevel = bullet + 1;
+                            
+                            if(tlevel != bullet) {
+                                builder.SetIndent(0, 100 + (tlevel-1)*80);
+                                builder.SetHangingIndent(0, -80);
+                                
+                                bullet = tlevel;
+                            }
+                        }
+                        builder.SetTabWidth(0, 50 + (bullet-1)*40);
                         
                         if(!newpar)
                             result.push_back('\n');
                         
-                        newpar = true;
+                        if(nums.empty()) {
+                            builder.SetFont(useinfofont ? NamedFont::BoldInfo : NamedFont::Bold);
+                            switch(bullet) {
+                            case 1:
+                                builder.SetLetterOffset({0, 0}, {30, 0});
+                                builder.Append("•");
+                                builder.HorizontalSpace(0, 20);
+                                result.push_back('\t');
+                                break;
+                            case 2:
+                                builder.SetLetterOffset({0, 0}, {30, 0});
+                                builder.Append("•");
+                                builder.HorizontalSpace(0, 20);
+                                result.push_back('\t');
+                                break;
+                            case 3:
+                                builder.SetLetterOffset({0, 0}, {30, 0});
+                                builder.Append("•");
+                                builder.HorizontalSpace(0, 20);
+                                result.push_back('\t');
+                                break;
+                            case 4:
+                                builder.SetLetterOffset({0, 0}, {30, 0});
+                                builder.Append("•");
+                                builder.HorizontalSpace(0, 20);
+                                result.push_back('\t');
+                                break;
+                            }
+                            builder.SetFont(useinfofont ? NamedFont::Info : NamedFont::Regular);
+                            builder.DefaultLetterOffset();
+                        }
+                        else {
+                            builder.SetFont(useinfofont ? NamedFont::BoldScript : NamedFont::BoldInfo);
+                            if(nums.size() == 1)
+                                builder.Append(" "); //number sized space
+                            builder.Append(nums);
+                            result.push_back('\t');
+                            builder.SetFont(useinfofont ? NamedFont::Info : NamedFont::Regular);
+                            nums = "";
+                        }
+                        
+                        builder.UseDefaultTabWidth();
+                        
+                        newline = false;
+                        eatnext = true;
+                        spaceadded = true;
+                        continue;
                     }
-                }
-                
-                if(!pre && g == '#') {
-                    header++;
-                    continue;
-                }
-                else if(pre && spacecount < 4) {
-                    builder.SetFont(useinfofont ? NamedFont::Info : NamedFont::Regular);
-                    builder.SetIndent(0, 0);
-                    builder.VerticalSpace(0, 50);
-                    builder.UseDefaultColor();
+                    else {
+                        if(bullet && newpar) {
+                            bullet = 0;
+                            builder.SetParagraphSpacing(0, 40);
+                            builder.SetIndent(0, 0);
+                            builder.SetHangingIndent(0, 0);
+                            builder.UseDefaultTabWidth();
+                        }
+                    }
                     
-                    pre = false;
-                }
-                else if(!newpar && linecount > 0 && outchars != 0 && spaceadded == 0 && !pre) {
-                    result.push_back(spc);
-                    spaceadded = true;
+                    if(!pre && g == '#') {
+                        header++;
+                        continue;
+                    }
+                    else if(pre && spacecount < 4) {
+                        builder.SetFont(useinfofont ? NamedFont::Info : NamedFont::Regular);
+                        builder.SetIndent(0, 0);
+                        builder.VerticalSpace(0, 50);
+                        builder.UseDefaultColor();
+                        
+                        pre = false;
+                    }
+                    else if(!newpar && linecount > 0 && outchars != 0 && spaceadded == 0 && !pre) {
+                        result.push_back(spc);
+                        spaceadded = true;
+                    }
                 }
             }
             
@@ -326,21 +403,27 @@ namespace Gorgon { namespace String {
                     
                     continue;
                 }
-                else if(final == ']' && next == '[') { //link id
-                    it = nit;
-                    while(it != end && it<end-1 && *(it+1) == ' ') //eat spaces if any
-                        it++;
-                    
-                    auto p2 = readuntilornewline(']', it, end);
-                    
-                    if(it == end || *it != ']') { //not well-formed
-                        result.push_back('[');
-                        result += p1;
-                        result.push_back(']');
-                        it = nit; //roll back
+                else if(final == ']' && (next == '[' || next == ' ')) { //link id
+                    std::string p2;
+                    if(next != ' ') {
+                        it = nit;
+                        while(it != end && it<end-1 && *(it+1) == ' ') //eat spaces if any
+                            it++;
                         
-                        spaceadded = false;
-                        continue;
+                        p2 = readuntilornewline(']', it, end);
+                        
+                        if(it == end || *it != ']') { //not well-formed
+                            result.push_back('[');
+                            result += p1;
+                            result.push_back(']');
+                            it = nit; //roll back
+                            
+                            spaceadded = false;
+                            continue;
+                        }
+                    }
+                    else {
+                        p2 = p1;
                     }
                     
                     auto lit = std::find_if(links.begin(), links.end(), [p1](auto v) {
@@ -371,9 +454,32 @@ namespace Gorgon { namespace String {
                     while(it != end && it<end-1 && *(it+1) == ' ') //eat spaces if any
                         it++;
                     
-                    //read until space or ]
+                    auto spit = it; //search for space
                     
-                    links.push_back({regioncount, p1, "", "", ""});
+                    auto all = readuntilornewline(')', it, end);
+                    auto p2  = readuntilornewline(' ', spit, it);
+                    
+                    if(it == end || *it != ')') { //not well-formed
+                        result.push_back('[');
+                        result += p1;
+                        result.push_back(']');
+                        it = nit; //roll back
+                        
+                        spaceadded = false;
+                        continue;
+                    }
+                    
+                    std::string p3;
+                    
+                    if(p2 != all) 
+                        p3 = all.substr(p2.length() + 1);
+                    
+                    if(p3 != "" && (p3[0] == '"' || p3[0] == '\''))
+                        p3 = p3.substr(1);
+                    if(p3 != "" && (p3.back() == '"' || p3.back() == '\''))
+                        p3.pop_back();
+                    
+                    links.push_back({regioncount, p1, "", p2, p3});
                     
                     //render
                     builder.StartRegion(regioncount);
@@ -394,6 +500,40 @@ namespace Gorgon { namespace String {
                     else
                         it--; //let \n to be processed later
                     spaceadded = false;
+                }
+            }
+            
+            if(!pre && g == '<') {
+                Glyph next = 0;
+                auto nit = it;
+                if(nit != end) {
+                    nit++;
+                    if(nit != end)
+                        next = internal::decode_impl(nit, end);
+                }
+                
+                if(next != ' ') {
+                    auto p1 = readuntilornewline('>', it, end);
+                    
+                    std::string p2 = p1;
+                    
+                    auto loc = p1.find("://");
+                    if(loc != p1.npos) {
+                        p1 = p1.substr(loc + 3);
+                    }
+                    
+                    links.push_back({regioncount, p1, "", p2, ""});
+                    
+                    //render
+                    builder.StartRegion(regioncount);
+                    builder.Underline();
+                    builder.Append(p1);
+                    builder.Underline(false);
+                    builder.EndRegion(regioncount);
+                    
+                    regioncount++;
+                    spaceadded = false;
+                    continue; //we are done
                 }
             }
             

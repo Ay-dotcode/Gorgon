@@ -45,10 +45,10 @@ public:
         //Gorgon::GL::log.InitializeConsole();
 
         Graphics::Initialize();
-        /*auto &gen = *new Gorgon::Widgets::SimpleGenerator;
-        gen.Init("Dejavu serif", "", 7.5);
-        UI::Initialize(gen);*/
-        UI::Initialize();
+        auto &gen = *new Gorgon::Widgets::SimpleGenerator;
+        gen.Init("nimbus roman", "", 7.5);
+        UI::Initialize(gen);
+        //UI::Initialize();
 
         wind.ClosingEvent.Register([] { exit(0); });
 

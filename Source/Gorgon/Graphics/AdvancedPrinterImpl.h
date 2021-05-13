@@ -74,8 +74,8 @@ namespace Gorgon { namespace Graphics {
         //state machine
         setvalrel               letterspacing;
         int                     wrapwidth = width; //relative will be calculated instantly
-        setvalrel               hangingindent;
-        setvalrel               indent;
+        int                     hangingindent;
+        int                     indent;
         setvalrel               paragraphspacing;
         setvalrel               linespacing;
         setvalrel               xoffset;
@@ -231,10 +231,10 @@ namespace Gorgon { namespace Graphics {
                 paragraphspacing = readvalrel(it, end, p, true, curindex);
                 break;
             case 0x0a: //set indent
-                indent = readvalrel(it, end, p, true, curindex);
+                indent = readvalrel(it, end, p, true, curindex)(em, 0);
                 break;
             case 0x0b:
-                hangingindent = readvalrel(it, end, p, true, curindex);
+                hangingindent = readvalrel(it, end, p, true, curindex)(em, 0);
                 break;
             case 0x0c: //letter spacing
                 letterspacing = readvalrel(it, end, p, true, curindex);
@@ -456,8 +456,8 @@ namespace Gorgon { namespace Graphics {
             switch(cmd) {
             case 0x4:
                 letterspacing.set = false;
-                hangingindent.set = false;
-                indent.set = false;
+                hangingindent = 0;
+                indent = 0;
                 paragraphspacing.set = false;
                 linespacing.set = false;
                 justify.set = false;
@@ -890,10 +890,10 @@ namespace Gorgon { namespace Graphics {
             //if not empty we need to translate the remaining glyphs to next line
             if(!acc.empty()) {
                 if(beginparag) {
-                    cur.X += hangingindent(em, 0);
+                    cur.X += hangingindent;
                 }
 
-                cur.X += indent(em, 0);
+                cur.X += indent;
 
                 //offset every glyph back this amount
                 int xoff = cur.X - acc[0].location.X;
@@ -912,7 +912,7 @@ namespace Gorgon { namespace Graphics {
 
             cur.Y += lineh;
 
-            int nextlinexstart = location.X + indent(em, 0) + hangingindent(em, 0) * beginparag;
+            int nextlinexstart = location.X + indent + hangingindent * beginparag;
 
             //BEGIN finalize regions before paragraph spacing
             for(auto &r : openregions) {
@@ -1133,10 +1133,10 @@ namespace Gorgon { namespace Graphics {
             //handled by doline
             if(newline) {
                 if(beginparag) {
-                    hspace = hangingindent(em, 0);
+                    hspace = hangingindent;
                 }
 
-                hspace += indent(em, 0);
+                hspace += indent;
             }
 
             if(g == '\t') {
