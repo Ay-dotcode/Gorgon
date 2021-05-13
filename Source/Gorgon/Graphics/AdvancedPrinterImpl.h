@@ -74,8 +74,8 @@ namespace Gorgon { namespace Graphics {
         //state machine
         setvalrel               letterspacing;
         int                     wrapwidth = width; //relative will be calculated instantly
-        int                     hangingindent;
-        int                     indent;
+        int                     hangingindent = 0;
+        int                     indent = 0;
         setvalrel               paragraphspacing;
         setvalrel               linespacing;
         setvalrel               xoffset;
