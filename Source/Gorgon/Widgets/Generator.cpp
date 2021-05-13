@@ -93,7 +93,7 @@ namespace Gorgon { namespace Widgets {
 
 #endif
     nofc:
-        static const std::string regularlist[] = {"dejavu sans", "freesans", "liberation sans", "tahoma", "arial"};
+        static const std::string regularlist[] = {"dejavu sans", "freesans", "liberation sans", "arial","times new roman"};
         static const std::string monolist[] = {"dejavu sans mono", "free mono", "liberation mono", "consolas", "courier new"};
         
         auto &l = mono ? monolist : regularlist;

@@ -1002,6 +1002,8 @@ namespace Gorgon { namespace Graphics {
                     [](auto u) { return u.finishat == -2; }
                 ), underlines.end()
             );
+            if(underlines.empty())
+                underlineon = false;
             //END
 
             //BEGIN Draw strikes
@@ -1219,7 +1221,7 @@ namespace Gorgon { namespace Graphics {
                         (long)acc.size(),
                         underlinesettings.thickness(renderer->GetLineThickness(), lineth),
                         underlineoffset, ucolor
-                        });
+                    });
 
                     underlineon = true;
                     curunderlineoff = underlineoffset + cur.Y;

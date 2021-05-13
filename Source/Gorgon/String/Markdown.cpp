@@ -239,8 +239,8 @@ namespace Gorgon { namespace String {
                             bullet = 1;
                             builder.SetParagraphSpacing(0, 20);
                             
-                            builder.SetIndent(0, 100);
-                            builder.SetHangingIndent(0, -80);
+                            builder.SetIndent(0, 110);
+                            builder.SetHangingIndent(0, -90);
                         }
                         else {
                             int tlevel = spacecount / 2 + 1;
@@ -250,13 +250,13 @@ namespace Gorgon { namespace String {
                                 tlevel = bullet + 1;
                             
                             if(tlevel != bullet) {
-                                builder.SetIndent(0, 100 + (tlevel-1)*80);
-                                builder.SetHangingIndent(0, -80);
+                                builder.SetIndent(0, 110 + (tlevel-1)*90);
+                                builder.SetHangingIndent(0, -90);
                                 
                                 bullet = tlevel;
                             }
                         }
-                        builder.SetTabWidth(0, 50 + (bullet-1)*40);
+                        builder.SetTabWidth(0, 55 + (bullet-1)*45);
                         
                         if(!newpar)
                             result.push_back('\n');
