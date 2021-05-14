@@ -30,4 +30,12 @@ namespace UI {
     /// more or less standard density.
     int FontHeight(float density = 7.5, int min = 9);
     
+    extern std::function<void(std::string)> InPageHandler;
+    
+    /// Sets a function that will be called if an in page link starting with # is encountered in
+    /// a widget that supports links.
+    void RegisterInPageLinkHandler(std::function<void(std::string)> handler) {
+        InPageHandler = handler;
+    }
+    
 } }

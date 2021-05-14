@@ -25,6 +25,8 @@ namespace UI {
         
         return fh;
     }
+    
+    std::function<void(std::string)> InPageHandler;
 
 }
 

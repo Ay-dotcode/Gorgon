@@ -169,7 +169,7 @@ namespace Gorgon { namespace Graphics {
         
         std::vector<Region> AdvancedPrint(
             TextureTarget &target, const std::string &text, 
-            Geometry::Point location, int width
+            Geometry::Point location, int width, bool wrap = true
         ) const;
         
         bool IsReady() const override {

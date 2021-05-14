@@ -155,11 +155,20 @@ namespace Gorgon { namespace Widgets {
             return info;
         }
         
+        /// Sets a function that will be called if an in page link starting with # is encountered.
+        /// If this function does not exist, or returns false, application wide page link handler is
+        /// called.
+        void RegisterInPageLinkHandler(std::function<bool (std::string)> handler) {
+            inpagehandler = handler;
+        }
+        
         PROPERTY_GETSET(MarkdownLabel, Boolean, bool, UseInfoFont);
         
     private:
         bool info = false;
         std::string original;
+        std::vector<String::MarkdownLink> links;
+        std::function<bool (std::string)> inpagehandler;
     };
     
 } }

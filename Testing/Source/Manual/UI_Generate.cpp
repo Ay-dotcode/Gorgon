@@ -334,7 +334,7 @@ int main() {
     }).SetHorizonalAutosize(Gorgon::UI::Autosize::Automatic);
     
     wind.AddButton("Msg", []{
-        UI::ShowMessage("Hello", "[!md!]This class is the base class for all **widget** containers.\n\nAll widgets require a layer to be placed on, to allow widget containers that are also widgets, this class is left abstract. You may derive from this class and WidgetBase at the same time. Visit <https://darkgaze.org> for more.");
+        UI::ShowMessage("Hello", "[!md!]This class is the base class for all **widget** containers.\n\nAll widgets require a layer to be placed on, to allow widget containers that are also widgets, this class is left abstract. You may derive from this class and WidgetBase at the same time. Visit <https://darkgaze.org> for more.\n\n[Working directory](.)");
     }).SetHorizonalAutosize(Gorgon::UI::Autosize::Automatic);
     
     wind.AddButton("Inp", []{

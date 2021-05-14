@@ -9,6 +9,7 @@
 
 #include <set>
 #include <vector>
+#include "../Graphics/AdvancedPrinter.h"
 
 namespace Gorgon { namespace UI {
     
@@ -653,6 +654,13 @@ namespace Gorgon { namespace UI {
         
         /// @}
 
+        /// If any text is rendered using AdvancedPrinter, this function will return regions
+        /// supplied by the renderer. Only one set of regions will be kept; therefore, there should
+        /// only be one active component that has AdvancedPrinter.
+        std::vector<Graphics::AdvancedPrinter::Region> &GetRegions() {
+            return regions;
+        }
+        
         /// This event is fired when condition is changed.
         Event<ComponentStack> ConditionChanged;
         
@@ -836,6 +844,8 @@ namespace Gorgon { namespace UI {
         Containers::Hashmap<const ComponentTemplate *, Widget> widgets;
         
         std::function<std::string(int ind, ComponentTemplate::DataEffect, const std::array<float, 4> &value)> valuetotext;
+        
+        std::vector<Graphics::AdvancedPrinter::Region> regions;
         
         LayerAdapter adapter;
     };

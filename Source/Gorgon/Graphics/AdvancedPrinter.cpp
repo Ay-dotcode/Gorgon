@@ -7,37 +7,37 @@ namespace Gorgon { namespace Graphics {
 
     std::vector<AdvancedPrinter::Region> AdvancedPrinter::AdvancedPrint(
         TextureTarget &target, const std::string &text, 
-        Geometry::Point location, int width
+        Geometry::Point location, int width, bool wrap
     ) const {
         return AdvancedOperation(
             [&target](
                 const GlyphRenderer &renderer, Glyph g,
                 const Geometry::Point &location, const RGBAf &color, int
-                ) {
-            if(g != 0xffff)
-                renderer.Render(g, target, location, color);
+            ) {
+                if(g != 0xffff)
+                    renderer.Render(g, target, location, color);
 
-            return true;
-        },
+                return true;
+            },
             [&target](const Geometry::Bounds &bounds, const RGBAf &bg, int thickness, RGBAf border) {
-            target.Draw(bounds, bg);
-            if(thickness != 0) {
-                //TODO render border
-            }
-        },
+                target.Draw(bounds, bg);
+                if(thickness != 0) {
+                    //TODO render border
+                }
+            },
             [&target](int xstart, int xend, int y, int thickness, RGBAf color) {
-            target.Draw(xstart, y, xend-xstart, thickness, color);
-        },
+                target.Draw(xstart, y, xend-xstart, thickness, color);
+            },
             [&target, this](Byte index, const Geometry::Bounds &bounds, const RGBAf &tint, bool stretch) {
-            if(images.Exists(index)) {
-                if(stretch)
-                    images[index].DrawStretched(target, bounds.TopLeft(), bounds.GetSize(), tint);
-                else
-                    images[index].DrawIn(target, bounds.TopLeft(), bounds.GetSize(), tint);
-            }
-        },
-            text, location, width, true
-            );
+                if(images.Exists(index)) {
+                    if(stretch)
+                        images[index].DrawStretched(target, bounds.TopLeft(), bounds.GetSize(), tint);
+                    else
+                        images[index].DrawIn(target, bounds.TopLeft(), bounds.GetSize(), tint);
+                }
+            },
+            text, location, width, wrap
+        );
     }
     
     Geometry::Size AdvancedPrinter::GetSize(const std::string &text) const {
@@ -47,28 +47,28 @@ namespace Gorgon { namespace Graphics {
             [&sz](
                 const GlyphRenderer &renderer, Glyph g,
                 const Geometry::Point &location, const RGBAf &, int
-                ) {
-            if(g != 0xffff) {
-                auto p = location + (Geometry::Point)renderer.GetSize(g) + renderer.GetOffset(g);
-                p.Y += renderer.GetBaseLine();
+            ) {
+                if(g != 0xffff) {
+                    auto p = location + (Geometry::Point)renderer.GetSize(g) + renderer.GetOffset(g);
+                    p.Y += renderer.GetBaseLine();
 
-                if(p.X > sz.Width)
-                    sz.Width = p.X;
+                    if(p.X > sz.Width)
+                        sz.Width = p.X;
 
-                if(p.Y > sz.Height)
-                    sz.Height = p.Y;
-            }
+                    if(p.Y > sz.Height)
+                        sz.Height = p.Y;
+                }
 
-            return true;
-        },
+                return true;
+            },
             [](const Geometry::Bounds &, const RGBAf &, int, RGBAf) {
-        },
+            },
             [](int, int, int, int, RGBAf) {
-        },
+            },
             [](Byte, const Geometry::Bounds &, const RGBAf &, bool) {
-        },
+            },
             text, {0,0}, 0, false
-            );
+        );
 
         return sz;
     }

@@ -3737,10 +3737,19 @@ realign:
                 target->SetColor(color * c);
                 
                 //target->Draw(comp.location+offset, comp.size, 0x80000000); //for debugging
-                if(tagnowrap.count(temp.GetTag()))
-                    th.GetRenderer().PrintNoWrap(*target, text, comp.location+offset, comp.size.Width);
-                else
-                    th.GetRenderer().Print(*target, text, comp.location+offset, comp.size.Width);
+                if(auto prnt = dynamic_cast<const Graphics::AdvancedPrinter*>(&th.GetRenderer())) {
+                    regions = prnt->AdvancedPrint(*target, text, comp.location+offset, comp.size.Width, 
+                                                  !tagnowrap.count(temp.GetTag()));
+                    for(auto &r : regions) {
+                        r.Bounds -= offset;
+                    }
+                }
+                else {
+                    if(tagnowrap.count(temp.GetTag()))
+                        th.GetRenderer().PrintNoWrap(*target, text, comp.location+offset, comp.size.Width);
+                    else
+                        th.GetRenderer().Print(*target, text, comp.location+offset, comp.size.Width);
+                }
                 
                 target->SetColor(old);
             }

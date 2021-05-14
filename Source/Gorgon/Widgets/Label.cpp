@@ -1,6 +1,7 @@
 #include "Label.h"
 #include "../UI/WidgetContainer.h"
 #include "../Graphics/Bitmap.h"
+#include "../UI.h"
 
 namespace Gorgon { namespace Widgets {
     
@@ -105,8 +106,25 @@ namespace Gorgon { namespace Widgets {
     {
         SetText(text);
         
-        stack.SetClickEvent([this](auto, auto, auto btn) {
-            //TODO link handling
+        stack.SetClickEvent([this](auto, auto point, auto btn) {
+            if(btn == Input::Mouse::Button::Left) {
+                auto &regions = stack.GetRegions();
+                
+                for(auto &r : regions) {
+                    if(IsInside(r.Bounds, point)) {
+                        if(links.size() > r.ID) {
+                            auto &dest = links[r.ID].Destination;
+                            if(dest.substr(0, 1) == "#") {
+                                if(!inpagehandler || !inpagehandler(dest))
+                                    UI::InPageHandler(dest);
+                            }
+                            else {
+                                OS::Open(dest);
+                            }
+                        }
+                    }
+                }
+            }
         });
     }
 
@@ -114,13 +132,18 @@ namespace Gorgon { namespace Widgets {
     void MarkdownLabel::SetText(const std::string& value) {
         original = value;
         if(value.substr(0, 6) == "[!md!]") {
-            Label::SetText(String::ParseMarkdown(value.substr(6), info).first);
+            std::string str;
+            tie(str, links) = String::ParseMarkdown(value.substr(6), info);
+            Label::SetText(str);
         }
         else if(value.substr(0, 8) == "[!nomd!]") {
             Label::SetText(value.substr(8));
+            links = {};
         }
         else {
-            Label::SetText(String::ParseMarkdown(value, info).first);
+            std::string str;
+            tie(str, links) = String::ParseMarkdown(value, info);
+            Label::SetText(str);
         }
     }
 
