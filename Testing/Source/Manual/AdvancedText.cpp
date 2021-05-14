@@ -4,7 +4,7 @@
 #include <Gorgon/Resource/Font.h>
 
 #include <Gorgon/Graphics/AdvancedPrinter.h>
-#include <Gorgon/Graphics/AdvancedTextBuilder.h>
+#include <Gorgon/String/AdvancedTextBuilder.h>
 
 #include <Gorgon/ImageProcessing/Filters.h>
 #include <Gorgon/UI/Window.h>
@@ -30,7 +30,7 @@ int main() {
     
     using namespace Gorgon::Graphics;
     
-    Graphics::AdvancedTextBuilder builder;
+    String::AdvancedTextBuilder builder;
     builder.UseHeader(Gorgon::Graphics::HeaderLevel::H1)
            .WordWrap(false)
            .StartRegion(4)
@@ -176,8 +176,8 @@ Please visit <https://darkgaze.org>
 
 [google]: http://google.com
 )";
-    
-    std::vector<String::MarkDownLink> links;
+
+    std::vector<String::MarkdownLink> links;
     
     std::tie(str, links) = String::ParseMarkdown(md, true);
     

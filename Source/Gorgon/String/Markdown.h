@@ -8,7 +8,7 @@ namespace Gorgon { namespace String {
     /**
      * Represents a link in markdown text
      */
-    struct MarkDownLink {
+    struct MarkdownLink {
         int Index;
         std::string Text;
         std::string ID;
@@ -43,6 +43,6 @@ namespace Gorgon { namespace String {
      * 
      * Bullets do not work perfectly with every font, requiring tab stops.
      */
-    std::pair<std::string, std::vector<MarkDownLink>> ParseMarkdown(const std::string &markdown, bool useinfofont = false);
+    std::pair<std::string, std::vector<MarkdownLink>> ParseMarkdown(const std::string &markdown, bool useinfofont = false);
     
 } }

@@ -241,7 +241,15 @@ namespace Gorgon { namespace Graphics {
                     lastbreak = (int)acc.size();
                 }
 
-                if(isspace(g)) {
+                if(g == '\t') {
+                    auto px = x;
+                    dotab(x);
+                    cur_spacing = x - px;
+                    x = px;
+
+                    prev = 0;
+                }
+                else if(isspace(g)) {
                     if(prev) {
                         cur_spacing = spacing(prev, g);
                     }
@@ -254,14 +262,6 @@ namespace Gorgon { namespace Graphics {
                     }
 
                     prev = g;
-                }
-                else if(g == '\t') {
-                    auto px = x;
-                    dotab(x);
-                    cur_spacing = x - px;
-                    x = px;
-
-                    prev = 0;
                 }
                 else if(isnewline(g)) {
                     doline(g, acc.begin(), acc.end(), x);
@@ -391,7 +391,15 @@ namespace Gorgon { namespace Graphics {
                     lastbreak = (int)acc.size();
                 }
                 
-                if(isspace(g)) {
+                if(g == '\t') {
+                    auto px = x;
+                    dotab(x);
+                    cur_spacing = x - px;
+                    x = px;
+                    
+                    prev = 0;
+                }
+                else if(isspace(g)) {
                     if(prev) {
                         cur_spacing = spacing(prev, g);
                     }
@@ -404,14 +412,6 @@ namespace Gorgon { namespace Graphics {
                     }
                     
                     prev = g;
-                }
-                else if(g == '\t') {
-                    auto px = x;
-                    dotab(x);
-                    cur_spacing = x - px;
-                    x = px;
-                    
-                    prev = 0;
                 }
                 else if(isnewline(g)) {
                     if(!doline(g, acc.begin(), acc.end(), x, skipped))
@@ -555,7 +555,7 @@ namespace Gorgon { namespace Graphics {
             [&](Glyph prev, Glyph next) { return (int)renderer->KerningDistance(prev, next).X; },
             [&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
             [&](Glyph g, int poff, float off) { cur.X += poff; cur.X += (int)off; },
-            std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), renderer->GetMaxWidth() * 8),
+            std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), renderer->GetEMSize() * 4),
             [&](Glyph) { cur.Y += (int)renderer->GetLineGap(); if(maxx < cur.X) maxx = cur.X; cur.X = 0; }
         );
 
@@ -581,7 +581,7 @@ namespace Gorgon { namespace Graphics {
 
             [&](Glyph prev, Glyph next) { return (int)renderer->KerningDistance(prev, next).X; },
                 [&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
-            std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetMaxWidth() * 8)
+            std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetEMSize() * 4)
         );
 
         return {maxx, y};
@@ -617,7 +617,7 @@ namespace Gorgon { namespace Graphics {
                 
                 return true;
             },
-            std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), renderer->GetMaxWidth() * 8),
+            std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), renderer->GetEMSize() * 4),
             [&](Glyph) {
                 cur.Y += (int)renderer->GetLineGap(); 
                 cur.X = 0; 
@@ -688,7 +688,7 @@ namespace Gorgon { namespace Graphics {
 
             [&](Glyph prev, Glyph next) { return int(renderer->KerningDistance(prev, next).X); },
             [&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
-            std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetMaxWidth() * 8)
+            std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetEMSize() * 4)
         );
         
         return bestind;
@@ -729,7 +729,7 @@ namespace Gorgon { namespace Graphics {
                 
                 return true;
             },
-            std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), renderer->GetMaxWidth() * 8),
+            std::bind(&internal::dodefaulttab<int>, 0, std::ref(cur.X), renderer->GetEMSize() * 4),
             [&](Glyph g) {
                 if(g == 0)
                     return;
@@ -752,7 +752,6 @@ namespace Gorgon { namespace Graphics {
         
         auto y   = 0;
         auto tot = wrap ? width : 0;
-        int ploc = 0;
 
         Geometry::Point pos{std::numeric_limits<int>::min(), std::numeric_limits<int>::min()};
         Geometry::Size  size{0, 0};
@@ -801,7 +800,7 @@ namespace Gorgon { namespace Graphics {
 
             [&](Glyph prev, Glyph next) { return int(renderer->KerningDistance(prev, next).X); },
             [&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
-            std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetMaxWidth() * 8)
+            std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetEMSize() * 4)
         );
 
         if(index > 0)
@@ -820,8 +819,8 @@ namespace Gorgon { namespace Graphics {
             *renderer, text.begin(), text.end(),
             [&](Glyph prev, Glyph next) { return int(renderer->KerningDistance(prev, next).X); },
             [&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
-            [&](Glyph g, int poff, float off) { cur.X += poff; renderer->Render(g, target, cur, color); cur.X += (int)off; },
-            std::bind(&internal::dodefaulttab<int>, location.X, std::ref(cur.X), renderer->GetMaxWidth() * 8),
+            [&](Glyph g, int poff, float off) { cur.X += poff; if(g != '\t') renderer->Render(g, target, cur, color); cur.X += (int)off; },
+            std::bind(&internal::dodefaulttab<int>, location.X, std::ref(cur.X), renderer->GetEMSize() * 4),
             [&](Glyph) { cur.Y += (int)renderer->GetLineGap(); cur.X = location.X; }
         );
     }
@@ -847,7 +846,8 @@ namespace Gorgon { namespace Graphics {
                 }
 
                 for(auto it = begin; it != end; ++it) {
-                    renderer->Render(it->g, target, {(float)it->location + off, (float)y}, color);
+                    if(it->g != '\t')
+                        renderer->Render(it->g, target, {(float)it->location + off, (float)y}, color);
                 }
 
                 y += (int)renderer->GetLineGap();
@@ -855,7 +855,7 @@ namespace Gorgon { namespace Graphics {
 
             [&](Glyph prev, Glyph next) { return int(renderer->KerningDistance(prev, next).X); },
             [&](Glyph g) { return (int)renderer->GetCursorAdvance(g);  },
-            std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetMaxWidth() * 8)
+            std::bind(&internal::dodefaulttab<int>, 0, std::placeholders::_1, renderer->GetEMSize() * 4)
         );
     }
 

@@ -49,7 +49,14 @@ namespace internal {
         return false;
     }
     
-    void attachdialogcopy(Widgets::DialogWindow *diag, const std::string &title, const std::string &message) {
+    void attachdialogcopy(Widgets::DialogWindow *diag, const std::string &title, std::string message) {
+        bool markdown = message.substr(0, 6) == "[!md!]";
+        
+        if(markdown) {
+            //TODO enable html copy
+            message = message.substr(6);
+        }
+        
         if(title.empty()) {
             diag->KeyEvent.Register(
                 static_cast<std::function<bool(Input::Key, float)>>(
@@ -190,6 +197,8 @@ namespace internal {
     void ShowMessage(const std::string &title, const std::string &message, std::function<void()> onclose, const std::string &buttontext) {
         internal::init();
         
+        bool markdown = message.substr(0, 6) == "[!md!]";
+        
         auto diag = new Widgets::DialogWindow(title);
         diag->HideCloseButton(); //not to confuse user
         
@@ -204,7 +213,16 @@ namespace internal {
         diag->SetDefault(close);
         attachdialogcopy(diag, title, message);
         
-        auto text = new Widgets::Label(message);
+        Widgets::Label *text;
+        if(markdown)
+            text = new Widgets::MarkdownLabel(message.substr(6));
+        else {
+            if(message.substr(0, 8) == "[!nomd!]")
+                text = new Widgets::Label(message.substr(8));
+            else
+                text = new Widgets::Label(message);
+        }
+        
         text->SetAutosize(Autosize::Automatic, Autosize::Automatic);
         diag->Add(*text);
         diag->Own(*text);
@@ -219,12 +237,24 @@ namespace internal {
         CloseOption close
     ) {
         internal::init();
+        
+        bool markdown = message.substr(0, 6) == "[!md!]";
 
         auto diag = new Widgets::DialogWindow(title);
         diag->HideCloseButton(); //not to confuse user
 
         
-        auto text = new Widgets::Label(message);
+        
+        Widgets::Label *text;
+        if(markdown)
+            text = new Widgets::MarkdownLabel(message.substr(6));
+        else {
+            if(message.substr(0, 8) == "[!nomd!]")
+                text = new Widgets::Label(message.substr(8));
+            else
+                text = new Widgets::Label(message);
+        }
+        
         text->SetAutosize(Autosize::Automatic, Autosize::Automatic);
         diag->Add(*text);
         diag->Own(*text);
@@ -326,6 +356,8 @@ namespace internal {
     ) {
         init();
         
+        bool markdown = message.substr(0, 6) == "[!md!]";
+        
         auto diag = new Widgets::DialogWindow(title);
         diag->HideCloseButton(); //not to confuse user
         
@@ -366,7 +398,16 @@ namespace internal {
             });
         }
         
-        auto text = new Widgets::Label(message);
+        Widgets::Label *text;
+        if(markdown)
+            text = new Widgets::MarkdownLabel(message.substr(6));
+        else {
+            if(message.substr(0, 8) == "[!nomd!]")
+                text = new Widgets::Label(message.substr(8));
+            else
+                text = new Widgets::Label(message);
+        }
+        
         text->SetAutosize(Autosize::Automatic, Autosize::Automatic);
         diag->Add(*text);
         diag->Own(*text);

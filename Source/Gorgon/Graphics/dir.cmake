@@ -3,7 +3,6 @@ SET(Local
 	AdvancedPrinter.h
 	AdvancedPrinterImpl.h
 	AdvancedPrinter.cpp
-	AdvancedTextBuilder.h
 	Animations.h
 	Bitmap.h
 	Bitmap.cpp

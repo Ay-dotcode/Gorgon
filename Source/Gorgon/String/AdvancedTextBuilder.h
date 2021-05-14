@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Font.h"
-#include "Color.h"
+#include "../Graphics/Font.h"
+#include "../Graphics/Color.h"
 #include "../Graphics.h"
 #include "../Geometry/Margin.h"
 #include "../Containers/Hashmap.h"
@@ -9,9 +9,9 @@
 #include <string>
 
 #include "../String.h"
-#include "Drawables.h"
+#include "../Graphics/Drawables.h"
 
-namespace Gorgon { namespace Graphics {
+namespace Gorgon { namespace String {
     /**
      * This class helps building strings to be used with AdvancedRenderer. Advanced rendering is
      * capable of modifying fonts, offsets, displaying images, handing regions, selection, and 
@@ -34,7 +34,7 @@ namespace Gorgon { namespace Graphics {
         class TableColumn {
         public:
             /// Alignment of text in the column
-            TextAlignment Align = TextAlignment::Left;
+            Graphics::TextAlignment Align = Graphics::TextAlignment::Left;
             /// Width in pixels
             int Width = 0;
             /// Width in percentage
@@ -108,7 +108,7 @@ namespace Gorgon { namespace Graphics {
         
         AdvancedTextBuilder &UseInfoFont() { return SetFont(9); }
         
-        AdvancedTextBuilder &UseHeader(HeaderLevel level) { return C1(0x10 + char(level)); }
+        AdvancedTextBuilder &UseHeader(Graphics::HeaderLevel level) { return C1(0x10 + char(level)); }
         
         /// Switch to superscript, use ScriptOff to switch off
         AdvancedTextBuilder &UseSuperscript() { return SCI(6); }
@@ -123,7 +123,7 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &SetFont(Byte fontindex) { CSI(0x15); Index(fontindex); return ST(); }
 
         /// Switches to the given font index. If it doesn't exist, default font will be used.
-        AdvancedTextBuilder &SetFont(NamedFont fontindex) { return SetFont((Byte)fontindex); }
+        AdvancedTextBuilder &SetFont(Graphics::NamedFont fontindex) { return SetFont((Byte)fontindex); }
         /// END @}
         
         
@@ -138,10 +138,10 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &SetColor(Byte index, Byte alpha = 255) { CSI(0x01); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the forecolor to the given index name. 
-        AdvancedTextBuilder &SetColor(Color::Designation index, Byte alpha = 255) { return SetColor(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetColor(Graphics::Color::Designation index, Byte alpha = 255) { return SetColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the forecolor to the given color.
-        AdvancedTextBuilder &SetColor(RGBA color) { CSI(0x02); Color(color); return ST(); }
+        AdvancedTextBuilder &SetColor(Graphics::RGBA color) { CSI(0x02); Color(color); return ST(); }
         
         /// Removes tint color that is used for images.
         AdvancedTextBuilder &RemoveTint() { CSI(0x18); return ST(); }
@@ -150,32 +150,32 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &SetTint(Byte index, Byte alpha = 255) { CSI(0x18); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the tint color that is used for images to the given index name. 
-        AdvancedTextBuilder &SetTint(Color::Designation index, Byte alpha = 255) { return SetTint(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetTint(Graphics::Color::Designation index, Byte alpha = 255) { return SetTint(Gorgon::Byte(index), alpha); }
         
         /// Sets the tint color that is used for images to the given color. 
-        AdvancedTextBuilder &SetTint(RGBA color) { CSI(0x18); Color(color); return ST(); }
+        AdvancedTextBuilder &SetTint(Graphics::RGBA color) { CSI(0x18); Color(color); return ST(); }
         
         /// Sets the alpha that is used for images to the given color. 
-        AdvancedTextBuilder &SetAlpha(Byte alpha) { return SetTint(RGBA{255, 255, 255, alpha}); }
+        AdvancedTextBuilder &SetAlpha(Byte alpha) { return SetTint(Graphics::RGBA{255, 255, 255, alpha}); }
         
         /// Sets the background color to the given 7-bit index. 
         AdvancedTextBuilder &SetBackgroundColor(Byte index, Byte alpha = 255) { CSI(0x03); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the background color to the given index name. 
-        AdvancedTextBuilder &SetBackgroundColor(Color::Designation index, Byte alpha = 255) { return SetBackgroundColor(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetBackgroundColor(Graphics::Color::Designation index, Byte alpha = 255) { return SetBackgroundColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the background color to the given color.
-        AdvancedTextBuilder &SetBackgroundColor(RGBA color) { CSI(0x04); Color(color); return ST(); }
+        AdvancedTextBuilder &SetBackgroundColor(Graphics::RGBA color) { CSI(0x04); Color(color); return ST(); }
         
         
         /// Sets the border color to the given 7-bit index. 
         AdvancedTextBuilder &SetBorderColor(Byte index, Byte alpha = 255) { CSI(0x06); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the border color to the given index name. 
-        AdvancedTextBuilder &SetBorderColor(Color::Designation index, Byte alpha = 255) { return SetBorderColor(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetBorderColor(Graphics::Color::Designation index, Byte alpha = 255) { return SetBorderColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the border color to the given color.
-        AdvancedTextBuilder &SetBorderColor(RGBA color) { CSI(0x07); Color(color); return ST(); }
+        AdvancedTextBuilder &SetBorderColor(Graphics::RGBA color) { CSI(0x07); Color(color); return ST(); }
         
         
         AdvancedTextBuilder &UseDefaultUnderlineColor() { CSI(0x1c); return ST(); }
@@ -184,10 +184,10 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &SetUnderlineColor(Byte index, Byte alpha = 255) { CSI(0x1c); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the underline color to the given index name. 
-        AdvancedTextBuilder &SetUnderlineColor(Color::Designation index, Byte alpha = 255) { return SetUnderlineColor(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetUnderlineColor(Graphics::Color::Designation index, Byte alpha = 255) { return SetUnderlineColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the underline color to the given color.
-        AdvancedTextBuilder &SetUnderlineColor(RGBA color) { CSI(0x1d); Color(color); return ST(); }
+        AdvancedTextBuilder &SetUnderlineColor(Graphics::RGBA color) { CSI(0x1d); Color(color); return ST(); }
         
         AdvancedTextBuilder &UseDefaultStrikethroughColor() { CSI(0x1e); return ST(); }
         
@@ -195,19 +195,19 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &SetStrikethroughColor(Byte index, Byte alpha = 255) { CSI(0x1e); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the strikethrough color to the given index name. 
-        AdvancedTextBuilder &SetStrikethroughColor(Color::Designation index, Byte alpha = 255) { return SetStrikethroughColor(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetStrikethroughColor(Graphics::Color::Designation index, Byte alpha = 255) { return SetStrikethroughColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the strikethrough collor to the given color.
-        AdvancedTextBuilder &SetStrikethroughColor(RGBA color) { CSI(0x1f); Color(color); return ST(); }
+        AdvancedTextBuilder &SetStrikethroughColor(Graphics::RGBA color) { CSI(0x1f); Color(color); return ST(); }
         
         /// Sets the text color of the selection. Default is NamedFontColors::Selection
         AdvancedTextBuilder &SetSelectedTextColor(Byte index, Byte alpha = 255) { CSI(0x11); Index(0b00010); Index(index); if(alpha != 255) Alpha(alpha); return ST(); }
         
         /// Sets the text color of the selection. Default is NamedFontColors::Selection
-        AdvancedTextBuilder &SetSelectedTextColor(Color::Designation index, Byte alpha = 255) { return SetSelectedTextColor(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetSelectedTextColor(Graphics::Color::Designation index, Byte alpha = 255) { return SetSelectedTextColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the text color of the selection. Default is NamedFontColors::Selection
-        AdvancedTextBuilder &SetSelectedTextColor(RGBA color) { CSI(0x11); Index(0b00100); Color(color); return ST(); }
+        AdvancedTextBuilder &SetSelectedTextColor(Graphics::RGBA color) { CSI(0x11); Index(0b00100); Color(color); return ST(); }
         
         /// Sets the background color of the selection. Default is NamedFontColors::Selection. 
         /// Disables selection image
@@ -215,11 +215,11 @@ namespace Gorgon { namespace Graphics {
         
         /// Sets the background color of the selection. Default is NamedFontColors::Selection. 
         /// Disables selection image
-        AdvancedTextBuilder &SetSelectedBackgroundColor(Color::Designation index, Byte alpha = 255) { return SetSelectedBackgroundColor(Gorgon::Byte(index), alpha); }
+        AdvancedTextBuilder &SetSelectedBackgroundColor(Graphics::Color::Designation index, Byte alpha = 255) { return SetSelectedBackgroundColor(Gorgon::Byte(index), alpha); }
         
         /// Sets the background color of the selection. Default is NamedFontColors::Selection. 
         /// Disables selection image
-        AdvancedTextBuilder &SetSelectedBackgroundColor(RGBA color) { CSI(0x11); Index(0b10000); Color(color); return ST(); }
+        AdvancedTextBuilder &SetSelectedBackgroundColor(Graphics::RGBA color) { CSI(0x11); Index(0b10000); Color(color); return ST(); }
         
         /// Uses default background color if no image is set.
         AdvancedTextBuilder &DefaultSelectedBackgroundColor() { CSI(0x11); Index(0b10000); return ST(); }
@@ -254,11 +254,11 @@ namespace Gorgon { namespace Graphics {
         AdvancedTextBuilder &JustifyRight() { SCI(0x20); return SCI(0x23); }
         
         /// Sets the text alignment without changing justify.
-        AdvancedTextBuilder &SetAlignment(TextAlignment align) {
+        AdvancedTextBuilder &SetAlignment(Graphics::TextAlignment align) {
             switch(align) {
-            case TextAlignment::Left: return SCI(0x22);
-            case TextAlignment::Right: return SCI(0x23);
-            case TextAlignment::Center: return SCI(0x24);
+            case Graphics::TextAlignment::Left: return SCI(0x22);
+            case Graphics::TextAlignment::Right: return SCI(0x23);
+            case Graphics::TextAlignment::Center: return SCI(0x24);
             }
             return *this;
         }
@@ -625,7 +625,7 @@ namespace Gorgon { namespace Graphics {
         }
         
         /// Go to next cell. If colspan is set, span align is used to align the new joined column
-        AdvancedTextBuilder &NextCell(Byte colspan = 1, Byte rowspan = 1, TextAlignment spanalign = TextAlignment::Left) { 
+        AdvancedTextBuilder &NextCell(Byte colspan = 1, Byte rowspan = 1, Graphics::TextAlignment spanalign = Graphics::TextAlignment::Left) { 
             if(colspan > 1) {
                 CSI(0x21);
                 Index(colspan);
@@ -733,7 +733,7 @@ namespace Gorgon { namespace Graphics {
             text.push_back(alpha >> 1);
         }
         
-        void Color(RGBA color) {
+        void Color(Graphics::RGBA color) {
             String::AppendUnicode(text, (unsigned int)color&0xffff);
             String::AppendUnicode(text, ((unsigned int)color>>16)&0xffff);
         }

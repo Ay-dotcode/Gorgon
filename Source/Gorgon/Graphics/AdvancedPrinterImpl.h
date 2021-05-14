@@ -166,6 +166,9 @@ namespace Gorgon { namespace Graphics {
                 strikeon = false;
             }
         };
+        
+        fontid = defaultfont;
+        changeprinter(findfont(fontid));
 
         auto switchtoscript = [&] {
             if(
@@ -466,8 +469,8 @@ namespace Gorgon { namespace Graphics {
                 tabwidth.set = false;
                 xoffset.set = false;
                 yoffset.set = false;
-                changeprinter(&fonts.at(0));
-                fontid = 0;
+                changeprinter(findfont(defaultfont));
+                fontid = defaultfont;
                 baselineoffset = 0.0f;
             case 0x5:
             case 0x6:
@@ -567,8 +570,8 @@ namespace Gorgon { namespace Graphics {
                 fontid = (int)NamedFont::Bold;
                 return true;
             case 0x0f:
-                changeprinter(findfont(NamedFont::Regular));
-                fontid = (int)NamedFont::Regular;
+                changeprinter(findfont(defaultfont));
+                fontid = defaultfont;
                 return true;
             case 0x91:
                 changeprinter(findfont(NamedFont::Italic));

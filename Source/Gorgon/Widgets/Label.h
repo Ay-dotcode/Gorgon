@@ -3,11 +3,16 @@
 #include "../UI/ComponentStackWidget.h"
 #include "../Property.h"
 #include "Registry.h"
+#include "../String/Markdown.h"
 
 namespace Gorgon { namespace Graphics { class Bitmap; } }
 
 namespace Gorgon { namespace Widgets {
 
+    /**
+     * Label is a widget that can display some text. Regular labels often allow formatted printing
+     * through AdvancedPrinter. You may format your text using Graphics::AdvancedTextBuilder.
+     */
     class Label : public UI::ComponentStackWidget {
     public:
         Label(const Label &) = delete;
@@ -29,9 +34,9 @@ namespace Gorgon { namespace Widgets {
 
         virtual ~Label();
 
-        void SetText(const std::string &value);
+        virtual void SetText(const std::string &value);
 
-        std::string GetText() const { return text; }
+        virtual std::string GetText() const { return text; }
         
         /// Changes the icon on the label. The ownership of the bitmap
         /// is not transferred. If you wish the bitmap to be destroyed
@@ -66,6 +71,18 @@ namespace Gorgon { namespace Widgets {
             return *icon;
         }
         
+        /// To set the text using direct assignment
+        Label &operator =(const std::string &text) {
+            SetText(text);
+            
+            return *this;
+        }
+        
+        /// Allows direct conversion to string
+        operator std::string() const {
+            return text;
+        }
+        
         /// Transfers the ownership of the current icon.
         void OwnIcon();
         
@@ -93,6 +110,56 @@ namespace Gorgon { namespace Widgets {
     protected:
         virtual bool allowfocus() const override;
 
+    };
+    
+    /**
+     * This class automatically parses the given markdown text and displays it. Often, only default
+     * labels use advanced printer which can properly render formatted text. You may disable 
+     * markdown by prepending the text with [!nomd!]. This widget will also remove [!md!] from the
+     * start of the text if it exists.
+     */
+    class MarkdownLabel : public Label {
+    public:
+        
+        MarkdownLabel(const Label &) = delete;
+        
+        explicit MarkdownLabel(std::string text = "", Registry::TemplateType type = Registry::Label_Regular) : 
+            MarkdownLabel(Registry::Active()[type], text) 
+        {
+        }
+
+        MarkdownLabel(Registry::TemplateType type) : 
+            MarkdownLabel(Registry::Active()[type], "") 
+        {
+        }
+
+
+        explicit MarkdownLabel(const UI::Template &temp, std::string text = "");
+        
+        virtual void SetText(const std::string &value) override;
+        
+        virtual std::string GetText() const override {
+            return original;
+        }
+        
+        /// Sets whether this label should use info font for text. Default value is false.
+        void SetUseInfoFont(const bool &value) {
+            if(info != value) {
+                info = value;
+                SetText(original);
+            }
+        }
+        
+        /// Returns whether this label should use info font for text
+        bool GetUseInfoFont() const {
+            return info;
+        }
+        
+        PROPERTY_GETSET(MarkdownLabel, Boolean, bool, UseInfoFont);
+        
+    private:
+        bool info = false;
+        std::string original;
     };
     
 } }

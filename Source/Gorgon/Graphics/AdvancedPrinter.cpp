@@ -99,7 +99,7 @@ namespace Gorgon { namespace Graphics {
         },
             [](Byte, const Geometry::Bounds &, const RGBAf &, bool) {
         },
-            text, {0,0}, width, false
+            text, {0,0}, width, true
             );
 
         return sz;

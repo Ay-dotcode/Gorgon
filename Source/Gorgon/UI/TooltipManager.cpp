@@ -191,7 +191,8 @@ namespace Gorgon { namespace UI {
             delete target;
         
         if(!mytarget) {
-            mytarget = new Widgets::Label(Widgets::Registry::Label_Info);
+            mytarget = new Widgets::MarkdownLabel(Widgets::Registry::Label_Info);
+            mytarget->UseInfoFont = true;
             mytarget->SetVerticalAutosize(Autosize::Automatic);
         }
         target = mytarget;

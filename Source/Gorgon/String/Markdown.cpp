@@ -1,5 +1,5 @@
 #include "Markdown.h"
-#include "../Graphics/AdvancedTextBuilder.h"
+#include "AdvancedTextBuilder.h"
 
 namespace Gorgon { namespace String {
    
@@ -26,7 +26,7 @@ namespace Gorgon { namespace String {
         return acc;
     }
     
-    std::pair<std::string, std::vector<MarkDownLink>> ParseMarkdown(const std::string &text, bool useinfofont) {
+    std::pair<std::string, std::vector<MarkdownLink>> ParseMarkdown(const std::string &text, bool useinfofont) {
         using namespace Graphics;
         
         AdvancedTextBuilder builder;
@@ -57,13 +57,26 @@ namespace Gorgon { namespace String {
         bool strike = false;
         int tildecnt = 0;
         int regioncount = 0;
-        std::vector<MarkDownLink> links;
+        std::vector<MarkdownLink> links;
         std::string nums;
         
         const char spc = ' ';
         const char newln = '\n';
         builder.SetParagraphSpacing(0, 40);
         Glyph g = 0, prev;
+        
+        auto renderlink = [&](const std::string &p1) {
+            builder.StartRegion(regioncount);
+            builder.SetColor(Color::Link);
+            builder.Underline();
+            builder.Append(p1);
+            builder.Underline(false);
+            builder.EndRegion(regioncount);
+            builder.UseDefaultColor();
+            
+            regioncount++;
+            spaceadded = false;
+        };
         
         for(auto it = text.begin(); it!=end; ++it) {
             prev = g;
@@ -439,14 +452,7 @@ namespace Gorgon { namespace String {
                     }
                     
                     //render
-                    builder.StartRegion(regioncount);
-                    builder.Underline();
-                    builder.Append(p1);
-                    builder.Underline(false);
-                    builder.EndRegion(regioncount);
-                    
-                    regioncount++;
-                    spaceadded = false;
+                    renderlink(p1);
                     continue; //we are done
                 }
                 else if(final == ']' && next == '(') { //inline link
@@ -482,14 +488,7 @@ namespace Gorgon { namespace String {
                     links.push_back({regioncount, p1, "", p2, p3});
                     
                     //render
-                    builder.StartRegion(regioncount);
-                    builder.Underline();
-                    builder.Append(p1);
-                    builder.Underline(false);
-                    builder.EndRegion(regioncount);
-                    
-                    regioncount++;
-                    spaceadded = false;
+                    renderlink(p1);
                     continue; //we are done
                 }
                 else { //not a link
@@ -525,14 +524,7 @@ namespace Gorgon { namespace String {
                     links.push_back({regioncount, p1, "", p2, ""});
                     
                     //render
-                    builder.StartRegion(regioncount);
-                    builder.Underline();
-                    builder.Append(p1);
-                    builder.Underline(false);
-                    builder.EndRegion(regioncount);
-                    
-                    regioncount++;
-                    spaceadded = false;
+                    renderlink(p1);
                     continue; //we are done
                 }
             }

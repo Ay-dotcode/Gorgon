@@ -375,6 +375,7 @@ namespace Gorgon { namespace Widgets {
         void SetColor(Graphics::Color::Designation designation, Graphics::Color::Triplet<> color) {
             colors.Set(designation, color);
             printer.RegisterColor(designation, color.Forecolor, color.Backcolor);
+            infoprinter.RegisterColor(designation, color.Forecolor, color.Backcolor);
         }
         
         /// Replaces the list of colors with the given list. All setup should be performed before
@@ -696,6 +697,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::Color::TripletPack colors = {
             {Graphics::Color::Regular, {Graphics::Color::Charcoal, {Graphics::Color::Ivory, 0.8}}},
             {Graphics::Color::Code, {Graphics::Color::Black, {Graphics::Color::Tan, 0.8}}},
+            {Graphics::Color::Link, {Graphics::Color::Navy, Graphics::Color::Transparent}},
             {Graphics::Color::Hover, {Graphics::Color::Black, {Graphics::Color::Tan, Graphics::Color::Ivory, 0.5}}},
             {Graphics::Color::Down, {Graphics::Color::Black, {Graphics::Color::Crimson, Graphics::Color::Ivory, 0.8}}},
             {Graphics::Color::Disabled, {{Graphics::Color::Grey, 0.8}, Graphics::Color::LightGrey}},
@@ -756,6 +758,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::StyledPrinter  centered;
         
         Graphics::AdvancedPrinter printer;
+        Graphics::AdvancedPrinter infoprinter;
         
         Containers::Collection<Graphics::Drawable> drawables;
         Containers::Collection<Graphics::AnimationProvider> providers;

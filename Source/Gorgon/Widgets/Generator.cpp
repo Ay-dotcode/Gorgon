@@ -199,6 +199,7 @@ namespace Gorgon { namespace Widgets {
         }
         
         printer.UseColors(pairs);
+        infoprinter.UseColors(pairs);
     }
 
     void SimpleGenerator::InitFonts(std::string family, std::string mono, float density) {
@@ -375,6 +376,9 @@ namespace Gorgon { namespace Widgets {
         
         for(auto &col : colors)
             printer.RegisterColor(col.first, col.second.Forecolor, col.second.Backcolor);
+        
+        infoprinter = printer;
+        infoprinter.SetDefaultFont(Graphics::NamedFont::Info);
     }
     
     void SimpleGenerator::InitDimensions(float density, float bordersize, CornerStyle corners) {
@@ -1500,8 +1504,8 @@ namespace Gorgon { namespace Widgets {
         icon.SetMargin(0, 0, spacing, 0);
         
         auto &txt = temp.AddTextholder(2, UI::ComponentCondition::Always);
-        txt.SetRenderer(regular);
-        txt.SetColor(FgC(Regular));
+        txt.SetRenderer(printer);
+        txt.SetColor(Graphics::Color::White);
         txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         txt.SetDataEffect(UI::ComponentTemplate::Text);
         txt.SetSize(100, 100, UI::Dimension::Percent);
@@ -1745,8 +1749,8 @@ namespace Gorgon { namespace Widgets {
         icon.SetMargin(0, 0, spacing, 0);
         
         auto &txt = temp.AddTextholder(2, UI::ComponentCondition::Always);
-        txt.SetRenderer(*info);
-        txt.SetColor(FgC(Info));
+        txt.SetRenderer(infoprinter);
+        txt.SetColor(Graphics::Color::White);
         txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         txt.SetDataEffect(UI::ComponentTemplate::Text);
         txt.SetSize(100, 100, UI::Dimension::Percent);
@@ -2485,7 +2489,7 @@ namespace Gorgon { namespace Widgets {
     
     UI::Template SimpleGenerator::DialogWindow() {
         auto temp = Window();
-        temp.SetSize({GetUnitSize(6) + Border.Width*2 + spacing*2, GetUnitSize(5)});
+        temp.SetSize({GetUnitSize(10) + Border.Width*2 + spacing*2, GetUnitSize(5)});
         
         auto &cbg = dynamic_cast<UI::ContainerTemplate&>(temp[0]);
         //auto tmp = makepanel(AssetID::AllExceptBottom, true);

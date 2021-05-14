@@ -17,7 +17,7 @@ namespace Gorgon { namespace UI {
         bool handledialogcopy(Input::Key key, float state, const std::string &message);
         
         void attachdialogcopy(Widgets::DialogWindow *diag, const std::string &title, 
-                              const std::string &message);
+                              std::string message);
         
         void closethis(Widgets::DialogWindow *diag);
         
@@ -48,6 +48,8 @@ namespace Gorgon { namespace UI {
      * 
      * Default button texts can be changed using SetOkText, SetCloseText, SetCancelText, and
      * SetYesNoText functions
+     * 
+     * Start messages with [!md!] to activate markdown support.
      * 
      * The following is the list of current dialogs
      * * ShowMessage(): Displays the given message with a close button, supports onclose event
@@ -272,6 +274,8 @@ namespace Gorgon { namespace UI {
         
         init();
         
+        bool markdown = message.substr(0, 6) == "[!md!]";
+        
         auto diag = new Widgets::DialogWindow(title);
         diag->HideCloseButton(); //not to confuse user
         
@@ -312,7 +316,16 @@ namespace Gorgon { namespace UI {
             });
         }
         
-        auto text = new Widgets::Label(message);
+        Widgets::Label *text;
+        if(markdown)
+            text = new Widgets::MarkdownLabel(message.substr(6));
+        else {
+            if(message.substr(0, 8) == "[!nomd!]")
+                text = new Widgets::Label(message.substr(8));
+            else
+                text = new Widgets::Label(message);
+        }
+        
         text->SetAutosize(Autosize::Automatic, Autosize::Automatic);
         diag->Add(*text);
         diag->Own(*text);
@@ -506,6 +519,8 @@ namespace Gorgon { namespace UI {
         using namespace internal;
         init();
         
+        bool markdown = message.substr(0, 6) == "[!md!]";
+        
         auto diag = new Widgets::DialogWindow(title);
         diag->HideCloseButton(); //not to confuse user
         
@@ -550,7 +565,16 @@ namespace Gorgon { namespace UI {
             });
         }
         
-        auto text = new Widgets::Label(message);
+        Widgets::Label *text;
+        if(markdown)
+            text = new Widgets::MarkdownLabel(message.substr(6));
+        else {
+            if(message.substr(0, 8) == "[!nomd!]")
+                text = new Widgets::Label(message.substr(8));
+            else
+                text = new Widgets::Label(message);
+        }
+        
         text->SetAutosize(Autosize::Automatic, Autosize::Automatic);
         diag->Add(*text);
         diag->Own(*text);

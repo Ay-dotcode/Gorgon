@@ -44,17 +44,29 @@ namespace Gorgon { namespace Graphics {
         
         AdvancedPrinter() = default;
         AdvancedPrinter(const AdvancedPrinter &other) {
-            
             fonts           = other.fonts;
             images          = other.images.Duplicate();
             tabstops        = other.tabstops;
             colors          = other.colors;
             backcolors      = other.backcolors;
             breakingchars   = other.breakingchars;
+            defaultfont     = other.defaultfont;
         }
         
         AdvancedPrinter(AdvancedPrinter &&) = default;
 
+        
+        AdvancedPrinter &operator =(const AdvancedPrinter &other) {
+            fonts           = other.fonts;
+            images          = other.images.Duplicate();
+            tabstops        = other.tabstops;
+            colors          = other.colors;
+            backcolors      = other.backcolors;
+            breakingchars   = other.breakingchars;
+            defaultfont     = other.defaultfont;
+            
+            return *this;
+        }
         
         AdvancedPrinter &operator =(AdvancedPrinter &&) = default;
         
@@ -129,6 +141,16 @@ namespace Gorgon { namespace Graphics {
         /// Returns the list of breaking glyphs.
         const std::vector<Char> &GetBreakingLetters() const {
             return breakingchars;
+        }
+        
+        /// Sets the default font that will be used at the start.
+        void SetDefaultFont(NamedFont value) {
+            SetDefaultFont((Byte)value);
+        }
+        
+        /// Sets the default font that will be used at the start.
+        void SetDefaultFont(Byte value) {
+            defaultfont = value;
         }
         
         /// This is the advanced operation which allows user to submit functions that will perform the
@@ -399,6 +421,8 @@ namespace Gorgon { namespace Graphics {
         static const int SCI = 0x9a;
         static const int CSI = 0x9b;
         static const int ST = 0x9c;
+        
+        Byte defaultfont = 0;
 
         
         /// Indexed fonts, some of these are named

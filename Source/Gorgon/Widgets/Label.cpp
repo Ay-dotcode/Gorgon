@@ -3,12 +3,11 @@
 #include "../Graphics/Bitmap.h"
 
 namespace Gorgon { namespace Widgets {
-
     
     
     Label::Label(const UI::Template &temp, std::string text) :
         ComponentStackWidget(temp),
-        Text(this), Icon(this), text(text) 
+        Text(this), Icon(this), text(text)
     {
         stack.SetData(UI::ComponentTemplate::Text, text);
         stack.HandleMouse(Input::Mouse::Button::Left);
@@ -18,6 +17,7 @@ namespace Gorgon { namespace Widgets {
                 GetParent().FocusNext(*this);
             }
         });
+        
     }
 
     Label::~Label() {
@@ -99,6 +99,30 @@ namespace Gorgon { namespace Widgets {
     bool Label::allowfocus() const {
         return false;
     }
-    
+        
+    MarkdownLabel::MarkdownLabel(const UI::Template &temp, std::string text) :
+        Label(temp)
+    {
+        SetText(text);
+        
+        stack.SetClickEvent([this](auto, auto, auto btn) {
+            //TODO link handling
+        });
+    }
+
+
+    void MarkdownLabel::SetText(const std::string& value) {
+        original = value;
+        if(value.substr(0, 6) == "[!md!]") {
+            Label::SetText(String::ParseMarkdown(value.substr(6), info).first);
+        }
+        else if(value.substr(0, 8) == "[!nomd!]") {
+            Label::SetText(value.substr(8));
+        }
+        else {
+            Label::SetText(String::ParseMarkdown(value, info).first);
+        }
+    }
+
 }
 }

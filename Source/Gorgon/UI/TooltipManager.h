@@ -13,7 +13,7 @@ namespace Gorgon {
     
 namespace Widgets {
     
-    class Label;
+    class MarkdownLabel;
     
 }
     
@@ -35,6 +35,9 @@ namespace UI {
      * By default, tooltip manager creates a label to display and manage tooltips. This can be 
      * changed. In static mode manager does not require a widget, only a SetText callback. For 
      * dynamic mode to work, a widget must be supplied to the manager.
+     * 
+     * Tooltip system has markdown support enabled. To disable markdown for a specific tooltip,
+     * use [!nomd!] at the start of the tooltip.
      */
     class TooltipManager {
     public:
@@ -223,7 +226,7 @@ namespace UI {
         EventToken                                changetoken   = 0;
         EventToken                                destroytoken  = 0;
         
-        Widgets::Label                           *mytarget      = nullptr;
+        Widgets::MarkdownLabel                   *mytarget      = nullptr;
 
     };
     

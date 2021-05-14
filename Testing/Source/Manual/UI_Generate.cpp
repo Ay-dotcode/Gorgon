@@ -334,7 +334,7 @@ int main() {
     }).SetHorizonalAutosize(Gorgon::UI::Autosize::Automatic);
     
     wind.AddButton("Msg", []{
-        UI::ShowMessage("Hello", "This class is the base class for all widget containers.\n\nAll widgets require a layer to be placed on, to allow widget containers that are also widgets, this class is left abstract. You may derive from this class and WidgetBase at the same time.");
+        UI::ShowMessage("Hello", "[!md!]This class is the base class for all **widget** containers.\n\nAll widgets require a layer to be placed on, to allow widget containers that are also widgets, this class is left abstract. You may derive from this class and WidgetBase at the same time. Visit <https://darkgaze.org> for more.");
     }).SetHorizonalAutosize(Gorgon::UI::Autosize::Automatic);
     
     wind.AddButton("Inp", []{
@@ -349,7 +349,7 @@ int main() {
     }).SetHorizonalAutosize(Gorgon::UI::Autosize::Automatic);
     
     wind.AddButton("Sel", []{
-        UI::Select<DaysOfWeek>("Holiday", "Please select an option",
+        UI::Select<DaysOfWeek>("Holiday", "[!md!]*Please* select an option",
             [](DaysOfWeek v) {
                 UI::ShowMessage("We are going holiday on " + String::From(v));
             }, 2
@@ -361,7 +361,7 @@ int main() {
     app.wind.Add(tiplabel);
     tiplabel.Move(0, 550);
 
-    blank.Tooltip = "This is the container.\n Yehaaw there is tons of text here. A potential for next line. Even one more...";
+    blank.Tooltip = "This is the container.\n\n* Yehaaw there is tons of text here. \n   * With markdown support \n\nA potential for next line. Even one more...";
     app.wind.Add(blank);
     app.wind.Run();
 
