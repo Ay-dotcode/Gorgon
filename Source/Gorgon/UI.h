@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <functional>
 
 namespace Gorgon { 
 
@@ -34,7 +35,7 @@ namespace UI {
     
     /// Sets a function that will be called if an in page link starting with # is encountered in
     /// a widget that supports links.
-    void RegisterInPageLinkHandler(std::function<void(std::string)> handler) {
+   inline void RegisterInPageLinkHandler(std::function<void(std::string)> handler) {
         InPageHandler = handler;
     }
     
