@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AdvancedPrinter.h"
+#include "Gorgon/Graphics/AdvancedPrinterConstants.h"
 
 //empty macro parameter in msvc
 #pragma warning(disable:4003)
@@ -213,7 +214,7 @@ namespace Gorgon { namespace Graphics {
             curindex++;
 
             switch(cmd) {
-            case 0x01:
+            case internal::CSI_SET_PRESET_COLOR:
             {
                 int ind = readindex(it, end, p, curindex);
                 if(colors.count(ind)) {
@@ -225,30 +226,30 @@ namespace Gorgon { namespace Graphics {
                 }
                 break;
             }
-            case 0x02:
+            case internal::CSI_SET_RGBA_COLOR:
             {
                 color = setval<RGBAf>{true, readcolor(it, end, p, curindex)};
                 break;
             }
-            case 0x09: //paragraph spacing
+            case internal::CSI_SET_PARAGRAPH_SPACING:
                 paragraphspacing = readvalrel(it, end, p, true, curindex);
                 break;
-            case 0x0a: //set indent
+            case internal::CSI_SET_INDENT:
                 indent = readvalrel(it, end, p, true, curindex)(em, 0);
                 break;
-            case 0x0b:
+            case internal::CSI_SET_HANGING_INDENT:
                 hangingindent = readvalrel(it, end, p, true, curindex)(em, 0);
                 break;
-            case 0x0c: //letter spacing
+            case internal::CSI_SET_LETTER_SPACING:
                 letterspacing = readvalrel(it, end, p, true, curindex);
                 break;
-            case 0x0d: //line spacing
+            case internal::CSI_SET_LINE_SPACING:
                 linespacing = readvalrel(it, end, p, true, curindex);
                 break;
-            case 0x0e: //wrap width
+            case internal::CSI_SET_WRAP_WIDTH:
                 wrapwidth = readvalrel(it, end, p, false, curindex)(renderer->GetEMSize(), width);
                 break;
-            case 0x11:
+            case internal::CSI_SET_SELECTION_DISPLAY:
             {
                 auto bits = readindex(it, end, p, curindex);
 
@@ -297,18 +298,18 @@ namespace Gorgon { namespace Graphics {
                 }
                 break;
             }
-            case 0x14: //letter offset
+            case internal::CSI_SET_LETTER_OFFSET:
                 xoffset = readvalrel(it, end, p, true, curindex);
                 yoffset = readvalrel(it, end, p, true, curindex);
                 break;
-            case 0x15:
+            case internal::CSI_SET_FONT:
                 fontid = readindex(it, end, p, curindex);
                 if(baselineoffset != 0)
                     switchtoscript();
                 else
                     changeprinter(findfont(fontid));
                 break;
-            case 0x16:
+            case internal::CSI_SET_SELECTION_PADDING:
             {
                 selpadding = setvalrelmargin(
                     readvalrel(it, end, p, true, curindex), readvalrel(it, end, p, true, curindex),
@@ -317,13 +318,13 @@ namespace Gorgon { namespace Graphics {
 
                 break;
             }
-            case 0x17:
-            { //set tab width
+            case internal::CSI_SET_TAB_SPACING:
+            {
                 auto val = readvalrelper(it, end, p, true, curindex);
                 tabwidth = setval<int>{val.set, val(em, wrapwidth, printer->GetTabWidth())};
                 break;
             }
-            case 0x1a:
+            case internal::CSI_SET_UNDERLINE_SETTINGS:
             {
                 auto m = readindex(it, end, p, curindex);
                 if(m&1) {
@@ -338,7 +339,7 @@ namespace Gorgon { namespace Graphics {
                 }
                 break;
             }
-            case 0x1b:
+            case internal::CSI_SET_STRIKETHROUGH_SETTINGS:
             {
                 auto m = readindex(it, end, p, curindex);
                 if(m&1) {
@@ -353,7 +354,7 @@ namespace Gorgon { namespace Graphics {
                 }
                 break;
             }
-            case 0x1c:
+            case internal::CSI_SET_PRESET_UNDERLINE_COLOR:
             {
                 int ind = readindex(it, end, p, curindex);
                 if(colors.count(ind)) {
@@ -365,12 +366,12 @@ namespace Gorgon { namespace Graphics {
                 }
                 break;
             }
-            case 0x1d:
+            case internal::CSI_SET_RGBA_UNDERLINE_COLOR:
             {
                 underlinesettings.color = setval<RGBAf>{true, readcolor(it, end, p, curindex)};
                 break;
             }
-            case 0x1e:
+            case internal::CSI_SET_PRESET_STRIKETHROUGH_COLOR:
             {
                 int ind = readindex(it, end, p, curindex);
                 if(colors.count(ind)) {
@@ -382,12 +383,12 @@ namespace Gorgon { namespace Graphics {
                 }
                 break;
             }
-            case 0x1f:
+            case internal::CSI_SET_RGBA_STRIKETHROUGH_COLOR:
             {
                 strikesettings.color = setval<RGBAf>{true, readcolor(it, end, p, curindex)};
                 break;
             }
-            case 0x23:
+            case internal::CSI_ADD_BREAKING_LETTERS:
             {
                 while(p != internal::ST) {
                     breaking.insert(std::upper_bound(breaking.begin(), breaking.end(), p), p);
@@ -397,7 +398,7 @@ namespace Gorgon { namespace Graphics {
                 }
                 break;
             }
-            case 0x24:
+            case internal::CSI_REMOVE_BREAKING_LETTERS:
             {
                 std::vector<Glyph> rem;
                 while(p != internal::ST) {
@@ -418,10 +419,10 @@ namespace Gorgon { namespace Graphics {
                 }), breaking.end());
                 break;
             }
-            case 0x30:
+            case internal::CSI_START_REGION:
                 openregions.push_back({readindex(it, end, p, curindex),{cur, 0, 0}, (long)acc.size()});
                 break;
-            case 0x31:
+            case internal::CSI_END_REGION:
             {
                 auto ind = readindex(it, end, p, curindex);
 
@@ -433,12 +434,12 @@ namespace Gorgon { namespace Graphics {
                 }
                 break;
             }
-            case 0x40: //horizontal spacing
+            case internal::CSI_SET_HORIZONTAL_SPACING:
                 cur.X += readvalrelper(it, end, p, true, curindex)(em, wrapwidth, 0);
                 prev = 0; //no kerning after a spacing like this
 
                 break;
-            case 0x41: //vertical spacing
+            case internal::CSI_SET_VERTICAL_SPACING:
                 cur.Y += readvalrel(it, end, p, true, curindex)(height, 0);
                 break;
             }
@@ -457,7 +458,7 @@ namespace Gorgon { namespace Graphics {
             curindex++;
 
             switch(cmd) {
-            case 0x4:
+            case internal::SCI_RESET_FORMAT:
                 letterspacing.set = false;
                 hangingindent = 0;
                 indent = 0;
@@ -472,72 +473,72 @@ namespace Gorgon { namespace Graphics {
                 changeprinter(findfont(defaultfont));
                 fontid = defaultfont;
                 baselineoffset = 0.0f;
-            case 0x5:
-            case 0x6:
+            case internal::SCI_USE_SUBSCRIPT:
+            case internal::SCI_USE_SUPERSCRIPT:
                 switchtoscript();
                 break;
-            case 0x7:
+            case internal::SCI_DISABLE_SCRIPT:
                 changeprinter(findfont(fontid));
                 break;
-            case 0x10:
+            case internal::SCI_ENABLE_UNDERLINE:
                 underline = setval<bool>{true, true};
                 break;
-            case 0x11:
+            case internal::SCI_DISABLE_UNDERLINE:
                 underline = setval<bool>{true, false};
                 if(underlineon) {
                     underlines.back().finishat = (long)acc.size();
                 }
                 break;
-            case 0x12:
+            case internal::SCI_ENABLE_STRIKETHROUGH:
                 strike = setval<bool>{true, true};
                 break;
-            case 0x13:
+            case internal::SCI_DISABLE_STRIKETHROUGH:
                 strike = setval<bool>{true, false};
                 if(strikeon) {
                     strikes.back().finishat = (long)acc.size();
                 }
                 break;
-            case 0x16:
+            case internal::SCI_USE_DEFAULT_UNDERLINE:
                 underline.set = false;
                 if(!printer->GetUnderline() && underlineon) {
                     underlines.back().finishat = (long)acc.size();
                 }
                 break;
-            case 0x17:
+            case internal::SCI_USE_DEFAULT_STRIKETHROUGH:
                 strike.set = false;
                 if(!printer->GetStrike() && strikeon) {
                     strikes.back().finishat = (long)acc.size();
                 }
                 break;
-            case 0x20:
+            case internal::SCI_ENABLE_JUSTIFY:
                 justify = setval<bool>{true, true};
                 break;
-            case 0x21:
+            case internal::SCI_DISABLE_JUSTIFY:
                 justify = setval<bool>{true, false};
                 break;
-            case 0x22:
+            case internal::SCI_ALIGN_LEFT:
                 align = setval<TextAlignment>{true, TextAlignment::Left};
                 break;
-            case 0x23:
+            case internal::SCI_ALIGN_RIGHT:
                 align = setval<TextAlignment>{true, TextAlignment::Right};
                 break;
-            case 0x24:
+            case internal::SCI_ALIGN_CENTER:
                 align = setval<TextAlignment>{true, TextAlignment::Center};
                 break;
-            case 0x29:
+            case internal::SCI_USE_DEF_HOR_ALIGNMENT:
                 justify = setval<bool>{false};
                 align = setval<TextAlignment>{false};
                 break;
-            case 0x30:
+            case internal::SCI_ENABLE_WORD_WRAP:
                 wrap = true;
                 break;
-            case 0x31:
+            case internal::SCI_DISABLE_WORD_WRAP:
                 wrap = false;
                 break;
             }
 
             switch(cmd) {
-            case 0x5:
+            case internal::SCI_USE_SUBSCRIPT:
             {
                 baselineoffset = -0.3f;
 
@@ -547,7 +548,7 @@ namespace Gorgon { namespace Graphics {
 
                 break;
             }
-            case 0x6:
+            case internal::SCI_USE_SUPERSCRIPT:
             {
                 baselineoffset = 0.4f;
 
@@ -557,7 +558,7 @@ namespace Gorgon { namespace Graphics {
 
                 break;
             }
-            case 0x7:
+            case internal::SCI_DISABLE_SCRIPT:
                 baselineoffset = 0.0f;
                 break;
             }
