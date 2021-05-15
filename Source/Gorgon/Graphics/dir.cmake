@@ -2,6 +2,7 @@ SET(Local
 	../Graphics.h
 	AdvancedPrinter.h
 	AdvancedPrinterImpl.h
+	AdvancedPrinterConstants.h
 	AdvancedPrinter.cpp
 	Animations.h
 	Bitmap.h

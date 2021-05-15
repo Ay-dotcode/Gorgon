@@ -15,7 +15,6 @@
 #define MOVEIT(x) ++it; if(it == end) { --it; return x; }
 
 namespace Gorgon { namespace Graphics {
-
     inline bool operator ==(int l, NamedFont r) {
         return l == (int)r;
     }
@@ -415,13 +414,6 @@ namespace Gorgon { namespace Graphics {
             return setvalrelper(true, val, rel, per);
         }
 
-
-        static const int RS = 0x8e;
-        static const int US = 0x8f;
-        static const int SCI = 0x9a;
-        static const int CSI = 0x9b;
-        static const int ST = 0x9c;
-        
         Byte defaultfont = 0;
 
         

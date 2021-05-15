@@ -7,7 +7,7 @@
 #define MOVEIT(x) ++it; if(it == end) { --it; return x; }
 
 namespace Gorgon { namespace Graphics {
-    
+
     template<class GF_, class BF_, class LF_, class IF_>
     std::vector<AdvancedPrinter::Region> AdvancedPrinter::AdvancedOperation(GF_ glyphr, BF_ boxr, LF_ liner, IF_ imgr, const std::string &text, Geometry::Point location, int width, bool wrap) const {
 
@@ -203,7 +203,7 @@ namespace Gorgon { namespace Graphics {
             Glyph cmd = internal::decode_impl(it, end);
             curindex++;
 
-            if(cmd == ST)
+            if(cmd == internal::ST)
                 return;
 
             Glyph p = 0;
@@ -389,7 +389,7 @@ namespace Gorgon { namespace Graphics {
             }
             case 0x23:
             {
-                while(p != ST) {
+                while(p != internal::ST) {
                     breaking.insert(std::upper_bound(breaking.begin(), breaking.end(), p), p);
                     MOVEIT();
                     p = internal::decode_impl(it, end);
@@ -400,7 +400,7 @@ namespace Gorgon { namespace Graphics {
             case 0x24:
             {
                 std::vector<Glyph> rem;
-                while(p != ST) {
+                while(p != internal::ST) {
                     rem.insert(std::upper_bound(rem.begin(), rem.end(), p), p);
                     MOVEIT();
                     p = internal::decode_impl(it, end);
@@ -444,7 +444,7 @@ namespace Gorgon { namespace Graphics {
             }
 
             //if extra data at the end, read them
-            while(p != ST) {
+            while(p != internal::ST) {
                 MOVEIT();
                 p = internal::decode_impl(it, end);
                 curindex++;
@@ -1102,12 +1102,12 @@ namespace Gorgon { namespace Graphics {
                 continue;
 
             // **** Commands
-            if(g == this->CSI) {
+            if(g == internal::CSI) {
                 CSI(it, end);
                 continue;
             }
 
-            if(g == this->SCI) {
+            if(g == internal::SCI) {
                 SCI(it, end);
                 continue;
             }
