@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Line.h"
+#include "Bezier.h"
+#include "Circle.h"
 
 namespace Gorgon { namespace CGI {
     
@@ -44,5 +46,16 @@ namespace Gorgon { namespace CGI {
         
         Polyfill(target, {tl, {br.X, tl.Y}, br, {tl.X, br.Y}, tl}, fill);
     }
+    
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, class I_, class Point_ = Geometry::Pointf, class FOncurve_ = SolidFill<>, class FCtrl_ = SolidFill<>>
+    void MarkBezier(I_ &target, const basic_Bezier<Point_> &curve, FOncurve_ oncurvepoints = SolidFill<>(Graphics::Color::Green), FCtrl_ controlpoints = SolidFill<>(Graphics::Color::Blue), float pointsize = 3, float bridgethickness = 0.75) {
+        Circle<S_>(target, curve.P0, pointsize, oncurvepoints);
+        Circle<S_>(target, curve.P1, pointsize, controlpoints);
+        Circle<S_>(target, curve.P2, pointsize, controlpoints);
+        Circle<S_>(target, curve.P3, pointsize, oncurvepoints);
+        
+        DrawLines<S_>(target, {curve.P0, curve.P1}, bridgethickness, controlpoints);
+        DrawLines<S_>(target, {curve.P2, curve.P3}, bridgethickness, controlpoints);
+    };
     
 } }

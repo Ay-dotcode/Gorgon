@@ -63,6 +63,26 @@ namespace Gorgon { namespace Geometry {
             return Start.X > End.X ? Start.X : End.X;
         }
         
+        ///Returns minimum Y point
+        P_ PointAtMinY() const {
+            return Start.Y <= End.Y ? Start : End;
+        }
+        
+        ///Returns maximum Y point
+        P_ PointAtMaxY() const {
+            return Start.Y > End.Y ? Start : End;
+        }
+        
+        ///Returns minimum X point
+        P_ PointAtMinX() const {
+            return Start.X <= End.X ? Start : End;
+        }
+        
+        ///Returns maximum X point
+        P_ PointAtMaxX() const {
+            return Start.X > End.X ? Start : End;
+        }
+        
         ///Returns whether the line is moving up or down. Up movement is -1
         ///down movement is 1 and if line is horizontal this function will
         ///return 0

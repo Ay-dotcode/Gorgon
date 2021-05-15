@@ -18,60 +18,44 @@ std::string helptext =
 
 int main() {
     using namespace Gorgon::CGI;
-    using namespace Gorgon::Graphics::Color;
+    namespace Color = Gorgon::Graphics::Color;
+    using namespace Gorgon::Geometry;
     
-    int zoom = 5;
+    
+    feenableexcept(FE_INVALID);
+    int zoom = 1;
     Application app("generictest", "Test", helptext, zoom);
 
     Graphics::Layer l;
     ((Graphics::Layer&)app.wind.Children[0]).Clear();
     app.wind.Add(l);
     
-    Graphics::Bitmap bmp(1000/zoom, 600/zoom, Graphics::ColorMode::RGBA);
-    bmp.ForAllPixels([&](int x, int y) { bmp.SetRGBAAt(x, y, DarkGrey); });
+    Graphics::Bitmap bmp(800/zoom, 600/zoom, Graphics::ColorMode::RGBA);
+    bmp.ForAllPixels([&](int x, int y) { bmp.SetRGBAAt(x, y, Color::Transparent); });
     
-    Curves c;
-    c.SetStartingPoint({0, 40});
-    c.Push({{0, 40}, {40, 10}, {80, 80}, {100, 60}});
-    c.Push({90, 100});
-    c.Push({45, 50}, {0, 100});
-    auto b = c.Get(0);
+    //PointList<> list = {{3, 2.5}, {3, 3}, {9, 3}, {9, 10}, {0, 10}, {0, 3}, {2, 3}, {2, 7}, {6, 7}, {6, 2.5}};
+    //DrawLines<1>(bmp, list * 4+Pointf(4, 4), 2, SolidFill<>(Color::White));
     
-    for(int i=0; i<c.GetCount(); i++)
-        DrawLines(bmp, c[i].Flatten(), 1, SolidFill<>(Cyan));
-
-    feenableexcept(FE_INVALID);
+    //PointList<> list = {{0, 0}, {1, 0}, {1, 2}, {6, 2}, {6, 5}, {3, 5}, {3, 0}, {4, 0}, {4, 4}, {5, 4}, {5, 3}, {1, 3}, {0, 2}};
+    //Polyfill<1, 0>(bmp, list,SolidFill<>(Color::White));
+    
+    PointList<> list;
+    for(int rs=120; rs<500; rs++) {
+        float r = rs/4.0;
+        float ang = (fmod(r, 20.f)/10.f) * Gorgon::PI;
+        
+        list.Push({float(cos(ang) * r + 400), float(sin(ang) * r + 300)});
+    }
+    
+    auto start = std::chrono::high_resolution_clock::now();
+    
+    DrawLines<1>(bmp, list, 10, SolidFill<>(Color::White));
+    
+    double t = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count() / 1000.0;
+    std::cout << t << std::endl;
 
     auto bmp2 = bmp.ZoomMultiple(zoom);
     
-    auto markbezier = [&](auto b) {
-        Circle(bmp2, b.P0*zoom, 3, SolidFill<>(Green));
-        Circle(bmp2, b.P1*zoom, 3, SolidFill<>(Blue));
-        Circle(bmp2, b.P2*zoom, 3, SolidFill<>(Blue));
-        Circle(bmp2, b.P3*zoom, 3, SolidFill<>(Green));
-        
-        DrawLines(bmp2, {b.P0*zoom, b.P1*zoom}, 0.75, SolidFill<>(LightBlue));
-        DrawLines(bmp2, {b.P2*zoom, b.P3*zoom}, 0.75, SolidFill<>(LightBlue));
-    };
-    
-    
-    Circle(bmp2, {45.f*zoom, 50.f*zoom}, 3, SolidFill<>(Magenta));
-    Polyfill(bmp2, c.Flatten(0.72), SolidFill<>({DarkGreen, 0.5}));
-    DrawLines<8>(bmp2, c.Flatten(0.72), 4, SolidFill<>(White));
-    
-    std::cout << "Release points: " << c.Flatten(0.72).GetCount() << std::endl;
-        
-    for(int i=0; i<c.GetCount(); i++) {
-    
-        std::cout << c[i].Flatten().GetCount() << "\t: ";
-        for(auto &p : c[i].Flatten()) {
-            std::cout << p << ", ";
-            Circle(bmp2, p*zoom, 3, SolidFill<>(White));
-        }
-        std::cout << std::endl;
-        
-        markbezier(c[i]);
-    }
     
     bmp2.Prepare();
     

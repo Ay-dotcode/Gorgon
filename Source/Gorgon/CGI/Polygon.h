@@ -8,6 +8,7 @@
 #include "../Geometry/PointList.h"
 #include "../Geometry/Line.h"
 #include "../Containers/Collection.h"
+#include <stdint.h>
 
 #include <cmath>
 
@@ -21,160 +22,176 @@
 
 namespace Gorgon { namespace CGI {
    
-    ///@cond internal
-    namespace internal {
-    struct vertexinfo {
-        vertexinfo() = default;
-
-        vertexinfo (Float first, Float second, int list) : 
-            first(first), second(second), list(list)
-        { }
-
-        Float first, second;
-        int list;
-        bool skip = false;
-        int wind = false;
+///@cond internal
+namespace internal {
+    /// This structure is sent to ScanLine drawing functions.
+    struct ScanLineDrawOrder {
+        /// Start painting from this point
+        Float From;
+        /// Continue painting until this point
+        Float To;
+        /// Path index
+        int Index;
     };
     
-    template<class PL_, class F_, class T_>
-    void findpolylinestofill(const PL_ &pointlist, T_ ymin, T_ ymax, F_ fn, T_ step = 1, T_ cover = 1) {
+    /// ymin, ymax should be prescaled, pointlist will be scaled on the fly. W_ is winding, 0 is 
+    /// non zero, 1 is odd, 2 is non-zero on same path, odd on different path.
+    template<int W_, class PL_, class F_>
+    void findpolylinestofill(const PL_ &pointlist, int ymin, int ymax, F_ fn, Float cover = 1, Float scale = 1) {
         using std::swap;
         
-        for(T_ y = ymin; y<ymax; y += step) {
-            T_ nexty = y + cover;
-            
-            std::vector<vertexinfo> xpoints;
-            
-            int listind = 0;
-            for(const auto &points : pointlist) {
-                int N = (int)points.GetSize();
-                
-                if(N <= 1) {
-                    listind++;
-                    continue;
-                }
-                    
-                int off = 0;
-                //trackback until the line that is not touching this scanline
-                while(off > -N) {
-                    auto line = points.GetLine(off);
-                    
-                    if(line.Start.Y < nexty && line.Start.Y > y) {
-                        off--;
-                    }
-                    else
-                        break;
-                }
-                
-                if(off == -N)
-                    continue;
-                
-                bool connected = false, wasconnected = false;
-                int firstdir = 0, lastdir = 0;
-                for(int i=0; i<N; i++) {
-                    auto line = points.GetLine(i+off);
-                    
-                    if(line.Start == line.End)
-                        continue;
-                    
-                    if(line.MinY() < nexty && line.MaxY() > y && (line.MinY() < y || line.MaxY() > y)) {
-                        auto slope = line.SlopeInv();
-                        auto offset= line.OffsetInv();
-                        
-                        Float x1, x2;
-                        
-                        if(std::isinf(slope)) {
-                            x1 = line.Start.X;
-                            x2 = line.End.X;
-                        }
-                        else {
-                            x1 = slope * y + offset;
-                            x2 = slope * nexty + offset;
-                        }
-                        
-                        if(x1 > x2)
-                            swap(x1, x2);
-                        
-                        if(x1 < line.MinX())
-                            x1 = line.MinX();
-                        
-                        if(x2 > line.MaxX())
-                            x2 = line.MaxX();
-                        
-                        if(connected) {
-                            auto &f = xpoints.back().first;
-                            f = f > x1 ? x1 : f;
-                            
-                            auto &s = xpoints.back().second;
-                            s = s < x2 ? x2 : s;
-                        }
-                        else {
-                            if(wasconnected && lastdir != firstdir) { //change in direction
-                                xpoints.back().skip= true;
-                            }
-                            
-                            firstdir = line.YDirection();
-                            xpoints.push_back({x1, x2, listind});
-                            xpoints.back().wind = firstdir;
-                        }
-                        
-                        lastdir = line.YDirection();
-                        
-                        wasconnected = connected;
-                        connected = line.End.Y <= nexty && line.End.Y >= y;
-                    }
-                    else {
-                        if(wasconnected && lastdir != firstdir) { //change in direction
-                            xpoints.back().skip= true;
-                            //xpoints.back().wind = 0;
-                        }
-                        connected = false;
-                    }
-                }
-                
-                if(wasconnected && lastdir != firstdir) { //change in direction
-                    xpoints.back().skip= true;
-                    //xpoints.back().wind = 0;
-                }
-                
+        struct edge {
+            int ymin;
+            int ymax;
+            Float x; //at ymin
+            Float slopeinv;
+            int index;
+            int8_t dir;
+        };
+        
+        struct activeline {
+            int ymax;
+            Float x1, x2; //min x, max x at current y
+            Float slopeinv;
+            int index;
+            int8_t dir;
+        };
+        
+        int listind = 0;
+        std::vector<edge> edges;  
+        
+        //flatten, filter, transform and calculate
+        for(const auto &points : pointlist) {
+            int N = (int)points.GetSize();
+            if(N <= 2) {
                 listind++;
+                continue;
             }
             
-            std::sort(xpoints.begin(), xpoints.end(), [](auto l, auto r) { return l.first < r.first; });
+            for(int i=0; i<N; i++) {
+                auto line = points.GetLine(i);
+                
+                auto min = line.PointAtMinY();
+                
+                int miny = int(min.Y * scale);
+                int maxy = int(line.MaxY() * scale);
+                
+                if(miny == maxy)
+                    continue;
+                
+                auto slopeinv = line.SlopeInv();
+                
+                Float minx = min.X * scale;
+                
+                if(miny < ymax && maxy >= ymin)
+                    edges.push_back(edge{miny, maxy, minx, slopeinv, listind, (int8_t)line.YDirection()});
+            }
             
+            listind++;
+        }
+        
+        //sort
+        std::sort(edges.begin(), edges.end(), [](const edge &l, const edge &r) {
+            return l.ymin < r.ymin;
+        });
+        
+        std::vector<activeline> activelines;
+        
+        auto edgeit = edges.begin();
+        
+        std::vector<ScanLineDrawOrder> drawlist;
+        
+        for(int y = ymin; y<ymax; y++) {
+            //find new active lines
+            while(edgeit != edges.end() && edgeit->ymin <= y) {
+                edge &e = *edgeit;
+                
+                //x1<=x2
+                Float x1 = e.x + e.slopeinv * cover * (e.slopeinv < 0);
+                Float x2 = e.x + e.slopeinv * cover * (e.slopeinv > 0);
+                
+                activelines.push_back({e.ymax - 1, x1, x2, e.slopeinv, e.index, e.dir});
+                
+                edgeit++;
+            }
+            
+            
+            auto it  = activelines.begin();
+            auto end = activelines.end();
+            
+            int winding = 0;
+            Float start = 0;
+            int index = 0;
+            
+            while(it != end) {
+                if(!winding) {
+                    std::partial_sort(it, it+1, end, [](const activeline &l, const activeline &r) {
+                        return l.x2 < r.x2;
+                    });
+                    
+                    start = it->x2;
+                    index = it->index;
+                    winding = it->dir;
+                }
+                else {
+                    std::partial_sort(it, it+1, end, [](const activeline &l, const activeline &r) {
+                        return l.x1 < r.x1;
+                    });
+                    
+                    if(W_ == 0) {
+                        winding += it->dir;
+                    }
+                    else if(W_ == 1) {
+                        winding = 0;
+                    }
+                    else if(W_ == 2) {
+                        if(it->index != index) {
+                            winding = 0;
+                        }
+                        else {
+                            winding += it->dir;
+                        }
+                    }
+                    
+                    if(winding == 0 && start < it->x1) {
+                        drawlist.push_back({start, it->x1, index});
+                    }
+                }
+                
+                ++it;
+            }
+            
+            
+            //remove completed lines
+            activelines.erase(
+                std::remove_if(activelines.begin(), activelines.end(), [&y](const activeline &a) {
+                    return a.ymax == y;
+                }), activelines.end()
+            );
+                
+            
+            for(auto &a : activelines) {
+                a.x1 += a.slopeinv;
+                a.x2 += a.slopeinv;
+            }
             
             //fill
-            fn((Float)y, xpoints);
+            fn((Float)y, drawlist);
+            drawlist.clear();
         }
     }
-    }
-    ///@endcond
+}
+///@endcond
     
     /**
      * This function fills the given point list as a polygon. List is treated as closed
      * where last pixel connects to the first. S_ is the number of subdivision for subpixel
-     * accuracy. S_ should be a power of two for this algorithm to work properly. W_ is
-     * winding, 1 is odd, 0 is non-zero.
+     * accuracy. S_ should be a power of two for this algorithm to work properly. W_ is winding, 0 
+     * is non-zero, 1 is odd, 2 is non-zero on same path, odd on different path
      */
     template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, int W_ = 1, class P_= Geometry::Pointf, class F_ = SolidFill<>>
-    void Polyfill(Containers::Image &target, const std::vector<Geometry::PointList<P_>> &p, F_ fill = SolidFill<>{Graphics::Color::Black}) {
-        if(p.size() < 1) return;
-        
-        std::vector<Geometry::PointList<P_>> p2;
-        const std::vector<Geometry::PointList<P_>> *pp;
-        
-        if(S_ > 1) {
-            for(auto &pl : p) {
-                p2.push_back(pl.Duplicate());
-            }
-            pp = &p2;
-        }
-        else {
-            pp = &p;
-        }
-        
-        const std::vector<Geometry::PointList<P_>> &points = *pp;
-        
+    void Polyfill(Containers::Image &target, const Containers::Collection<const Geometry::PointList<P_>> &points, F_ fill = SolidFill<>{Graphics::Color::Black}) {
+        if(points.GetSize() < 1) return;
         
         Float ymin = (Float)int(target.GetHeight()*S_ - 1);
         Float ymax = 0;
@@ -206,8 +223,6 @@ namespace Gorgon { namespace CGI {
         
         if(!found) return;
         
-        ymax++; //ensuring the last line is not skipped due to <
-        
         Gorgon::FitInto<Float>(ymin, 0.f, (Float)target.GetHeight()-1);
         Gorgon::FitInto<Float>(ymax, 0.f, (Float)target.GetHeight());
         
@@ -218,9 +233,6 @@ namespace Gorgon { namespace CGI {
         if(ceil(ymin) > floor(ymax)) return;
         
         if(S_ > 1) { //subpixel
-            for(auto &pl : p2)
-                pl *= S_;
-            
             Float cy = -1;
             
             int ew = xmax-xmin+1; //effective width
@@ -228,143 +240,63 @@ namespace Gorgon { namespace CGI {
             int yminint = (int)floor(ymin*S_);
             
             float a = 1.f / (S_ * S_); //alpha per pixel hit
-            
-            internal::findpolylinestofill(points, yminint, (int)ceil(ymax*S_)+1, [&](float y, auto &xpoints) {
-                if(int(cy) != int(y/S_)) {
-                    if(y != yminint) { //transfer
-                        for(int x=0; x<ew; x++) {
-                            if(cnts[x]) {
-                                Graphics::RGBA prevcol = target.GetRGBAAt(int(x+xmin), (int)cy);
-                                
-                                auto col = fill({(Float)x, (Float)floor(cy-yminint)}, {x + xmin, (int)cy}, prevcol, a * cnts[x]);
-                                
-                                target.SetRGBAAt(int(x + xmin), int(cy),  col);
-                            }
+            int targety = (int)ceil(ymax*S_);
+            internal::findpolylinestofill<W_>(points, yminint, targety, [&](int y, const auto &drawlist) {                
+                for(const auto &d : drawlist) {
+                    int s = (int)ceil(d.From);
+                    int e = (int)floor(d.To);
+                    
+                    FitInto(s, 0, target.GetWidth()*S_);
+                    FitInto(e, 0, target.GetWidth()*S_);
+                    
+                    for(int x=s; x<e; x++) {
+                        cnts[x/S_-xmin]++;
+                    }
+                }
+                
+                if(y%S_ == S_-1 || y == targety-1) {
+                    for(int x=0; x<ew; x++) {
+                        if(cnts[x]) {
+                            Graphics::RGBA prevcol = target.GetRGBAAt(int(x+xmin), (int)cy);
+                            
+                            auto col = fill({(Float)x, (Float)floor(y/S_-yminint)}, {x + xmin, y/S_}, prevcol, a * cnts[x]);
+                            
+                            target.SetRGBAAt(int(x + xmin), y/S_,  col);
                         }
                     }
                     
                     //reset
                     memset(&cnts[0], 0, cnts.size()*sizeof(int));
-                    
-                    cy = (Float)int(y/S_);
                 }
-                
-                int wind = 0;
-                for(int i=0; i<(int)xpoints.size()-1; i++) {
-                    if(xpoints[i].skip) 
-                        continue;
-                    
-                    wind += xpoints[i].wind;
-                    
-                    if(wind == 0) continue;
-                    
-                    Float s = ceil(xpoints[i].second)/S_;
-                    
-                    while(true) {
-                        i++;
-                        
-                        if(i >= xpoints.size())
-                            break;
-                        
-                        wind += xpoints[i].wind;
-                        
-                        if(W_ == 0 ? (wind == 0) : (wind%2==0)) {
-                            Float e = floor(xpoints[i].first)/S_;
-                            
-                            FitInto<Float>(s, (Float)xmin, (Float)xmax+1);
-                            FitInto<Float>(e, (Float)xmin, (Float)xmax+1);
-                            if(s < e) {
-                                for(Float x=s; x<e; x+=1.f/S_) {
-                                    cnts[(int)x-xmin]++;
-                                }
-                            }
-                            
-                            if(xpoints[i].skip) {
-                                xpoints[i].skip = false;
-                                xpoints[i].wind *= -1;
-                                i--;
-                            }
-                            
-                            break;
-                        }
-                        
-                        if(xpoints[i].skip) {
-                            xpoints[i].skip = false;
-                            xpoints[i].wind *= -1;
-                            i--;
-                        }
-                    }
-                    
-                    if(i < xpoints.size() - 1) {
-                        std::partial_sort(
-                            xpoints.begin() + i + 1, 
-                            xpoints.begin() + i + 2, 
-                            xpoints.end(), 
-                            [](auto l, auto r) { return l.second < r.second; }
-                        );
-                    }
-                }
-            });
+            }, 1.f, S_);
+            
+            
         }
         else { //integer
-            internal::findpolylinestofill(points, (int)floor(ymin), (int)ceil(ymax), [&](float y, auto &xpoints) {
-                int wind = 0;
-                for(int i=0; i<(int)xpoints.size()-1; i++) {
-                    if(xpoints[i].skip) 
-                        continue;
+            internal::findpolylinestofill<W_>(points, (int)floor(ymin), (int)ceil(ymax), [&](int y, const auto &drawlist) {
+                for(const auto &d : drawlist) {
+                    int s = (int)ceil(d.From);
+                    int e = (int)floor(d.To);
                     
-                    wind += xpoints[i].wind;
-                    
-                    if(wind == 0) continue;
-                    
-                    int s = (int)ceil(xpoints[i].second);
-                    
-                    while(true) {
-                        i++;
-                        
-                        if(i >= xpoints.size())
-                            break;
-                        
-                        wind += xpoints[i].wind;
-                        
-                        if(W_ == 0 ? (wind == 0) : (wind%2 == 0)) {
-                            int e = (int)floor(xpoints[i].first);
-                            
-                            FitInto(s, 0, target.GetWidth());
-                            FitInto(e, 0, target.GetWidth());
-                            if(s < e) {
-                                for(int x=s; x<e; x++) {
-                                    target.SetRGBAAt(x, (int)y, fill({float(x-xmin), float(y-ymin)}, {(int)x, (int)y}, target.GetRGBAAt(x, (int)y), 1.f));
-                                }
-                            }
-                            
-                            if(xpoints[i].skip) {
-                                xpoints[i].skip = false;
-                                xpoints[i].wind *= -1;
-                                i--;
-                            }
-                            
-                            break;
-                        }
-                            
-                        if(xpoints[i].skip) {
-                            xpoints[i].skip = false;
-                            xpoints[i].wind *= -1;
-                            i--;
-                        }
-                    }
-                    
-                    if(i < xpoints.size() - 1) {
-                        std::partial_sort(
-                            xpoints.begin() + i + 1, 
-                            xpoints.begin() + i + 2, 
-                            xpoints.end(), 
-                            [](auto l, auto r) { return l.second < r.second; }
-                        );
+                    FitInto(s, 0, target.GetWidth());
+                    FitInto(e, 0, target.GetWidth());
+
+                    for(int x=s; x<e; x++) {
+                        target.SetRGBAAt(x, y, fill({float(x-xmin), float(y-ymin)}, {x, y}, target.GetRGBAAt(x, (int)y), 1.f));
                     }
                 }
-            });
+            }, 1.f, S_);
         }
+    }
+    
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, int W_ = 1, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    void Polyfill(Containers::Image &target, const std::vector<Geometry::PointList<P_>> &points, F_ fill = SolidFill<>{Graphics::Color::Black}) {
+        Containers::Collection<const Geometry::PointList<P_>> data;
+        for(const auto &pl : points) {
+            data.Push(pl);
+        }
+        
+        Polyfill<S_, W_, P_, F_>(target, data, fill);
     }
     
     /**
@@ -383,191 +315,24 @@ namespace Gorgon { namespace CGI {
      * accuracy.
      */
     template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, int W_ = 1, class P_= Geometry::Pointf, class F_ = SolidFill<>>
-    void Polyfill(Containers::Image &target, const Geometry::PointList<P_> &p, F_ fill = SolidFill<>{Graphics::Color::Black}) {
-        if(p.GetSize() <= 1) return;
-
-        Geometry::PointList<P_> p2;
-        const Geometry::PointList<P_> *pp;
+    void Polyfill(Containers::Image &target, const Geometry::PointList<P_> &points, F_ fill = SolidFill<>{Graphics::Color::Black}) {
+        if(points.GetSize() < 3)
+            return;
         
-        if(S_ > 1) {
-            p2 = p.Duplicate();
-            pp = &p2;
-        }
-        else {
-            pp = &p;
-        }
-        const Geometry::PointList<P_> &points = *pp;
+        Containers::Collection<const Geometry::PointList<P_>> data;
+        data.Push(points);
         
-        auto yrange = std::minmax_element(points.begin(), points.end(), [](auto l, auto r) { return l.Y < r.Y; });
-        
-        Float ymin = yrange.first->Y;
-        Float ymax = yrange.second->Y;
-        
-        ymax++;
-        
-        Gorgon::FitInto<Float>(ymin, 0, (Float)target.GetHeight()-1);
-        Gorgon::FitInto<Float>(ymax, 0, (Float)target.GetHeight());
-        
-        auto xrange = std::minmax_element(points.begin(), points.end(), [](auto l, auto r) { return l.X < r.X; });
-        
-        int xmin = (int)xrange.first->X;
-        int xmax = (int)ceil(xrange.second->X);
-        
-        Gorgon::FitInto(xmin, 0, target.GetWidth()-1);
-        Gorgon::FitInto(xmax, 0, target.GetWidth()-1);
-        
-        if(ceil(ymin) > floor(ymax)) return;
-        
-        if(S_ > 1) { //subpixel
-            p2 *= S_;
-            
-            Float cy = -1;
-            
-            int ew = xmax-xmin+1; //effective width
-            std::vector<int> cnts(ew); //line buffer for counting
-            int yminint = (int)floor(ymin*S_);
-            
-            float a = 1.f / (S_ * S_);
-            
-            internal::findpolylinestofill(Containers::Collection<const Geometry::PointList<P_>>({points}), yminint, (int)ceil(ymax*S_)+1, [&](Float y, auto &xpoints) {
-                if(int(cy) != int(y/S_)) {
-                    if(y != yminint) { //transfer
-                        for(int x=0; x<ew; x++) {
-                            if(cnts[x]) {
-                                Graphics::RGBA prevcol = target.GetRGBAAt(int(x+xmin), (int)cy);
-                                
-                                auto col = fill({floorf((float)x), floorf((float)cy-yminint)}, {int(x + xmin), (int)cy}, prevcol, a * cnts[x]);
-                                
-                                target.SetRGBAAt(x + xmin, (int)cy,  col);
-                            }
-                        }
-                    }
-                    
-                    //reset
-                    memset(&cnts[0], 0, cnts.size()*sizeof(int));
-                    
-                    cy = (Float)int(y/S_);
-                }
-                
-
-                int wind = 0;
-                for(int i=0; i<(int)xpoints.size()-1; i++) {
-                    if(xpoints[i].skip) 
-                        continue;
-                    
-                    wind += xpoints[i].wind;
-                    
-                    if(wind == 0) continue;
-                    
-                    Float s = ceil(xpoints[i].second)/S_;
-                    std::sort(xpoints.begin() + i + 1, xpoints.end(), [](auto l, auto r) { return l.first < r.first; });
-                    
-                    while(true) {
-                        i++;
-                        
-                        if(i >= xpoints.size())
-                            break;
-                        
-                        wind += xpoints[i].wind;
-                        
-                        if(W_ == 0 ? (wind == 0) : (wind%2==0)) {
-                            Float e = floor(xpoints[i].first)/S_;
-                            
-                            FitInto<Float>(s, (Float)xmin, (Float)xmax+1);
-                            FitInto<Float>(e, (Float)xmin, (Float)xmax+1);
-                            if(s < e) {
-                                for(Float x=s; x<e; x+=1.f/S_) {
-                                    cnts[(int)x-xmin]++;
-                                }
-                            }
-                            
-                            if(xpoints[i].skip) {
-                                xpoints[i].skip = false;
-                                xpoints[i].wind *= -1;
-                                i--;
-                            }
-                            
-                            break;
-                        }
-                        
-                        if(xpoints[i].skip) {
-                            xpoints[i].skip = false;
-                            xpoints[i].wind *= -1;
-                            i--;
-                        }
-                    }
-                    
-                    if(xpoints.begin() + i == xpoints.end()) continue;
-                    
-                    std::sort(xpoints.begin() + i + 1, xpoints.end(), [](auto l, auto r) { return l.second < r.second; });
-                }
-            });
-        }
-        else {
-            internal::findpolylinestofill(Containers::Collection<const Geometry::PointList<P_>>({points}), ymin, ymax, [&](float y, auto &xpoints) {
-                int wind = 0;
-                for(int i=0; i<(int)xpoints.size()-1; i++) {
-                    if(xpoints[i].skip) 
-                        continue;
-                    
-                    wind += xpoints[i].wind;
-                    
-                    if(wind == 0) continue;
-                    
-                    int s = (int)ceil(xpoints[i].second);
-                    std::sort(xpoints.begin() + i + 1, xpoints.end(), [](auto l, auto r) { return l.first < r.first; });
-                    
-                    while(true) {
-                        i++;
-                        
-                        if(i >= xpoints.size())
-                            break;
-                        
-                        wind += xpoints[i].wind;
-                        
-                        if(W_ == 0 ? (wind == 0) : (wind%2 == 0)) {
-                            int e = (int)floor(xpoints[i].first);
-                            
-                            FitInto(s, 0, target.GetWidth());
-                            FitInto(e, 0, target.GetWidth());
-                            if(s < e) {
-                                for(int x=s; x<e; x++) {
-                                    target.SetRGBAAt(x, (int)y, fill({float(x-xmin), float(y-ymin)}, {(int)x, (int)y}, target.GetRGBAAt(x, (int)y), 1.f));
-                                }
-                            }
-                            
-                            if(xpoints[i].skip) {
-                                xpoints[i].skip = false;
-                                xpoints[i].wind *= -1;
-                                i--;
-                            }
-                            
-                            break;
-                        }
-                        
-                        if(xpoints[i].skip) {
-                            xpoints[i].skip = false;
-                            xpoints[i].wind *= -1;
-                            i--;
-                        }
-                    }
-                    
-                    if(xpoints.begin() + i == xpoints.end()) continue;
-                    
-                    std::sort(xpoints.begin() + i + 1, xpoints.end(), [](auto l, auto r) { return l.second < r.second; });
-                }
-            });
-        }
+        Polyfill<S_, W_, P_, F_>(target, data, fill);        
     }
     
     /**
      * This function fills the given point list as a polygon. List is treated as closed
      * where last pixel connects to the first. 
      */
-    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, class P_= Geometry::Pointf, class F_ = SolidFill<>>
+    template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, int W_ = 1, class P_= Geometry::Pointf, class F_ = SolidFill<>>
     void Polyfill(Graphics::Bitmap &target, const Geometry::PointList<P_> &points, F_ fill = SolidFill<>{Graphics::Color::Black}) {
         if(target.HasData())
-            Polyfill<S_>(target.GetData(), points, fill);
+            Polyfill<S_, W_, P_, F_>(target.GetData(), points, fill);
     }
     
     template<int S_ = GORGON_DEFAULT_SUBDIVISIONS, class P_= Geometry::Pointf, class F_ = SolidFill<>>
