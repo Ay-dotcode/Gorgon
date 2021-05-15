@@ -36,14 +36,15 @@ namespace internal {
     
     /// ymin, ymax should be prescaled, pointlist will be scaled on the fly. W_ is winding, 0 is 
     /// non zero, 1 is odd, 2 is non-zero on same path, odd on different path.
-    template<int W_, class PL_, class F_>
+    template<int W_, bool strict = false, class PL_, class F_>
     void findpolylinestofill(const PL_ &pointlist, int ymin, int ymax, F_ fn, Float cover = 1, Float scale = 1) {
         using std::swap;
         
         struct edge {
             int ymin;
             int ymax;
-            Float x; //at ymin
+            Float x1;
+            Float x2; //at ymin
             Float slopeinv;
             int index;
             int8_t dir;
@@ -51,7 +52,8 @@ namespace internal {
         
         struct activeline {
             int ymax;
-            Float x1, x2; //min x, max x at current y
+            Float x1; 
+            Float x2; //min x, max x at current y
             Float slopeinv;
             int index;
             int8_t dir;
@@ -81,10 +83,22 @@ namespace internal {
                 
                 auto slopeinv = line.SlopeInv();
                 
-                Float minx = min.X * scale;
+                Float minx = min.X;
+                Float x1 = minx + slopeinv * cover * (slopeinv < 0);
+                Float x2 = minx + slopeinv * cover * (slopeinv > 0);
                 
-                if(miny < ymax && maxy >= ymin)
-                    edges.push_back(edge{miny, maxy, minx, slopeinv, listind, (int8_t)line.YDirection()});
+                if(x1 < line.MinX())
+                    x1 = line.MinX();
+                
+                if(x2 > line.MaxX())
+                    x2 = line.MaxX();
+                
+                if(miny < ymax && maxy >= ymin) {
+                    if(strict)
+                        edges.push_back(edge{miny, maxy, x1*scale, x2*scale, slopeinv, listind, (int8_t)line.YDirection()});
+                    else
+                        edges.push_back(edge{miny, maxy, minx*scale, minx*scale, slopeinv, listind, (int8_t)line.YDirection()});
+                }
             }
             
             listind++;
@@ -106,11 +120,7 @@ namespace internal {
             while(edgeit != edges.end() && edgeit->ymin <= y) {
                 edge &e = *edgeit;
                 
-                //x1<=x2
-                Float x1 = e.x + e.slopeinv * cover * (e.slopeinv < 0);
-                Float x2 = e.x + e.slopeinv * cover * (e.slopeinv > 0);
-                
-                activelines.push_back({e.ymax - 1, x1, x2, e.slopeinv, e.index, e.dir});
+                activelines.push_back({e.ymax - 1, e.x1, e.x2, e.slopeinv, e.index, e.dir});
                 
                 edgeit++;
             }
@@ -216,7 +226,7 @@ namespace internal {
                 xmin = (int)xrange.first->X;
             
             if(xmax < xrange.second->X)
-                xmax = (int)xrange.second->X;
+                xmax = (int)ceil(xrange.second->X);
             
             found = true;
         }
@@ -226,15 +236,12 @@ namespace internal {
         Gorgon::FitInto<Float>(ymin, 0.f, (Float)target.GetHeight()-1);
         Gorgon::FitInto<Float>(ymax, 0.f, (Float)target.GetHeight());
         
-        
         Gorgon::FitInto(xmin, 0, target.GetWidth()-1);
         Gorgon::FitInto(xmax, 0, target.GetWidth()-1);
         
         if(ceil(ymin) > floor(ymax)) return;
         
         if(S_ > 1) { //subpixel
-            Float cy = -1;
-            
             int ew = xmax-xmin+1; //effective width
             std::vector<int> cnts(ew); //line buffer for counting
             int yminint = (int)floor(ymin*S_);
@@ -246,9 +253,6 @@ namespace internal {
                     int s = (int)ceil(d.From);
                     int e = (int)floor(d.To);
                     
-                    FitInto(s, 0, target.GetWidth()*S_);
-                    FitInto(e, 0, target.GetWidth()*S_);
-                    
                     for(int x=s; x<e; x++) {
                         cnts[x/S_-xmin]++;
                     }
@@ -257,7 +261,7 @@ namespace internal {
                 if(y%S_ == S_-1 || y == targety-1) {
                     for(int x=0; x<ew; x++) {
                         if(cnts[x]) {
-                            Graphics::RGBA prevcol = target.GetRGBAAt(int(x+xmin), (int)cy);
+                            Graphics::RGBA prevcol = target.GetRGBAAt(int(x+xmin), y/S_);
                             
                             auto col = fill({(Float)x, (Float)floor(y/S_-yminint)}, {x + xmin, y/S_}, prevcol, a * cnts[x]);
                             
@@ -269,8 +273,6 @@ namespace internal {
                     memset(&cnts[0], 0, cnts.size()*sizeof(int));
                 }
             }, 1.f, S_);
-            
-            
         }
         else { //integer
             internal::findpolylinestofill<W_>(points, (int)floor(ymin), (int)ceil(ymax), [&](int y, const auto &drawlist) {

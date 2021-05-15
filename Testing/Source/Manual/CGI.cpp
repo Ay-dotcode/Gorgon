@@ -40,8 +40,8 @@ int main() {
     //Polyfill<1, 0>(bmp, list,SolidFill<>(Color::White));
     
     PointList<> list;
-    for(int rs=120; rs<500; rs++) {
-        float r = rs/4.0;
+    for(int rs=120; rs<6000; rs++) {
+        float r = rs/16.f;
         float ang = (fmod(r, 20.f)/10.f) * Gorgon::PI;
         
         list.Push({float(cos(ang) * r + 400), float(sin(ang) * r + 300)});
@@ -49,7 +49,7 @@ int main() {
     
     auto start = std::chrono::high_resolution_clock::now();
     
-    DrawLines<1>(bmp, list, 10, SolidFill<>(Color::White));
+    DrawLines(bmp, list, 10, SolidFill<>(Color::White));
     
     double t = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count() / 1000.0;
     std::cout << t << std::endl;
