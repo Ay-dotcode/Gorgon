@@ -49,7 +49,7 @@ int main() {
     
     auto start = std::chrono::high_resolution_clock::now();
     
-    DrawLines(bmp, list, 10, SolidFill<>(Color::White));
+    DrawLines<1>(bmp, list, 10, SolidFill<>(Color::White));
     
     double t = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - start).count() / 1000.0;
     std::cout << t << std::endl;

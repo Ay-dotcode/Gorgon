@@ -93,7 +93,7 @@ namespace internal {
                 if(x2 > line.MaxX())
                     x2 = line.MaxX();
                 
-                if(miny < ymax && maxy >= ymin) {
+                if(miny < ymax && maxy > ymin) {
                     if(strict)
                         edges.push_back(edge{miny, maxy, x1*scale, x2*scale, slopeinv, listind, (int8_t)line.YDirection()});
                     else
@@ -115,9 +115,20 @@ namespace internal {
         
         std::vector<ScanLineDrawOrder> drawlist;
         
+        while(edgeit != edges.end() && edgeit->ymin < ymin) {
+            edge &e = *edgeit;
+            
+            e.x1 += (ymin - edgeit->ymin) * e.slopeinv;
+            e.x2 += (ymin - edgeit->ymin) * e.slopeinv;
+            
+            activelines.push_back({e.ymax - 1, e.x1, e.x2, e.slopeinv, e.index, e.dir});
+            
+            edgeit++;
+        }
+        
         for(int y = ymin; y<ymax; y++) {
             //find new active lines
-            while(edgeit != edges.end() && edgeit->ymin <= y) {
+            while(edgeit != edges.end() && edgeit->ymin == y) {
                 edge &e = *edgeit;
                 
                 activelines.push_back({e.ymax - 1, e.x1, e.x2, e.slopeinv, e.index, e.dir});
@@ -241,7 +252,7 @@ namespace internal {
         
         if(ceil(ymin) > floor(ymax)) return;
         
-        if(S_ > 1) { //subpixel
+        if(S_ >= 1) { //subpixel
             int ew = xmax-xmin+1; //effective width
             std::vector<int> cnts(ew); //line buffer for counting
             int yminint = (int)floor(ymin*S_);
