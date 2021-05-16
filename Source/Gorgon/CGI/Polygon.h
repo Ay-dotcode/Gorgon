@@ -253,19 +253,24 @@ namespace internal {
                     int s = (int)ceil(d.From);
                     int e = (int)floor(d.To);
                     
+                    FitInto(s, xmin*S_, xmax*S_+S_-1);
+                    FitInto(e, xmin*S_, xmax*S_+S_-1);
+                    
                     for(int x=s; x<e; x++) {
                         cnts[x/S_-xmin]++;
                     }
                 }
                 
+                int cy = y/S_;
+                
                 if(y%S_ == S_-1 || y == targety-1) {
                     for(int x=0; x<ew; x++) {
                         if(cnts[x]) {
-                            Graphics::RGBA prevcol = target.GetRGBAAt(int(x+xmin), y/S_);
+                            Graphics::RGBA prevcol = target.GetRGBAAt(int(x+xmin), cy);
                             
-                            auto col = fill({(Float)x, (Float)floor(y/S_-yminint)}, {x + xmin, y/S_}, prevcol, a * cnts[x]);
+                            auto col = fill({(Float)x, (Float)(cy-yminint)}, {x + xmin, cy}, prevcol, a * cnts[x]);
                             
-                            target.SetRGBAAt(int(x + xmin), y/S_,  col);
+                            target.SetRGBAAt(int(x + xmin), cy,  col);
                         }
                     }
                     
