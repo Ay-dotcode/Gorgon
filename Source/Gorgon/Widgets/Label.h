@@ -4,6 +4,7 @@
 #include "../Property.h"
 #include "Registry.h"
 #include "../String/Markdown.h"
+#include "../Graphics/Pointer.h"
 
 namespace Gorgon { namespace Graphics { class Bitmap; } }
 
@@ -169,6 +170,7 @@ namespace Gorgon { namespace Widgets {
         std::string original;
         std::vector<String::MarkdownLink> links;
         std::function<bool (std::string)> inpagehandler;
+        Graphics::PointerStack::Token pointertoken;
     };
     
 } }

@@ -3,6 +3,7 @@
 #include "../Graphics/Font.h"
 #include "../WindowManager.h"
 #include "../UI.h"
+#include "../Window.h"
 
 namespace Gorgon { namespace Widgets { namespace internal {
     
@@ -20,6 +21,15 @@ namespace Gorgon { namespace Widgets { namespace internal {
         stack.SetMouseDownEvent([this](auto tag, auto location, auto button) { 
             mousedown(tag, location, button); 
         });
+        
+        stack.SetMouseOverEvent([this](auto) { 
+            Gorgon::Window *toplevel = dynamic_cast<Gorgon::Window*>(&stack.GetTopLevel());
+            if(!toplevel)
+                return;
+            
+            pointertoken = toplevel->Pointers.Set(Graphics::PointerType::Text); 
+        });
+        stack.SetMouseOutEvent([this](auto) { pointertoken.Revert(); });
         
         repeater.Register(Input::Keyboard::Keycodes::Left);
         repeater.Register(Input::Keyboard::Keycodes::Right);

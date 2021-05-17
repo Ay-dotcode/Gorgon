@@ -28,10 +28,8 @@ namespace Gorgon { namespace Graphics {
 
     PointerStack::Token PointerStack::Set(PointerType type) {
         ASSERT((int)type>(int)PointerType::None && (int)type<(int)PointerType::Max, "Invalid pointer type");
-       
-        if(!pointers[(int)type].ptr) return Token();
         
-        stack.Add(lastind, pointers[(int)type].ptr);
+        stack.insert({lastind, {type, pointers[(int)type].ptr}});
         
         PointerChanged();
         
@@ -39,7 +37,7 @@ namespace Gorgon { namespace Graphics {
     }
     
     PointerStack::Token PointerStack::Set(const Pointer &pointer) {
-        stack.Add(lastind, pointer);
+        stack.insert({lastind, {pointer.GetType(), &pointer}});
         
         PointerChanged();
         
@@ -49,15 +47,15 @@ namespace Gorgon { namespace Graphics {
     void PointerStack::Reset(Token &token) {
         if(token.parent != this) return;
         
-        long curid = -1;
+        Graphics::PointerType curid = PointerType::None;
         
-        if(stack.GetSize() > 0) {
-            curid = stack.Last().Current().first;
+        if(!stack.empty()) {
+            curid = stack.rbegin()->second.first;
         }
         
-        stack.Remove(token.ind);
+        stack.erase(token.ind);
         
-        if(stack.GetSize() == 0 || stack.Last().Current().first != curid) {
+        if(stack.empty() || stack.rbegin()->second.first != curid) {
             PointerChanged();
         }
         
@@ -66,8 +64,8 @@ namespace Gorgon { namespace Graphics {
     }
     
     const Pointer &PointerStack::Current() const {
-        if(stack.GetSize() > 0) {
-            return stack.Last().Current().second;
+        if(!stack.empty()) {
+            return *stack.rbegin()->second.second;
         }
         else {
             for(int i=(int)PointerType::Arrow; i<(int)PointerType::Max; i++) {
@@ -80,7 +78,7 @@ namespace Gorgon { namespace Graphics {
     }
     
     bool PointerStack::IsValid() const {
-        if(stack.GetSize() > 0) {
+        if(!stack.empty()) {
             return true;
         }
         else {
@@ -94,8 +92,8 @@ namespace Gorgon { namespace Graphics {
     }
     
     PointerType PointerStack::GetCurrentType() const {
-        if(IsValid()) {
-            return Current().GetType();
+        if(!stack.empty()) {
+            return stack.rbegin()->second.first;
         }
         else {
             return PointerType::None;

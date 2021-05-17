@@ -545,7 +545,7 @@ namespace Gorgon { namespace Graphics {
         
         int lastind = 0;
         
-        Containers::Hashmap<int, const Pointer> stack;
+        std::map<int, std::pair<PointerType, const Pointer*>> stack;
         
         std::array<Wrapper, (int)PointerType::Max> pointers = {};
     };

@@ -56,6 +56,11 @@ namespace Gorgon {
         swap(glsize, other.glsize);
 
         Pointers.Swap(other.Pointers);
+        Pointers.PointerChanged.Clear();
+        other.Pointers.PointerChanged.Clear();
+        
+        Pointers.PointerChanged.Register(*this, &Window::UpdatePointer);
+        other.Pointers.PointerChanged.Register(other, &Window::UpdatePointer);
 
         if(data) {
             windows.Add(this);

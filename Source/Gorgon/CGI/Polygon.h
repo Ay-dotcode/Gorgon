@@ -264,8 +264,8 @@ namespace internal {
                     int s = (int)ceil(d.From);
                     int e = (int)floor(d.To);
                     
-                    FitInto(s, xmin*S_, xmax*S_+S_-1);
-                    FitInto(e, xmin*S_, xmax*S_+S_-1);
+                    FitInto(s, xmin*S_, xmax*S_+S_);
+                    FitInto(e, xmin*S_, xmax*S_+S_);
                     
                     for(int x=s; x<e; x++) {
                         cnts[x/S_-xmin]++;

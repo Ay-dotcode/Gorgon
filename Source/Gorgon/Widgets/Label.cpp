@@ -2,6 +2,7 @@
 #include "../UI/WidgetContainer.h"
 #include "../Graphics/Bitmap.h"
 #include "../UI.h"
+#include "../Window.h"
 
 namespace Gorgon { namespace Widgets {
     
@@ -126,6 +127,27 @@ namespace Gorgon { namespace Widgets {
                 }
             }
         });
+        
+        stack.SetMouseMoveEvent([this](auto, auto point) {
+            Gorgon::Window *toplevel = dynamic_cast<Gorgon::Window*>(&stack.GetTopLevel());
+            if(!toplevel)
+                return;
+            
+            auto &regions = stack.GetRegions();
+            
+            for(auto &r : regions) {
+                if(IsInside(r.Bounds, point)) {
+                    pointertoken = toplevel->Pointers.Set(Graphics::PointerType::Link);
+                    
+                    return;
+                }
+            }
+            
+            if(!pointertoken.IsNull())
+                pointertoken.Revert();
+        });
+        
+        stack.SetMouseOutEvent([this](auto) { pointertoken.Revert(); });
     }
 
 

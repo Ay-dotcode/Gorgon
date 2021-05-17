@@ -18,6 +18,7 @@ namespace Gorgon { namespace Widgets {
         stack.SetMouseUpEvent([this](auto tag, auto location, auto button) { mouse_up(tag, location, button); });
         stack.SetMouseMoveEvent([this](auto tag, auto location) { mouse_move(tag, location); });
         stack.SetClickEvent([this](auto tag, auto location, auto button) { mouse_click(tag, location, button); });
+        stack.SetMouseOutEvent([this](auto) { pointertoken.Revert(); });
         
         updatescrollvisibility();
         if(autoplace) {
@@ -233,14 +234,127 @@ namespace Gorgon { namespace Widgets {
         }
     }
     
-    void Window::mouse_move(UI::ComponentTemplate::Tag, Geometry::Point location) {
+    void Window::mouse_move(UI::ComponentTemplate::Tag tag, Geometry::Point location) {
+        if(tag == UI::ComponentTemplate::NoTag) {
+            if(stack.IndexOfTag(UI::ComponentTemplate::DragTag) == -1)
+                tag = UI::ComponentTemplate::DragTag;
+            else {
+                int ind = stack.ComponentAt(location);
+                
+                if(ind != -1)
+                    tag = stack.GetTemplate(ind).GetTag();
+            }
+        }
+        
         auto parent = dynamic_cast<Gorgon::Window*>(&stack.GetTopLevel());
+        auto ptrtype = Graphics::PointerType::None;
+        
+        if(moving) {
+            ptrtype = Graphics::PointerType::Drag;
+        }
+        else if(resizing != none) {
+            switch(resizing) {
+            case top:
+                ptrtype = Graphics::PointerType::ScaleTop;
+                break;
+            case left:
+                ptrtype = Graphics::PointerType::ScaleLeft;
+                break;
+            case right:
+                ptrtype = Graphics::PointerType::ScaleRight;
+                break;
+            case bottom:
+                ptrtype = Graphics::PointerType::ScaleBottom;
+                break;
+            case topleft:
+                ptrtype = Graphics::PointerType::ScaleTopLeft;
+                break;
+            case bottomleft:
+                ptrtype = Graphics::PointerType::ScaleBottomLeft;
+                break;
+            case topright:
+                ptrtype = Graphics::PointerType::ScaleTopRight;
+                break;
+            case bottomright:
+                ptrtype = Graphics::PointerType::ScaleBottomRight;
+                break;
+            default:
+                ;
+            }
+        }
+        else if(allowresize && tag == UI::ComponentTemplate::ResizeTag) {
+            auto size = GetSize();
+            int maxdist = stack.GetTemplate().GetResizeHandleSize();
+            
+            int leftdist = location.X, rightdist  = size.Width  - location.X;
+            int topdist  = location.Y, bottomdist = size.Height - location.Y;
+            
+            resizedir r = none;
+            
+            if(leftdist < rightdist) {
+                if(leftdist <= maxdist) {
+                    r = resizedir(r | left);
+                }
+            }
+            else {
+                if(rightdist <= maxdist) {
+                    r = resizedir(r | right);
+                }
+            }
+            
+            if(topdist < bottomdist) {
+                if(topdist <= maxdist) {
+                    r = resizedir(r | top);
+                }
+            }
+            else {
+                if(bottomdist <= maxdist) {
+                    r = resizedir(r | bottom);
+                }
+            }
+            
+            switch(r) {
+            case top:
+                ptrtype = Graphics::PointerType::ScaleTop;
+                break;
+            case left:
+                ptrtype = Graphics::PointerType::ScaleLeft;
+                break;
+            case right:
+                ptrtype = Graphics::PointerType::ScaleRight;
+                break;
+            case bottom:
+                ptrtype = Graphics::PointerType::ScaleBottom;
+                break;
+            case topleft:
+                ptrtype = Graphics::PointerType::ScaleTopLeft;
+                break;
+            case bottomleft:
+                ptrtype = Graphics::PointerType::ScaleBottomLeft;
+                break;
+            case topright:
+                ptrtype = Graphics::PointerType::ScaleTopRight;
+                break;
+            case bottomright:
+                ptrtype = Graphics::PointerType::ScaleBottomRight;
+                break;
+            default:
+                ;
+            }
+        }
+        
+        if(ptrtype == Graphics::PointerType::None) {
+            pointertoken.Revert();
+        }
+        else {
+            pointertoken = parent->Pointers.Set(ptrtype);
+        }
+        
         if(parent)
             location = parent->GetMouseLocation();
         
         if(location == dragoffset) 
             return;
-        
         
         if(moving) {
             auto newlocation = GetLocation() + location-dragoffset;

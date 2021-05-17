@@ -10,6 +10,7 @@
 #include "../UI/Helpers.h"
 #include "../Input/KeyRepeater.h"
 #include "Registry.h"
+#include "../Graphics/Pointer.h"
 
 namespace Gorgon { namespace Widgets {
     
@@ -272,6 +273,7 @@ namespace Gorgon { namespace Widgets {
         
             Input::KeyRepeater repeater;
             
+            Graphics::PointerStack::Token pointertoken;
         };
     }
     /// @endcond

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Panel.h"
+#include "../Graphics/Pointer.h"
 
 namespace Gorgon { namespace Graphics { class Bitmap; } }
 
@@ -264,6 +265,7 @@ namespace Gorgon { namespace Widgets {
         resizedir resizing = none;
         bool allowresize = false;
         Geometry::Size minsize;
+        Graphics::PointerStack::Token pointertoken;
     };
     
 } }

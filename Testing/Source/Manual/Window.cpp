@@ -136,7 +136,6 @@ int main() {
     wind.Pointers.Add(Graphics::PointerType::Text, pointer3);
     
 
-	
 	//img = Graphics::Bitmap({200, 200}, Graphics::ColorMode::Alpha);
 	//for(int x = 0; x<200; x++)
 	//	for(int y = 0; y<200; y++) {
