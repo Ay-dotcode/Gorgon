@@ -107,7 +107,8 @@ namespace Gorgon { namespace UI {
     void TooltipManager::Tick() {
         if(!toplevel) {
             toplevel = dynamic_cast<Gorgon::Window*>(&container->TopLevelLayer());
-            ASSERT(toplevel, "Tooltip manager cannot reach to top level window.");
+            if(!toplevel)
+                return;
             
             if(!target && !settext) {
                 CreateTarget();
