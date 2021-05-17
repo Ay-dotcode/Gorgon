@@ -376,6 +376,9 @@ namespace Gorgon {
         using Layer::Remove;
         virtual void Remove(Layer &layer) override;
         
+        /// Updates current mouse pointer if OS pointer is shown. This is called automatically.
+        void UpdatePointer();
+        
         /// Returns the minimum size required to fit any window inside.
         static Geometry::Size GetMinimumRequiredSize();
         

@@ -10,6 +10,8 @@
 #include "Event.h"
 #include "Containers/Image.h"
 #include "Resource/GID.h"
+#include "Graphics/Pointer.h"
+
 
 namespace Gorgon {
 	
@@ -228,5 +230,9 @@ namespace Gorgon {
 		/// Changes the clipboard to the given image. Depending on size of the image, this operation might not work 
 		/// on X11 for now.
 		void SetClipboardBitmap(Containers::Image img, bool append = false);
+        
+        /// Changes the OS pointer to the requested type. If target OS does not supported the requested
+        /// type, a similar pointer will be displayed.
+        void SetPointer(Window &wind, Graphics::PointerType type);
 	}
 }

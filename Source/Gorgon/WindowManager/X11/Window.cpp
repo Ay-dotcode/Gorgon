@@ -6,7 +6,7 @@
 #include "../../Graphics/Layer.h"
 #include "../../Encoding/URI.h"
 #include "X11Keysym.h"
-
+#include <X11/cursorfont.h>
 
 namespace Gorgon { namespace WindowManager {
 
@@ -788,5 +788,80 @@ namespace internal {
                     break;
             }
         }
-    }   
-}
+    }
+
+namespace WindowManager {
+    void SetPointer(Window &wind, Graphics::PointerType type) {
+        int cursor;
+        static std::map<Graphics::PointerType, Cursor> cursors;
+        
+        if(!cursors.count(type)) {
+            switch(type) {
+            case Graphics::PointerType::Wait:
+                cursor = XC_watch;
+                break;
+            case Graphics::PointerType::Processing:
+                cursor = XC_watch;
+                break;
+            case Graphics::PointerType::No:
+                cursor = XC_X_cursor;
+                break;
+            case Graphics::PointerType::Text:
+                cursor = XC_xterm;
+                break;
+            case Graphics::PointerType::Link:
+                cursor = XC_hand1;
+                break;
+            case Graphics::PointerType::Move:
+                cursor = XC_plus;
+                break;
+            case Graphics::PointerType::Drag:
+                cursor = XC_fleur;
+                break;
+            case Graphics::PointerType::ScaleLeft:
+                cursor = XC_left_side;
+                break;
+            case Graphics::PointerType::ScaleTop:
+                cursor = XC_top_side;
+                break;
+            case Graphics::PointerType::ScaleRight:
+                cursor = XC_right_side;
+                break;
+            case Graphics::PointerType::ScaleBottom:
+                cursor = XC_bottom_side;
+                break;
+            case Graphics::PointerType::ScaleTopLeft:
+                cursor = XC_top_left_corner;
+                break;
+            case Graphics::PointerType::ScaleTopRight:
+                cursor = XC_top_right_corner;
+                break;
+            case Graphics::PointerType::ScaleBottomLeft:
+                cursor = XC_bottom_left_corner;
+                break;
+            case Graphics::PointerType::ScaleBottomRight:
+                cursor = XC_bottom_right_corner;
+                break;
+            case Graphics::PointerType::Cross:
+                cursor = XC_crosshair;
+                break;
+            case Graphics::PointerType::Help:
+                cursor = XC_question_arrow;
+                break;
+            case Graphics::PointerType::Straight:
+                cursor = XC_center_ptr;
+                break;
+            default:
+                cursor = XC_arrow;
+                break;
+            }
+            
+            Cursor c;
+            c = XCreateFontCursor(WindowManager::display, cursor); 
+            cursors[type] = c;
+        }
+
+        XDefineCursor(WindowManager::display, internal::getdata(wind)->handle, cursors[type]);
+    }
+    
+} }

@@ -25,18 +25,19 @@ namespace Gorgon { namespace Resource {
     class Pointer : public AnimationStorage, public Graphics::BitmapPointerProvider {
     public:
         Pointer(Graphics::Bitmap &bmp, Geometry::Point hotspot, Graphics::PointerType type) : 
-        Graphics::BitmapPointerProvider(hotspot), type(type) {
+        Graphics::BitmapPointerProvider(hotspot) {
             Add(bmp);
+            SetType(type);
         }
 
         Pointer(Graphics::BitmapAnimationProvider &&anim, Geometry::Point hotspot, Graphics::PointerType type) :
-        Graphics::BitmapPointerProvider(hotspot), type(type) {
+        Graphics::BitmapPointerProvider(hotspot) {
             dynamic_cast<Graphics::BitmapAnimationProvider&>(*this) = std::move(anim);
+            SetType(type);
         }
         
-        explicit Pointer(Graphics::PointerType type = Graphics::PointerType::None) : 
-        type(type) { 
-            
+        explicit Pointer(Graphics::PointerType type = Graphics::PointerType::None) { 
+            SetType(type);
         }
         
         Pointer(const Pointer &) = delete;
@@ -44,16 +45,6 @@ namespace Gorgon { namespace Resource {
         Pointer &operator =(const Pointer &) = delete;
         
         GID::Type GetGID() const override { return GID::Pointer; }
-        
-        /// Returns the type of the pointer
-        Graphics::PointerType GetType() const {
-            return type;
-        }
-        
-        /// Sets the type of the pointer
-        void SetType(Graphics::PointerType value) {
-            type = value;
-        }
         
         void Prepare() override;
         
@@ -68,8 +59,6 @@ namespace Gorgon { namespace Resource {
 		static Pointer *LoadLegacy(std::weak_ptr<File> file, std::shared_ptr<Reader> reader, unsigned long size) { Utils::NotImplemented(); }
         
     protected:
-        Graphics::PointerType type = Graphics::PointerType::Arrow;
-
 		virtual Graphics::RectangularAnimationStorage animmoveout() override;
 
         virtual ~Pointer() { }

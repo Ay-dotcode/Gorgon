@@ -142,6 +142,5 @@ namespace Gorgon {
             
 			delete data;
 		}
-
 	}
 }

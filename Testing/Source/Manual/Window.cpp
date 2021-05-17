@@ -112,10 +112,18 @@ int main() {
     Graphics::DrawablePointer pointer1(cursor1, 8,15);
     
     cursor2.Prepare();
-    Graphics::DrawablePointer pointer2(cursor2, 8,8);
+    Graphics::DrawablePointer pointer2(cursor2, 8,8, Gorgon::Graphics::PointerType::Wait);
     
     cursor3.Prepare();
-    Graphics::DrawablePointer pointer3(cursor3, 1,8);
+    Graphics::DrawablePointer pointer3(cursor3, 1,8, Gorgon::Graphics::PointerType::Text);
+    
+    Resource::File fsave;
+    auto ptrsave = new Resource::Pointer;
+    
+    ptrsave->Add(cursor1);
+    ptrsave->SetType(Graphics::PointerType::Arrow);
+    fsave.Root().Add(ptrsave);
+    fsave.Save("ptrtest.gor");
     
     Resource::File f;
     f.LoadFile("ptrtest.gor");
@@ -126,14 +134,6 @@ int main() {
     //wind.Pointers.Add(Graphics::PointerType::Arrow, pointer1);
     wind.Pointers.Add(Graphics::PointerType::Wait, pointer2);
     wind.Pointers.Add(Graphics::PointerType::Text, pointer3);
-    
-    /*Resource::File f;
-    auto ptr = new Resource::Pointer;
-    
-    ptr->Add(cursor1);
-    ptr->SetType(Graphics::PointerType::Arrow);
-    f.Root().Add(ptr);
-    f.Save("ptrtest.gor");*/
     
 
 	

@@ -277,6 +277,8 @@ namespace Gorgon {
         
         pointerlayer = new Graphics::Layer;
         Layer::Add(*pointerlayer);
+        
+        Pointers.PointerChanged.Register(*this, &Window::UpdatePointer);
     }
 
     void Window::SetBackground(const Graphics::Bitmap &value) {
@@ -356,4 +358,7 @@ namespace Gorgon {
             over = MouseHandler{};
     }
 
+    void Window::UpdatePointer() {
+        WindowManager::SetPointer(*this, Pointers.GetCurrentType());
+    }
 }

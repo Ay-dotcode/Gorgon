@@ -546,4 +546,75 @@ namespace internal {
 		}
 	}
 
-}
+namespace WindowManager {
+    
+    void SetPointer(Window &wind, Graphics::PointerType type) { 
+        HINSTANCE instance=GetModuleHandle(NULL);
+        LPCSTR cursor;
+        
+        switch(type) {
+        case Graphics::PointerType::Wait:
+            cursor = IDC_WAIT;
+            break;
+        case Graphics::PointerType::Processing:
+            cursor = IDC_APPSTARTING;
+            break;
+        case Graphics::PointerType::No:
+            cursor = IDC_NO;
+            break;
+        case Graphics::PointerType::Text:
+            cursor = IDC_IBEAM;
+            break;
+        case Graphics::PointerType::Link:
+            cursor = IDC_HAND;
+            break;
+        case Graphics::PointerType::Move:
+            cursor = IDC_HAND;
+            break;
+        case Graphics::PointerType::Drag:
+            cursor = IDC_SIZEALL;
+            break;
+        case Graphics::PointerType::ScaleLeft:
+            cursor = IDC_SIZEWE;
+            break;
+        case Graphics::PointerType::ScaleTop:
+            cursor = IDC_SIZENS;
+            break;
+        case Graphics::PointerType::ScaleRight:
+            cursor = IDC_SIZEWE;
+            break;
+        case Graphics::PointerType::ScaleBottom:
+            cursor = IDC_SIZENS;
+            break;
+        case Graphics::PointerType::ScaleTopLeft:
+            cursor = IDC_SIZENWSE;
+            break;
+        case Graphics::PointerType::ScaleTopRight:
+            cursor = IDC_SIZENESW;
+            break;
+        case Graphics::PointerType::ScaleBottomLeft:
+            cursor = IDC_SIZENESW;
+            break;
+        case Graphics::PointerType::ScaleBottomRight:
+            cursor = IDC_SIZENWSE;
+            break;
+        case Graphics::PointerType::Cross:
+            cursor = IDC_CROSS;
+            break;
+        case Graphics::PointerType::Help:
+            cursor = IDC_HELP;
+            break;
+        case Graphics::PointerType::Straight:
+            cursor = IDC_UPARROW;
+            break;
+        default:
+            cursor = IDC_ARROW;
+            break;
+        }
+        
+        LoadCursorW(instance, cursor);
+        SetCursor(c);
+    }
+    
+    
+} }
