@@ -55,6 +55,10 @@ namespace UI {
         
         /// Tooltip manager requires a widget container to work.
         TooltipManager(WidgetContainer &container);
+
+        TooltipManager(TooltipManager&&) = default;
+
+        TooltipManager(const TooltipManager&) = delete;
         
         /// Destructor
         ~TooltipManager();

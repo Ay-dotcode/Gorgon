@@ -550,7 +550,7 @@ namespace WindowManager {
     
     void SetPointer(Window &wind, Graphics::PointerType type) { 
         HINSTANCE instance=GetModuleHandle(NULL);
-        LPCSTR cursor;
+        LPCWSTR cursor;
         
         switch(type) {
         case Graphics::PointerType::Wait:
@@ -612,7 +612,7 @@ namespace WindowManager {
             break;
         }
         
-        LoadCursorW(instance, cursor);
+        auto c = LoadCursorW(NULL, cursor);
         SetCursor(c);
     }
     

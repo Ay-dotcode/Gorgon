@@ -53,19 +53,19 @@ int main() {
 	Graphics::Layer l;
 	wind.Add(l);
 
-	Graphics::Bitmap img;
+	/*Graphics::Bitmap img;
 	if(!img.Import("test.png")) {
         std::cout<<"Test.png is not found"<<std::endl;
         exit(0);
     }
 
-    img.Prepare();
+    img.Prepare();*/
 
-	Graphics::Bitmap icon;
-	icon.Import("icon.png");
+	//Graphics::Bitmap icon;
+	//icon.Import("icon.png");
 
-	WM::Icon ico(icon.GetData());
-	wind.SetIcon(ico);
+	//WM::Icon ico(icon.GetData());
+	//wind.SetIcon(ico);
     
     Graphics::Bitmap cursor1({16,16}, Graphics::ColorMode::RGBA);
     cursor1.ForAllPixels([&](int x, int y) {
@@ -176,8 +176,8 @@ int main() {
 	for(int i=0; i<4; i++)
 		img2.DrawStretched(l, 25+16+i*32, 0, 16, 400, {1.f, 1.f, 1.f, .3f});
 		
-	for(int i=0; i<10; i++)
-		img.Draw(l, 150, 150);
+	//for(int i=0; i<10; i++)
+		//img.Draw(l, 150, 150);
 	
 	//img.Draw(l, 50, 50, {.2f, .2f, .8f, 1.f});
     
