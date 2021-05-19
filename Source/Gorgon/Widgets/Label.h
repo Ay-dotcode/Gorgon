@@ -15,6 +15,10 @@ namespace Gorgon { namespace Widgets {
      * through AdvancedPrinter. You may format your text using Graphics::AdvancedTextBuilder.
      */
     class Label : public UI::ComponentStackWidget {
+        //for visual studio bug workaround
+        void settext(const std::string &value) { SetText(value); }
+
+        std::string gettext() const { return GetText(); }
     public:
         Label(const Label &) = delete;
         
@@ -97,7 +101,7 @@ namespace Gorgon { namespace Widgets {
         
         GORGON_UI_CSW_AUTOSIZABLE_WIDGET;
 
-        TextualProperty<Label, std::string, &Label::GetText, &Label::SetText> Text;
+        TextualProperty<Label, std::string, &Label::gettext, &Label::settext> Text;
 
         ObjectProperty<Label, const Graphics::Drawable, &Label::GetIcon, &Label::SetIcon> Icon;
         
@@ -107,6 +111,8 @@ namespace Gorgon { namespace Widgets {
         const Graphics::AnimationProvider  *iconprov = nullptr;
         
         bool ownicon = false;
+
+
         
     protected:
         virtual bool allowfocus() const override;

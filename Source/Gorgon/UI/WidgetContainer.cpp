@@ -107,13 +107,30 @@ namespace Gorgon { namespace UI {
 
         widgetremoved(widget);
         widget.removed();
+
+        if(&widget == hovered)
+            SetHoveredWidget(nullptr);
+        else {
+            //hovered widget is not ours, so remove it just in case
+            //the hovered widget is under the one that is removed
+            if(widgets.FindLocation(hovered) == -1) {
+                SetHoveredWidget(nullptr);
+            }
+        }
     }
     
     void WidgetContainer::deleted(Widget *widget) {
         auto pos = widgets.Find(*widget);
         
         if(widget == hovered)
-            SetHoveredWidget(widget);
+            SetHoveredWidget(nullptr);
+        else {
+            //hovered widget is not ours, so remove it just in case
+            //the hovered widget is under the one that is removed
+            if(widgets.FindLocation(hovered) == -1) {
+                SetHoveredWidget(nullptr);
+            }
+        }
 
         //not our widget
         if(pos == widgets.end())

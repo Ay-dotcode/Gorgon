@@ -210,6 +210,9 @@ namespace Gorgon { namespace UI {
         underadapter.SetFocusChangedHandler([this] {
             focuschangedin(underadapter);
         });
+
+        Tooltips.SetContainer(*this);
+        Tooltips.RecreateTarget();
     }
 
 
@@ -290,6 +293,9 @@ namespace Gorgon { namespace UI {
 
         inputtoken = keyinit();
         chartoken = charinit();
+
+        Tooltips.SetContainer(*this);
+        Tooltips.RecreateTarget();
 
         return *this;
     }

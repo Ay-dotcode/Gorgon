@@ -183,14 +183,25 @@ namespace UI {
         /// overwrites this value. If there is a tooltip displayed, this function will be called
         /// immediately.
         void SetSetText(std::function<void(const std::string &)> value);
-        
+
         /// Creates a target automatically. Replaces both target and SetText function. This function
         /// creates a label with Tooltip template.
         void CreateTarget();
-        
+
+        /// If this manager has a target, destroys it and recreates the target. If it has no target
+        /// this function has no effect.
+        void RecreateTarget();
+
         /// This function is called automatically to detect current mouse location, adjust and 
         /// display tooltip
         void Tick();
+
+        /// Changes the the container that this manager uses. Does not automatically update
+        /// if the tooltip is already displayed.
+        void SetContainer(WidgetContainer &value) {
+            container = &value;
+            toplevel = nullptr;
+        }
         
     protected:
         

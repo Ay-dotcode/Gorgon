@@ -195,6 +195,7 @@ namespace Gorgon { namespace UI {
             mytarget = new Widgets::MarkdownLabel(Widgets::Registry::Label_Info);
             mytarget->UseInfoFont = true;
             mytarget->SetVerticalAutosize(Autosize::Automatic);
+            owntarget = true;
         }
         target = mytarget;
         
@@ -202,7 +203,20 @@ namespace Gorgon { namespace UI {
         
         settext = std::bind(&TooltipManager::setmytargettext, this, _1);
     }
-    
+
+    void TooltipManager::RecreateTarget() {
+        if(target) {
+            if(owntarget) {
+                if(target == mytarget)
+                    mytarget = nullptr;
+
+                delete target;
+            }
+
+            CreateTarget();
+        }
+    }
+
     void TooltipManager::place() {
         if(mode != Dynamic || !target || !toplevel)
             return;
