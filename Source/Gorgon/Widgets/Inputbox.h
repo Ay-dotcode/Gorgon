@@ -40,8 +40,8 @@ namespace Gorgon { namespace Widgets {
 
             
         public:
-                
-            /// Returns the length of the text in this inputbox. This value is in glyphs and takes time to calculate.
+            
+            /// Returns the length of the text in this inputbox. This value is in glyphs.
             int Length() const {
                 return glyphcount;
             }
@@ -149,19 +149,7 @@ namespace Gorgon { namespace Widgets {
 
             /// When set to true, the value contained in the inputbox cannot be edited
             /// by the user. Default is false.
-            void SetReadonly(const bool &value) {
-                if(value == readonly)
-                    return;
-
-                readonly = value;
-
-                if(readonly && IsEnabled()) {
-                    stack.AddCondition(UI::ComponentCondition::Readonly);
-                }
-                else {
-                    stack.RemoveCondition(UI::ComponentCondition::Readonly);
-                }
-            }
+            void SetReadonly(const bool &value);
 
             /// When set to true, the value contained in the inputbox cannot be edited
             /// by the user. Default is false.
@@ -189,7 +177,7 @@ namespace Gorgon { namespace Widgets {
                             
             
         protected:
-                
+            
             /// updates the selection display
             void updateselection();
             
@@ -219,32 +207,7 @@ namespace Gorgon { namespace Widgets {
                 }
             }
 
-            void eraseselected() {
-                if(sellen.byte < 0) {
-                    dirty = true;
-
-                    int pos = selstart.byte + sellen.byte;
-
-                    display.erase(pos, -sellen.byte);
-
-                    glyphcount += sellen.glyph;
-                    selstart += sellen;
-                    sellen = {0, 0};
-                }
-                else if(sellen.byte > 0) {
-                    dirty = true;
-
-                    int pos = selstart.byte;
-
-                    display.erase(pos, sellen.byte);
-
-                    glyphcount -= sellen.glyph;
-                    sellen = {0, 0};
-
-                    updatevaluedisplay(false);
-                    updateselection();
-                }
-            }
+            void eraseselected();
             
             void focuslost() override;
             

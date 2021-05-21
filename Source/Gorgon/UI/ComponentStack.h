@@ -377,7 +377,8 @@ namespace Gorgon { namespace UI {
         int IndexOfTag(ComponentTemplate::Tag tag);
 
         /// Returns the boundaries of the component marked with the given tag. This function may cause
-        /// update thus may take time to execute. The bounds are within the parent.
+        /// update thus may take time to execute. The bounds are within the parent. If tag does not
+        /// exit, bounds of the entire stack will be returned.
         Geometry::Bounds TagBounds(ComponentTemplate::Tag tag);
 
         /// Returns if the component at the given index has a layer.

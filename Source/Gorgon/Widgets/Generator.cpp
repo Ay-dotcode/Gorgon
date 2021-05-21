@@ -2671,4 +2671,139 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
+    UI::Template SimpleGenerator::Textarea() {
+        Geometry::Size defsize = {GetUnitSize(6), GetUnitSize(3)};
+        
+        UI::Template temp = maketemplate();
+        temp.SetSpacing(spacing);
+        temp.SetSize(defsize);
+        
+        
+        auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always)
+            .AddIndex(1) //border
+            .AddIndex(2) //boxed content
+        ;
+        
+        auto setupborder = [&](auto &anim, UI::ComponentCondition condition) {
+            auto &bg = temp.AddContainer(1, condition);
+            bg.Background.SetAnimation(anim);
+            bg.SetSize(100, 100, UI::Dimension::Percent);
+            bg.SetPositioning(UI::ComponentTemplate::Absolute);
+        };
+
+        setupborder(A(Edit, Regular), UI::ComponentCondition::Always);
+        setupborder(A(Edit, Hover), UI::ComponentCondition::Hover);
+        setupborder(A(Edit, Down), UI::ComponentCondition::Readonly);
+        setupborder(A(Edit, Disabled), UI::ComponentCondition::Disabled);
+        
+        auto &boxed = temp.AddContainer(2, UI::ComponentCondition::Always)
+            .AddIndex(3) //clip
+            .AddIndex(4) //focus
+        ;
+        boxed.SetSize(100, 100, UI::Dimension::Percent);
+        boxed.SetBorderSize(Border.Width);
+        boxed.SetPadding(std::max(Border.Radius / 2, Focus.Spacing));
+        boxed.SetPositioning(UI::ComponentTemplate::Absolute);
+        
+        auto &clip = temp.AddContainer(3, UI::ComponentCondition::Always)
+            .AddIndex(5)
+        ;
+        clip.SetClip(true);
+        clip.SetSize(100, 100, UI::Dimension::Percent);
+        clip.SetTag(UI::ComponentTemplate::ViewPortTag);
+        clip.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        
+        //Contents
+        auto &content = temp.AddContainer(5, UI::ComponentCondition::Always)
+            .AddIndex(6) //text
+            .AddIndex(7) //selection
+            .AddIndex(8) //caret
+        ;
+        content.SetSize(100, 100, UI::Dimension::Percent);
+        content.SetPositioning(UI::ComponentTemplate::Absolute);
+        content.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        content.SetTag(UI::ComponentTemplate::ViewPortTag);
+        
+        
+        //Text
+        auto setuptext = [&](Graphics::RGBA color, UI::ComponentCondition condition) {
+            auto &txt = temp.AddTextholder(6, condition);
+            txt.SetRenderer(printer);
+            txt.SetAnchor(UI::Anchor::TopRight, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+            txt.SetDataEffect(UI::ComponentTemplate::Text);
+            txt.SetSizing(UI::ComponentTemplate::Automatic);
+            txt.SetPositioning(UI::ComponentTemplate::Absolute);
+            txt.SetTag(UI::ComponentTemplate::ContentsTag);
+        };
+        
+        setuptext(FgC(Regular), UI::ComponentCondition::Always);
+        setuptext(FgC(Hover), UI::ComponentCondition::Hover);
+        setuptext(FgC(Down), UI::ComponentCondition::Down);
+        setuptext(FgC(Disabled), UI::ComponentCondition::Disabled);
+        
+        {
+            auto &caret = temp.AddGraphics(8, UI::ComponentCondition::Focused);
+            caret.Content.SetAnimation(A(Caret));
+            caret.SetPosition(0, 0, UI::Dimension::Pixel);
+            caret.SetPositioning(caret.Absolute);
+            caret.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+            caret.SetTag(caret.CaretTag);
+            caret.SetSizing(caret.Fixed);
+            caret.SetSize(A(Caret).GetSize());
+        }
+        
+        {
+            auto &selection = temp.AddGraphics(7, UI::ComponentCondition::Focused);
+            selection.Content.SetAnimation(A(Rectangle, Selection, None, 0));
+            selection.SetPosition(0, 0, UI::Dimension::Pixel);
+            selection.SetPositioning(selection.Absolute);
+            selection.SetAnchor(UI::Anchor::None, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+            selection.SetTag(selection.SelectionTag);
+            selection.SetSize(0, objectheight);
+            selection.SetSizing(UI::ComponentTemplate::Fixed);
+        }
+        
+        auto &vst = operator[](Scrollbar_Vertical);
+        auto &hst = operator[](Scrollbar_Horizontal);
+        
+        temp.SetSize(temp.GetWidth() + vst.GetWidth() + spacing, temp.GetHeight());
+        
+        boxed
+            .AddIndex(9) //VScroll
+            .AddIndex(10) //HScroll
+        ;
+        
+        auto &vs = temp.AddPlaceholder(9, UI::ComponentCondition::VScroll);
+        vs.SetTemplate(vst);
+        vs.SetTag(UI::ComponentTemplate::VScrollTag);
+        vs.SetSize(vst.GetWidth(), {100, UI::Dimension::Percent});
+        vs.SetSizing(UI::ComponentTemplate::Fixed);
+        vs.SetAnchor(UI::Anchor::TopRight, UI::Anchor::TopRight, UI::Anchor::TopLeft);
+        vs.SetMargin(spacing, 0, 0, 0);
+        
+        auto &hs = temp.AddPlaceholder(10, UI::ComponentCondition::HScroll);
+        hs.SetPositioning(UI::ComponentTemplate::Absolute);
+        hs.SetTemplate(hst);
+        hs.SetTag(UI::ComponentTemplate::HScrollTag);
+        hs.SetSize({100, UI::Dimension::Percent}, hst.GetHeight());
+        hs.SetSizing(UI::ComponentTemplate::Fixed);
+        hs.SetAnchor(UI::Anchor::None, UI::Anchor::BottomCenter, UI::Anchor::BottomCenter);
+        hs.SetMargin(0, spacing, vst.GetWidth()+spacing, 0);
+        
+        
+        auto &contenthscroll = temp.AddContainer(5, UI::ComponentCondition::HScroll)
+            .AddIndex(6) //text
+            .AddIndex(7) //selection
+            .AddIndex(8) //caret
+        ;
+        contenthscroll.SetSize(100, 100, UI::Dimension::Percent);
+        contenthscroll.SetPositioning(UI::ComponentTemplate::Absolute);
+        contenthscroll.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        contenthscroll.SetTag(UI::ComponentTemplate::ViewPortTag);
+        contenthscroll.SetIndent(0, 0, 0, hst.GetHeight()+spacing);
+
+        
+        return temp;
+    }
+    
 }}

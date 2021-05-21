@@ -1314,7 +1314,7 @@ namespace Gorgon { namespace UI {
         
         //component not found
         if(!comp)
-            return {0, 0, 0, 0};
+            return {0, 0, size};
         
         //update needed?
         if(updaterequired)

@@ -3,10 +3,9 @@
 #include <Gorgon/UI/ComponentStack.h>
 #include <Gorgon/Widgets/Generator.h>
 #include <Gorgon/UI/Window.h>
-#include <Gorgon/Widgets/ColorPicker.h>
 #include <Gorgon/UI/Organizers/Flow.h>
 #include <Gorgon/Widgets/Window.h>
-#include <Gorgon/Widgets/DialogWindow.h>
+#include <Gorgon/Widgets/Textarea.h>
 
 std::string helptext =
     "Key list:\n"
@@ -20,19 +19,12 @@ int main() {
 
     auto &org = app.wind.CreateOrganizer<UI::Organizers::Flow>();
     
-    Widgets::ColorPicker wgt1;
-    wgt1.ChangedEvent.Register([](Graphics::RGBAf color) {
-        std::cout << color << std::endl;
-    });
-    wgt1.HueDensity = wgt1.High;
-    //wgt1.LCDensity  = wgt1.Medium;
-    //wgt1.Display    = wgt1.Hex;
-    wgt1.Alpha = true;
-    wgt1.PlaneSize.Height *= 1.2;
-    wgt1.Location.Y = 500;
+    Widgets::Textarea wgt1("Hello world\nI am a text area\n1\n2\n3\n4\n5");
     
     org 
         << wgt1 ;
+        
+    wgt1.SetText(wgt1.GetText() + "\nA lot more text is written in here...");
     
     
     app.wind.Run();

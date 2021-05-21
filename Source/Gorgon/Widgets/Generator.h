@@ -94,6 +94,9 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template ColorPicker() = 0;
         
+        
+        virtual UI::Template Textarea() = 0;
+        
     protected:
         
         virtual UI::Template &generate(Gorgon::Widgets::Registry::TemplateType type) override {
@@ -160,6 +163,8 @@ namespace Gorgon { namespace Widgets {
                 return *new UI::Template(ColorPlane());
             case ColorPicker_Regular:
                 return *new UI::Template(ColorPicker());
+            case Textarea_Regular:
+                return *new UI::Template(Textarea());
             default:
                 return *new UI::Template();
             }
@@ -619,8 +624,10 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template ColorPlane() override;
         
-        
         virtual UI::Template ColorPicker() override;
+        
+        
+        virtual UI::Template Textarea() override;
         
 
         virtual int GetSpacing() const override {

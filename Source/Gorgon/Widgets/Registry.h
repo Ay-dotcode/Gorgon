@@ -62,6 +62,7 @@ namespace Gorgon { namespace Widgets {
             ColorPlane_Regular,
             ColorPicker_Regular,
             
+            Textarea_Regular,
             
             ///Do not use this value
             Max 

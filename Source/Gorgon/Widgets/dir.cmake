@@ -53,4 +53,7 @@ SET(Local
 	
 	DialogWindow.h
 	DialogWindow.cpp
+	
+	Textarea.h
+	Textarea.cpp
 )

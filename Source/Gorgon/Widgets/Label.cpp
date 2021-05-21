@@ -7,7 +7,7 @@
 namespace Gorgon { namespace Widgets {
     
     
-    Label::Label(const UI::Template &temp, std::string text) :
+    Label::Label(const UI::Template &temp, const std::string &text) :
         ComponentStackWidget(temp),
         Text(this), Icon(this), text(text)
     {

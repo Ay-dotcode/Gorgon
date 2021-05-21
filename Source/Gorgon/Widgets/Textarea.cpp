@@ -1,27 +1,28 @@
-#include "Inputbox.h"
-
-#include "../Graphics/Font.h"
-#include "../WindowManager.h"
-#include "../UI.h"
+#include "Textarea.h"
+#include "Scrollbar.h"
 #include "../Window.h"
 
-namespace Gorgon { namespace Widgets { namespace internal {
+
+namespace Gorgon { namespace Widgets {
     
-    Inputbox_base::Inputbox_base(const UI::Template& temp) : 
-        UI::ComponentStackWidget(temp),
+    Textarea::Textarea(const UI::Template &temp, const std::string &value) :
+        ScrollingWidget(temp),
+        PropType(helper),
         AutoSelectAll(this),
-        BlockEnterKey(this),
         Readonly(this)
     {
-        stack.DisableTagWrap(UI::ComponentTemplate::ContentsTag);
-        stack.HandleMouse(Input::Mouse::Button::Left);
-            
+        overscroll = temp.GetSpacing() * 4;
+        stack.HandleMouse();
+        stack.SetOtherMouseEvent([this](UI::ComponentTemplate::Tag, Input::Mouse::EventType type, Geometry::Point location, float amount) {
+            return MouseScroll(type, location, amount);
+        });
+                    
         stack.SetMouseUpEvent([this](auto tag, auto location, auto button) { mouseup(tag, location, button); });
         stack.SetMouseMoveEvent([this](auto tag, auto location) { mousemove(tag, location); });
         stack.SetMouseDownEvent([this](auto tag, auto location, auto button) { 
             mousedown(tag, location, button); 
         });
-        
+
         stack.SetMouseOverEvent([this](auto) { 
             Gorgon::Window *toplevel = dynamic_cast<Gorgon::Window*>(&stack.GetTopLevel());
             if(!toplevel)
@@ -50,11 +51,10 @@ namespace Gorgon { namespace Widgets { namespace internal {
                     if(selstart.glyph != 0) {
                         moveselleft();
 
-                        display.erase(selstart.byte, String::UTF8Bytes(display[selstart.byte]));
+                        text.erase(selstart.byte, String::UTF8Bytes(text[selstart.byte]));
                         glyphcount--;
 
                         updatevalue();
-                        updatevaluedisplay(false);
                         updateselection();
 
                         dirty = true;
@@ -65,7 +65,6 @@ namespace Gorgon { namespace Widgets { namespace internal {
                     eraseselected();
 
                     updatevalue();
-                    updatevaluedisplay(false);
                     updateselection();
                 }
 
@@ -77,12 +76,10 @@ namespace Gorgon { namespace Widgets { namespace internal {
 
                 if(sellen.byte == 0) {
                     if(selstart.glyph < glyphcount) {
-                        display.erase(selstart.byte, String::UTF8Bytes(display[selstart.byte]));
+                        text.erase(selstart.byte, String::UTF8Bytes(text[selstart.byte]));
                         glyphcount--;
 
                         updatevalue();
-                        updatevaluedisplay(false);
-
                         updateselection();
 
                         dirty = true;
@@ -92,7 +89,6 @@ namespace Gorgon { namespace Widgets { namespace internal {
                     eraseselected();
 
                     updatevalue();
-                    updatevaluedisplay(false);
                     updateselection();
                 }
 
@@ -101,7 +97,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
 
             if(Input::Keyboard::CurrentModifier == Modifier::Shift) {
                 if(sellen.byte == allselected) {
-                    sellen.byte  = (int)display.size() - selstart.byte;
+                    sellen.byte  = (int)text.size() - selstart.byte;
                     sellen.glyph = glyphcount - selstart.glyph;
                 }
 
@@ -111,7 +107,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
                         sellen.byte--;
 
                         //if previous byte is unicode continuation point, go further before
-                        while((sellen.byte + selstart.byte) && (display[sellen.byte + selstart.byte] & 0b11000000) == 0b10000000)
+                        while((sellen.byte + selstart.byte) && (text[sellen.byte + selstart.byte] & 0b11000000) == 0b10000000)
                             sellen.byte--;
                     }
 
@@ -120,7 +116,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
                 else if(key == Input::Keyboard::Keycodes::Right) {
                     if(sellen.glyph + selstart.glyph < glyphcount) {
                         sellen.glyph++;
-                        sellen.byte += String::UTF8Bytes(display[selstart.byte + sellen.byte]);
+                        sellen.byte += String::UTF8Bytes(text[selstart.byte + sellen.byte]);
                     }
 
                     updateselection();
@@ -135,7 +131,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
                         selstart = {0, 0};
                     }
                     else if(key == Keycodes::Right) {
-                        selstart = {Length(), (int)display.size()};
+                        selstart = {Length(), (int)text.size()};
                     }
 
                     updateselection();
@@ -172,22 +168,11 @@ namespace Gorgon { namespace Widgets { namespace internal {
                 }
             }
         });
+        enablescroll(true, false);
+        SetText(value);
     }
-
-    bool Inputbox_base::Done() { 
-        updatevaluedisplay();
-        
-        if(autoselectall) {
-            SelectAll();
-        }
-        else {
-            updateselection();
-        }
-        
-        return true;
-    }
-
-    bool Inputbox_base::KeyPressed(Input::Key key, float state) {
+    
+    bool Textarea::KeyPressed(Input::Key key, float state) {
         namespace Keycodes = Input::Keyboard::Keycodes;
         using Input::Keyboard::Modifier;
 
@@ -209,7 +194,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
                     return true;
 
                 case Keycodes::End:
-                    selstart = {Length(), (int)display.size()};
+                    selstart = {Length(), (int)text.size()};
                     sellen = {0, 0};
                     updateselection();
 
@@ -217,14 +202,15 @@ namespace Gorgon { namespace Widgets { namespace internal {
 
                 case Keycodes::Enter:
                 case Keycodes::Numpad_Enter:
+                    //TODO enter
                     if(!readonly) {
                         Done();
                         
-                        changed();
+                        ChangedEvent(text);
                         dirty = false;
                     }
                     
-                    return blockenter;
+                    return true;
                 }
             }
             else if(Input::Keyboard::CurrentModifier == Modifier::Ctrl) {
@@ -258,7 +244,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
                     
                     int gcnt = String::UnicodeGlyphCount(s);
                     
-                    display.insert(selstart.byte, s);
+                    text.insert(selstart.byte, s);
                     
                     selstart.byte  += (int)s.size();
                     selstart.glyph += gcnt;
@@ -266,7 +252,6 @@ namespace Gorgon { namespace Widgets { namespace internal {
                     glyphcount += gcnt;
 
                     updatevalue();
-                    updatevaluedisplay(false);
                     updateselection();
                     
                     return true;
@@ -289,7 +274,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
         return relevant;
     }
 
-    bool Inputbox_base::CharacterPressed(Char c) {
+    bool Textarea::CharacterPressed(Char c) {
         if(c == Input::Keyboard::Keycodes::Enter) 
             return false;
 
@@ -302,10 +287,10 @@ namespace Gorgon { namespace Widgets { namespace internal {
             eraseselected();
         }
 
-        if(selstart.byte == display.size())
-            String::AppendUnicode(display, c);
+        if(selstart.byte == text.size())
+            String::AppendUnicode(text, c);
         else
-            String::InsertUnicode(display, selstart.byte, c);
+            String::InsertUnicode(text, selstart.byte, c);
 
         glyphcount++;
 
@@ -313,121 +298,36 @@ namespace Gorgon { namespace Widgets { namespace internal {
         selstart.byte += String::UnicodeUTF8Bytes(c);
 
         updatevalue();
-        updatevaluedisplay(false);
         updateselection();
 
         return true;
     }
 
-    void Inputbox_base::updateselection() {
-        //for font
-        int idx = stack.IndexOfTag(UI::ComponentTemplate::ContentsTag);
-
-        //no contents??!!
-        if(idx == -1)
-            return;
-
-        //contents is not a textholder
-        auto &temp = stack.GetTemplate(idx);
-        if(temp.GetType() != UI::ComponentType::Textholder)
-            return;
-
-        auto &textt = dynamic_cast<const UI::TextholderTemplate&>(temp);
-
-        //no renderer is set or renderer is not in valid state
-        if(!textt.IsReady())
-            return;
-
-        auto &renderer = textt.GetRenderer();
+    void Textarea::updateselection() {
+        updatecursor();
         
-        if(selstart.byte < 0) {
-            selstart  = {0, 0};
-        }
-        if(selstart.byte + sellen.byte < 0) {
-            sellen = selstart;
-        }
-        
-        if(selstart.byte > display.size()) { //equal is fine
-            selstart = {glyphcount, (int)display.size()};
-        }
-        if((std::size_t)selstart.byte + sellen.byte >= display.size()) {
-            sellen = {glyphcount - selstart.glyph, (int)display.size() - selstart.byte};
-        }
-
-        auto pos = selstart.glyph;
-
-        if(sellen.glyph == allselected)
-            pos = glyphcount;
-        else
-            pos += sellen.glyph;
-
-        Geometry::Point location;
-        auto textsize = renderer.GetSize(display);
-        
-        Geometry::Size targetsize;
-        int viewportidx = stack.IndexOfTag(UI::ComponentTemplate::ViewPortTag);
-        if(viewportidx == -1) {
-            targetsize = stack.TagBounds(UI::ComponentTemplate::ContentsTag).GetSize();
-        }
-        else {
-            targetsize = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize();
-        }
-        
-        
-        bool inarea = false;
-        if(targetsize.Width > textsize.Width) {
-            scrolloffset = 0;
-
-            stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, {scrolloffset, 0});
-            inarea = true;
-        }
-        
-        if(display == "") {
-            location = {0, 0};
-        }
-        else {
-            location = renderer.GetPosition(display, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), pos, false).TopLeft();
-        }
-        
-        //scroll
-        if(location.X < -scrolloffset) {
-            scrolloffset = -location.X;
+        if(sellen.byte != 0) {
+            auto s = selstart.byte;
+            auto e = s + sellen.byte;
             
-            stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, {scrolloffset, 0});
-        }
-        else if(location.X > targetsize.Width - scrolloffset) {
-            scrolloffset = targetsize.Width - location.X;
+            if(s > e)
+                std::swap(s, e);
             
-            stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, {scrolloffset, 0});
-        }
-
-        if(display == "") {
-            stack.RemoveTagLocation(UI::ComponentTemplate::CaretTag);
-        }
-        else {
-            stack.SetTagLocation(UI::ComponentTemplate::CaretTag, {location.X + scrolloffset, location.Y});
-        }
-        
-        if(stack.IndexOfTag(UI::ComponentTemplate::SelectionTag) != -1) {
-            if(sellen.byte == 0) {
-                stack.RemoveTagSize(UI::ComponentTemplate::SelectionTag);
-            }
-            else {
-                auto srclocation = renderer.GetPosition(display, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), selstart.glyph, false).BottomLeft();
-                
-                if(srclocation.X < location.X) {
-                    stack.SetTagLocation(UI::ComponentTemplate::SelectionTag, {srclocation.X + scrolloffset, 0});
-                    stack.SetTagSize(UI::ComponentTemplate::SelectionTag, {location.X - srclocation.X, 0});
-                }
-                else {
-                    stack.SetTagLocation(UI::ComponentTemplate::SelectionTag, {location.X + scrolloffset, 0});
-                    stack.SetTagSize(UI::ComponentTemplate::SelectionTag, {srclocation.X - location.X, 0});
-                }
-            }
+            std::string nw = text.substr(0, s);
+            String::AppendUnicode(nw, 0x86);
+            nw += text.substr(s, e-s);
+            String::AppendUnicode(nw, 0x87);
+            nw += text.substr(e);
+            stack.SetData(UI::ComponentTemplate::Text, nw);
+            selectionin = true;
+        }        
+        else if(selectionin) {
+            stack.SetData(UI::ComponentTemplate::Text, text);
+            selectionin = false;
         }
     }
 
-    void Inputbox_base::focused() {
+    void Textarea::focused() {
         UI::ComponentStackWidget::focused();
         
         if(autoselectall)
@@ -436,20 +336,20 @@ namespace Gorgon { namespace Widgets { namespace internal {
             updateselection();
     }
 
-    void Inputbox_base::focuslost() { 
+    void Textarea::focuslost() { 
         UI::ComponentStackWidget::focuslost();
         
         if(!readonly) {
             Done();
 
             if(dirty) {
-                changed();
+                ChangedEvent(text);
                 dirty = false;
             }
         }
     }
     
-    void Inputbox_base::mousedown(UI::ComponentTemplate::Tag, Geometry::Point location, Input::Mouse::Button button) { 
+    void Textarea::mousedown(UI::ComponentTemplate::Tag, Geometry::Point location, Input::Mouse::Button button) { 
         if(button != Input::Mouse::Button::Left) {
             return;
         }
@@ -480,13 +380,13 @@ namespace Gorgon { namespace Widgets { namespace internal {
         
         location -= bounds.TopLeft();
         
-        selstart.glyph = renderer.GetCharacterIndex(display, bounds.Width(), location, false);
+        selstart.glyph = renderer.GetCharacterIndex(text, bounds.Width(), location, false);
         selstart.byte  = 0;
         int g = selstart.glyph;
         pglyph = g;
         
         while(g) {
-            selstart.byte += String::UTF8Bytes(display[selstart.byte]);
+            selstart.byte += String::UTF8Bytes(text[selstart.byte]);
             g--;
         }
         
@@ -498,7 +398,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
             Focus();
     }
     
-    void Inputbox_base::mousemove(UI::ComponentTemplate::Tag, Geometry::Point location) { 
+    void Textarea::mousemove(UI::ComponentTemplate::Tag, Geometry::Point location) { 
         if(!ismousedown) {
             return;
         }
@@ -527,7 +427,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
         
         location -= bounds.TopLeft();
         
-        int glyph = renderer.GetCharacterIndex(display, bounds.Width(), location, false);
+        int glyph = renderer.GetCharacterIndex(text, bounds.Width(), location, false);
         
         if(glyph == pglyph)
             return;
@@ -537,7 +437,7 @@ namespace Gorgon { namespace Widgets { namespace internal {
         int byte  = 0;
         int g = glyph;
         while(g) {
-            byte += String::UTF8Bytes(display[byte]);
+            byte += String::UTF8Bytes(text[byte]);
             g--;
         }
         
@@ -547,16 +447,60 @@ namespace Gorgon { namespace Widgets { namespace internal {
         updateselection();
     }
     
-    void Inputbox_base::mouseup(UI::ComponentTemplate::Tag, Geometry::Point, Input::Mouse::Button button) { 
+    void Textarea::mouseup(UI::ComponentTemplate::Tag, Geometry::Point, Input::Mouse::Button button) { 
         if(button == Input::Mouse::Button::Left) {
             ismousedown = false;
         }
     }
 
 
+    void Textarea::set(const std::string &value) {
+        text = value;
+        glyphcount = String::UnicodeGlyphCount(text);
+        SelectNone();
+        updatevalue();
+    }
+    
+    void Textarea::updatevalue() {
+        stack.SetData(UI::ComponentTemplate::Text, text);
+        updatebars();
+    }
+
+    void Textarea::SetEnabled(bool value) {
+        ComponentStackWidget::SetEnabled(value);
+
+        if(readonly) {
+            if(!value) {
+                stack.RemoveCondition(UI::ComponentCondition::Readonly);
+            }
+            else {
+                stack.AddCondition(UI::ComponentCondition::Readonly);
+            }
+        }
+    }
 
 
-    void Inputbox_base::SetReadonly(const bool& value) {
+    void Textarea::moveselleft() {
+        if(selstart.glyph > 0) {
+            selstart.glyph--;
+            selstart.byte--;
+
+            //if previous byte is unicode continuation point, go further before
+            while(selstart.byte && (text[selstart.byte] & 0b11000000) == 0b10000000)
+                selstart.byte--;
+        }
+    }
+
+
+    void Textarea::moveselright() {
+        if(selstart.glyph < glyphcount) {
+            selstart.glyph++;
+            selstart.byte += String::UTF8Bytes(text[selstart.byte]);
+        }
+    }
+
+
+    void Textarea::SetReadonly(const bool& value) {
         if(value == readonly)
             return;
 
@@ -570,14 +514,25 @@ namespace Gorgon { namespace Widgets { namespace internal {
         }
     }
 
+    bool Textarea::Done() {
+        if(autoselectall)
+            SelectAll();
+        
+        if(!dirty)
+            return true;
 
-    void Inputbox_base::eraseselected() {
+        ChangedEvent(text);
+
+        return true;
+    }
+
+    void Textarea::eraseselected() {
         if(sellen.byte < 0) {
             dirty = true;
 
             int pos = selstart.byte + sellen.byte;
 
-            display.erase(pos, -sellen.byte);
+            text.erase(pos, -sellen.byte);
 
             glyphcount += sellen.glyph;
             selstart += sellen;
@@ -588,14 +543,73 @@ namespace Gorgon { namespace Widgets { namespace internal {
 
             int pos = selstart.byte;
 
-            display.erase(pos, sellen.byte);
+            text.erase(pos, sellen.byte);
 
             glyphcount -= sellen.glyph;
             sellen = {0, 0};
 
-            updatevaluedisplay(false);
             updateselection();
         }
     }
+    
+    void Textarea::updatecursor() {
+        //for font
+        int idx = stack.IndexOfTag(UI::ComponentTemplate::ContentsTag);
 
-} } }
+        //no contents??!!
+        if(idx == -1)
+            return;
+
+        //contents is not a textholder
+        auto &temp = stack.GetTemplate(idx);
+        if(temp.GetType() != UI::ComponentType::Textholder)
+            return;
+
+        auto &textt = dynamic_cast<const UI::TextholderTemplate&>(temp);
+
+        //no renderer is set or renderer is not in valid state
+        if(!textt.IsReady())
+            return;
+        
+        auto &renderer = textt.GetRenderer();
+        
+        if(selstart.byte < 0) {
+            selstart  = {0, 0};
+        }
+        if(selstart.byte + sellen.byte < 0) {
+            sellen = selstart;
+        }
+        
+        if(selstart.byte > text.size()) { //equal is fine
+            selstart = {glyphcount, (int)text.size()};
+        }
+        if((std::size_t)selstart.byte + sellen.byte >= text.size()) {
+            sellen = {glyphcount - selstart.glyph, (int)text.size() - selstart.byte};
+        }
+
+        auto pos = selstart.glyph;
+
+        if(sellen.glyph == allselected)
+            pos = glyphcount;
+        else
+            pos += sellen.glyph;
+        
+        
+        Geometry::Point location;
+        
+        if(text == "") {
+            location = {0, 0};
+        }
+        else {
+            location = renderer.GetPosition(text, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), pos, false).TopLeft() - scrolloffset;
+        }
+        
+        if(text == "") {
+            stack.RemoveTagLocation(UI::ComponentTemplate::CaretTag);
+        }
+        else {
+            stack.SetTagLocation(UI::ComponentTemplate::CaretTag, {location.X, location.Y});
+        }
+    }
+
+} }

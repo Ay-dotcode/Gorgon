@@ -22,7 +22,7 @@ namespace Gorgon { namespace Widgets {
     public:
         Label(const Label &) = delete;
         
-        explicit Label(std::string text = "", Registry::TemplateType type = Registry::Label_Regular) : 
+        explicit Label(const std::string &text = "", Registry::TemplateType type = Registry::Label_Regular) : 
             Label(Registry::Active()[type], text) 
         {
         }
@@ -33,7 +33,7 @@ namespace Gorgon { namespace Widgets {
         }
 
 
-        explicit Label(const UI::Template &temp, std::string text = "");
+        explicit Label(const UI::Template &temp, const std::string &text = "");
 
         Label(const UI::Template &temp, const char *text) : Label(temp, std::string(text)) { }
 

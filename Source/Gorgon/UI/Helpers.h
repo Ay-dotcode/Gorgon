@@ -20,6 +20,20 @@ namespace Gorgon { namespace UI {
 
             I_ *obj;
         };
+        
+        inline std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> mergegenerators(const std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> &l, const std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> &r) {
+            std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> gens;
+            
+            for(auto p : l) {
+                gens.insert(p);
+            }
+            
+            for(auto p : r) {
+                gens[p.first] = p.second;
+            }
+            
+            return gens;
+        }
     }
     
 } }

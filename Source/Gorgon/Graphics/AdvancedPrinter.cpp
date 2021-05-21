@@ -7,17 +7,19 @@ namespace Gorgon { namespace Graphics {
 
     std::vector<AdvancedPrinter::Region> AdvancedPrinter::AdvancedPrint(
         TextureTarget &target, const std::string &text, 
-        Geometry::Point location, int width, bool wrap
+        Geometry::Point location, int width, bool wrap, bool stopoffscreen
     ) const {
+        auto tsize = target.GetTargetSize();
+        
         return AdvancedOperation(
-            [&target](
+            [&target, tsize, stopoffscreen](
                 const GlyphRenderer &renderer, Glyph g,
                 const Geometry::Point &location, const RGBAf &color, int
             ) {
                 if(g != 0xffff)
                     renderer.Render(g, target, location, color);
 
-                return true;
+                return !stopoffscreen || location.Y < tsize.Height;
             },
             [&target](const Geometry::Bounds &bounds, const RGBAf &bg, int thickness, RGBAf border) {
                 target.Draw(bounds, bg);
@@ -194,24 +196,24 @@ namespace Gorgon { namespace Graphics {
             [index, &cur](
                 const GlyphRenderer &renderer, Glyph g,
                 const Geometry::Point &location, const RGBAf &, long ind
-                ) {
-            if(index == ind) {
-                cur.Move(location);
-                cur.Resize(renderer.GetSize(g));
+            ) {
+                if(index == ind) {
+                    cur.Move(location);
+                    cur.Resize(renderer.GetSize(g));
 
-                return false;
-            }
+                    return false;
+                }
 
-            return true;
-        },
+                return true;
+            },
             [](const Geometry::Bounds &, const RGBAf &, int, RGBAf) {
-        },
+            },
             [](int, int, int, int, RGBAf) {
-        },
+            },
             [](Byte, const Geometry::Bounds &, const RGBAf &, bool) {
-        },
+            },
             text, {0,0}, 0, false
-            );
+        );
 
         return cur;
     }
@@ -224,24 +226,24 @@ namespace Gorgon { namespace Graphics {
             [index, &cur](
                 const GlyphRenderer &renderer, Glyph g,
                 const Geometry::Point &location, const RGBAf &, long ind
-                ) {
-            if(index == ind) {
-                cur.Move(location + renderer.GetOffset(g) + Geometry::Point(0, (int)renderer.GetBaseLine()));
-                cur.Resize(renderer.GetSize(g));
+            ) {
+                if(index == ind) {
+                    cur.Move(location + Geometry::Point(renderer.GetOffset(g).X, 0));
+                    cur.Resize(renderer.GetSize(g).Width, renderer.GetHeight());
 
-                return false;
-            }
+                    return false;
+                }
 
-            return true;
-        },
+                return true;
+            },
             [](const Geometry::Bounds &, const RGBAf &, int, RGBAf) {
-        },
+            },
             [](int, int, int, int, RGBAf) {
-        },
+            },
             [](Byte, const Geometry::Bounds &, const RGBAf &, bool) {
-        },
+            },
             text, {0,0}, w, wrap
-            );
+        );
 
         return cur;
     }
