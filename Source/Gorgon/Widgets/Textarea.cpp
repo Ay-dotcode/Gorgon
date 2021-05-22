@@ -34,8 +34,12 @@ namespace Gorgon { namespace Widgets {
         
         repeater.Register(Input::Keyboard::Keycodes::Left);
         repeater.Register(Input::Keyboard::Keycodes::Right);
+        repeater.Register(Input::Keyboard::Keycodes::Down);
+        repeater.Register(Input::Keyboard::Keycodes::Up);
         repeater.Register(Input::Keyboard::Keycodes::Backspace);
         repeater.Register(Input::Keyboard::Keycodes::Delete);
+        repeater.Register(Input::Keyboard::Keycodes::Enter);
+        repeater.Register(Input::Keyboard::Keycodes::Numpad_Enter);
 
         repeater.SetRepeatOnPress(true);
 
@@ -94,6 +98,11 @@ namespace Gorgon { namespace Widgets {
 
                 return;
             }
+            
+            if(key == Keycodes::Enter || key == Keycodes::Numpad_Enter) {
+                CharacterPressed('\n');    
+                return ;
+            }
 
             if(Input::Keyboard::CurrentModifier == Modifier::Shift) {
                 if(sellen.byte == allselected) {
@@ -151,6 +160,20 @@ namespace Gorgon { namespace Widgets {
                             moveselright();
                         }
                     }
+                    if(key == Keycodes::Up) {
+                        if(sellen.byte < 0) {
+                            selstart += sellen;
+
+                            moveselup();
+                        }
+                    }
+                    else if(key == Keycodes::Down) {
+                        if(sellen.byte > 0) {
+                            selstart += sellen;
+
+                            moveseldown();
+                        }
+                    }
 
                     sellen = {0, 0};
 
@@ -163,6 +186,14 @@ namespace Gorgon { namespace Widgets {
                     }
                     else if(key == Keycodes::Right) {
                         moveselright();
+                        updateselection();
+                    }
+                    else if(key == Keycodes::Up) {
+                        moveselup();
+                        updateselection();
+                    }
+                    else if(key == Keycodes::Down) {
+                        moveseldown();
                         updateselection();
                     }
                 }
@@ -185,32 +216,32 @@ namespace Gorgon { namespace Widgets {
                 return false;
             
             if(Input::Keyboard::CurrentModifier == Modifier::None) {
+                
                 switch(key) {
-                case Keycodes::Home:
-                    selstart = {0, 0};
+                case Keycodes::Home: {
+                    auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
+                    selstart.glyph = printer->GetCharacterIndex(
+                        text, bounds.GetSize().Width, {-1, cursorlocation.Y+1}, true
+                    );
+                    selstart.byte = getbyteoffset(selstart.glyph);
                     sellen = {0, 0};
                     updateselection();
 
                     return true;
+                }
 
-                case Keycodes::End:
-                    selstart = {Length(), (int)text.size()};
+                case Keycodes::End: {
+                    auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
+                    selstart.glyph = printer->GetCharacterIndex(
+                        text, bounds.GetSize().Width, 
+                        {std::numeric_limits<int>::max(), cursorlocation.Y+1}, true
+                    );
+                    selstart.byte = getbyteoffset(selstart.glyph);
                     sellen = {0, 0};
                     updateselection();
 
                     return true;
-
-                case Keycodes::Enter:
-                case Keycodes::Numpad_Enter:
-                    //TODO enter
-                    if(!readonly) {
-                        Done();
-                        
-                        ChangedEvent(text);
-                        dirty = false;
-                    }
-                    
-                    return true;
+                }
                 }
             }
             else if(Input::Keyboard::CurrentModifier == Modifier::Ctrl) {
@@ -357,39 +388,16 @@ namespace Gorgon { namespace Widgets {
         
         ismousedown = true;
         
-        //for font
-        int idx = stack.IndexOfTag(UI::ComponentTemplate::ContentsTag);
-
-        //no contents??!!
-        if(idx == -1)
-            return;
-
-        //contents is not a textholder
-        auto &temp = stack.GetTemplate(idx);
-        if(temp.GetType() != UI::ComponentType::Textholder)
-            return;
-
-        auto &textt = dynamic_cast<const UI::TextholderTemplate&>(temp);
-
-        //no renderer is set or renderer is not in valid state
-        if(!textt.IsReady())
-            return;
-
-        auto &renderer = textt.GetRenderer();
+        checkprinter();
         
-        auto bounds = stack.BoundsOf(idx);
+        auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
         
         location -= bounds.TopLeft();
         
-        selstart.glyph = renderer.GetCharacterIndex(text, bounds.Width(), location, true);
+        selstart.glyph = printer->GetCharacterIndex(text, bounds.Width(), location, true);
         selstart.byte  = 0;
-        int g = selstart.glyph;
-        pglyph = g;
-        
-        while(g) {
-            selstart.byte += String::UTF8Bytes(text[selstart.byte]);
-            g--;
-        }
+        pglyph = selstart.glyph;
+        selstart.byte = getbyteoffset(selstart.glyph);
         
         sellen = {0,0};
         
@@ -404,43 +412,20 @@ namespace Gorgon { namespace Widgets {
             return;
         }
         
-        //for font
-        int idx = stack.IndexOfTag(UI::ComponentTemplate::ContentsTag);
-
-        //no contents??!!
-        if(idx == -1)
-            return;
-
-        //contents is not a textholder
-        auto &temp = stack.GetTemplate(idx);
-        if(temp.GetType() != UI::ComponentType::Textholder)
-            return;
-
-        auto &textt = dynamic_cast<const UI::TextholderTemplate&>(temp);
-
-        //no renderer is set or renderer is not in valid state
-        if(!textt.IsReady())
-            return;
-
-        auto &renderer = textt.GetRenderer();
+        checkprinter();
         
-        auto bounds = stack.BoundsOf(idx);
+        auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
         
         location -= bounds.TopLeft();
         
-        int glyph = renderer.GetCharacterIndex(text, bounds.Width(), location, true);
+        int glyph = printer->GetCharacterIndex(text, bounds.Width(), location, true);
         
         if(glyph == pglyph)
             return;
         
         pglyph = glyph;
         
-        int byte  = 0;
-        int g = glyph;
-        while(g) {
-            byte += String::UTF8Bytes(text[byte]);
-            g--;
-        }
+        int byte  = getbyteoffset(glyph);
         
         sellen.glyph = glyph - selstart.glyph;
         sellen.byte  = byte  - selstart.byte;
@@ -500,6 +485,27 @@ namespace Gorgon { namespace Widgets {
         }
     }
 
+    void Textarea::moveselup() {
+        auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
+        selstart.glyph = printer->GetCharacterIndex(
+            text, bounds.GetSize().Width, {cursorlocation.X, cursorlocation.Y+1-printer->GetHeight()}, true
+        );
+        selstart.byte = getbyteoffset(selstart.glyph);
+        sellen = {0, 0};
+        updateselection();
+    }
+
+    void Textarea::moveseldown() {
+        auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
+        selstart.glyph = printer->GetCharacterIndex(
+            text, bounds.GetSize().Width, {cursorlocation.X, cursorlocation.Y+1+printer->GetHeight()}, true
+        );
+        selstart.byte = getbyteoffset(selstart.glyph);
+        sellen = {0, 0};
+        updateselection();
+    }
+
+
 
     void Textarea::SetReadonly(const bool& value) {
         if(value == readonly)
@@ -554,25 +560,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     void Textarea::updatecursor() {
-        //for font
-        int idx = stack.IndexOfTag(UI::ComponentTemplate::ContentsTag);
-
-        //no contents??!!
-        if(idx == -1)
-            return;
-
-        //contents is not a textholder
-        auto &temp = stack.GetTemplate(idx);
-        if(temp.GetType() != UI::ComponentType::Textholder)
-            return;
-
-        auto &textt = dynamic_cast<const UI::TextholderTemplate&>(temp);
-
-        //no renderer is set or renderer is not in valid state
-        if(!textt.IsReady())
-            return;
-        
-        auto &renderer = textt.GetRenderer();
+        checkprinter();
         
         if(selstart.byte < 0) {
             selstart  = {0, 0};
@@ -595,22 +583,53 @@ namespace Gorgon { namespace Widgets {
         else
             pos += sellen.glyph;
         
-        
-        Geometry::Point location;
-        
         if(text == "") {
-            location = {0, 0};
+            cursorlocation = {0, 0};
         }
         else {
-            location = renderer.GetPosition(text, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), pos, true).TopLeft() - scrolloffset;
+            cursorlocation = printer->GetPosition(text, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), pos, true).TopLeft() - scrolloffset;
         }
         
         if(text == "") {
             stack.RemoveTagLocation(UI::ComponentTemplate::CaretTag);
         }
         else {
-            stack.SetTagLocation(UI::ComponentTemplate::CaretTag, {location.X, location.Y});
+            stack.SetTagLocation(UI::ComponentTemplate::CaretTag, {cursorlocation.X, cursorlocation.Y});
         }
+    }
+    
+    void Textarea::checkprinter() {
+        if(!printer) {
+            //for font
+            int idx = stack.IndexOfTag(UI::ComponentTemplate::ContentsTag);
+
+            //no contents??!!
+            if(idx == -1)
+                return;
+
+            //contents is not a textholder
+            auto &temp = stack.GetTemplate(idx);
+            if(temp.GetType() != UI::ComponentType::Textholder)
+                return;
+
+            auto &textt = dynamic_cast<const UI::TextholderTemplate&>(temp);
+
+            //no renderer is set or renderer is not in valid state
+            if(!textt.IsReady())
+                return;
+            
+            printer = &textt.GetRenderer();
+        }
+    }
+    
+    int Textarea::getbyteoffset(int g) {
+        int byte  = 0;
+        while(g) {
+            byte += String::UTF8Bytes(text[byte]);
+            g--;
+        }
+        
+        return byte;
     }
 
 } }

@@ -261,6 +261,10 @@ namespace Gorgon { namespace Widgets {
         void moveselleft();
 
         void moveselright();
+        
+        void moveselup();
+        
+        void moveseldown();
 
         void eraseselected();
         
@@ -279,6 +283,8 @@ namespace Gorgon { namespace Widgets {
         void updatecursor();
         
         virtual void moved() override { updatecursor(); }
+        
+        void checkprinter();
 
         Graphics::PointerStack::Token pointertoken;
         
@@ -296,8 +302,13 @@ namespace Gorgon { namespace Widgets {
         
         glyphbyte selstart = {0, 0};
         glyphbyte sellen   = {0, 0};
+        int getbyteoffset(int glyph);
         int glyphcount = 0;
         int pglyph = 0;
+        
+        
+        Geometry::Point cursorlocation = {0, 0};
+        const Graphics::TextPrinter *printer = nullptr;
         
         bool selectionin = false;
         
