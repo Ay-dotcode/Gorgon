@@ -24,7 +24,7 @@ int main() {
     org 
         << wgt1 ;
         
-    wgt1.SetText(wgt1.GetText() + "\nA lot more text is written in here...");
+    wgt1.SetText(wgt1.GetText() + "A lot more text is written in here...");
     
     
     app.wind.Run();

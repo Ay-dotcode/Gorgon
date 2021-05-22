@@ -10,7 +10,12 @@
 namespace Gorgon { namespace Graphics {
 
     template<class GF_, class BF_, class LF_, class IF_>
-    std::vector<AdvancedPrinter::Region> AdvancedPrinter::AdvancedOperation(GF_ glyphr, BF_ boxr, LF_ liner, IF_ imgr, const std::string &text, Geometry::Point location, int width, bool wrap) const {
+    std::vector<AdvancedPrinter::Region> AdvancedPrinter::AdvancedOperation(
+        GF_ glyphr, BF_ boxr, LF_ liner, IF_ imgr, const std::string &text, Geometry::Point &location, 
+        int width, bool wrap
+    ) const {
+        
+        bool done = false;
 
         struct linesettings {
             bool descenders = false;
@@ -800,22 +805,35 @@ namespace Gorgon { namespace Graphics {
             //render
             for(int i = 0; i<end; i++) {
                 Translate(acc[i].location, xoff, maxb-acc[i].baseline+extralineoffset);
-                if(acc[i].g != '\t' && (!internal::isspace(acc[i].g) || renderer->Exists(acc[i].g)))
-                    if(!
-                        glyphr(
-                            *acc[i].renderer, acc[i].g,
-                            acc[i].location + acc[i].offset,
-                            acc[i].color, acc[i].index
-                        )
-                        ) {
-                        acc.clear();
-                        return false;
-                    }
+                auto g = acc[i].g;
+                
+                if(g == '\t' || (internal::isspace(g) && !renderer->Exists(g))) {
+                    g = 0xffff;
+                }
+                    
+                if(!glyphr(
+                    *acc[i].renderer, g,
+                    acc[i].location + acc[i].offset,
+                    acc[i].color, acc[i].index
+                )) {
+                    acc.clear();
+                    return false;
+                }
             }
 
             if(nl == 0) {
                 //clean spaces at the start of the next line
                 for(; end<acc.size(); end++) {
+                    //send the index with do not draw glyph
+                    if(!glyphr(
+                        *acc[end].renderer, 0xffff,
+                        acc[end].location + acc[end].offset,
+                        acc[end].color, acc[end].index
+                    )) {
+                        acc.clear();
+                        return false;
+                    }
+                    
                     if(!internal::isspace(acc[end].g) && acc[end].g != '\t')
                         break;
                     else {
@@ -1173,8 +1191,17 @@ namespace Gorgon { namespace Graphics {
 
             // **** Determine glyph size
             if(internal::isnewline(g)) {
-                if(!doline(g))
+                auto newlineloc = cur;
+                
+                if(!doline(g)) {
+                    done = true;
                     break;
+                }
+                
+                if(!glyphr(*renderer, 0xffff, newlineloc, 0.f, curindex-1)) {
+                    done = true;
+                    break;
+                }
 
                 continue;
             }
@@ -1351,8 +1378,10 @@ namespace Gorgon { namespace Graphics {
                 auto blosave = baselineoffset;
                 baselineoffset = baselineoffsetatlastspace;
 
-                if(!doline(0))
+                if(!doline(0)) {
+                    done = true;
                     break;
+                }
 
                 baselineoffset = blosave;
                 if(baselineoffset == 0 && blosave != 0) {
@@ -1367,9 +1396,16 @@ namespace Gorgon { namespace Graphics {
 
         }
 
-        if(!acc.empty())
-            doline(-1);
-
+        location = cur;
+        if(!acc.empty()) {
+            if(!doline(-1)) {
+                done = true;
+            }
+        }
+        
+        if(!done)
+            glyphr(*renderer, 0xffff, location, 0.f, std::numeric_limits<long>::max());
+        
         return regions;
     }
     

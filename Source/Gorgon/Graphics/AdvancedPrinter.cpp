@@ -7,14 +7,14 @@ namespace Gorgon { namespace Graphics {
 
     std::vector<AdvancedPrinter::Region> AdvancedPrinter::AdvancedPrint(
         TextureTarget &target, const std::string &text, 
-        Geometry::Point location, int width, bool wrap, bool stopoffscreen
+        Geometry::Point &location, int width, bool wrap, bool stopoffscreen
     ) const {
         auto tsize = target.GetTargetSize();
         
         return AdvancedOperation(
             [&target, tsize, stopoffscreen](
                 const GlyphRenderer &renderer, Glyph g,
-                const Geometry::Point &location, const RGBAf &color, int
+                const Geometry::Point &location, const RGBAf &color, long
             ) {
                 if(g != 0xffff)
                     renderer.Render(g, target, location, color);
@@ -44,11 +44,12 @@ namespace Gorgon { namespace Graphics {
     
     Geometry::Size AdvancedPrinter::GetSize(const std::string &text) const {
         Geometry::Size sz = {0, 0};
-
+        Geometry::Point l = {0, 0};
+        
         AdvancedOperation(
             [&sz](
                 const GlyphRenderer &renderer, Glyph g,
-                const Geometry::Point &location, const RGBAf &, int
+                const Geometry::Point &location, const RGBAf &, long
             ) {
                 if(g != 0xffff) {
                     auto p = location + (Geometry::Point)renderer.GetSize(g) + renderer.GetOffset(g);
@@ -69,7 +70,7 @@ namespace Gorgon { namespace Graphics {
             },
             [](Byte, const Geometry::Bounds &, const RGBAf &, bool) {
             },
-            text, {0,0}, 0, false
+            text, l, 0, false
         );
 
         return sz;
@@ -77,11 +78,12 @@ namespace Gorgon { namespace Graphics {
     
     Geometry::Size AdvancedPrinter::GetSize(const std::string &text, int width) const {
         Geometry::Size sz = {0, 0};
+        Geometry::Point l = {0, 0};
 
         AdvancedOperation(
             [&sz](
                 const GlyphRenderer &renderer, Glyph g,
-                const Geometry::Point &location, const RGBAf &, int
+                const Geometry::Point &location, const RGBAf &, long
                 ) {
             if(g != 0xffff) {
                 auto p = location + (Geometry::Point)renderer.GetSize(g) + renderer.GetOffset(g);
@@ -101,7 +103,7 @@ namespace Gorgon { namespace Graphics {
         },
             [](Byte, const Geometry::Bounds &, const RGBAf &, bool) {
         },
-            text, {0,0}, width, true
+            text, l, width, true
             );
 
         return sz;
@@ -109,95 +111,112 @@ namespace Gorgon { namespace Graphics {
     
     int AdvancedPrinter::GetCharacterIndex(const std::string &text, Geometry::Point location) const {
         int maxdoney = -1;
-        int nearestind = -1;
+        int nearestind = 0;
         bool done = false;
+        bool xfound = false; //used to determine if the point is outside the width
+        
+        Geometry::Point l = {0, 0};
 
         AdvancedOperation(
             [&](
                 const GlyphRenderer &renderer, Glyph g,
-                const Geometry::Point &l, const RGBAf &, int index
-                ) {
-            if(done)
-                return false;
+                const Geometry::Point &l, const RGBAf &, long index
+            ) {
+                if(done || index == std::numeric_limits<long>::max())
+                    return false;
 
-            if(l.Y >= location.Y) {
-                done = true;
-                return false;
-            }
-
-            if(maxdoney < l.Y) {
-                if(l.X >= location.X+renderer.GetCursorAdvance(g)/2) {
-                    maxdoney = l.Y;
+                if(l.Y >= location.Y) {
+                    done = true;
+                    return false;
                 }
-                else {
+
+                if(maxdoney < l.Y) {
+                    if(l.X >= location.X-renderer.GetCursorAdvance(g)/2) {
+                        maxdoney = l.Y;
+                        xfound = true;
+                    }
+                    else {
+                        xfound = false;
+                    }
                     nearestind = index;
                 }
-            }
 
-            return true;
-        },
+                return true;
+            },
             [](const Geometry::Bounds &, const RGBAf &, int, RGBAf) {
-        },
+            },
             [](int, int, int, int, RGBAf) {
-        },
+            },
             [](Byte, const Geometry::Bounds &, const RGBAf &, bool) {
-        },
-            text, {0,0}, 0, false
-            );
+            },
+            text, l, 0, false
+        );
+        
+        if(!done && !xfound)
+            return nearestind+1;
 
         return nearestind;
     }
     
     int AdvancedPrinter::GetCharacterIndex(const std::string &text, int w, Geometry::Point location, bool wrap) const {
         int maxdoney = -1;
-        int nearestind = -1;
+        int nearestind = 0;
         bool done = false;
+        bool xfound = false; //used to determine if the point is outside the width
+        
+        Geometry::Point l = {0, 0};
 
         AdvancedOperation(
             [&](
                 const GlyphRenderer &renderer, Glyph g,
-                const Geometry::Point &l, const RGBAf &, int index
-                ) {
-            if(done)
-                return false;
+                const Geometry::Point &l, const RGBAf &, long index
+            ) {
+                if(done || index == std::numeric_limits<long>::max())
+                    return false;
 
-            if(l.Y >= location.Y) {
-                done = true;
-                return false;
-            }
-
-            if(maxdoney < l.Y) {
-                if(l.X >= location.X+renderer.GetCursorAdvance(g)/2) {
-                    maxdoney = l.Y;
+                if(l.Y >= location.Y) {
+                    done = true;
+                    return false;
                 }
-                else {
+
+                if(maxdoney < l.Y) {
+                    if(l.X >= location.X-renderer.GetCursorAdvance(g)/2) {
+                        maxdoney = l.Y;
+                        xfound = true;
+                    }
+                    else {
+                        xfound = false;
+                    }
                     nearestind = index;
                 }
-            }
 
-            return true;
-        },
+                return true;
+            },
             [](const Geometry::Bounds &, const RGBAf &, int, RGBAf) {
-        },
+            },
             [](int, int, int, int, RGBAf) {
-        },
+            },
             [](Byte, const Geometry::Bounds &, const RGBAf &, bool) {
-        },
-            text, {0,0}, w, wrap
-            );
+            },
+            text, l, w, wrap
+        );
+        
+        if(!done && !xfound)
+            return nearestind+1;
 
         return nearestind;
     }
 
     Geometry::Rectangle AdvancedPrinter::GetPosition(const std::string &text, int index) const {
         Geometry::Rectangle cur = {std::numeric_limits<int>::min(), std::numeric_limits<int>::min(), 0, 0};
+        Geometry::Point location = {0, 0};
 
         AdvancedOperation(
             [index, &cur](
                 const GlyphRenderer &renderer, Glyph g,
                 const Geometry::Point &location, const RGBAf &, long ind
             ) {
-                if(index == ind) {
+                if(index <= ind) {
                     cur.Move(location);
                     cur.Resize(renderer.GetSize(g));
 
@@ -212,22 +231,26 @@ namespace Gorgon { namespace Graphics {
             },
             [](Byte, const Geometry::Bounds &, const RGBAf &, bool) {
             },
-            text, {0,0}, 0, false
+            text, location, 0, false
         );
+        
+        if(cur.X == std::numeric_limits<int>::min()) {
+            cur.Move(location);
+        }
 
         return cur;
     }
 
     Geometry::Rectangle AdvancedPrinter::GetPosition(const std::string &text, int w, int index, bool wrap) const {
-
         Geometry::Rectangle cur = {std::numeric_limits<int>::min(), std::numeric_limits<int>::min(), 0, 0};
-
+        Geometry::Point location = {0, 0};
+        
         AdvancedOperation(
             [index, &cur](
                 const GlyphRenderer &renderer, Glyph g,
                 const Geometry::Point &location, const RGBAf &, long ind
             ) {
-                if(index == ind) {
+                if(index <= ind) {
                     cur.Move(location + Geometry::Point(renderer.GetOffset(g).X, 0));
                     cur.Resize(renderer.GetSize(g).Width, renderer.GetHeight());
 
@@ -242,8 +265,12 @@ namespace Gorgon { namespace Graphics {
             },
             [](Byte, const Geometry::Bounds &, const RGBAf &, bool) {
             },
-            text, {0,0}, w, wrap
+            text, location, w, wrap
         );
+        
+        if(cur.X == std::numeric_limits<int>::min()) {
+            cur.Move(location);
+        }
 
         return cur;
     }

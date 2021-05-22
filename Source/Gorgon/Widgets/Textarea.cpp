@@ -273,7 +273,7 @@ namespace Gorgon { namespace Widgets {
 
         return relevant;
     }
-
+    
     bool Textarea::CharacterPressed(Char c) {
         if(c == Input::Keyboard::Keycodes::Enter) 
             return false;
@@ -304,6 +304,7 @@ namespace Gorgon { namespace Widgets {
     }
 
     void Textarea::updateselection() {
+        std::cout << selstart.glyph << " : " << sellen.glyph << std::endl;
         updatecursor();
         
         if(sellen.byte != 0) {
@@ -380,7 +381,7 @@ namespace Gorgon { namespace Widgets {
         
         location -= bounds.TopLeft();
         
-        selstart.glyph = renderer.GetCharacterIndex(text, bounds.Width(), location, false);
+        selstart.glyph = renderer.GetCharacterIndex(text, bounds.Width(), location, true);
         selstart.byte  = 0;
         int g = selstart.glyph;
         pglyph = g;
@@ -427,7 +428,7 @@ namespace Gorgon { namespace Widgets {
         
         location -= bounds.TopLeft();
         
-        int glyph = renderer.GetCharacterIndex(text, bounds.Width(), location, false);
+        int glyph = renderer.GetCharacterIndex(text, bounds.Width(), location, true);
         
         if(glyph == pglyph)
             return;
@@ -601,7 +602,7 @@ namespace Gorgon { namespace Widgets {
             location = {0, 0};
         }
         else {
-            location = renderer.GetPosition(text, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), pos, false).TopLeft() - scrolloffset;
+            location = renderer.GetPosition(text, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), pos, true).TopLeft() - scrolloffset;
         }
         
         if(text == "") {

@@ -163,7 +163,7 @@ namespace Gorgon { namespace Graphics {
         template<class GF_, class BF_, class LF_, class IF_>
         std::vector<Region> AdvancedOperation(
             GF_ glyphr, BF_ boxr, LF_ liner, IF_ imgr,
-            const std::string &text, Geometry::Point location, int width, bool wrap = true
+            const std::string &text, Geometry::Point &location, int width, bool wrap = true
         ) const;
         
         /// Prints the given text. Unlike regular print function, this function returns the 
@@ -172,7 +172,19 @@ namespace Gorgon { namespace Graphics {
         /// vertical offset.
         std::vector<Region> AdvancedPrint(
             TextureTarget &target, const std::string &text, 
-            Geometry::Point location, int width, bool wrap = true, bool stopoffscreen = true
+            const Geometry::Point &location, int width, bool wrap = true, bool stopoffscreen = true
+        ) const {
+            auto l = location;
+            return AdvancedPrint(target, text, l, width, wrap, stopoffscreen);
+        }
+        
+        /// Prints the given text. Unlike regular print function, this function returns the 
+        /// collected regions and has more options. If stopoffscreen is true, once the printing goes
+        /// out of screen, it will be stopped. This may cause issues in systems that use negative 
+        /// vertical offset.
+        std::vector<Region> AdvancedPrint(
+            TextureTarget &target, const std::string &text, 
+            Geometry::Point &location, int width, bool wrap = true, bool stopoffscreen = true
         ) const;
         
         bool IsReady() const override {
