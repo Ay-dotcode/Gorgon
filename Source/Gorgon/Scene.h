@@ -44,11 +44,7 @@ namespace Gorgon {
         explicit Scene(SceneID id = NoSceneID, bool mouseinput = true);
 
         /// Sets the parent layer so that the scene can be activated.
-        explicit Scene(SceneManager &parent, SceneID id = NoSceneID, bool mouseinput = true) : 
-            Scene(id, mouseinput) 
-        {
-            this->parent = &parent;
-        }
+        explicit Scene(SceneManager &parent, SceneID id = NoSceneID, bool mouseinput = true);
 
         /// Whether this scene requires keyboard input.
         virtual bool RequiresKeyInput() const = 0;
