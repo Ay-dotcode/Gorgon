@@ -593,7 +593,7 @@ namespace Gorgon {
         }
         
         inline int UnicodeGlyphCount(const std::string &s) {
-            int i = 0;
+            size_t i = 0;
             int count = 0;
             while(i < s.length()) {
                 count++;

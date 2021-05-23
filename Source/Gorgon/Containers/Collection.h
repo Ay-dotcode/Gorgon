@@ -398,7 +398,7 @@ namespace Gorgon {
                 else if(before==list.size()) {
                     T_ *t=list[index];
 
-                    for(long i=index; i<list.size()-1; i++)
+                    for(long i=index; i<(long)list.size()-1; i++)
                         list[i]=list[i+1];
 
                     list[list.size()-1]=t;

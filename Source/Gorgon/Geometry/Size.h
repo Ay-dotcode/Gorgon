@@ -273,6 +273,12 @@ namespace Gorgon { namespace Geometry {
 		return operator*(size, factor);
 	}
 
+	/// Multiplies a size with a scalar, effectively resizing it.
+	template<class T_, class O_>
+	basic_Size<T_> operator *(const basic_Size<T_> &size, const basic_Size<O_> &other) {
+		return{T_(size.Width*other.Width), T_(size.Height*other.Height)};
+	}
+
 	/// Divides a size with a scalar, effectively resizing it.
 	template<class T_>
 	basic_Size<T_> operator /(const basic_Size<T_> &size, double factor) {
@@ -283,6 +289,12 @@ namespace Gorgon { namespace Geometry {
 	template<class T_>
 	basic_Size<T_> operator /(double factor, const basic_Size<T_> &size) {
 		return operator/(size, factor);
+	}
+
+	/// Multiplies a size with a scalar, effectively resizing it.
+	template<class T_, class O_>
+	basic_Size<T_> operator /(const basic_Size<T_> &size, const basic_Size<O_> &other) {
+		return{T_(size.Width/other.Width), T_(size.Height/other.Height)};
 	}
 
 	/// Writes the given size object to the stream. Width and Height components of

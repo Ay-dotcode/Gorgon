@@ -230,7 +230,7 @@ namespace Gorgon { namespace Graphics {
 
         /// Compares two colors
         bool operator==(const RGBA &other) const {
-            return (int)(*this) == (uint32_t)other;
+            return (uint32_t)(*this) == (uint32_t)other;
         }
 
         /// Compares two colors
