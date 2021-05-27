@@ -317,7 +317,7 @@ namespace Gorgon { namespace Graphics {
 		/// Provides access to the given component in x and y coordinates. This
 		/// function returns 0 if the given coordinates are out of bounds. This
 		/// function works slower than the () operator.
-		Byte Get(const Geometry::Point &p, Byte def, unsigned component = 0) const {
+		Byte Get(const Geometry::Point &p, Byte def, unsigned component) const {
 			ASSERT(data, "Data is not set");
 			return data->Get(p, def, component);
 		}

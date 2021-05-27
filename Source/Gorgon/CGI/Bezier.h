@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../Geometry/Point.h"
+#include "../Geometry/PointList.h"
 #include "../Geometry/Size.h"
 
 namespace Gorgon { namespace CGI {
@@ -102,7 +103,8 @@ namespace Gorgon { namespace CGI {
                 auto seg = segments.back();
                 Geometry::Line<Point_> l(seg.P0, seg.P3);
                 
-                Float d = l.Distance(seg.P1) + l.Distance(seg.P2);
+                
+                Float d = (seg.P1 == seg.P2) ? 0 : l.Distance(seg.P1) + l.Distance(seg.P2);
                 
                 segments.pop_back();
                 
