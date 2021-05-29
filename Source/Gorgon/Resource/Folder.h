@@ -104,6 +104,15 @@ namespace Gorgon { namespace Resource {
 			return namedlist.count(name)>0;
 		}
 		
+		/// Sets if the name map will be created on load. Defaults to false
+		void SetUseNameMap(bool value) {
+			reallyloadnames = value;
+		}
+        
+		bool GetUseNameMap() const {
+			return reallyloadnames;
+		}
+		
 		/// @}
 		
 		
