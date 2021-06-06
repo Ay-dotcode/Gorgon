@@ -1326,7 +1326,7 @@ namespace Gorgon { namespace UI {
 
     Geometry::Bounds ComponentStack::BoundsOf(int ind) {
         //component does not exist
-        if(stacksizes[ind] == 0)
+        if(ind == -1 || stacksizes[ind] == 0)
             return {0, 0, 0, 0};
         
         //update needed?
@@ -1347,6 +1347,10 @@ namespace Gorgon { namespace UI {
             
             //get the parent
             cur = &get(cur->parent);
+            
+            if(auto lyr = storage.at(&cur->GetTemplate())->layer) {
+                off += lyr->GetLocation();
+            }
 
             //accumulate the parent offset
             off += cur->location;

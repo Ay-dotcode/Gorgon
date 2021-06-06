@@ -28,7 +28,6 @@ namespace Gorgon { namespace Graphics {
     class AdvancedPrinter : public TextPrinter {
     public:
         
-
         class Region {
         public:
             Region() = default;

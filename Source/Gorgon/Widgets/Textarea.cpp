@@ -130,6 +130,26 @@ namespace Gorgon { namespace Widgets {
 
                     updateselection();
                 }
+                else if(key == Input::Keyboard::Keycodes::Up) {
+                    glyphbyte selprev = selstart;
+                    sellen = {0, 0};
+                    
+                    moveselup();
+                    sellen = {selstart.glyph - selprev.glyph, selstart.byte - selprev.byte};
+                    selstart = selprev;
+
+                    updateselection();
+                }
+                else if(key == Input::Keyboard::Keycodes::Down) {
+                    glyphbyte selprev = selstart;
+                    sellen = {0, 0};
+                    
+                    moveseldown();
+                    sellen = {selstart.glyph - selprev.glyph, selstart.byte - selprev.byte};
+                    selstart = selprev;
+
+                    updateselection();
+                }
             }
             else if(Input::Keyboard::CurrentModifier == Modifier::None) {
 
@@ -390,7 +410,7 @@ namespace Gorgon { namespace Widgets {
         
         checkprinter();
         
-        auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
+        auto bounds = stack.BoundsOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag));
         
         location -= bounds.TopLeft();
         
@@ -414,7 +434,7 @@ namespace Gorgon { namespace Widgets {
         
         checkprinter();
         
-        auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
+        auto bounds = stack.BoundsOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag));
         
         location -= bounds.TopLeft();
         
@@ -438,7 +458,6 @@ namespace Gorgon { namespace Widgets {
             ismousedown = false;
         }
     }
-
 
     void Textarea::set(const std::string &value) {
         text = value;
@@ -465,7 +484,6 @@ namespace Gorgon { namespace Widgets {
         }
     }
 
-
     void Textarea::moveselleft() {
         if(selstart.glyph > 0) {
             selstart.glyph--;
@@ -477,7 +495,6 @@ namespace Gorgon { namespace Widgets {
         }
     }
 
-
     void Textarea::moveselright() {
         if(selstart.glyph < glyphcount) {
             selstart.glyph++;
@@ -488,7 +505,7 @@ namespace Gorgon { namespace Widgets {
     void Textarea::moveselup() {
         auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
         selstart.glyph = printer->GetCharacterIndex(
-            text, bounds.GetSize().Width, {cursorlocation.X, cursorlocation.Y+1-printer->GetHeight()}, true
+            text, bounds.GetSize().Width, Geometry::Point{cursorlocation.X, cursorlocation.Y-1} + ScrollOffset(), true
         );
         selstart.byte = getbyteoffset(selstart.glyph);
         sellen = {0, 0};
@@ -498,7 +515,7 @@ namespace Gorgon { namespace Widgets {
     void Textarea::moveseldown() {
         auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
         selstart.glyph = printer->GetCharacterIndex(
-            text, bounds.GetSize().Width, {cursorlocation.X, cursorlocation.Y+1+printer->GetHeight()}, true
+            text, bounds.GetSize().Width, Geometry::Point{cursorlocation.X, cursorlocation.Y+1+printer->GetHeight()} + ScrollOffset(), true
         );
         selstart.byte = getbyteoffset(selstart.glyph);
         sellen = {0, 0};

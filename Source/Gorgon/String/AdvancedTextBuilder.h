@@ -534,7 +534,7 @@ namespace Gorgon { namespace String {
             CSI(Graphics::internal::CSI_DISPLAY_IMAGE);
             Index(index);
             
-            int margintype = margins == Geometry::Margin{0} ? 0 : ((margins.Left == margins.Top == margins.Right == margins.Bottom) ? 1 : 2);
+            int margintype = margins == Geometry::Margin{0} ? 0 : ((margins.Left == margins.Top) && (margins.Right == margins.Bottom) && (margins.Top == margins.Bottom) ? 1 : 2);
             
             if(offset == Geometry::Point(0, 0)) {
                 Index(side | (margintype << 4)); //side and maybe margin
@@ -571,7 +571,7 @@ namespace Gorgon { namespace String {
             CSI(Graphics::internal::CSI_DISPLAY_IMAGE);
             Index(index);
             
-            int margintype = margins == Geometry::Margin{0} ? 0 : ((margins.Left == margins.Top == margins.Right == margins.Bottom) ? 1 : 2);
+            int margintype = margins == Geometry::Margin{0} ? 0 : ((margins.Left == margins.Top) && (margins.Right == margins.Bottom) && (margins.Top == margins.Bottom) ? 1 : 2);
             
             if(offset == Geometry::Point(0, 0)) {
                 Index(side | 0b1000 | (margintype << 4)); //side, size and maybe margin

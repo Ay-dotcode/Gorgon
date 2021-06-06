@@ -110,6 +110,7 @@ namespace Gorgon { namespace Widgets {
         stack.SetClickEvent([this](auto, auto point, auto btn) {
             if(btn == Input::Mouse::Button::Left) {
                 auto &regions = stack.GetRegions();
+                point -= stack.BoundsOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag)).TopLeft();
                 
                 for(auto &r : regions) {
                     if(IsInside(r.Bounds, point)) {
