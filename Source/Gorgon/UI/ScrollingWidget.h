@@ -61,10 +61,13 @@ namespace Gorgon { namespace UI {
         int GetMaximumScrollDuration() const {
             return maxscrolltime;
         }
-
         
     protected:
+
+        /// Ensures given region is visible
+        void ensurevisible(const Geometry::Bounds &region);
         
+        /// Enables/disables scrolling
         void enablescroll(bool vertical, bool horizontal);
 
         /// Scrolls the contents of the panel so that the given location will

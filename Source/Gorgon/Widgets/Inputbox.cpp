@@ -226,6 +226,21 @@ namespace Gorgon { namespace Widgets { namespace internal {
                     
                     return blockenter;
                 }
+            }            
+            else if(Input::Keyboard::CurrentModifier == Modifier::Shift) {
+                switch(key) {
+                case Keycodes::Home:
+                    sellen = {-selstart.glyph, -selstart.byte};
+                    updateselection();
+
+                    return true;
+
+                case Keycodes::End:
+                    sellen = {Length()-selstart.glyph, (int)display.size()-selstart.byte};
+                    updateselection();
+
+                    return true;
+                }
             }
             else if(Input::Keyboard::CurrentModifier == Modifier::Ctrl) {
                 switch(key) {
@@ -454,6 +469,9 @@ namespace Gorgon { namespace Widgets { namespace internal {
             return;
         }
         
+        if(allowfocus())
+            Focus();
+        
         ismousedown = true;
         
         //for font
@@ -493,9 +511,6 @@ namespace Gorgon { namespace Widgets { namespace internal {
         sellen = {0,0};
         
         updateselection();
-        
-        if(allowfocus())
-            Focus();
     }
     
     void Inputbox_base::mousemove(UI::ComponentTemplate::Tag, Geometry::Point location) { 

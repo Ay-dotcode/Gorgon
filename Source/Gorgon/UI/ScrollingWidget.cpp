@@ -155,7 +155,7 @@ namespace Gorgon { namespace UI {
         auto vscroller = dynamic_cast<Widgets::VScrollbar*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
         
         if(vscroller != nullptr) {
-            vscroller->Maximum = b.Height();
+            vscroller->Maximum = b.Height() + overscroll;
             vscroller->Range   = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).Height();
             *vscroller         = target.Y;
         }
@@ -163,7 +163,7 @@ namespace Gorgon { namespace UI {
         auto hscroller = dynamic_cast<Widgets::HScrollbar*>(stack.GetWidget(UI::ComponentTemplate::HScrollTag));
         
         if(hscroller != nullptr) {
-            hscroller->Maximum = b.Width();
+            hscroller->Maximum = b.Width() + overscroll;
             hscroller->Range   = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).Width();
             *hscroller         = target.X;
         }
@@ -171,6 +171,8 @@ namespace Gorgon { namespace UI {
     
     void ScrollingWidget::SetOverscroll(int value) {
         overscroll = value;
+        
+        updatebars();
         
         if(scrollclipped)
             scrollto(scrolloffset);
@@ -286,6 +288,41 @@ namespace Gorgon { namespace UI {
         
         vscroll = vertical;
         hscroll = horizontal;
+    }
+
+
+    void ScrollingWidget::ensurevisible(const Geometry::Bounds& wb) {
+        auto cont = stack.TagBounds(UI::ComponentTemplate::ViewPortTag);
+        Geometry::Bounds cb = {target, cont.GetSize()};
+
+        bool doscroll = false;
+        auto scrollto = target;
+
+        //TODO minimal scrolling
+        if(hscroll) {
+            if(cb.Left > wb.Left) {
+                scrollto.X = wb.Left;
+                doscroll = true;
+            }
+            else if(cb.Right < wb.Right) {
+                scrollto.X = target.X + (wb.Right - cb.Right) + overscroll;
+                doscroll = true;
+            }
+        }
+
+        if(vscroll) {
+            if(cb.Top > wb.Top) {
+                scrollto.Y = wb.Top;
+                doscroll = true;
+            }
+            else if(cb.Bottom < wb.Bottom) {
+                scrollto.Y = target.Y + (wb.Bottom - cb.Bottom) + overscroll;
+                doscroll = true;
+            }
+        }
+
+        if(doscroll)
+            this->scrollto(scrollto);
     }
 
 } }

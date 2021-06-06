@@ -218,25 +218,7 @@ namespace Gorgon { namespace Widgets {
         
         auto wb = widget.GetBounds();
         
-        Geometry::Bounds cb = {target, GetInteriorSize()};
-        
-        bool doscroll = false;
-        auto scrollto = ScrollOffset();
-        
-        //TODO minimal scrolling
-        if(hscroll && (cb.Left > wb.Left || cb.Right < wb.Right)) {
-            scrollto.X = wb.Left;
-            doscroll = true;
-        }
-        
-        if(vscroll && (cb.Top > wb.Top || cb.Bottom < wb.Bottom)) {
-            scrollto.Y = wb.Top;
-            doscroll = true;
-        }
-        
-        if(doscroll)
-            ScrollTo(scrollto);
-        
+        ensurevisible(wb);
         return true;
     }
     

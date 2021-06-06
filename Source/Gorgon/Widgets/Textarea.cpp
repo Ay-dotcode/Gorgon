@@ -16,7 +16,7 @@ namespace Gorgon { namespace Widgets {
         stack.SetOtherMouseEvent([this](UI::ComponentTemplate::Tag, Input::Mouse::EventType type, Geometry::Point location, float amount) {
             return MouseScroll(type, location, amount);
         });
-                    
+        
         stack.SetMouseUpEvent([this](auto tag, auto location, auto button) { mouseup(tag, location, button); });
         stack.SetMouseMoveEvent([this](auto tag, auto location) { mousemove(tag, location); });
         stack.SetMouseDownEvent([this](auto tag, auto location, auto button) { 
@@ -235,16 +235,23 @@ namespace Gorgon { namespace Widgets {
             if(key == Keycodes::Tab || key == Keycodes::Escape)
                 return false;
             
-            if(Input::Keyboard::CurrentModifier == Modifier::None) {
+            if(Input::Keyboard::CurrentModifier == Modifier::None || Input::Keyboard::CurrentModifier == Modifier::Shift) {
                 
                 switch(key) {
                 case Keycodes::Home: {
                     auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
-                    selstart.glyph = printer->GetCharacterIndex(
-                        text, bounds.GetSize().Width, {-1, cursorlocation.Y+1}, true
+                    int glyph = printer->GetCharacterIndex(
+                        text, bounds.GetSize().Width, {-1, cursorlocation.Y+1}, wrap
                     );
-                    selstart.byte = getbyteoffset(selstart.glyph);
-                    sellen = {0, 0};
+                    int byte = getbyteoffset(glyph);
+                    
+                    if(Input::Keyboard::CurrentModifier == Modifier::None) {
+                        selstart = {glyph, byte};
+                        sellen = {0, 0};
+                    }
+                    else {
+                        sellen = {glyph - selstart.glyph, byte - selstart.byte};
+                    }
                     updateselection();
 
                     return true;
@@ -252,16 +259,28 @@ namespace Gorgon { namespace Widgets {
 
                 case Keycodes::End: {
                     auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
-                    selstart.glyph = printer->GetCharacterIndex(
+                    int glyph = printer->GetCharacterIndex(
                         text, bounds.GetSize().Width, 
-                        {std::numeric_limits<int>::max(), cursorlocation.Y+1}, true
+                        {std::numeric_limits<int>::max(), cursorlocation.Y+1}, wrap
                     );
-                    selstart.byte = getbyteoffset(selstart.glyph);
-                    sellen = {0, 0};
+                    int byte = getbyteoffset(glyph);
+                    
+                    if(Input::Keyboard::CurrentModifier == Modifier::None) {
+                        selstart = {glyph, byte};
+                        sellen = {0, 0};
+                    }
+                    else {
+                        sellen = {glyph - selstart.glyph, byte - selstart.byte};
+                    }
+                    
                     updateselection();
 
                     return true;
                 }
+                
+                case Keycodes::Enter:
+                    CharacterPressed('\n');
+                    return true;
                 }
             }
             else if(Input::Keyboard::CurrentModifier == Modifier::Ctrl) {
@@ -406,6 +425,17 @@ namespace Gorgon { namespace Widgets {
             return;
         }
         
+        if(autoselectall) {
+            autoselectall = false;
+            
+            if(allowfocus())
+                Focus();
+            
+            autoselectall = true;
+        }
+        else if(allowfocus())
+            Focus();
+        
         ismousedown = true;
         
         checkprinter();
@@ -414,7 +444,7 @@ namespace Gorgon { namespace Widgets {
         
         location -= bounds.TopLeft();
         
-        selstart.glyph = printer->GetCharacterIndex(text, bounds.Width(), location, true);
+        selstart.glyph = printer->GetCharacterIndex(text, bounds.Width(), location, wrap);
         selstart.byte  = 0;
         pglyph = selstart.glyph;
         selstart.byte = getbyteoffset(selstart.glyph);
@@ -422,9 +452,6 @@ namespace Gorgon { namespace Widgets {
         sellen = {0,0};
         
         updateselection();
-        
-        if(allowfocus())
-            Focus();
     }
     
     void Textarea::mousemove(UI::ComponentTemplate::Tag, Geometry::Point location) { 
@@ -438,7 +465,7 @@ namespace Gorgon { namespace Widgets {
         
         location -= bounds.TopLeft();
         
-        int glyph = printer->GetCharacterIndex(text, bounds.Width(), location, true);
+        int glyph = printer->GetCharacterIndex(text, bounds.Width(), location, wrap);
         
         if(glyph == pglyph)
             return;
@@ -505,7 +532,7 @@ namespace Gorgon { namespace Widgets {
     void Textarea::moveselup() {
         auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
         selstart.glyph = printer->GetCharacterIndex(
-            text, bounds.GetSize().Width, Geometry::Point{cursorlocation.X, cursorlocation.Y-1} + ScrollOffset(), true
+            text, bounds.GetSize().Width, Geometry::Point{cursorlocation.X, cursorlocation.Y-1} + ScrollOffset(), wrap
         );
         selstart.byte = getbyteoffset(selstart.glyph);
         sellen = {0, 0};
@@ -515,7 +542,7 @@ namespace Gorgon { namespace Widgets {
     void Textarea::moveseldown() {
         auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
         selstart.glyph = printer->GetCharacterIndex(
-            text, bounds.GetSize().Width, Geometry::Point{cursorlocation.X, cursorlocation.Y+1+printer->GetHeight()} + ScrollOffset(), true
+            text, bounds.GetSize().Width, Geometry::Point{cursorlocation.X, cursorlocation.Y+1+printer->GetHeight()} + ScrollOffset(), wrap
         );
         selstart.byte = getbyteoffset(selstart.glyph);
         sellen = {0, 0};
@@ -600,11 +627,12 @@ namespace Gorgon { namespace Widgets {
         else
             pos += sellen.glyph;
         
+        auto pcurloc = cursorlocation;
         if(text == "") {
             cursorlocation = {0, 0};
         }
         else {
-            cursorlocation = printer->GetPosition(text, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), pos, true).TopLeft() - scrolloffset;
+            cursorlocation = printer->GetPosition(text, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), pos, wrap).TopLeft() - scrolloffset;
         }
         
         if(text == "") {
@@ -612,6 +640,11 @@ namespace Gorgon { namespace Widgets {
         }
         else {
             stack.SetTagLocation(UI::ComponentTemplate::CaretTag, {cursorlocation.X, cursorlocation.Y});
+        }
+        
+        if(pos != curcursorpos) {
+            curcursorpos = pos;
+            ensurevisible({cursorlocation + scrolloffset, 0, printer->GetHeight()});
         }
     }
     

@@ -305,6 +305,7 @@ namespace Gorgon { namespace Widgets {
         int getbyteoffset(int glyph);
         int glyphcount = 0;
         int pglyph = 0;
+        int curcursorpos = 0;
         
         
         Geometry::Point cursorlocation = {0, 0};
