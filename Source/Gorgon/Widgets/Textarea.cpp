@@ -9,6 +9,7 @@ namespace Gorgon { namespace Widgets {
         ScrollingWidget(temp),
         PropType(helper),
         AutoSelectAll(this),
+        WordWrap(this),
         Readonly(this)
     {
         overscroll = temp.GetSpacing() * 4;
@@ -36,6 +37,8 @@ namespace Gorgon { namespace Widgets {
         repeater.Register(Input::Keyboard::Keycodes::Right);
         repeater.Register(Input::Keyboard::Keycodes::Down);
         repeater.Register(Input::Keyboard::Keycodes::Up);
+        repeater.Register(Input::Keyboard::Keycodes::PageDown);
+        repeater.Register(Input::Keyboard::Keycodes::PageUp);
         repeater.Register(Input::Keyboard::Keycodes::Backspace);
         repeater.Register(Input::Keyboard::Keycodes::Delete);
         repeater.Register(Input::Keyboard::Keycodes::Enter);
@@ -150,6 +153,26 @@ namespace Gorgon { namespace Widgets {
 
                     updateselection();
                 }
+                else if(key == Input::Keyboard::Keycodes::PageUp) {
+                    glyphbyte selprev = selstart;
+                    sellen = {0, 0};
+                    
+                    moveselpageup();
+                    sellen = {selstart.glyph - selprev.glyph, selstart.byte - selprev.byte};
+                    selstart = selprev;
+
+                    updateselection();
+                }
+                else if(key == Input::Keyboard::Keycodes::PageDown) {
+                    glyphbyte selprev = selstart;
+                    sellen = {0, 0};
+                    
+                    moveselpagedown();
+                    sellen = {selstart.glyph - selprev.glyph, selstart.byte - selprev.byte};
+                    selstart = selprev;
+
+                    updateselection();
+                }
             }
             else if(Input::Keyboard::CurrentModifier == Modifier::None) {
 
@@ -214,6 +237,14 @@ namespace Gorgon { namespace Widgets {
                     }
                     else if(key == Keycodes::Down) {
                         moveseldown();
+                        updateselection();
+                    }
+                    else if(key == Keycodes::PageUp) {
+                        moveselpageup();
+                        updateselection();
+                    }
+                    else if(key == Keycodes::PageDown) {
+                        moveselpagedown();
                         updateselection();
                     }
                 }
@@ -288,6 +319,16 @@ namespace Gorgon { namespace Widgets {
                 case Keycodes::A:
                     SelectAll();
 
+                    return true;
+                    
+                case Keycodes::Home: 
+                    selstart = {0, 0};
+                    updateselection();
+                    return true;
+                    
+                case Keycodes::End:
+                    selstart = selstart = {Length(), (int)text.size()};
+                    updateselection();
                     return true;
 
                 case Keycodes::C: {
@@ -377,7 +418,7 @@ namespace Gorgon { namespace Widgets {
         std::cout << selstart.glyph << " : " << sellen.glyph << std::endl;
         updatecursor();
         
-        if(sellen.byte != 0) {
+        if(sellen.byte != 0 && IsFocused()) {
             auto s = selstart.byte;
             auto e = s + sellen.byte;
             
@@ -391,7 +432,7 @@ namespace Gorgon { namespace Widgets {
             nw += text.substr(e);
             stack.SetData(UI::ComponentTemplate::Text, nw);
             selectionin = true;
-        }        
+        }
         else if(selectionin) {
             stack.SetData(UI::ComponentTemplate::Text, text);
             selectionin = false;
@@ -418,6 +459,8 @@ namespace Gorgon { namespace Widgets {
                 dirty = false;
             }
         }
+        
+        updateselection();
     }
     
     void Textarea::mousedown(UI::ComponentTemplate::Tag, Geometry::Point location, Input::Mouse::Button button) { 
@@ -532,7 +575,7 @@ namespace Gorgon { namespace Widgets {
     void Textarea::moveselup() {
         auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
         selstart.glyph = printer->GetCharacterIndex(
-            text, bounds.GetSize().Width, Geometry::Point{cursorlocation.X, cursorlocation.Y-1} + ScrollOffset(), wrap
+            text, bounds.GetSize().Width, Geometry::Point{cursorlocation.X, cursorlocation.Y-1}, wrap
         );
         selstart.byte = getbyteoffset(selstart.glyph);
         sellen = {0, 0};
@@ -542,7 +585,7 @@ namespace Gorgon { namespace Widgets {
     void Textarea::moveseldown() {
         auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
         selstart.glyph = printer->GetCharacterIndex(
-            text, bounds.GetSize().Width, Geometry::Point{cursorlocation.X, cursorlocation.Y+1+printer->GetHeight()} + ScrollOffset(), wrap
+            text, bounds.GetSize().Width, Geometry::Point{cursorlocation.X, cursorlocation.Y+1+printer->GetHeight()}, wrap
         );
         selstart.byte = getbyteoffset(selstart.glyph);
         sellen = {0, 0};
@@ -550,6 +593,27 @@ namespace Gorgon { namespace Widgets {
     }
 
 
+    void Textarea::moveselpageup() {
+        auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
+        auto mysize = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize();
+        selstart.glyph = printer->GetCharacterIndex(
+            text, bounds.GetSize().Width, Geometry::Point{cursorlocation.X, cursorlocation.Y+1+printer->GetHeight()-mysize.Height}, wrap
+        );
+        selstart.byte = getbyteoffset(selstart.glyph);
+        sellen = {0, 0};
+        updateselection();
+    }
+
+    void Textarea::moveselpagedown() {
+        auto bounds = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
+        auto mysize = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize();
+        selstart.glyph = printer->GetCharacterIndex(
+            text, bounds.GetSize().Width, Geometry::Point{cursorlocation.X, cursorlocation.Y-printer->GetHeight()+mysize.Height}, wrap
+        );
+        selstart.byte = getbyteoffset(selstart.glyph);
+        sellen = {0, 0};
+        updateselection();
+    }
 
     void Textarea::SetReadonly(const bool& value) {
         if(value == readonly)
@@ -566,9 +630,6 @@ namespace Gorgon { namespace Widgets {
     }
 
     bool Textarea::Done() {
-        if(autoselectall)
-            SelectAll();
-        
         if(!dirty)
             return true;
 
@@ -627,24 +688,23 @@ namespace Gorgon { namespace Widgets {
         else
             pos += sellen.glyph;
         
-        auto pcurloc = cursorlocation;
         if(text == "") {
             cursorlocation = {0, 0};
         }
         else {
-            cursorlocation = printer->GetPosition(text, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), pos, wrap).TopLeft() - scrolloffset;
+            cursorlocation = printer->GetPosition(text, stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width(), pos, wrap).TopLeft();
         }
         
         if(text == "") {
             stack.RemoveTagLocation(UI::ComponentTemplate::CaretTag);
         }
         else {
-            stack.SetTagLocation(UI::ComponentTemplate::CaretTag, {cursorlocation.X, cursorlocation.Y});
+            stack.SetTagLocation(UI::ComponentTemplate::CaretTag, Geometry::Point{cursorlocation.X, cursorlocation.Y} - scrolloffset);
         }
         
         if(pos != curcursorpos) {
             curcursorpos = pos;
-            ensurevisible({cursorlocation + scrolloffset, 0, printer->GetHeight()});
+            ensurevisible({cursorlocation, 0, printer->GetHeight()});
         }
     }
     
@@ -680,6 +740,26 @@ namespace Gorgon { namespace Widgets {
         }
         
         return byte;
+    }
+
+
+    void Textarea::SetWordWrap(const bool &value) {
+        if(wrap == value)
+            return;
+        
+        wrap = value;
+        if(wrap) {
+            stack.EnableTagWrap(UI::ComponentTemplate::ContentsTag);
+        }
+        else
+            stack.DisableTagWrap(UI::ComponentTemplate::ContentsTag);
+        
+        enablescroll(true, !wrap);
+        updateselection();
+        updatebars();
+        
+        if(wrap)
+            ScrollTo(0, ScrollOffset().Y);
     }
 
 } }

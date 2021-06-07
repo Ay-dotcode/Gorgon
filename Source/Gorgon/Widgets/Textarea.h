@@ -219,12 +219,25 @@ namespace Gorgon { namespace Widgets {
             return readonly;
         }
         
+        void SetWordWrap(const bool &value);
+        
+        
+        bool GetWordWrap() const {
+            return wrap;
+        }
+        
 
         /// Controls if the inputbox will be auto selected recieving focus
         /// or right after the user is done with editing. Default is false.
         BooleanProperty< Textarea, bool, 
                         &Textarea::GetAutoSelectAll, 
                         &Textarea::SetAutoSelectAll> AutoSelectAll;
+        
+        /// Controls if the text in the text area will be wrapped. Disabling wordwrap will enable
+        /// horizontal scroll
+        BooleanProperty< Textarea, bool, 
+                        &Textarea::GetWordWrap, 
+                        &Textarea::SetWordWrap> WordWrap;
         
         /// When set to true, the value contained in the inputbox cannot be edited
         /// by the user. Default is false.
@@ -265,6 +278,10 @@ namespace Gorgon { namespace Widgets {
         void moveselup();
         
         void moveseldown();
+        
+        void moveselpageup();
+        
+        void moveselpagedown();
 
         void eraseselected();
         
