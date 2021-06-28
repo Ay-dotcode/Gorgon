@@ -153,10 +153,10 @@ namespace Gorgon { namespace Utils {
 
 		/// Opens and initializer the logger using the given filename. The file
 		/// will automatically be closed when CleanUp is performed.
-		void InitializeFile(const std::string &filename) {
+		void InitializeFile(const std::string &filename, bool append = false) {
 #ifndef NO_LOGGING
 			CleanUp();
-			stream=new std::ofstream(filename);
+			stream=new std::ofstream(filename, append ? std::ios::app : std::ios::out);
 			owner=true;
 #endif
 		}
