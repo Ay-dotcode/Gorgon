@@ -124,7 +124,7 @@ namespace Gorgon { namespace Widgets {
             case Label_Info:
                 return *new UI::Template(InfoLabel());
             case Label_Icon:
-                return *new UI::Template(InfoLabel());
+                return *new UI::Template(IconLabel());
             case Checkbox_Regular:
                 return *new UI::Template(Checkbox());
             case Checkbox_Button:

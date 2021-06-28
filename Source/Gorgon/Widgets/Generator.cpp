@@ -1761,48 +1761,41 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::IconLabel() {
-        Geometry::Size defsize = {GetUnitSize(1), unitsize};
+        Geometry::Size defsize = {GetUnitSize(1), GetUnitSize(1)};
         
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
         temp.SetSize(defsize);
         
         temp.AddContainer(0, UI::ComponentCondition::Always)
-            .AddIndex(3) //Border
-            .AddIndex(4) //Content
+            .AddIndex(2) //Content
         ;
         
-        auto &bg = temp.AddContainer(3, UI::ComponentCondition::Always);
-        bg.Background.SetAnimation(A(Rectangle, Info));
-        bg.SetPositioning(UI::ComponentTemplate::Absolute);
         
-        
-        auto &cont = temp.AddContainer(4, UI::ComponentCondition::Always, UI::ComponentCondition::Disabled)
+        auto &cont = temp.AddContainer(2, UI::ComponentCondition::Always, UI::ComponentCondition::Disabled)
             .AddIndex(1) //icon
-            .AddIndex(2) //text
         ;
         cont.SetValueModification(UI::ComponentTemplate::ModifyAlpha, UI::ComponentTemplate::UseTransition);
         cont.SetValueRange(0, 1, 0.5);
         cont.SetReversible(true);
-        cont.SetClip(true);
-        cont.SetPadding(spacing);
-        cont.SetBorderSize(Border.Width + Border.Radius/2);
+        //cont.SetClip(true);
+        //cont.Background.SetAnimation(A(Background, Regular));
         cont.SetPositioning(UI::ComponentTemplate::Absolute);
         
         auto &txt = temp.AddTextholder(1, UI::ComponentCondition::Always);
-        txt.SetRenderer(infoprinter);
+        txt.SetRenderer(printer);
         txt.SetColor(Graphics::Color::White);
         txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         txt.SetDataEffect(UI::ComponentTemplate::Text);
         txt.SetSize(100, 100, UI::Dimension::Percent);
         txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
         
-        auto &icon = temp.AddPlaceholder(1, UI::ComponentCondition::Icon1IsSet);
+        auto &icon = temp.AddGraphics(1, UI::ComponentCondition::Icon1IsSet);
         icon.SetDataEffect(UI::ComponentTemplate::Icon);
-        icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
+        icon.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
         icon.SetSize(100, 100, UI::Dimension::Percent);
+        icon.SetFillArea(false);
         icon.SetSizing(UI::ComponentTemplate::ShrinkOnly);
-        icon.SetMargin(0, 0, 0, 0);
         
         
         return temp;

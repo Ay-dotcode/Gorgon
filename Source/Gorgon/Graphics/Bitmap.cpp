@@ -147,7 +147,7 @@ namespace Gorgon { namespace Graphics {
 		return data->ImportBMP(file);
 	}
 
-	bool Bitmap::Export(const std::string &filename) {
+	bool Bitmap::Export(const std::string &filename) const {
 		auto dotpos = filename.find_last_of('.');
 		if(dotpos!=-1) {
 			auto ext = filename.substr(dotpos+1);
@@ -166,7 +166,7 @@ namespace Gorgon { namespace Graphics {
 		return false;
 	}
 
-	bool Bitmap::ExportPNG(const std::string &filename) {
+	bool Bitmap::ExportPNG(const std::string &filename) const {
 		ASSERT(data, "Image data does not exists");
 
 		if(GetMode()!=Graphics::ColorMode::RGB				&&
@@ -188,7 +188,7 @@ namespace Gorgon { namespace Graphics {
 		return true;
 	}
 
-	bool Bitmap::ExportPNG(std::ostream &out) {
+	bool Bitmap::ExportPNG(std::ostream &out) const {
 		ASSERT(data, "Image data does not exists");
 
         if(data->GetSize().Cells() == 0)
@@ -206,7 +206,7 @@ namespace Gorgon { namespace Graphics {
 		return true;
 	}
 
-	bool Bitmap::ExportBMP(const std::string &filename) {
+	bool Bitmap::ExportBMP(const std::string &filename) const {
 		ASSERT(data, "Image data does not exists");
 
         if(data->GetSize().Cells() == 0)
@@ -215,7 +215,7 @@ namespace Gorgon { namespace Graphics {
 		return data->ExportBMP(filename);
 	}
 
-	bool Bitmap::ExportBMP(std::ostream &out) {
+	bool Bitmap::ExportBMP(std::ostream &out) const {
 		ASSERT(data, "Image data does not exists");
 
         if(data->GetSize().Cells() == 0)
@@ -224,7 +224,7 @@ namespace Gorgon { namespace Graphics {
 		return data->ExportBMP(out);
 	}
 
-	bool Bitmap::ExportJPEG(const std::string &filename, int quality) {
+	bool Bitmap::ExportJPEG(const std::string &filename, int quality) const {
 		ASSERT(data, "Image data does not exists");
 
 		if(GetMode()!=Graphics::ColorMode::RGB &&
@@ -246,7 +246,7 @@ namespace Gorgon { namespace Graphics {
 		return true;
 	}
 
-	bool Bitmap::ExportJPG(std::ostream &out, int quality) {
+	bool Bitmap::ExportJPG(std::ostream &out, int quality) const {
 		ASSERT(data, "Image data does not exists");
 
 		if(GetMode()!=Graphics::ColorMode::RGB &&

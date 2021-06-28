@@ -460,41 +460,41 @@ namespace Gorgon { namespace Graphics {
 		/// If image data is already discarded, there is no way to retrieve it. May throw if color mode is not supported
 		/// by PNG encoding. PNG encoding allows: RGB, RGBA, Grayscale, Grayscale alpha. Additionally, Alpha only
 		/// images are saved as grayscale alpha.
-		bool Export(const std::string &filename);
+		bool Export(const std::string &filename) const;
         
 		/// Exports the data of the image resource to a PNG file. This function requires image data to be present.
 		/// If image data is already discarded, there is no way to retrieve it. May throw if color mode is not supported
 		/// by PNG encoding. PNG encoding allows: RGB, RGBA, Grayscale, Grayscale alpha. Additionally, Alpha only
 		/// images are saved as grayscale alpha.
-		bool ExportPNG(const std::string &filename);
+		bool ExportPNG(const std::string &filename) const;
 
 		/// Exports the data of the image resource to a PNG file. This function requires image data to be present.
 		/// If image data is already discarded, there is no way to retrieve it. May throw if color mode is not supported
 		/// by PNG encoding. PNG encoding allows: RGB, RGBA, Grayscale, Grayscale alpha. Additionally, Alpha only
 		/// images are saved as grayscale alpha.
-		bool ExportPNG(std::ostream &out);
+		bool ExportPNG(std::ostream &out) const;
 
 		/// Exports the data of the image resource to a bitmap file. This function requires image data to be present.
 		/// If image data is already discarded, there is no way to retrieve it. All color modes are supported in BMP,
 		/// however, saving and loading the file may change the color mode. Regardless of this change when drawn,
 		/// bitmap will appear the same on the screen.
-		bool ExportBMP(const std::string &filename);
+		bool ExportBMP(const std::string &filename) const;
 
 		/// Exports the data of the image resource to a bitmap file. This function requires image data to be present.
 		/// If image data is already discarded, there is no way to retrieve it. All color modes are supported in BMP,
 		/// however, saving and loading the file may change the color mode. Regardless of this change when drawn,
 		/// bitmap will appear the same on the screen.
-		bool ExportBMP(std::ostream &out);
+		bool ExportBMP(std::ostream &out) const;
 
 		/// Exports the data of the image resource to a JPG file. This function requires image data to be present.
 		/// If image data is already discarded, there is no way to retrieve it. May throw if color mode is not supported
 		/// by PNG encoding. JPG encoding allows: RGB and Grayscale. Quality is between 0 and 100.
-		bool ExportJPEG(const std::string &filename, int quality = 90);
+		bool ExportJPEG(const std::string &filename, int quality = 90) const;
 
 		/// Exports the data of the image resource to a JPG file. This function requires image data to be present.
 		/// If image data is already discarded, there is no way to retrieve it. May throw if color mode is not supported
 		/// by PNG encoding. JPG encoding allows: RGB and Grayscale. Quality is between 0 and 100.
-		bool ExportJPG(std::ostream &out, int quality = 90);
+		bool ExportJPG(std::ostream &out, int quality = 90) const;
 
 		/// Creates the blurred version of this image as a new separate image. This function creates another image since
 		/// it is not possible to apply blur in place. You may use move assignment to modify the original `img = img.Blur(1.2);`
