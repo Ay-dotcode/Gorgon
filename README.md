@@ -32,7 +32,7 @@ GGE 4.x is still in development and is not feature complete.
 ### Fedora 32/33 on 64bit system dependencies
 Run the command below to install all the dependencies on Fedora distros after Fedora 26.
 
-```$ sudo dnf install gcc cmake cmake-gui libX11 libXinerama-devel.x86_64 libXrandr-devel.x86_64 libXext doxygen freetype fifechan-opengl-devel.x86_64 freetype-devel.x86_64 pulseaudio-libs-devel.x86_64 fontconfig-devel libcurl```
+```$ sudo dnf install gcc cmake cmake-gui libX11 libXinerama-devel libXrandr-devel libXext doxygen freetype fifechan-opengl-devel freetype-devel pulseaudio-libs-devel fontconfig-devel libcurl flac-devel libvorbis-devel```
 
 ----
     

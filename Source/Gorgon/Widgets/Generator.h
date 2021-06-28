@@ -50,6 +50,8 @@ namespace Gorgon { namespace Widgets {
         
         virtual UI::Template InfoLabel() = 0;
         
+        virtual UI::Template IconLabel() = 0;
+        
         
         
         virtual UI::Template Panel() = 0;
@@ -120,6 +122,8 @@ namespace Gorgon { namespace Widgets {
             case Label_Leading:
                 return *new UI::Template(LeadingLabel());
             case Label_Info:
+                return *new UI::Template(InfoLabel());
+            case Label_Icon:
                 return *new UI::Template(InfoLabel());
             case Checkbox_Regular:
                 return *new UI::Template(Checkbox());
@@ -581,6 +585,8 @@ namespace Gorgon { namespace Widgets {
         virtual UI::Template LeadingLabel() override;
         
         virtual UI::Template InfoLabel() override;
+        
+        virtual UI::Template IconLabel() override;
         
         
         virtual UI::Template BlankPanel() override;
