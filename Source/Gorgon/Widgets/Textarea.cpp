@@ -415,7 +415,6 @@ namespace Gorgon { namespace Widgets {
     }
 
     void Textarea::updateselection() {
-        std::cout << selstart.glyph << " : " << sellen.glyph << std::endl;
         updatecursor();
         
         if(sellen.byte != 0 && IsFocused()) {
