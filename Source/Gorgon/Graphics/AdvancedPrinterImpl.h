@@ -932,7 +932,8 @@ namespace Gorgon { namespace Graphics {
             ind = acc.size();
             newline = ind == 0;
 
-            cur.Y += lineh;
+            if(nl != -1)
+                cur.Y += lineh;
 
             int nextlinexstart = location.X + indent + hangingindent * beginparag;
 
@@ -1075,7 +1076,7 @@ namespace Gorgon { namespace Graphics {
             //END
 
             //if requested do paragraph
-            if(beginparag)
+            if(nl != -1 && beginparag)
                 cur.Y += paragraphspacing(maxh, printer->GetParagraphSpacing());
 
             //BEGIN Reset

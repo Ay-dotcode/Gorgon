@@ -696,7 +696,7 @@ namespace Gorgon { namespace Widgets {
         }
         
         if(text == "") {
-            stack.RemoveTagLocation(UI::ComponentTemplate::CaretTag);
+            stack.SetTagLocation(UI::ComponentTemplate::CaretTag, Geometry::Point{cursorlocation.X, cursorlocation.Y} - scrolloffset);
         }
         else {
             stack.SetTagLocation(UI::ComponentTemplate::CaretTag, Geometry::Point{cursorlocation.X, cursorlocation.Y} - scrolloffset);
@@ -741,8 +741,7 @@ namespace Gorgon { namespace Widgets {
         
         return byte;
     }
-
-
+    
     void Textarea::SetWordWrap(const bool &value) {
         if(wrap == value)
             return;
