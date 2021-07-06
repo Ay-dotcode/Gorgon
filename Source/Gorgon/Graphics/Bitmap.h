@@ -221,10 +221,16 @@ namespace Gorgon { namespace Graphics {
 			data->Assign(newdata);
 		}
 
-		/// Assumes the contents of the given image as image data. The given parameter is moved from
-		/// and will become an empty image. Notice that assuming data does not prepare the data to be drawn, 
+		/// Assumes the contents of the given image as image data. Notice that assuming data does not prepare the data to be drawn, 
 		/// a separate call to Prepare function is necessary.
 		void Assume(Containers::Image &image) {
+			delete data;
+			data = &image;
+		}
+
+		/// Assumes the contents of the given image as image data by moving it into the bitmap buffer. Notice that assuming data 
+		/// does not prepare the data to be drawn, a separate call to Prepare function is necessary.
+		void Assume(Containers::Image &&image) {
 			if(!data) {
 				data=new Containers::Image;
 			}
@@ -694,6 +700,28 @@ namespace Gorgon { namespace Graphics {
                 
             return ret;
         }
+
+		Bitmap Scale(int width, int height, Containers::InterpolationMethod method = Containers::InterpolationMethod::Cubic) const {        
+			return Scale({width, height}, method);
+		}
+
+		Bitmap Scale(const Geometry::Size &newsize, Containers::InterpolationMethod method = Containers::InterpolationMethod::Cubic) const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->Scale(newsize, method));
+
+			return ret;
+		}
+
+		Bitmap ShrinkMultiple(const Geometry::Size& factor) const {
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->ShrinkMultiple(factor));
+
+			return ret;
+		}
 
 	protected:
 		/// When used as animation, an image is always persistent and it never finishes.

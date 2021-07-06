@@ -18,15 +18,14 @@ int main() {
     
     Bitmap bmp;
     bmp.Import("../../Resources/Logo-large.png");
-    
-    auto img = bmp.ReleaseData();
-    bmp.Assume(*new Gorgon::Containers::Image(img.Scale({800, 800}, Gorgon::Containers::InterpolationMethod::Cubic)));
-    
+
+    bmp = bmp.Scale(180, 180);
     bmp.Prepare();
-    
+
     bmp.Draw(layer, 0,0);
     bmp.Export("test.png");
-    
+
+
     while(true) {
         Gorgon::NextFrame();
     }

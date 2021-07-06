@@ -21,6 +21,23 @@ namespace Gorgon {
             Bicubic = Cubic,
         };
 
+        template<class T_, class V_ = void>
+        struct FixImageValue;
+
+        template<class T_>
+        struct FixImageValue<T_, typename std::enable_if<std::is_integral<T_>::value>::type> {
+            static T_ Fix(float val) {
+                return T_(Clamp<float>(std::round(val), std::numeric_limits<T_>::lowest(), std::numeric_limits<T_>::max()));
+            }
+        };
+
+        template<>
+        struct FixImageValue<float, void> {
+            static float Fix(float val) {
+                return val;
+            }
+        };
+
         /// This class is a container for image data. It supports different color modes and access to the
         /// underlying data through () operator. This object implements move semantics. Since copy constructor is
         /// expensive, it is deleted against accidental use. If a copy of the object is required, use Duplicate function.
@@ -596,19 +613,70 @@ namespace Gorgon {
 
                 }
             }
-            
-            basic_Image Scale(const Geometry::Size newsize, InterpolationMethod method) {
+
+            /// Shrinks the size of the image using integer area interpolation.
+            basic_Image ShrinkMultiple(const Geometry::Size& factor) const {
+                Geometry::Size newsize = {(int)std::ceil((float)size.Width/factor.Width), (int)std::ceil((float)size.Height/factor.Height)};
                 basic_Image target(newsize, GetMode());
-                
+
+                for(int y=0; y<newsize.Height; y++) {
+                    auto th = std::min(y*factor.Height+factor.Height, size.Height);
+                    auto ys = y * factor.Height;
+
+                    for(int x=0; x<newsize.Width; x++) {
+                        auto tw = std::min(x*factor.Width+factor.Width, size.Width);
+                        auto xs = x * factor.Width;
+
+                        int   count = 0;
+                        float sum[4]= {};
+
+                        for(int yy=ys; yy<th; yy++) {
+                            for(int xx=xs; xx<tw; xx++) {
+                                count++;
+
+                                for(unsigned c=0; c<cpp; c++) {
+                                    sum[c] += operator()(xx, yy, c);
+                                }
+                            }
+                        }
+
+                        for(unsigned c=0; c<cpp; c++) {
+                            target(x, y, c) = FixImageValue<T_>::Fix(sum[c] / count);
+                        }
+                    }
+                }
+
+                return target;
+            }
+            
+            /// Scales this image to the given size. In the image is shrunk more than 2x its original size
+            /// Area interpolation is used along with the specified interpolation method.
+            basic_Image Scale(const Geometry::Size &newsize, InterpolationMethod method = InterpolationMethod::Cubic) const {
+                basic_Image target(newsize, GetMode());
+
                 float fx = (float)size.Width / newsize.Width;
                 float fy = (float)size.Height / newsize.Height;
+
+                if(fx > 2 || fy > 2) {
+                    if(fx < 2)
+                        fx = 1;
+                    if(fy < 2)
+                        fy = 1;
+
+                    auto img = ShrinkMultiple({int(fx), int(fy)});
+
+                    if(img.GetSize() == newsize)
+                        return img;
+                    else
+                        return img.Scale(newsize, method);
+                }
                 
                 if(method == InterpolationMethod::NearestNeighbor) {
                     float yy = fy/2;
                     for(int y=0; y<newsize.Height; y++) {
                         float xx = fx/2;
                         for(int x=0; x<newsize.Width; x++) {
-                            for(int c=0; c<cpp; c++) {
+                            for(unsigned c=0; c<cpp; c++) {
                                 target(x, y, c) = operator()((int)xx, (int)yy, c);
                             }
                             
@@ -639,8 +707,8 @@ namespace Gorgon {
                             x1 = x1 < 0 ? 0 : x1;
                             x2 = x2 >= size.Width ? size.Width - 1 : x2;
                         
-                            for(int c=0; c<cpp; c++) {
-                                target(x, y, c) = T_(
+                            for(unsigned c=0; c<cpp; c++) {
+                                target(x, y, c) = FixImageValue<T_>::Fix(
                                     lx1 * ly1 * operator()(x1, y1, c) +
                                     lx  * ly1 * operator()(x2, y1, c) +
                                     lx  * ly  * operator()(x2, y2, c) +
@@ -694,7 +762,7 @@ namespace Gorgon {
                                 xs[i]  = Clamp((int)xx-1 + i, 0, size.Width-1);
                             }
                         
-                            for(int c=0; c<cpp; c++) {
+                            for(unsigned c=0; c<cpp; c++) {
                                 float v = 0;
                                 for(int j=0; j<4; j++) {
                                     for(int i=0; i<4; i++) {
@@ -702,7 +770,7 @@ namespace Gorgon {
                                     }
                                 }
                                 
-                                target(x, y, c) = (T_)Clamp(v, (float)std::numeric_limits<T_>::lowest(), (float)std::numeric_limits<T_>::max());
+                                target(x, y, c) = FixImageValue<T_>::Fix(v);
                             }
                             
                             xx += fx;
