@@ -714,6 +714,24 @@ namespace Gorgon { namespace Graphics {
 			return ret;
 		}
 
+		Bitmap Rotate(Float ang, const Geometry::Pointf &origin, Containers::InterpolationMethod method = Containers::InterpolationMethod::Cubic) const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->Rotate(ang, origin, method));
+
+			return ret;
+		}
+
+		Bitmap Rotate(Float ang, Containers::InterpolationMethod method = Containers::InterpolationMethod::Cubic) const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->Rotate(ang, method));
+
+			return ret;
+		}
+
 		Bitmap ShrinkMultiple(const Geometry::Size& factor) const {
 			ASSERT(data, "Bitmap data is not set");
 

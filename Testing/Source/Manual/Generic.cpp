@@ -17,9 +17,9 @@ int main() {
     app.wind.Add(layer);
     
     Bitmap bmp;
-    bmp.Import("../../Resources/Logo-large.png");
+    bmp.Import("../../Resources/Logo-small.png");
 
-    bmp = bmp.Scale(180, 180);
+    bmp = bmp.Rotate(Gorgon::Angle(45));
     bmp.Prepare();
 
     bmp.Draw(layer, 0,0);

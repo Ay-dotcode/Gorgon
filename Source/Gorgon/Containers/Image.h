@@ -648,7 +648,7 @@ namespace Gorgon {
 
                 return target;
             }
-            
+
             /// Scales this image to the given size. In the image is shrunk more than 2x its original size
             /// Area interpolation is used along with the specified interpolation method.
             basic_Image Scale(const Geometry::Size &newsize, InterpolationMethod method = InterpolationMethod::Cubic) const {
@@ -670,7 +670,7 @@ namespace Gorgon {
                     else
                         return img.Scale(newsize, method);
                 }
-                
+
                 if(method == InterpolationMethod::NearestNeighbor) {
                     float yy = fy/2;
                     for(int y=0; y<newsize.Height; y++) {
@@ -679,10 +679,10 @@ namespace Gorgon {
                             for(unsigned c=0; c<cpp; c++) {
                                 target(x, y, c) = operator()((int)xx, (int)yy, c);
                             }
-                            
+
                             xx += fx;
                         }
-                        
+
                         yy += fy;
                     }
                 }
@@ -693,20 +693,20 @@ namespace Gorgon {
                         float ly1 = 1 - ly;
                         int   y1 = (int)yy;
                         int   y2 = y1 + 1;
-                        
+
                         y1 = y1 < 0 ? 0 : y1;
                         y2 = y2 >= size.Height ? size.Height - 1 : y2;
-                        
+
                         float xx = 0.5f;
                         for(int x=0; x<newsize.Width; x++) {
                             float lx  = xx - (int)xx;
                             float lx1 = 1 - lx;
                             int   x1 = (int)xx;
                             int   x2 = x1 + 1;
-                            
+
                             x1 = x1 < 0 ? 0 : x1;
                             x2 = x2 >= size.Width ? size.Width - 1 : x2;
-                        
+
                             for(unsigned c=0; c<cpp; c++) {
                                 target(x, y, c) = FixImageValue<T_>::Fix(
                                     lx1 * ly1 * operator()(x1, y1, c) +
@@ -715,10 +715,10 @@ namespace Gorgon {
                                     lx1 * ly  * operator()(x1, y2, c)
                                 );
                             }
-                            
+
                             xx += fx;
                         }
-                        
+
                         yy += fy;
                     }
                 }
@@ -734,7 +734,7 @@ namespace Gorgon {
                         yf[2] = 1 - yf[1];
                         yf[3] = 2 - yf[1];
                         yf[0] = 1 + yf[1];
-                        
+
                         for(int i=0; i<4; i++) {
                             if(i == 1 || i == 2) {
                                 wy[i] = (a+2) * yf[i]*yf[i]*yf[i] - (a+3) * yf[i]*yf[i] + 1;
@@ -744,14 +744,14 @@ namespace Gorgon {
                             }
                             ys[i]  = Clamp((int)yy-1 + i, 0, size.Height-1);
                         }
-                        
+
                         float xx = 0.f;
                         for(int x=0; x<newsize.Width; x++) {
                             xf[1]  = xx - (int)xx;
                             xf[2] = 1 - xf[1];
                             xf[3] = 2 - xf[1];
                             xf[0] = 1 + xf[1];
-                            
+
                             for(int i=0; i<4; i++) {
                                 if(i == 1 || i == 2) {
                                     wx[i] = (a+2) * xf[i]*xf[i]*xf[i] - (a+3) * xf[i]*xf[i] + 1;
@@ -761,7 +761,7 @@ namespace Gorgon {
                                 }
                                 xs[i]  = Clamp((int)xx-1 + i, 0, size.Width-1);
                             }
-                        
+
                             for(unsigned c=0; c<cpp; c++) {
                                 float v = 0;
                                 for(int j=0; j<4; j++) {
@@ -769,20 +769,150 @@ namespace Gorgon {
                                         v += wx[i] * wy[j] * operator()(xs[i], ys[j], c);
                                     }
                                 }
-                                
+
                                 target(x, y, c) = FixImageValue<T_>::Fix(v);
                             }
-                            
+
                             xx += fx;
                         }
-                        
+
                         yy += fy;
                     }
                 }
                 else {
                     throw std::runtime_error("Unknown interpolation method");
                 }
-                
+
+                return target;
+            }
+            /// Rotates this image with the given angle.
+            basic_Image Rotate(Float angle, InterpolationMethod method = InterpolationMethod::Cubic) const {
+                return Rotate(angle, {size.Width/2.f, size.Height/2.f}, method);
+            }
+            
+
+            /// Rotates this image with the given angle.
+            basic_Image Rotate(Float angle, const Geometry::Pointf origin, InterpolationMethod method = InterpolationMethod::Cubic) const {
+                Geometry::Boundsf bnds = {0,0, Geometry::Sizef(size)};
+                Geometry::Rotate(bnds, angle, origin);
+                Geometry::Bounds b{
+                    (int)std::floor(bnds.Left)-1, (int)std::floor(bnds.Top)-1, 
+                    (int)std::ceil(bnds.Right)+1, (int)std::ceil(bnds.Bottom)+1, 
+                };
+
+                auto newsize = b.GetSize();
+
+                basic_Image target(newsize, GetMode());
+
+                Float cosa = std::cos(-angle); //inverse transform
+                Float sina = std::sin(-angle);
+
+                if(method == InterpolationMethod::NearestNeighbor) {
+                    for(int y=0; y<newsize.Height; y++) {
+                        float yn = y - origin.Y + b.Top;
+
+                        for(int x=0; x<newsize.Width; x++) {
+                            for(unsigned c=0; c<cpp; c++) {
+                                float xn = x - origin.X + b.Left;
+
+                                target(x, y, c) = Get((int)std::round(xn * cosa - yn * sina + origin.X), (int)std::round(xn * sina + yn * cosa + origin.Y), c);
+                            }
+                        }
+                    }
+                }
+                else if(method == InterpolationMethod::Linear) {
+                    for(int y=0; y<newsize.Height; y++) {
+                        float yn = y - origin.Y + b.Top;
+
+                        for(int x=0; x<newsize.Width; x++) {
+                            float xn = x - origin.X + b.Left;
+
+                            float xx = xn * cosa - yn * sina + origin.X;
+                            float yy = xn * sina + yn * cosa + origin.Y;
+
+                            int   y1 = (int)std::floor(yy);
+                            float ly  = yy - y1;
+                            float ly1 = 1 - ly;
+                            int   y2 = y1 + 1;
+
+                            int   x1 = (int)std::floor(xx);
+                            float lx  = xx - x1;
+                            float lx1 = 1 - lx;
+                            int   x2 = x1 + 1;
+
+                            for(unsigned c=0; c<cpp; c++) {
+                                target(x, y, c) = FixImageValue<T_>::Fix(
+                                    lx1 * ly1 * Get(x1, y1, c) +
+                                    lx  * ly1 * Get(x2, y1, c) +
+                                    lx  * ly  * Get(x2, y2, c) +
+                                    lx1 * ly  * Get(x1, y2, c)
+                                );
+                            }
+                        }
+                    }
+                }
+                else if(method == InterpolationMethod::Cubic) {
+                    int ys[4];
+                    float wy[4], yf[4];
+                    int xs[4];
+                    float wx[4], xf[4];
+                    const float a = -0.5;
+                    for(int y=0; y<newsize.Height; y++) {
+                        float yn = y - origin.Y + b.Top;
+
+                        for(int x=0; x<newsize.Width; x++) {
+                            float xn = x - origin.X + b.Left;
+
+                            float xx = xn * cosa - yn * sina + origin.X;
+                            float yy = xn * sina + yn * cosa + origin.Y;
+
+                            xf[1]  = xx - std::floor(xx);
+                            xf[2] = 1 - xf[1];
+                            xf[3] = 2 - xf[1];
+                            xf[0] = 1 + xf[1];
+
+                            for(int i=0; i<4; i++) {
+                                if(i == 1 || i == 2) {
+                                    wx[i] = (a+2) * xf[i]*xf[i]*xf[i] - (a+3) * xf[i]*xf[i] + 1;
+                                }
+                                else {
+                                    wx[i] = a * xf[i]*xf[i]*xf[i] - 5*a * xf[i]*xf[i] + 8*a * xf[i] - 4*a;
+                                }
+                                xs[i]  = (int)floor(xx)-1 + i;
+                            }
+
+                            yf[1]  = yy - std::floor(yy);
+                            yf[2] = 1 - yf[1];
+                            yf[3] = 2 - yf[1];
+                            yf[0] = 1 + yf[1];
+
+                            for(int i=0; i<4; i++) {
+                                if(i == 1 || i == 2) {
+                                    wy[i] = (a+2) * yf[i]*yf[i]*yf[i] - (a+3) * yf[i]*yf[i] + 1;
+                                }
+                                else {
+                                    wy[i] = a * yf[i]*yf[i]*yf[i] - 5*a * yf[i]*yf[i] + 8*a * yf[i] - 4*a;
+                                }
+                                ys[i]  = (int)floor(yy)-1 + i;
+                            }
+
+                            for(unsigned c=0; c<cpp; c++) {
+                                float v = 0;
+                                for(int j=0; j<4; j++) {
+                                    for(int i=0; i<4; i++) {
+                                        v += wx[i] * wy[j] * Get(xs[i], ys[j], c);
+                                    }
+                                }
+
+                                target(x, y, c) = FixImageValue<T_>::Fix(v);
+                            }
+                        }
+                    }
+                }
+                else {
+                    throw std::runtime_error("Unknown interpolation method");
+                }
+
                 return target;
             }
 
