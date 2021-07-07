@@ -788,6 +788,46 @@ namespace Gorgon { namespace Graphics {
 			return ret;
 		}
 
+        /// Mirrors this bitmap along X axis as a new one using the supplied interpolation method.
+		Bitmap MirrorX() const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->MirrorX());
+
+			return ret;
+		}
+
+        /// Mirrors this bitmap along Y axis as a new one using the supplied interpolation method.
+		Bitmap MirrorY() const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->MirrorY());
+
+			return ret;
+		}
+
+        /// Flips this bitmap along X axis as a new one using the supplied interpolation method.
+		Bitmap FlipX() const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->FlipX());
+
+			return ret;
+		}
+
+        /// Mirrors this bitmap along Y axis as a new one using the supplied interpolation method.
+		Bitmap FlipY() const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->FlipY());
+
+			return ret;
+		}
+
 	protected:
 		/// When used as animation, an image is always persistent and it never finishes.
 		bool Progress(unsigned &) override { return true; }

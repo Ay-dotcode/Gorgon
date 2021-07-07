@@ -1113,6 +1113,50 @@ namespace Gorgon {
 
                 return target;
             }
+            
+            /// Mirrors this bitmap along X axis as a new one.
+            basic_Image MirrorX() const {
+                basic_Image target(size, GetMode());
+                int yy = size.Height - 1;
+                for(int y=0; y<size.Height; y++) {
+                    for(int x=0; x<size.Width; x++) {
+                        for(int c=0; c<cpp; c++) {
+                            target(x, y, c) = operator()(x, yy, c);
+                        }
+                    }
+                    
+                    yy--;
+                }
+                
+                return target;
+            }
+            
+            /// Mirrors this bitmap along Y axis as a new one.
+            basic_Image MirrorY() const {
+                basic_Image target(size, GetMode());
+                int xx = size.Width- 1;
+                for(int x=0; x<size.Width; x++) {
+                    for(int y=0; y<size.Height; y++) {
+                        for(int c=0; c<cpp; c++) {
+                            target(x, y, c) = operator()(xx, y, c);
+                        }
+                    }
+                    
+                    xx--;
+                }
+                
+                return target;
+            }
+
+            /// Flips this bitmap along X axis as a new one.
+            basic_Image FlipX() const {
+                return MirrorY();
+            }
+            
+            /// Flips this bitmap along Y axis as a new one.
+            basic_Image FlipY() const {
+                return MirrorX();
+            }
 
             /// Imports a given bitmap file. BMP RLE compression and colorspaces are not supported.
             bool ImportBMP(const std::string &filename, bool dib = false) {

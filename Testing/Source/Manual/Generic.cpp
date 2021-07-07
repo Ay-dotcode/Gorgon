@@ -20,7 +20,7 @@ int main() {
     Bitmap bmp;
     bmp.Import("../../Resources/Logo-large.png");
 
-    bmp = bmp.SkewY(0.2);
+    bmp = bmp.FlipX();
     bmp.Prepare();
 
     bmp.Draw(layer, 0,0);
