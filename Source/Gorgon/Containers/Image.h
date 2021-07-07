@@ -785,11 +785,11 @@ namespace Gorgon {
 
                 return target;
             }
+            
             /// Rotates this image with the given angle.
             basic_Image Rotate(Float angle, InterpolationMethod method = InterpolationMethod::Cubic) const {
                 return Rotate(angle, {size.Width/2.f, size.Height/2.f}, method);
             }
-            
 
             /// Rotates this image with the given angle.
             basic_Image Rotate(Float angle, const Geometry::Pointf origin, InterpolationMethod method = InterpolationMethod::Cubic) const {
@@ -904,6 +904,204 @@ namespace Gorgon {
                                     }
                                 }
 
+                                target(x, y, c) = FixImageValue<T_>::Fix(v);
+                            }
+                        }
+                    }
+                }
+                else {
+                    throw std::runtime_error("Unknown interpolation method");
+                }
+
+                return target;
+            }
+
+            /// Rotates this image with the given angle.
+            basic_Image SkewX(Float perpixel, InterpolationMethod method = InterpolationMethod::Cubic) const {
+                return SkewX(perpixel, {0.f, 0.f}, method);
+            }
+
+            /// Rotates this image with the given angle.
+            basic_Image SkewX(Float perpixel, const Geometry::Pointf origin, InterpolationMethod method = InterpolationMethod::Cubic) const {
+                Geometry::Boundsf bnds = {0,0, Geometry::Sizef(size)};
+                Geometry::SkewX(bnds, perpixel, origin);
+                Geometry::Bounds b{
+                    (int)std::floor(bnds.Left)-1, (int)std::floor(bnds.Top)-1, 
+                    (int)std::ceil(bnds.Right)+1, (int)std::ceil(bnds.Bottom)+1, 
+                };
+
+                auto newsize = b.GetSize();
+
+                basic_Image target(newsize, GetMode());
+
+                if(method == InterpolationMethod::NearestNeighbor) {
+                    for(int y=0; y<newsize.Height; y++) {
+                        float yn = y - origin.Y + b.Top;
+
+                        for(int x=0; x<newsize.Width; x++) {
+                            for(unsigned c=0; c<cpp; c++) {
+                                float xn = x + b.Left;
+
+                                target(x, y, c) = Get((int)std::round(xn - yn * perpixel), y, c);
+                            }
+                        }
+                    }
+                }
+                else if(method == InterpolationMethod::Linear) {
+                    for(int y=0; y<newsize.Height; y++) {
+                        float yn = y - origin.Y + b.Top;
+
+                        for(int x=0; x<newsize.Width; x++) {
+                            float xn = x + b.Left;
+
+                            float xx = xn - yn * perpixel;
+
+                            int   x1 = (int)std::floor(xx);
+                            float lx  = xx - x1;
+                            float lx1 = 1 - lx;
+                            int   x2 = x1 + 1;
+
+                            for(unsigned c=0; c<cpp; c++) {
+                                target(x, y, c) = FixImageValue<T_>::Fix(
+                                    lx1 * Get(x1, y, c) +
+                                    lx  * Get(x2, y, c)
+                                );
+                            }
+                        }
+                    }
+                }
+                else if(method == InterpolationMethod::Cubic) {
+                    int xs[4];
+                    float wx[4], xf[4];
+                    const float a = -0.5;
+                    for(int y=0; y<newsize.Height; y++) {
+                        float yn = y - origin.Y + b.Top;
+
+                        for(int x=0; x<newsize.Width; x++) {
+                            float xn = x + b.Left;
+
+                            float xx = xn - yn * perpixel;
+
+                            xf[1]  = xx - std::floor(xx);
+                            xf[2] = 1 - xf[1];
+                            xf[3] = 2 - xf[1];
+                            xf[0] = 1 + xf[1];
+
+                            for(int i=0; i<4; i++) {
+                                if(i == 1 || i == 2) {
+                                    wx[i] = (a+2) * xf[i]*xf[i]*xf[i] - (a+3) * xf[i]*xf[i] + 1;
+                                }
+                                else {
+                                    wx[i] = a * xf[i]*xf[i]*xf[i] - 5*a * xf[i]*xf[i] + 8*a * xf[i] - 4*a;
+                                }
+                                xs[i]  = (int)floor(xx)-1 + i;
+                            }
+
+                            for(unsigned c=0; c<cpp; c++) {
+                                float v = 0;
+                                
+                                for(int i=0; i<4; i++) {
+                                    v += wx[i] * Get(xs[i], y, c);
+                                }
+                                target(x, y, c) = FixImageValue<T_>::Fix(v);
+                            }
+                        }
+                    }
+                }
+                else {
+                    throw std::runtime_error("Unknown interpolation method");
+                }
+
+                return target;
+            }
+
+            /// Rotates this image with the given angle.
+            basic_Image SkewY(Float perpixel, InterpolationMethod method = InterpolationMethod::Cubic) const {
+                return SkewY(perpixel, {0.f, 0.f}, method);
+            }
+
+            /// Rotates this image with the given angle.
+            basic_Image SkewY(Float perpixel, const Geometry::Pointf origin, InterpolationMethod method = InterpolationMethod::Cubic) const {
+                Geometry::Boundsf bnds = {0,0, Geometry::Sizef(size)};
+                Geometry::SkewY(bnds, perpixel, origin);
+                Geometry::Bounds b{
+                    (int)std::floor(bnds.Left)-1, (int)std::floor(bnds.Top)-1, 
+                    (int)std::ceil(bnds.Right)+1, (int)std::ceil(bnds.Bottom)+1, 
+                };
+
+                auto newsize = b.GetSize();
+
+                basic_Image target(newsize, GetMode());
+
+                if(method == InterpolationMethod::NearestNeighbor) {
+                    for(int x=0; x<newsize.Width; x++) {
+                        float xn = x - origin.X + b.Left;
+
+                        for(int y=0; y<newsize.Height; y++) {
+                            for(unsigned c=0; c<cpp; c++) {
+                                float yn = y + b.Top;
+
+                                target(x, y, c) = Get(x, (int)std::round(yn - xn * perpixel), c);
+                            }
+                        }
+                    }
+                }
+                else if(method == InterpolationMethod::Linear) {
+                    for(int x=0; x<newsize.Width; x++) {
+                        float xn = x - origin.X + b.Left;
+
+                        for(int y=0; y<newsize.Height; y++) {
+                            float yn = y + b.Top;
+
+                            float yy = yn - xn * perpixel;
+
+                            int   y1 = (int)std::floor(yy);
+                            float ly  = yy - y1;
+                            float ly1 = 1 - ly;
+                            int   y2 = y1 + 1;
+
+                            for(unsigned c=0; c<cpp; c++) {
+                                target(x, y, c) = FixImageValue<T_>::Fix(
+                                    ly1 * Get(x, y1, c) +
+                                    ly  * Get(x, y2, c)
+                                );
+                            }
+                        }
+                    }
+                }
+                else if(method == InterpolationMethod::Cubic) {
+                    int ys[4];
+                    float wy[4], yf[4];
+                    const float a = -0.5;
+                    for(int x=0; x<newsize.Width; x++) {
+                        float xn = x - origin.X + b.Left;
+
+                        for(int y=0; y<newsize.Height; y++) {
+                            float yn = y + b.Top;
+
+                            float yy = yn - xn * perpixel;
+
+                            yf[1]  = yy - std::floor(yy);
+                            yf[2] = 1 - yf[1];
+                            yf[3] = 2 - yf[1];
+                            yf[0] = 1 + yf[1];
+
+                            for(int i=0; i<4; i++) {
+                                if(i == 1 || i == 2) {
+                                    wy[i] = (a+2) * yf[i]*yf[i]*yf[i] - (a+3) * yf[i]*yf[i] + 1;
+                                }
+                                else {
+                                    wy[i] = a * yf[i]*yf[i]*yf[i] - 5*a * yf[i]*yf[i] + 8*a * yf[i] - 4*a;
+                                }
+                                ys[i]  = (int)floor(yy)-1 + i;
+                            }
+
+                            for(unsigned c=0; c<cpp; c++) {
+                                float v = 0;
+                                
+                                for(int i=0; i<4; i++) {
+                                    v += wy[i] * Get(x, ys[i], c);
+                                }
                                 target(x, y, c) = FixImageValue<T_>::Fix(v);
                             }
                         }

@@ -12,14 +12,15 @@ using namespace Gorgon::Graphics;
 
 int main() {
     Application app("generictest", "Test", helptext, 10);
+    app.wind.Resize(1000, 850);
 
     Graphics::Layer layer;
     app.wind.Add(layer);
     
     Bitmap bmp;
-    bmp.Import("../../Resources/Logo-small.png");
+    bmp.Import("../../Resources/Logo-large.png");
 
-    bmp = bmp.Rotate(Gorgon::Angle(45));
+    bmp = bmp.SkewY(0.2);
     bmp.Prepare();
 
     bmp.Draw(layer, 0,0);
