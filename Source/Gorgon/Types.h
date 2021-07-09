@@ -133,6 +133,17 @@ namespace Gorgon {
         return ((value%mod)+mod)%mod;
     }
     
+    /// Returns mirror of the values.
+    template <typename T_>
+    T_ Mirror(T_ value, T_ size) {
+        if(value < 0)
+            return -1 * value;
+        else if (value > size)
+            return (size - 1) * 2 - value;
+        else
+            return value;
+    }
+    
     /// Performs a multi-tiered comparison. Supplied the values of current object and other object
     /// in alternating fashion.
     template<class T1_, class T2_>

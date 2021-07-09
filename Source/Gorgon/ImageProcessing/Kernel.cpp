@@ -113,7 +113,7 @@ namespace Gorgon { namespace ImageProcessing {
         int centerindex = size.Height / 2;
         
         for(int y = 0; y < size.Height; y++) {
-            for(int x= 0; x< size.Width; x++) {
+            for(int x= 0; x < size.Width; x++) {
                 if(x == centerindex && y == centerindex)
                     Get(x, y) = centervalue;
                 else

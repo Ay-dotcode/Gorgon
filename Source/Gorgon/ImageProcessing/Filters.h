@@ -309,8 +309,8 @@ namespace Gorgon { namespace ImageProcessing {
             
         case OutOfBoundsPolicy::NearestNeighbor:
             forpixels([&](auto x, auto y, auto &values) {
-                auto cx = Clamp(x, 0, W);
-                auto cy = Clamp(y, 0, H);
+                auto cx = Clamp(x, 0, W - 1);
+                auto cy = Clamp(y, 0, H - 1);
                 
                 for(int c=0; c<C; c++) {
                     values[c] += input(cx, cy, c);
@@ -320,8 +320,8 @@ namespace Gorgon { namespace ImageProcessing {
             
         case OutOfBoundsPolicy::Cyclic:
             forpixels([&](auto x, auto y, auto &values) {
-                auto cx = PositiveMod(x, W);
-                auto cy = PositiveMod(y, H);
+                auto cx = PositiveMod(x, W - 1);
+                auto cy = PositiveMod(y, H - 1);
                 
                 for(int c=0; c<C; c++) {
                     values[c] += input(cx, cy, c);
@@ -331,8 +331,8 @@ namespace Gorgon { namespace ImageProcessing {
             
         case OutOfBoundsPolicy::Mirror:
             forpixels([&](auto x, auto y, auto &values) {
-                auto cx = abs(x);
-                auto cy = abs(y);
+                auto cx = Mirror(x, W - 1);
+                auto cy = Mirror(y, H - 1);
                 
                 for(int c=0; c<C; c++) {
                     values[c] += input(cx, cy, c);
