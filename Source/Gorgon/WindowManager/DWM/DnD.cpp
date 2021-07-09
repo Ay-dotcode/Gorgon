@@ -6,6 +6,8 @@
 
 #include <ShlObj.h>
 
+#undef max
+
 namespace Gorgon { namespace WindowManager {
 
 	HRESULT __stdcall GGEDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) {

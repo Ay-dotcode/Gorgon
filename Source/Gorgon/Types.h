@@ -161,6 +161,11 @@ namespace Gorgon {
             return MultiLess(rest...);
     }
 
+    /// Converts the given degrees to radians
+    inline Float Angle(Float degrees) {
+        return degrees / 180 * PI;
+    }
+
 	/// Where acceptable, denotes that the object will assume the ownership
 	class AssumeOwnershipTag { };
     

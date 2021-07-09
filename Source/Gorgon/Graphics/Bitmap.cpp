@@ -279,7 +279,7 @@ namespace Gorgon { namespace Graphics {
 			}
 		}
 
-		Assume(img);
+		Assume(std::move(img));
 	}
 
 	void Bitmap::StripAlpha() {
@@ -302,7 +302,7 @@ namespace Gorgon { namespace Graphics {
 			}
 		}
 
-		Assume(img);
+		Assume(std::move(img));
 	}
 
 	void Bitmap::Grayscale(float ratio, GrayscaleConversionMethod method) {
@@ -385,7 +385,7 @@ namespace Gorgon { namespace Graphics {
             }
         }
         
-        Assume(img);
+        Assume(std::move(img));
     }
 	
 	std::vector<Geometry::Bounds> Bitmap::CreateLinearAtlas(Containers::Collection<const Bitmap> list, AtlasMargin margins) {
@@ -581,7 +581,7 @@ namespace Gorgon { namespace Graphics {
 			yy++;
 		}
 
-		Assume(img);
+		Assume(std::move(img));
 
 		return ret;
 	}

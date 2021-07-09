@@ -221,10 +221,16 @@ namespace Gorgon { namespace Graphics {
 			data->Assign(newdata);
 		}
 
-		/// Assumes the contents of the given image as image data. The given parameter is moved from
-		/// and will become an empty image. Notice that assuming data does not prepare the data to be drawn, 
+		/// Assumes the contents of the given image as image data. Notice that assuming data does not prepare the data to be drawn, 
 		/// a separate call to Prepare function is necessary.
 		void Assume(Containers::Image &image) {
+			delete data;
+			data = &image;
+		}
+
+		/// Assumes the contents of the given image as image data by moving it into the bitmap buffer. Notice that assuming data 
+		/// does not prepare the data to be drawn, a separate call to Prepare function is necessary.
+		void Assume(Containers::Image &&image) {
 			if(!data) {
 				data=new Containers::Image;
 			}
@@ -694,6 +700,133 @@ namespace Gorgon { namespace Graphics {
                 
             return ret;
         }
+
+        /// Scales this bitmap as a new one using the supplied interpolation method. If the size is reduced more
+        /// than twice, integer part of the size reduction is done using area interpolation.
+		Bitmap Scale(int width, int height, Containers::InterpolationMethod method = Containers::InterpolationMethod::Cubic) const {        
+			return Scale({width, height}, method);
+		}
+
+        /// Scales this bitmap as a new one using the supplied interpolation method. If the size is reduced more
+        /// than twice, integer part of the size reduction is done using area interpolation.
+		Bitmap Scale(const Geometry::Size &newsize, Containers::InterpolationMethod method = Containers::InterpolationMethod::Cubic) const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->Scale(newsize, method));
+
+			return ret;
+		}
+
+        /// Rotates this bitmap as a new one using the supplied interpolation method.
+		Bitmap Rotate(Float ang, const Geometry::Pointf &origin, Containers::InterpolationMethod method = Containers::InterpolationMethod::Cubic) const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->Rotate(ang, origin, method));
+
+			return ret;
+		}
+
+        /// Rotates this bitmap as a new one using the supplied interpolation method.
+		Bitmap Rotate(Float ang, Containers::InterpolationMethod method = Containers::InterpolationMethod::Cubic) const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->Rotate(ang, method));
+
+			return ret;
+		}
+
+		/// Shrinks the bitmap size to integer multiples. This method uses Area interpolation
+		Bitmap ShrinkMultiple(const Geometry::Size& factor) const {
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->ShrinkMultiple(factor));
+
+			return ret;
+		}
+
+        /// Skews this bitmap as a new one using the supplied interpolation method. Origin is assumed to be 0, 0
+		Bitmap SkewX(Float perpixel, Containers::InterpolationMethod method = Containers::InterpolationMethod::Cubic) const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->SkewX(perpixel, method));
+
+			return ret;
+		}
+
+        /// Skews this bitmap as a new one using the supplied interpolation method.
+		Bitmap SkewX(Float perpixel, const Geometry::Pointf &origin, Containers::InterpolationMethod method = Containers::InterpolationMethod::Cubic) const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->SkewX(perpixel, origin, method));
+
+			return ret;
+		}
+
+        /// Skews this bitmap as a new one using the supplied interpolation method. Origin is assumed to be 0, 0
+		Bitmap SkewY(Float perpixel, Containers::InterpolationMethod method = Containers::InterpolationMethod::Cubic) const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->SkewY(perpixel, method));
+
+			return ret;
+		}
+
+        /// Skews this bitmap as a new one using the supplied interpolation method.
+		Bitmap SkewY(Float perpixel, const Geometry::Pointf &origin, Containers::InterpolationMethod method = Containers::InterpolationMethod::Cubic) const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->SkewY(perpixel, origin, method));
+
+			return ret;
+		}
+
+        /// Mirrors this bitmap along X axis as a new one using the supplied interpolation method.
+		Bitmap MirrorX() const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->MirrorX());
+
+			return ret;
+		}
+
+        /// Mirrors this bitmap along Y axis as a new one using the supplied interpolation method.
+		Bitmap MirrorY() const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->MirrorY());
+
+			return ret;
+		}
+
+        /// Flips this bitmap along X axis as a new one using the supplied interpolation method.
+		Bitmap FlipX() const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->FlipX());
+
+			return ret;
+		}
+
+        /// Mirrors this bitmap along Y axis as a new one using the supplied interpolation method.
+		Bitmap FlipY() const {        
+			ASSERT(data, "Bitmap data is not set");
+
+			Bitmap ret;
+			ret.Assume(data->FlipY());
+
+			return ret;
+		}
 
 	protected:
 		/// When used as animation, an image is always persistent and it never finishes.

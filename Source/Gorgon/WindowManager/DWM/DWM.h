@@ -16,6 +16,8 @@
 
 #	undef CreateWindow
 #	undef Rectangle
+#	undef max
+#	undef min
 
 ///@cond internal
 namespace Gorgon {

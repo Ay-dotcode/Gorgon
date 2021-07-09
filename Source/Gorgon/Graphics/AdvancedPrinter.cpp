@@ -72,6 +72,12 @@ namespace Gorgon { namespace Graphics {
             },
             text, l, 0, false
         );
+        
+        if(l.X > sz.Width)
+            sz.Width = l.X;
+
+        if(l.Y > sz.Height)
+            sz.Height = l.Y;
 
         return sz;
     }
@@ -84,27 +90,34 @@ namespace Gorgon { namespace Graphics {
             [&sz](
                 const GlyphRenderer &renderer, Glyph g,
                 const Geometry::Point &location, const RGBAf &, long
-                ) {
-            if(g != 0xffff) {
-                auto p = location + (Geometry::Point)renderer.GetSize(g) + renderer.GetOffset(g);
-                p.Y += int(renderer.GetBaseLine());
+            ) {
+                if(g != 0xffff) {
+                    auto p = location + (Geometry::Point)renderer.GetSize(g) + renderer.GetOffset(g);
+                    p.Y += int(renderer.GetBaseLine());
 
-                if(p.X > sz.Width)
-                    sz.Width = p.X;
+                    if(p.X > sz.Width)
+                        sz.Width = p.X;
 
-                if(p.Y > sz.Height)
-                    sz.Height = p.Y;
-            }
-            return true;
-        },
+                    if(p.Y > sz.Height)
+                        sz.Height = p.Y;
+                }
+                return true;
+            },
             [](const Geometry::Bounds &, const RGBAf &, int, RGBAf) {
-        },
+            },
             [](int, int, int, int, RGBAf) {
-        },
+            },
             [](Byte, const Geometry::Bounds &, const RGBAf &, bool) {
-        },
+            },
             text, l, width, true
-            );
+        );
+        
+        
+        if(l.X > sz.Width)
+            sz.Width = l.X;
+
+        if(l.Y > sz.Height)
+            sz.Height = l.Y;
 
         return sz;
     }
