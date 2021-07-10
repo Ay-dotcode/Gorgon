@@ -239,7 +239,7 @@ namespace Gorgon { namespace Encoding {
 			FileReader *reader = (FileReader*)p;
 			reader->Buf.read((char*)buf, *size);
 			*size=(size_t)reader->Buf.gcount();
-			if(size>0 && reader->Buf.fail())
+			if(*size>0 && reader->Buf.fail())
 				reader->Buf.clear();
 			return 0;
 		}

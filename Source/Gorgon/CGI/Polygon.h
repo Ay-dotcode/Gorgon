@@ -33,10 +33,16 @@ namespace internal {
         /// Path index
         int Index;
     };
+
+    enum class polygonstrictmode {
+        none,
+        inside,
+        outside
+    };
     
     /// ymin, ymax should be prescaled, pointlist will be scaled on the fly. W_ is winding, 0 is 
     /// non zero, 1 is odd, 2 is non-zero on same path, odd on different path.
-    template<int W_, bool strict = false, class PL_, class F_>
+    template<int W_, polygonstrictmode strict = polygonstrictmode::none, class PL_, class F_>
     void findpolylinestofill(const PL_ &pointlist, int ymin, int ymax, F_ fn, Float cover = 1, Float scale = 1) {
         using std::swap;
         
@@ -45,6 +51,7 @@ namespace internal {
             int ymax;
             Float x1;
             Float x2; //at ymin
+            Float minx, maxx;
             Float slopeinv;
             int index;
             int8_t dir;
@@ -54,6 +61,7 @@ namespace internal {
             int ymax;
             Float x1; 
             Float x2; //min x, max x at current y
+            Float minx, maxx;
             Float slopeinv;
             int index;
             int8_t dir;
@@ -78,27 +86,19 @@ namespace internal {
                 int miny = int(min.Y * scale);
                 int maxy = int(line.MaxY() * scale);
                 
-                if(miny == maxy)
+                if(miny == maxy || miny > ymax || maxy < ymin)
                     continue;
                 
                 auto slopeinv = line.SlopeInv();
                 
-                Float minx = min.X;
+                Float minx = min.X + slopeinv * (miny/scale - min.Y);
                 Float x1 = minx + slopeinv * cover * (slopeinv < 0);
                 Float x2 = minx + slopeinv * cover * (slopeinv > 0);
-                
-                if(x1 < line.MinX())
-                    x1 = line.MinX();
-                
-                if(x2 > line.MaxX())
-                    x2 = line.MaxX();
-                
-                if(miny < ymax && maxy > ymin) {
-                    if(strict)
-                        edges.push_back(edge{miny, maxy, x1*scale, x2*scale, slopeinv, listind, (int8_t)line.YDirection()});
-                    else
-                        edges.push_back(edge{miny, maxy, minx*scale, minx*scale, slopeinv, listind, (int8_t)line.YDirection()});
-                }
+
+                if(strict != polygonstrictmode::none)
+                    edges.push_back(edge{miny, maxy, x1*scale, x2*scale, line.MinX()*scale, line.MaxX()*scale, slopeinv, listind, (int8_t)line.YDirection()});
+                else
+                    edges.push_back(edge{miny, maxy, minx*scale, minx*scale, line.MinX()*scale, line.MaxX()*scale, slopeinv, listind, (int8_t)line.YDirection()});
             }
             
             listind++;
@@ -121,7 +121,7 @@ namespace internal {
             e.x1 += (ymin - edgeit->ymin) * e.slopeinv;
             e.x2 += (ymin - edgeit->ymin) * e.slopeinv;
             
-            activelines.push_back({e.ymax - 1, e.x1, e.x2, e.slopeinv, e.index, e.dir});
+            activelines.push_back({e.ymax - 1, e.x1, e.x2, e.minx, e.maxx, e.slopeinv, e.index, e.dir});
             
             edgeit++;
         }
@@ -131,7 +131,7 @@ namespace internal {
             while(edgeit != edges.end() && edgeit->ymin == y) {
                 edge &e = *edgeit;
                 
-                activelines.push_back({e.ymax - 1, e.x1, e.x2, e.slopeinv, e.index, e.dir});
+                activelines.push_back({e.ymax - 1, e.x1, e.x2, e.minx, e.maxx, e.slopeinv, e.index, e.dir});
                 
                 edgeit++;
             }
@@ -149,8 +149,12 @@ namespace internal {
                     std::partial_sort(it, it+1, end, [](const activeline &l, const activeline &r) {
                         return l.x2 < r.x2;
                     });
-                    
-                    start = it->x2;
+
+                    if(strict == polygonstrictmode::outside)
+                        start = Clamp(it->x1, it->minx, it->maxx);
+                    else
+                        start = Clamp(it->x2, it->minx, it->maxx);
+
                     index = it->index;
                     winding = it->dir;
                 }
@@ -175,7 +179,10 @@ namespace internal {
                     }
                     
                     if(winding == 0 && start < it->x1) {
-                        drawlist.push_back({start, it->x1, index});
+                        if(strict == polygonstrictmode::outside)
+                            drawlist.push_back({start, Clamp(it->x2, it->minx, it->maxx), index});
+                        else
+                            drawlist.push_back({start, Clamp(it->x1, it->minx, it->maxx), index});
                     }
                 }
                 
