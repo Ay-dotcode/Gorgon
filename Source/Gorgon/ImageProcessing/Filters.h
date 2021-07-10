@@ -42,7 +42,8 @@ namespace Gorgon { namespace ImageProcessing {
      * you may use Convolution member function. It will call this function with the contained image.
      * outsidecolor could be converted from RGBA if an 8-bit image is used. outofrange is only used
      * when this function is applied to integral typed images including Image class. scale is used
-     * only if outofrange is set to Scale or ScaleThenClamp.
+     * only if outofrange is set to Scale or ScaleThenClamp. If noalpha is set, the operation will
+     * not be performed on alpha channel and the original alpha channel is copied to the output.
      */
     template <class CT_ = Byte>
     Containers::basic_Image<CT_> Convolution(
@@ -195,7 +196,7 @@ namespace Gorgon { namespace ImageProcessing {
                             auto cy = y - j + h/2;
                             
                             if(cx < 0 || cx >= W || cy < 0 || cy >= H) {
-                                oob(cx, cy, values);
+                                oob(cx, cy, values, kernel(i, j));
                             }
                             else {
                                 for(int c=0; c<C; c++) {
@@ -296,9 +297,9 @@ namespace Gorgon { namespace ImageProcessing {
         switch(outofbounds) {
         default:
         case OutOfBoundsPolicy::FixedColor:
-            forpixels([&](auto , auto , auto &values) {
+            forpixels([&](auto , auto , auto &values, float kernel) {
                 for(int c=0; c<C; c++) {
-                    values[c] += outsidecolor[c];
+                    values[c] += outsidecolor[c] * kernel;
                 }
             });
             break;
@@ -308,39 +309,47 @@ namespace Gorgon { namespace ImageProcessing {
             break;
             
         case OutOfBoundsPolicy::NearestNeighbor:
-            forpixels([&](auto x, auto y, auto &values) {
+            forpixels([&](auto x, auto y, auto &values, float kernel) {
                 auto cx = Clamp(x, 0, W - 1);
                 auto cy = Clamp(y, 0, H - 1);
                 
                 for(int c=0; c<C; c++) {
-                    values[c] += input(cx, cy, c);
+                    values[c] += input(cx, cy, c) * kernel;
                 }
             });
             break;
             
         case OutOfBoundsPolicy::Cyclic:
-            forpixels([&](auto x, auto y, auto &values) {
+            forpixels([&](auto x, auto y, auto &values, float kernel) {
                 auto cx = PositiveMod(x, W - 1);
                 auto cy = PositiveMod(y, H - 1);
                 
                 for(int c=0; c<C; c++) {
-                    values[c] += input(cx, cy, c);
+                    values[c] += input(cx, cy, c) * kernel;
                 }
             });
             break;
             
         case OutOfBoundsPolicy::Mirror:
-            forpixels([&](auto x, auto y, auto &values) {
+            forpixels([&](auto x, auto y, auto &values, float kernel) {
                 auto cx = Mirror(x, W - 1);
                 auto cy = Mirror(y, H - 1);
                 
                 for(int c=0; c<C; c++) {
-                    values[c] += input(cx, cy, c);
+                    values[c] += input(cx, cy, c) * kernel;
                 }
             });
             break;
         }
-        
+
+        if(noalpha && A != -1) {
+            for(int y=0; y<H; y++) {
+                for(int x=0; x<W; x++) {
+                    output(x, y, A) = input(x, y, A);
+                }
+            }
+        }
+
         return output;
     }
 
