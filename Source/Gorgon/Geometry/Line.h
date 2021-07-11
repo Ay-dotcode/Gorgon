@@ -82,7 +82,21 @@ namespace Gorgon { namespace Geometry {
         P_ PointAtMaxX() const {
             return Start.X > End.X ? Start : End;
         }
-        
+
+        ///Returns the X value at a given Y coordinate. This function does
+        ///not check if Y is in range and may give invalid values if it
+        ///doesn't.
+        typename P_::BaseType XatY(typename P_::BaseType y) const {
+            return (y - Start.Y) * SlopeInv() + Start.X;
+        }
+
+        ///Returns the Y value at a given X coordinate. This function does
+        ///not check if X is in range and may give invalid values if it
+        ///doesn't.
+        typename P_::BaseType YatX(typename P_::BaseType x) const {
+            return (x - Start.X) * Slope() + Start.Y;
+        }
+
         ///Returns whether the line is moving up or down. Up movement is -1
         ///down movement is 1 and if line is horizontal this function will
         ///return 0
