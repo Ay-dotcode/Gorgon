@@ -549,16 +549,16 @@ namespace Gorgon {
 		void SkewY(basic_Point<T_> &point, const O_ &rate, const basic_Point<T_> &origin) {
 			point.Y += T_((point.X-origin.X)*rate);
 		}
-
+		
 		/// Reflects the given point along the X axis
 		template<class T_>
-		void ReflectX(basic_Point<T_> &point) {
+		void MirrorX(basic_Point<T_> &point) {
 			point.Y = -point.Y;
 		}
 
 		/// Reflects the given point along the Y axis
 		template<class T_>
-		void ReflectY(basic_Point<T_> &point) {
+		void MirrorY(basic_Point<T_> &point) {
 			point.X = -point.X;
 		}
 

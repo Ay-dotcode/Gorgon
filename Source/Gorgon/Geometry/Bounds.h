@@ -807,6 +807,14 @@ namespace Gorgon { namespace Geometry {
 			bounds.Bottom= T_( bounds.Bottom+ (bounds.Left  -origin.X)*rate );
 		}
 	}
+	template <class T_>
+	void MirrorX(basic_Bounds<T_> &bounds){
+        bounds.Right = -bounds.Right;
+    }
+    template <class T_>
+    void MirrorY(basic_Bounds<T_> &bounds){
+        bounds.Bottom = -bounds.Bottom;
+    }
 	
 	/// @see basic_Bounds
 	typedef basic_Bounds<Float> Boundsf;

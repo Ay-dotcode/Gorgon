@@ -19,7 +19,7 @@ namespace Gorgon { namespace Graphics {
      * Some operations are inplace while others create new Bitmaps. This is done for performance reasons and both
      * can be used to create a new image: `newimage = cur.Duplicate.Grayscale();` or inplace: `cur = cur.Blur();`
      */
-	class Bitmap : 
+	class  Bitmap : 
 		public virtual Graphics::RectangularAnimationProvider, public virtual Graphics::Image,
 		public virtual Graphics::RectangularAnimation, protected virtual Graphics::Texture, public virtual Graphics::TextureSource
 	{
@@ -719,7 +719,7 @@ namespace Gorgon { namespace Graphics {
 		}
 
         /// Rotates this bitmap as a new one using the supplied interpolation method.
-		Bitmap Rotate(Float ang, const Geometry::Pointf &origin, Containers::InterpolationMethod method = Containers::InterpolationMethod::Cubic) const {        
+		Bitmap Rotate(Float ang, const Geometry::Pointf &origin, Containers::InterpolationMethod method = Containers::InterpolationMethod::Cubic) const {       
 			ASSERT(data, "Bitmap data is not set");
 
 			Bitmap ret;
