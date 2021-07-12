@@ -83,8 +83,8 @@ namespace internal {
                 
                 auto min = line.PointAtMinY();
                 
-                int miny = int(min.Y * scale);
-                int maxy = int(line.MaxY() * scale);
+                int miny = (int)round(min.Y * scale);
+                int maxy = (int)round(line.MaxY() * scale);
                 
                 if(miny == maxy || miny > ymax || maxy < ymin)
                     continue;
@@ -177,12 +177,18 @@ namespace internal {
                             winding += it->dir;
                         }
                     }
+
+                    Float nx;
+
+                    if(strict == polygonstrictmode::outside)
+                        nx = it->x2;
+                    else
+                        nx = it->x1;
+
+                    nx = Clamp(nx, it->minx, it->maxx);
                     
-                    if(winding == 0 && start < it->x1) {
-                        if(strict == polygonstrictmode::outside)
-                            drawlist.push_back({start, Clamp(it->x2, it->minx, it->maxx), index});
-                        else
-                            drawlist.push_back({start, Clamp(it->x1, it->minx, it->maxx), index});
+                    if(winding == 0 && start < nx) {
+                        drawlist.push_back({start, nx, index});
                     }
                 }
                 
