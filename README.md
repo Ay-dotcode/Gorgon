@@ -37,9 +37,9 @@ Run the command below to install all the dependencies on Fedora distros after Fe
 ----
 
 ### Ubuntu 18.04 64 bit system dependencies
-Run the command below to install all the dependencies on Fedora distros after Fedora 26.
+Run the command below to install all the dependencies on Ubuntu 18.04.
 
-```$ sudo dnf install gcc cmake cmake-gui libx11-dev libxinerama-dev libxrandr-dev libxtst-dev doxygen freetype libfifechan-dev libfreetype6-dev libpulse-dev libfontconfig1-dev libflac-dev libvorbis-dev```
+```$ sudo apt-get install gcc cmake cmake-gui libx11-dev libxinerama-dev libxrandr-dev libxtst-dev doxygen freetype libfifechan-dev libfreetype6-dev libpulse-dev libfontconfig1-dev libflac-dev libvorbis-dev```
 
 
 ----
