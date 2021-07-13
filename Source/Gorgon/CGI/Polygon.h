@@ -86,7 +86,7 @@ namespace internal {
                 int miny = (int)round(min.Y * scale);
                 int maxy = (int)round(line.MaxY() * scale);
                 
-                if(miny == maxy || miny > ymax || maxy < ymin)
+                if(miny == maxy || miny >= ymax || maxy <= ymin)
                     continue;
                 
                 auto slopeinv = line.SlopeInv();
@@ -147,7 +147,7 @@ namespace internal {
             while(it != end) {
                 if(!winding) {
                     std::partial_sort(it, it+1, end, [](const activeline &l, const activeline &r) {
-                        return l.x2 < r.x2;
+                        return Clamp(l.x2, l.minx, l.maxx) < Clamp(r.x2, r.minx, r.maxx);
                     });
 
                     if(strict == polygonstrictmode::outside)
@@ -160,7 +160,7 @@ namespace internal {
                 }
                 else {
                     std::partial_sort(it, it+1, end, [](const activeline &l, const activeline &r) {
-                        return l.x1 < r.x1;
+                        return Clamp(l.x1, l.minx, l.maxx) < Clamp(r.x1, r.minx, r.maxx);
                     });
                     
                     if(W_ == 0) {
