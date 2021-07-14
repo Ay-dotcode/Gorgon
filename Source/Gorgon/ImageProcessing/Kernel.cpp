@@ -77,6 +77,13 @@ namespace Gorgon { namespace ImageProcessing {
         
         return nkernel;
     }
+    
+    Kernel Kernel::CircularFilter(float kernelsize) {
+        Kernel nkernel;
+        nkernel.Resize({kernelsize, kernelsize});
+        nkernel.createcircularfilter(1.0 /(kernelsize * kernelsize), 0);
+        return nkernel;
+    }
 
     Kernel Kernel::EdgeDetection(int kernelsize) {
         Kernel nkernel;
@@ -122,4 +129,18 @@ namespace Gorgon { namespace ImageProcessing {
         }
     }
     
+    void Kernel::createcircularfilter(float centervalue, float others) {
+        auto rs = size.Height * size.Width ;
+
+        for(int y = 0; y < size.Height; y++) {
+            for(int x= 0; x < size.Width; x++) {
+                Gorgon::Geometry::Point current = {x,y};
+                auto distance = current.EuclideanSquare();
+                if(distance <= rs) 
+                        Get(x, y) = centervalue;
+                else
+                    Get(x, y) = others;
+            }
+        }
+    }
 } }

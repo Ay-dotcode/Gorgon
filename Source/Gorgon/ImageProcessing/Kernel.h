@@ -120,6 +120,9 @@ namespace Gorgon { namespace ImageProcessing {
         /// purpose.
         static Kernel BoxFilter(int kernelsize);
         
+        ///Creates a Circular filter, it can be used by the openning/closing
+        static Kernel CircularFilter(float kernelsize);
+        
         /// A kernel that can be used for edge detection.
         static Kernel EdgeDetection(int kernelsize);
         
@@ -132,6 +135,8 @@ namespace Gorgon { namespace ImageProcessing {
         
     private :
         void createboxfilter(float centervalue, float others);
+        void createcircularfilter(float centervlaue, float others);
+        
         
         Geometry::Size size = {0, 0};
         
