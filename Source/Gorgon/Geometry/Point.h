@@ -552,14 +552,14 @@ namespace Gorgon {
 		
 		/// Reflects the given point along the X axis
 		template<class T_>
-		void MirrorX(basic_Point<T_> &point) {
-			point.Y = -point.Y;
+		void FlipX(basic_Point<T_> &point) {
+			point.X = -point.X;
 		}
 
 		/// Reflects the given point along the Y axis
 		template<class T_>
-		void MirrorY(basic_Point<T_> &point) {
-			point.X = -point.X;
+		void FlipY(basic_Point<T_> &point) {
+			point.Y = -point.Y;
 		}
 
 		/// Reflects the given point horizontally

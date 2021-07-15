@@ -807,13 +807,33 @@ namespace Gorgon { namespace Geometry {
 			bounds.Bottom= T_( bounds.Bottom+ (bounds.Left  -origin.X)*rate );
 		}
 	}
+	
+	///Reflects the bounds along X axis
 	template <class T_>
 	void MirrorX(basic_Bounds<T_> &bounds){
         bounds.Right = -bounds.Right;
+        if(bounds.Left>bounds.Right) std::swap(bounds.Left,bounds.Right);
     }
+    
+    ///Reflects the bounds along Y axis
     template <class T_>
     void MirrorY(basic_Bounds<T_> &bounds){
         bounds.Bottom = -bounds.Bottom;
+        if(bounds.Top>bounds.Bottom) std::swap(bounds.Top,bounds.Bottom);
+    }
+    
+    ///Flips the bounds along Y axis
+    template <class T_>
+	void FlipX(basic_Bounds<T_> &bounds){
+        bounds.Bottom= -bounds.Bottom;
+        if(bounds.Top>bounds.Bottom) std::swap(bounds.Top,bounds.Bottom);
+    }
+    
+    ///Flips the bounds along X axis
+    template <class T_>
+    void FlipY(basic_Bounds<T_> &bounds){
+        bounds.Right = -bounds.Right;
+        if(bounds.Left>bounds.Right) std::swap(bounds.Left,bounds.Right);
     }
 	
 	/// @see basic_Bounds
