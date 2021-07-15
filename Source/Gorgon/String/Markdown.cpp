@@ -21,6 +21,9 @@ namespace Gorgon { namespace String {
                 return acc;
             
             String::AppendUnicode(acc, g);
+
+            if(it == end)
+                --it;
         }
         
         return acc;
@@ -78,7 +81,7 @@ namespace Gorgon { namespace String {
             spaceadded = false;
         };
         
-        for(auto it = text.begin(); it!=end; ++it) {
+        for(auto it = text.begin(); it!=end; (it!= end) ? ++it : it) {
             prev = g;
             g = internal::decode_impl(it, end);
             

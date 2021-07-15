@@ -72,6 +72,13 @@ namespace Gorgon { namespace Widgets {
         }
         
         
+        virtual bool Done() override {
+            if(HasFocusedWidget())
+                return GetFocus().Done();
+
+            return false;
+        }
+
         using Widget::EnsureVisible;
         
         bool EnsureVisible(const UI::Widget &widget) override;
