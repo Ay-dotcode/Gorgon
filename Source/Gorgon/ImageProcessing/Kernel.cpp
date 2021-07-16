@@ -80,8 +80,9 @@ namespace Gorgon { namespace ImageProcessing {
     
     Kernel Kernel::CircularFilter(float kernelsize) {
         Kernel nkernel;
-        nkernel.Resize({kernelsize, kernelsize});
-        nkernel.createcircularfilter(1.0 /(kernelsize * kernelsize), 0);
+        int size = std::ceil(kernelsize);
+        nkernel.Resize({size, size});
+        nkernel.createcircularfilter(0, 255);
         return nkernel;
     }
 
@@ -132,8 +133,8 @@ namespace Gorgon { namespace ImageProcessing {
     void Kernel::createcircularfilter(float centervalue, float others) {
         auto rs = size.Height * size.Width ;
 
-        for(int y = 0; y < size.Height; y++) {
-            for(int x= 0; x < size.Width; x++) {
+        for(int y = -size.Height/2; y < size.Height/2; y++) {
+            for(int x= -size.Width/2; x < size.Width/2; x++) {
                 Gorgon::Geometry::Point current = {x,y};
                 auto distance = current.EuclideanSquare();
                 if(distance <= rs) 
