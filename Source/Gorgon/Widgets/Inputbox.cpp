@@ -184,6 +184,9 @@ namespace Gorgon { namespace Widgets { namespace internal {
             updateselection();
         }
         
+        changed();
+        dirty = false;
+
         return true;
     }
 
@@ -219,9 +222,6 @@ namespace Gorgon { namespace Widgets { namespace internal {
                 case Keycodes::Numpad_Enter:
                     if(!readonly) {
                         Done();
-                        
-                        changed();
-                        dirty = false;
                     }
                     
                     return blockenter;

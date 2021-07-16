@@ -932,6 +932,7 @@ namespace Gorgon { namespace Graphics {
             ind = acc.size();
             newline = ind == 0;
 
+            int regionendy = cur.Y + lineh;
             if(nl != -1)
                 cur.Y += lineh;
 
@@ -948,7 +949,7 @@ namespace Gorgon { namespace Graphics {
                     r.startat = -1;
                 }
 
-                r.Bounds.Bottom = cur.Y;
+                r.Bounds.Bottom = regionendy;
                 r.Bounds.Top = starty;
 
                 if(r.finishat != -1 && r.finishat <= end) {
@@ -965,7 +966,7 @@ namespace Gorgon { namespace Graphics {
                     regions.push_back(r);
 
                     r.Bounds.Left = nextlinexstart;
-                    r.Bounds.Top = cur.Y;
+                    r.Bounds.Top = regionendy;
 
                     if(r.finishat != -1) {
                         r.finishat -= end;

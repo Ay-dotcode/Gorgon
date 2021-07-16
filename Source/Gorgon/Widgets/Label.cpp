@@ -114,10 +114,11 @@ namespace Gorgon { namespace Widgets {
                 
                 for(auto &r : regions) {
                     if(IsInside(r.Bounds, point)) {
+                        Focus();
                         if(links.size() > r.ID) {
                             auto &dest = links[r.ID].Destination;
                             if(dest.substr(0, 1) == "#") {
-                                if(!inpagehandler || !inpagehandler(dest))
+                                if((!inpagehandler || !inpagehandler(dest)) && UI::InPageHandler)
                                     UI::InPageHandler(dest);
                             }
                             else {
