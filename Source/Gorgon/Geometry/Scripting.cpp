@@ -3,6 +3,7 @@
 #include "../Scripting/Embedding.h"
 #include "../Scripting/Reflection.h"
 #include "../Scripting.h"
+#include "Margin.h"
 
 namespace Gorgon { namespace Geometry {
 
@@ -304,18 +305,34 @@ namespace Gorgon { namespace Geometry {
 
 		LibGeometry.AddMember(sizef);
         
-        
+
 		auto bounds = new Scripting::MappedValueType<Bounds>(
 			"Bounds",
 			"Basic class for representing a bounds in space."
 		);
 
 		LibGeometry.AddMember(bounds);
-        
-        
+
+
 		auto boundsf = new Scripting::MappedValueType<Boundsf>(
 			"Boundsf",
 			"Basic class for representing a bounds in space."
+		);
+
+		LibGeometry.AddMember(boundsf);
+
+
+		auto margin = new Scripting::MappedValueType<Margin>(
+			"Margin",
+			"Basic class for representing a margin in space."
+		);
+
+		LibGeometry.AddMember(bounds);
+
+
+		auto marginf = new Scripting::MappedValueType<Marginf>(
+			"Marginf",
+			"Basic class for representing a bounds in margin."
 		);
 
 		LibGeometry.AddMember(boundsf);

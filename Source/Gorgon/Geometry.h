@@ -19,6 +19,8 @@ namespace Gorgon { namespace Geometry {
         DEFTYPE(Sizef)
         DEFTYPE(Bounds)
         DEFTYPE(Boundsf)
+        DEFTYPE(Margin)
+        DEFTYPE(Marginf)
         
 #undef DEFTYPE
     }
