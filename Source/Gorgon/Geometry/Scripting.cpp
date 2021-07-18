@@ -327,7 +327,7 @@ namespace Gorgon { namespace Geometry {
 			"Basic class for representing a margin in space."
 		);
 
-		LibGeometry.AddMember(bounds);
+		LibGeometry.AddMember(margin);
 
 
 		auto marginf = new Scripting::MappedValueType<Marginf>(
@@ -335,7 +335,7 @@ namespace Gorgon { namespace Geometry {
 			"Basic class for representing a bounds in margin."
 		);
 
-		LibGeometry.AddMember(boundsf);
+		LibGeometry.AddMember(marginf);
         
         
 	}
