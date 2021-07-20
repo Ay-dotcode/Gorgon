@@ -305,7 +305,7 @@ namespace Gorgon { namespace Graphics {
 
 		/// Width of a digit, if digits do not have the same width, maximum should be returned. For
 		/// practical reasons, this function is expected to consider arabic numerals.
-		virtual int GetDigitWidth() const override { return GetSize("0").Width; }
+		virtual int GetDigitWidth() const override { return GetSize((Glyph)'0').Width; }
         
         /// Baseline point of glyphs from the top.
         virtual float GetBaseLine() const override { return baseline; }

@@ -583,9 +583,6 @@ namespace Gorgon { namespace Graphics {
         
         FT_Vector p;
         FT_Get_Kerning(lib->face, glyphmap.at(chr1).ftindex, glyphmap.at(chr2).ftindex, FT_KERNING_DEFAULT, &p);
-        
-        if(p.x != 0)
-            p.x = p.x;
 
         return {std::round(p.x / 64.f), std::round(p.y / 64.f)};
     }

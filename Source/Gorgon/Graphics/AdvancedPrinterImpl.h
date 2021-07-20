@@ -151,7 +151,7 @@ namespace Gorgon { namespace Graphics {
         int maxb = 0; //maximum baseline of a line
         long curindex = 0;
 
-        auto changeprinter = [&](auto p) {
+        auto changeprinter = [&](auto p, bool temp = false) {
             printer = p;
             renderer = &printer->GetGlyphRenderer();
 
@@ -161,15 +161,17 @@ namespace Gorgon { namespace Graphics {
             height = renderer->GetLineGap();
             baseline = renderer->GetBaseLine();
             em = renderer->GetEMSize();
-            lineth = std::min(1, (int)std::round(renderer->GetLineThickness()));
+            lineth = std::max(1, (int)std::round(renderer->GetLineThickness()));
 
-            if(underlineon) {
-                underlines.back().finishat = (long)acc.size();
-                underlineon = false;
-            }
-            if(strikeon) {
-                strikes.back().finishat = (long)acc.size();
-                strikeon = false;
+            if(!temp) {
+                if(underlineon) {
+                    underlines.back().finishat = (long)acc.size();
+                    underlineon = false;
+                }
+                if(strikeon) {
+                    strikes.back().finishat = (long)acc.size();
+                    strikeon = false;
+                }
             }
         };
         
@@ -737,23 +739,21 @@ namespace Gorgon { namespace Graphics {
                 }
             }
 
-            if(wrapwidth > 0) {
-                switch(align(printer->GetDefaultAlign())) {
-                case TextAlignment::Right:
-                    xoff = wrapwidth - totalw;
-                    lineend = wrapwidth + location.X;
+            switch(align(printer->GetDefaultAlign())) {
+            case TextAlignment::Right:
+                xoff = wrapwidth - totalw;
+                lineend = wrapwidth + location.X;
 
-                    break;
-                case TextAlignment::Center:
-                    xoff = (wrapwidth - totalw) / 2;
-                    lineend = wrapwidth - xoff + location.X;
+                break;
+            case TextAlignment::Center:
+                xoff = (wrapwidth - totalw) / 2;
+                lineend = wrapwidth - xoff + location.X;
 
-                    break;
-                default:
-                    lineend = totalw + location.X;
+                break;
+            default:
+                lineend = totalw + location.X;
 
-                    break;
-                }
+                break;
             }
 
             int lineh = linespacing(maxh, printer->GetLineSpacing() * (maxh + extralineoffset + extralineheight));
@@ -876,7 +876,7 @@ namespace Gorgon { namespace Graphics {
             //line X locations determined here
             for(auto &u : underlines) {
                 if(u.startat >= 0 && u.startat < end) {
-                    u.start = acc[u.startat].location.X;
+                    u.start = acc[u.startat].location.X + acc[u.startat].renderer->GetOffset(acc[u.startat].g).X;
                     u.y = acc[u.startat].location.Y;
                 }
                 else if(u.startat == -1 && end != 0) {
@@ -884,7 +884,7 @@ namespace Gorgon { namespace Graphics {
                 }
 
                 if(u.finishat >= 0 && u.finishat < end) {
-                    u.end = acc[u.finishat].location.X;
+                    u.end = acc[u.finishat].location.X + acc[u.startat].renderer->GetOffset(acc[u.startat].g).X;
                 }
             }
 
@@ -933,8 +933,11 @@ namespace Gorgon { namespace Graphics {
             newline = ind == 0;
 
             int regionendy = cur.Y + lineh;
-            if(nl != -1)
+            if(nl != -1) {
                 cur.Y += lineh;
+                curunderlineoff += lineh;
+                curstrikeoff    += lineh;
+            }
 
             int nextlinexstart = location.X + indent + hangingindent * beginparag;
 
@@ -1074,6 +1077,8 @@ namespace Gorgon { namespace Graphics {
                     [](auto u) { return u.finishat == -2; }
                 ), strikes.end()
             );
+            if(strikes.empty())
+                strikeon = false;
             //END
 
             //if requested do paragraph
@@ -1090,7 +1095,7 @@ namespace Gorgon { namespace Graphics {
             baselineoffsetatlastspace = 0;
 
             auto backup = printer;
-            changeprinter(findfont(fontid));
+            changeprinter(findfont(fontid), true);
 
             //if still doing scripts, readjust exta line height and offset
             if(baselineoffset < 0) {
@@ -1098,7 +1103,7 @@ namespace Gorgon { namespace Graphics {
                 if(height > extralineheight)
                     extralineheight = height;
 
-                changeprinter(backup);
+                changeprinter(backup, true);
             }
             else if(baselineoffset > 0) {
                 auto offset = renderer->GetBaseLine() * baselineoffset;
@@ -1106,7 +1111,7 @@ namespace Gorgon { namespace Graphics {
                 if(offset > extralineoffset)
                     extralineoffset = offset;
 
-                changeprinter(backup);
+                changeprinter(backup, true);
             }
             //END
 
@@ -1234,10 +1239,12 @@ namespace Gorgon { namespace Graphics {
             bool dounderline = underline(printer->GetUnderline());
 
             if(dounderline) {
+                auto underlineoffset = underlinesettings.offset(height, renderer->GetUnderlineOffset());
+
                 if(g == '\t' && !underlinesettings.tabs) {
                     dounderline = false;
                 }
-                else if(!underlinesettings.descenders && renderer->GetOffset(g).Y+renderer->GetSize(g).Height > 0) {
+                else if(!underlinesettings.descenders && renderer->GetOffset(g).Y+renderer->GetSize(g).Height > underlineoffset - baseline) {
                     dounderline = false;
                 }
                 else if(!underlinesettings.spaces && internal::isspace(g)) {
@@ -1398,12 +1405,14 @@ namespace Gorgon { namespace Graphics {
 
         }
 
-        location = cur;
         if(!acc.empty()) {
             if(!doline(-1)) {
                 done = true;
             }
         }
+
+
+        location = cur;
         
         if(!done)
             glyphr(*renderer, 0xffff, location, 0.f, std::numeric_limits<long>::max());

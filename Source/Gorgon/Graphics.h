@@ -75,6 +75,12 @@ namespace Gorgon {
 			Right		= 16,
 		};
 
+        DefineEnumStrings(TextAlignment, {
+            {TextAlignment::Left,   "Left"},
+            {TextAlignment::Center, "Center"},
+            {TextAlignment::Right, "Right"},
+        });
+
 		/// Defines how an object is placed in a 2D axis system
 		enum class Placement {
 			/// Placed at top left
