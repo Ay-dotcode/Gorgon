@@ -53,7 +53,7 @@ namespace Gorgon { namespace Graphics {
             ) {
                 if(g != 0xffff) {
                     auto p = location + (Geometry::Point)renderer.GetSize(g) + renderer.GetOffset(g);
-                    p.Y += renderer.GetBaseLine();
+                    p.Y += (int)renderer.GetBaseLine();
 
                     if(p.X > sz.Width)
                         sz.Width = p.X;

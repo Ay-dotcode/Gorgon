@@ -9,11 +9,11 @@ namespace Gorgon { namespace ImageProcessing {
     }
 
     Kernel &Kernel::operator = (const std::initializer_list<std::initializer_list<Float>> &values) {
-        int maxlistsize = values.begin()->size();
+        int maxlistsize = (int)values.begin()->size();
         
         for(auto &list : values) {            
             if(list.size()  > maxlistsize)
-                maxlistsize = list.size();
+                maxlistsize = (int)list.size();
         }
         
         for(auto &list : values) {
@@ -25,7 +25,7 @@ namespace Gorgon { namespace ImageProcessing {
                 kernel.insert(kernel.end(), maxlistsize - list.size(), 0);
         }        
             
-        size.Height = values.size();
+        size.Height = (int)values.size();
         size.Width = maxlistsize;
         
         return *this;
@@ -54,10 +54,10 @@ namespace Gorgon { namespace ImageProcessing {
         
         switch (axis){
             case Axis::X:
-                nkernel = {{1, 0, -1}, {2, 0, -2}, {1, 0, -1}};
+                nkernel = {{1.f, 0.f, -1.f}, {2.f, 0.f, -2.f}, {1.f, 0.f, -1.f}};
                 break;
             case Axis::Y:
-                nkernel = {{1, 2, 1}, {0, 0, 0}, {-1, -2, -1}};
+                nkernel = {{1.f, 2.f, 1.f}, {0.f, 0.f, 0.f}, {-1.f, -2.f, -1.f}};
                 break;
         }
         
@@ -66,21 +66,21 @@ namespace Gorgon { namespace ImageProcessing {
 
 
     Kernel Kernel::Sharpen() {
-        return {{-0.025, -0.1, -0.025}, {-0.1, 1.5, -0.1}, {-0.025, -0.1, -0.025}};
+        return {{-0.025f, -0.1f, -0.025f}, {-0.1f, 1.5f, -0.1f}, {-0.025f, -0.1f, -0.025f}};
     }  
 
     Kernel Kernel::BoxFilter(int kernelsize) {
         Kernel nkernel;
         
         nkernel.Resize({kernelsize, kernelsize});
-        nkernel.createboxfilter(1.0 /(kernelsize * kernelsize), 1.0 / (kernelsize * kernelsize));
+        nkernel.createboxfilter(1.0f /(kernelsize * kernelsize), 1.0f / (kernelsize * kernelsize));
         
         return nkernel;
     }
     
     Kernel Kernel::CircularFilter(float kernelsize) {
         Kernel nkernel;
-        int size = std::ceil(kernelsize);
+        int size = (int)std::ceil(kernelsize);
         nkernel.Resize({size, size});
         nkernel.createcircularfilter(0, 255);
         return nkernel;
@@ -90,7 +90,7 @@ namespace Gorgon { namespace ImageProcessing {
         Kernel nkernel;
         
         nkernel.Resize({kernelsize, kernelsize});
-        nkernel.createboxfilter(kernelsize * kernelsize -1, -1);
+        nkernel.createboxfilter(float(kernelsize * kernelsize - 1), -1.f);
         
         return nkernel;
     }

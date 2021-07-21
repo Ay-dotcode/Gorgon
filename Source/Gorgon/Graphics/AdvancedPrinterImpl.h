@@ -158,8 +158,8 @@ namespace Gorgon { namespace Graphics {
             if(baseline != renderer->GetBaseLine())
                 prev = 0; //font size changed, do not use kerning
 
-            height = renderer->GetLineGap();
-            baseline = renderer->GetBaseLine();
+            height = (int)renderer->GetLineGap();
+            baseline = (int)renderer->GetBaseLine();
             em = renderer->GetEMSize();
             lineth = std::max(1, (int)std::round(renderer->GetLineThickness()));
 
@@ -433,7 +433,7 @@ namespace Gorgon { namespace Graphics {
             {
                 auto ind = readindex(it, end, p, curindex);
 
-                for(int i = openregions.size()-1; i>=0; i--) {
+                for(int i = (int)openregions.size()-1; i>=0; i--) {
                     if(openregions[i].ID == ind && openregions[i].finishat == -1) {
                         openregions[i].finishat = (int)acc.size();
                         break;
@@ -549,7 +549,7 @@ namespace Gorgon { namespace Graphics {
             {
                 baselineoffset = -0.3f;
 
-                auto height = renderer->GetBaseLine() * 0.3f;
+                auto height = (int)std::round(renderer->GetBaseLine() * 0.3f);
                 if(height > extralineheight)
                     extralineheight = height;
 
@@ -559,7 +559,7 @@ namespace Gorgon { namespace Graphics {
             {
                 baselineoffset = 0.4f;
 
-                auto offset = renderer->GetBaseLine() * 0.4f;
+                auto offset = (int)std::round(renderer->GetBaseLine() * 0.4f);
                 if(offset > extralineoffset)
                     extralineoffset = offset;
 
@@ -608,7 +608,7 @@ namespace Gorgon { namespace Graphics {
             case 0x86:
             {
                 RGBAf curbgcol = color(printer->GetColor());
-                curbgcol.A *= 0.2;
+                curbgcol.A *= 0.2f;
 
                 auto curim = selimg;
                 if(selbg.set) {
@@ -756,7 +756,7 @@ namespace Gorgon { namespace Graphics {
                 break;
             }
 
-            int lineh = linespacing(maxh, printer->GetLineSpacing() * (maxh + extralineoffset + extralineheight));
+            int lineh = linespacing(maxh, int(printer->GetLineSpacing() * (maxh + extralineoffset + extralineheight)));
 
             //selection handling
             for(auto &s : selections) {
@@ -929,7 +929,7 @@ namespace Gorgon { namespace Graphics {
                 cur.X = acc.back().location.X + acc.back().width;
             }
 
-            ind = acc.size();
+            ind = (int)acc.size();
             newline = ind == 0;
 
             int regionendy = cur.Y + lineh;
@@ -1099,14 +1099,14 @@ namespace Gorgon { namespace Graphics {
 
             //if still doing scripts, readjust exta line height and offset
             if(baselineoffset < 0) {
-                auto height = renderer->GetBaseLine() * -baselineoffset;
+                auto height = int(std::round(renderer->GetBaseLine() * -baselineoffset));
                 if(height > extralineheight)
                     extralineheight = height;
 
                 changeprinter(backup, true);
             }
             else if(baselineoffset > 0) {
-                auto offset = renderer->GetBaseLine() * baselineoffset;
+                auto offset = int(std::round(renderer->GetBaseLine() * baselineoffset));
 
                 if(offset > extralineoffset)
                     extralineoffset = offset;
@@ -1214,14 +1214,14 @@ namespace Gorgon { namespace Graphics {
             }
             else if(internal::isspace(g)) {
                 if(renderer->Exists(g)) {
-                    gw = renderer->GetCursorAdvance(g);
+                    gw = (int)renderer->GetCursorAdvance(g);
                 }
                 else {
                     gw = (int)internal::defaultspace(g, *renderer);
                 }
             }
             else if(g != '\t') {
-                gw = renderer->GetCursorAdvance(g);
+                gw = (int)renderer->GetCursorAdvance(g);
             }
 
             newline = false;
@@ -1405,6 +1405,8 @@ namespace Gorgon { namespace Graphics {
 
         }
 
+        auto l = cur;
+
         if(!acc.empty()) {
             if(!doline(-1)) {
                 done = true;
@@ -1412,7 +1414,7 @@ namespace Gorgon { namespace Graphics {
         }
 
 
-        location = cur;
+        location = l;
         
         if(!done)
             glyphr(*renderer, 0xffff, location, 0.f, std::numeric_limits<long>::max());
