@@ -261,6 +261,22 @@ namespace Gorgon { namespace Graphics {
             Blend(color, 1.0f);
         }
 
+        /// Blends the given color into this one without performing alpha blending
+        void Slide(const RGBA &color, float factor) {
+            if(factor == 1) {
+                A = color.A;
+                R = color.R;
+                G = color.G;
+                B = color.B;
+            }
+            else {
+                float fm1 = 1.f - factor;
+                R = Byte(std::round(factor * color.R + fm1 * R));
+                G = Byte(std::round(factor * color.G + fm1 * G));
+                B = Byte(std::round(factor * color.B + fm1 * B));
+                A = Byte(std::round(factor * color.A + fm1 * A));
+            }
+        }
         /// Blends the given color into this one. This operation performs regular alpha blending with the current
         /// color being blended over.
         void Blend(const RGBA &color, float alpha) {
@@ -275,7 +291,7 @@ namespace Gorgon { namespace Graphics {
                 float alpham1 = (1 - a);
 
                 alpham1 *= A / 255.f;
-                    
+
                 float aa = a + A/255.f * (1 - a);
 
                 if(aa > 0) {
@@ -506,24 +522,7 @@ namespace Gorgon { namespace Graphics {
         /// Blends the given color into this one. This operation performs regular alpha blending with the current
         /// color being blended over.
         void Blend(const RGBAf &color) {
-            if(color.A==1.f) {
-                A=1.f;
-                R=color.R;
-                G=color.G;
-                B=color.B;
-            }
-            else {
-                float alpham1=1.f-color.A;
-
-                R=R*alpham1*A + color.R*color.A;
-                G=G*alpham1*A + color.G*color.A;
-                B=B*alpham1*A + color.B*color.A;
-                A = color.A + A * alpham1;
-                
-                R /= A;
-                G /= A;
-                B /= A;
-            }
+            Blend(color, 1.f);
         }
 
         /// Blends the given color into this one with the given factor that is applied to all channels.
@@ -538,14 +537,16 @@ namespace Gorgon { namespace Graphics {
                 float a = color.A*factor;
                 float alpham1=1.f-a;
 
-                R=R*alpham1 * A + color.R * a;
-                G=G*alpham1 * A + color.G * a;
-                B=B*alpham1 * A + color.B * a;
-                A = color.A + A * alpham1;
-                
-                R /= A;
-                G /= A;
-                B /= A;
+                alpham1 *= A;
+
+                float aa = a + A * (1 - a);
+
+                if(aa > 0) {
+                    R=(R*alpham1 + color.R*a)/aa;
+                    G=(G*alpham1 + color.G*a)/aa;
+                    B=(B*alpham1 + color.B*a)/aa;
+                }
+                A = aa;
             }
         }
 
