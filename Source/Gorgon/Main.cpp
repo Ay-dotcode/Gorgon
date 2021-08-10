@@ -58,6 +58,7 @@ namespace Gorgon {
 	
 	Event<> BeforeFrameEvent;
     
+    std::mutex once_mtx;
     std::vector<std::function<void()>> once;
 
 	bool exiting = false;
@@ -146,6 +147,9 @@ namespace Gorgon {
 	}
 	
 	void RegisterOnce(std::function<void()> fn) {
+        std::lock_guard<std::mutex> grd(once_mtx);
+
         once.push_back(fn);
     }
+    
 }

@@ -60,6 +60,13 @@ namespace Gorgon {
     
     /// Registers a function to be run at the start of the next frame.
     void RegisterOnce(std::function<void()> fn);
+
+    /// Registers a function to be run at the start of the next frame.
+	template<class F_, class ...A_>
+	void RegisterOnce(F_ fn, A_ && ...args) {
+        RegisterOnce(std::function<void()>(std::bind(fn, std::forward<A_>(args)...)));
+    }
+
 	
 	extern Event<> BeforeFrameEvent;
 }
