@@ -60,6 +60,10 @@ namespace Gorgon {
     
     std::mutex once_mtx;
     std::vector<std::function<void()>> once;
+    
+    size_t timeind = 0; //used for timeouts and intervals
+    std::map<size_t, std::pair<unsigned long, std::function<void()>>> timeouts;
+    std::map<size_t, std::tuple<unsigned long, unsigned long, std::function<void()>>> intervals;
 
 	bool exiting = false;
 
@@ -111,6 +115,43 @@ namespace Gorgon {
         }
         
         once.clear();
+        
+        for(auto &p : timeouts) {
+            if(p.second.first <= Time::internal::deltatime) {
+                p.second.first = 0;
+                p.second.second();
+            }
+            else {
+                p.second.first -= Time::internal::deltatime;
+            }
+        }
+        
+        for(auto it=timeouts.begin(); it != timeouts.end(); ) {
+            if(it->second.first == 0 || it->second.first == -1) {
+                it= timeouts.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        
+        for(auto &p : intervals) {
+            if(std::get<0>(p.second) <= Time::internal::deltatime) {
+                std::get<0>(p.second) = std::get<1>(p.second) + std::get<0>(p.second) - Time::internal::deltatime;
+                std::get<2>(p.second)();
+            }
+            else {
+                std::get<0>(p.second) -= Time::internal::deltatime;
+            }
+        }
+        
+        for(auto it=intervals.begin(); it != intervals.end(); ) {
+            if(std::get<0>(it->second) == -1) {
+                it= intervals.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        
 	}
 
 	void Render() {
@@ -152,4 +193,51 @@ namespace Gorgon {
         once.push_back(fn);
     }
     
+    size_t RegisterTimeout(unsigned long after, std::function<void()> fn) {
+        timeouts.insert({timeind, {after, fn}});
+        return timeind++; 
+    }
+    
+    void AlterTimeout(size_t timeout, unsigned long after) {
+        if(timeouts.count(timeout)) {
+            timeouts[timeout].first = after;
+        }
+    }
+    
+    void DisableTimeout(size_t timeout) {
+        if(timeouts.count(timeout)) {
+            //mark for erasure to ensure it is not deleted while
+            //being iterated.
+            timeouts[timeout].first = -1;
+        }
+    }    
+    
+    bool TimeoutExists(size_t timeout) {
+        return timeouts.count(timeout) != 0;
+    }
+
+    
+    size_t RegisterInterval(unsigned long after, std::function<void()> fn) {
+        intervals.insert({timeind, {after, after, fn}});
+        return timeind++; 
+    }
+    
+    void AlterInterval(size_t timeout, unsigned long after) {
+        if(intervals.count(timeout)) {
+            std::get<1>(intervals[timeout]) = after;
+        }
+    }
+    
+    void DisableInterval(size_t timeout) {
+        if(intervals.count(timeout)) {
+            //mark for erasure to ensure it is not deleted while
+            //being iterated.
+            std::get<0>(intervals[timeout]) = -1;
+        }
+    }
+    
+    bool IntervalExists(size_t timeout) {
+        return intervals.count(timeout) != 0;
+    }
+
 }
