@@ -369,6 +369,13 @@ namespace Gorgon {
         /// Do not use this condition, this is to size the arrays.
         Max,
     };
+
+    ENUMCLASS Direction {
+        LeftToRight,
+        TopToBottom,
+        RightToLeft,
+        BottomToTop
+    };
     
     /// Returns if the given condition is related to mouse events
     inline bool IsMouseRelated(ComponentCondition condition) {
@@ -636,7 +643,18 @@ namespace Gorgon {
             return components.end();
         }
         
-        
+        /// In some widgets there is a direction which controls where
+        /// the subcomponents are placed. Direction controls this.
+        void SetDirection(Direction value) {
+            direction = value;
+            ChangedEvent();
+        }
+
+        /// In some widgets there is a direction which controls where
+        /// the subcomponents are placed. Direction controls this.
+        Direction GetDirection() const {
+            return direction;
+        }
 
 
         /// This event is fired whenever template or its components are changed.
@@ -655,6 +673,8 @@ namespace Gorgon {
         int spacing = 4;
         int unitwidth = 25;
         int resizehandlesize = -1;
+
+        Direction direction;
 
         //Do not forget to update move constructor!
     };
@@ -947,7 +967,7 @@ namespace Gorgon {
             MaximizeTag,
             HelpTag,
             ButtonTag,
-            DialogButtonsTag,
+            ButtonsTag,
         };
         
         /// Some components are repeated along some axis, this property controls how they will be

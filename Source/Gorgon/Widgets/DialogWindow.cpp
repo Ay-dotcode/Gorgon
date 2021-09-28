@@ -40,7 +40,7 @@ namespace Gorgon { namespace Widgets {
             Center();
         }
         
-        int ind = stack.IndexOfTag(UI::ComponentTemplate::DialogButtonsTag);
+        int ind = stack.IndexOfTag(UI::ComponentTemplate::ButtonsTag);
         
         if(ind != -1) {
             buttonsarea.SetLayer(stack.GetLayerOf(ind));

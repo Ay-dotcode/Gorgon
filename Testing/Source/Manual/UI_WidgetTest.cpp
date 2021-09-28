@@ -1,12 +1,10 @@
 #include "GraphicsHelper.h"
 
-#include <Gorgon/UI/ComponentStack.h>
 #include <Gorgon/Widgets/Generator.h>
 #include <Gorgon/UI/Window.h>
 #include <Gorgon/UI/Organizers/Flow.h>
 #include <Gorgon/Widgets/Window.h>
-#include <Gorgon/Widgets/Textarea.h>
-#include <Gorgon/Widgets/Checkbox.h>
+#include <Gorgon/Widgets/TabPanel.h>
 
 std::string helptext =
     "Key list:\n"
@@ -20,18 +18,11 @@ int main() {
 
     auto &org = app.wind.CreateOrganizer<UI::Organizers::Flow>();
     
-    Widgets::Textarea wgt1("Hello world\nI am a text area\n1\n2\n3\n4\n5");
-    Widgets::Checkbox wrap("Wrap", true);
-    wrap.ChangedEvent.Register([&]{
-        wgt1.WordWrap = (bool)wrap;
-    });
+    Widgets::TabPanel wgt1;
     
     org 
-        << wrap << org.Break
         << wgt1 ;
         
-    wgt1.SetText(wgt1.GetText() + "A lot more text is written in here...");
-    
     
     app.wind.Run();
 

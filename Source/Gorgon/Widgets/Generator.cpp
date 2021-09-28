@@ -17,7 +17,7 @@
 #   include <fontconfig/fontconfig.h>
 #endif
 
-#define MSVC_BUG(MACRO, ARGS) MACRO ARGS  // name to remind that bug fix is due to MSVC :-)
+#define MSVC_BUG(MACRO, ARGS) MACRO ARGS  // name to remind that bug fix is due to MSVC
 
 #define CONCATE_(X,Y) X##Y
 #define CONCATE(X,Y) CONCATE_(X,Y)
@@ -2560,7 +2560,7 @@ namespace Gorgon { namespace Widgets {
         btnplace.SetMargin(0, spacing, 0, 0);
         btnplace.SetPositioning(UI::ComponentTemplate::Relative);
         btnplace.SetAnchor(UI::Anchor::BottomCenter, UI::Anchor::TopCenter, UI::Anchor::TopCenter);
-        btnplace.SetTag(UI::ComponentTemplate::DialogButtonsTag);
+        btnplace.SetTag(UI::ComponentTemplate::ButtonsTag);
 
         auto &btn = temp.AddPlaceholder(maxind+1, UI::ComponentCondition::Always);
         btn.SetTemplate(btndiag);
@@ -2711,20 +2711,55 @@ namespace Gorgon { namespace Widgets {
         
         return temp;
     }
-    
-    UI::Template SimpleGenerator::Textarea() {
-        Geometry::Size defsize = {GetUnitSize(6), GetUnitSize(3)};
-        
+
+    UI::Template SimpleGenerator::TabPanel() {
+        Geometry::Size defsize = {
+            GetUnitSize(6) + Border.Width * 2  + spacing * 2,
+            GetUnitSize(10) + Border.Width * 2 + spacing * 2
+        };
+
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
         temp.SetSize(defsize);
-        
-        
+
+        //Main container
+        temp.AddContainer(0, UI::ComponentCondition::Always)
+            .AddIndex(1) //button container
+            .AddIndex(2) //panel container
+            .SetOrientation(Graphics::Orientation::Vertical)
+        ;
+
+        //Button container
+        temp.AddContainer(1, UI::ComponentCondition::Always)
+            .AddIndex(3) //button panel
+            .AddIndex(4) //additional graphics
+            .SetSizing(UI::ComponentTemplate::Fixed, UI::ComponentTemplate::Automatic)
+        ;
+
+        auto &buttonspanel = temp.AddPlaceholder(3, UI::ComponentCondition::Always);
+        buttonspanel.SetTag(UI::ComponentTemplate::ButtonsTag);
+        buttonspanel.SetSize({100, UI::Dimension::Percent}, unitsize);
+        buttonspanel.SetSizing(UI::ComponentTemplate::Automatic, UI::ComponentTemplate::Fixed);
+
+        auto &graph = temp.AddGraphics(4, UI::ComponentCondition::Always);
+
+
+        return temp;
+    }
+
+    UI::Template SimpleGenerator::Textarea() {
+        Geometry::Size defsize = {GetUnitSize(6), GetUnitSize(3)};
+
+        UI::Template temp = maketemplate();
+        temp.SetSpacing(spacing);
+        temp.SetSize(defsize);
+
+
         auto &bg = temp.AddContainer(0, UI::ComponentCondition::Always)
             .AddIndex(1) //border
             .AddIndex(2) //boxed content
         ;
-        
+
         auto setupborder = [&](auto &anim, UI::ComponentCondition condition) {
             auto &bg = temp.AddContainer(1, condition);
             bg.Background.SetAnimation(anim);
@@ -2736,7 +2771,7 @@ namespace Gorgon { namespace Widgets {
         setupborder(A(Edit, Hover), UI::ComponentCondition::Hover);
         setupborder(A(Edit, Down), UI::ComponentCondition::Readonly);
         setupborder(A(Edit, Disabled), UI::ComponentCondition::Disabled);
-        
+
         auto &boxed = temp.AddContainer(2, UI::ComponentCondition::Always)
             .AddIndex(3) //clip
             .AddIndex(4) //focus
@@ -2745,7 +2780,7 @@ namespace Gorgon { namespace Widgets {
         boxed.SetBorderSize(Border.Width);
         boxed.SetPadding(std::max(Border.Radius / 2, Focus.Spacing));
         boxed.SetPositioning(UI::ComponentTemplate::Absolute);
-        
+
         auto &clip = temp.AddContainer(3, UI::ComponentCondition::Always)
             .AddIndex(5)
         ;
@@ -2753,7 +2788,7 @@ namespace Gorgon { namespace Widgets {
         clip.SetSize(100, 100, UI::Dimension::Percent);
         clip.SetTag(UI::ComponentTemplate::ViewPortTag);
         clip.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
-        
+
         //Contents
         auto &content = temp.AddContainer(5, UI::ComponentCondition::Always)
             .AddIndex(6) //text
@@ -2764,8 +2799,8 @@ namespace Gorgon { namespace Widgets {
         content.SetPositioning(UI::ComponentTemplate::Absolute);
         content.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
         content.SetTag(UI::ComponentTemplate::ViewPortTag);
-        
-        
+
+
         //Text
         auto setuptext = [&](Graphics::RGBA color, UI::ComponentCondition condition) {
             auto &txt = temp.AddTextholder(6, condition);
@@ -2776,12 +2811,12 @@ namespace Gorgon { namespace Widgets {
             txt.SetPositioning(UI::ComponentTemplate::Absolute);
             txt.SetTag(UI::ComponentTemplate::ContentsTag);
         };
-        
+
         setuptext(FgC(Regular), UI::ComponentCondition::Always);
         setuptext(FgC(Hover), UI::ComponentCondition::Hover);
         setuptext(FgC(Down), UI::ComponentCondition::Down);
         setuptext(FgC(Disabled), UI::ComponentCondition::Disabled);
-        
+
         {
             auto &caret = temp.AddGraphics(8, UI::ComponentCondition::Focused);
             caret.Content.SetAnimation(A(Caret));
@@ -2792,7 +2827,7 @@ namespace Gorgon { namespace Widgets {
             caret.SetSizing(caret.Fixed);
             caret.SetSize(A(Caret).GetSize());
         }
-        
+
         {
             auto &selection = temp.AddGraphics(7, UI::ComponentCondition::Focused);
             selection.Content.SetAnimation(A(Rectangle, Selection, None, 0));
@@ -2803,17 +2838,17 @@ namespace Gorgon { namespace Widgets {
             selection.SetSize(0, objectheight);
             selection.SetSizing(UI::ComponentTemplate::Fixed);
         }
-        
+
         auto &vst = operator[](Scrollbar_Vertical);
         auto &hst = operator[](Scrollbar_Horizontal);
-        
+
         temp.SetSize(temp.GetWidth() + vst.GetWidth() + spacing, temp.GetHeight());
-        
+
         boxed
             .AddIndex(9) //VScroll
             .AddIndex(10) //HScroll
         ;
-        
+
         auto &vs = temp.AddPlaceholder(9, UI::ComponentCondition::VScroll);
         vs.SetTemplate(vst);
         vs.SetTag(UI::ComponentTemplate::VScrollTag);
@@ -2821,7 +2856,7 @@ namespace Gorgon { namespace Widgets {
         vs.SetSizing(UI::ComponentTemplate::Fixed);
         vs.SetAnchor(UI::Anchor::TopRight, UI::Anchor::TopRight, UI::Anchor::TopLeft);
         vs.SetMargin(spacing, 0, 0, 0);
-        
+
         auto &hs = temp.AddPlaceholder(10, UI::ComponentCondition::HScroll);
         hs.SetPositioning(UI::ComponentTemplate::Absolute);
         hs.SetTemplate(hst);
@@ -2830,8 +2865,8 @@ namespace Gorgon { namespace Widgets {
         hs.SetSizing(UI::ComponentTemplate::Fixed);
         hs.SetAnchor(UI::Anchor::None, UI::Anchor::BottomCenter, UI::Anchor::BottomCenter);
         hs.SetMargin(0, spacing, vst.GetWidth()+spacing, 0);
-        
-        
+
+
         auto &contenthscroll = temp.AddContainer(5, UI::ComponentCondition::HScroll)
             .AddIndex(6) //text
             .AddIndex(7) //selection
@@ -2843,7 +2878,7 @@ namespace Gorgon { namespace Widgets {
         contenthscroll.SetTag(UI::ComponentTemplate::ViewPortTag);
         contenthscroll.SetIndent(0, 0, 0, hst.GetHeight()+spacing);
 
-        
+
         return temp;
     }
     

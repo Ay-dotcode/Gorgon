@@ -364,7 +364,8 @@ namespace Gorgon { namespace UI {
         additional(std::move(other.additional)),
         spacing(std::move(other.spacing)),
         unitwidth(std::move(other.unitwidth)),
-        resizehandlesize(std::move(other.resizehandlesize))
+        resizehandlesize(std::move(other.resizehandlesize)),
+        direction(std::move(other.direction))
     {
         auto token = tokens.begin();
         for(auto &c : components) {

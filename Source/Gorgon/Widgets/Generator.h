@@ -95,6 +95,9 @@ namespace Gorgon { namespace Widgets {
         virtual UI::Template ColorPlane() = 0;
         
         virtual UI::Template ColorPicker() = 0;
+
+
+        virtual UI::Template TabPanel() = 0;
         
         
         virtual UI::Template Textarea() = 0;
@@ -167,6 +170,8 @@ namespace Gorgon { namespace Widgets {
                 return *new UI::Template(ColorPlane());
             case ColorPicker_Regular:
                 return *new UI::Template(ColorPicker());
+            case TabPanel_Regular:
+                return *new UI::Template(TabPanel());
             case Textarea_Regular:
                 return *new UI::Template(Textarea());
             default:
@@ -631,8 +636,11 @@ namespace Gorgon { namespace Widgets {
         virtual UI::Template ColorPlane() override;
         
         virtual UI::Template ColorPicker() override;
-        
-        
+
+
+        virtual UI::Template TabPanel() override;
+
+
         virtual UI::Template Textarea() override;
         
 

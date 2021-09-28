@@ -141,7 +141,13 @@ namespace Gorgon { namespace Geometry {
         P_ End;
     };
 
-    
+    template<class P_>
+    std::ostream &operator << (std::ostream &out, const Line<P_> &line) {
+        out << "[" << line.Start << " - " << line.End << "]";
+
+        return out;
+    }
+
     //non-member operations: translate, scale, rotate, etc...
     
 } }

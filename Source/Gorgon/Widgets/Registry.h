@@ -62,6 +62,8 @@ namespace Gorgon { namespace Widgets {
             
             ColorPlane_Regular,
             ColorPicker_Regular,
+
+            TabPanel_Regular,
             
             Textarea_Regular,
             
