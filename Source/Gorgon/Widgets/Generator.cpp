@@ -2425,7 +2425,6 @@ namespace Gorgon { namespace Widgets {
         list.SetPositioning(UI::ComponentTemplate::Absolute);
         
         return temp;
-        
     }
     
     UI::Template SimpleGenerator::Window() {
@@ -2719,13 +2718,13 @@ namespace Gorgon { namespace Widgets {
         };
 
         UI::Template temp = maketemplate();
-        temp.SetSpacing(spacing);
         temp.SetSize(defsize);
 
         //Main container
         temp.AddContainer(0, UI::ComponentCondition::Always)
             .AddIndex(1) //button container
             .AddIndex(2) //panel container
+            .AddIndex(5) //Button
             .SetOrientation(Graphics::Orientation::Vertical)
         ;
 
@@ -2742,7 +2741,12 @@ namespace Gorgon { namespace Widgets {
         buttonspanel.SetSizing(UI::ComponentTemplate::Automatic, UI::ComponentTemplate::Fixed);
 
         auto &graph = temp.AddGraphics(4, UI::ComponentCondition::Always);
+        graph.Content.SetAnimation(A(BorderFilled, Regular, None));
 
+        auto &btn = temp.AddPlaceholder(5, UI::ComponentCondition::Always);
+        btn.SetTemplate((*this)[Listbox_Regular]); // TODO replace
+        btn.SetTag(UI::ComponentTemplate::ButtonTag);
+        btn.SetPositioning(UI::ComponentTemplate::Absolute);
 
         return temp;
     }
