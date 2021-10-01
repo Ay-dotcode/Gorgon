@@ -17,14 +17,23 @@ namespace Gorgon { namespace Widgets {
     class Tab : public Panel {
         friend class basic_TabPanel<Key_>;
     public:
-        //TODO index, key, text, icon
+        //TODO icon
         //blankpanel
+        
+        
 
     private:
-        Tab(basic_TabPanel<Key_> &parent, const UI::Template &temp) : Panel(temp), parent(&parent) {
+        Tab(basic_TabPanel<Key_> &parent, const UI::Template &temp, 
+            const Key_ &key, const std::string &title
+        ) : 
+            Panel(temp), parent(&parent), 
+            key(key), title(title)
+        {
         }
 
         basic_TabPanel<Key_> *parent;
+        Key_ key;
+        std::string title;
     };
 
     /**
@@ -69,7 +78,11 @@ namespace Gorgon { namespace Widgets {
         };
 
         /// Construct a new panel
-        explicit basic_TabPanel(const UI::Template &temp) : ComponentStackComposer(temp) {
+        explicit basic_TabPanel(const UI::Template &temp) : 
+            ComponentStackComposer(temp, {
+                {UI::ComponentTemplate::ButtonTag, {}}
+            }) 
+        {
         }
 
         /// Construct a new panel
@@ -77,7 +90,9 @@ namespace Gorgon { namespace Widgets {
         }
 
         /// Create a new tab with the given key and title
-        Tab<Key_> &New(const Key_ &key, const std::string &title);
+        Tab<Key_> &New(const Key_ &key, const std::string &title) {
+            
+        }
 
         /// Create a new tab with the given key, title will be determined from the key
         Tab<Key_> &New(const Key_ &key) {

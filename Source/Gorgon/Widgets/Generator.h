@@ -686,7 +686,7 @@ namespace Gorgon { namespace Widgets {
         const FocusInfo  &Focus  = focus;
 
     private:
-        Graphics::BitmapRectangleProvider *makeborder(Graphics::RGBA border, Graphics::RGBA bg, AssetID::BorderSide borders, int borderwidth = -1, int borderradius = -1);
+        Graphics::RectangularAnimationProvider* makeborder(Graphics::RGBA border, Graphics::RGBA bg, SimpleGenerator::AssetID::BorderSide borders, int w = -1, int r = -1);
         Graphics::BitmapRectangleProvider *makecheckeredbg();
         Graphics::RectangleProvider *makefocusborder();
         UI::Template makepanel(SimpleGenerator::AssetID::BorderSide edge, bool scrollers, bool spacing = true, bool nobg = false);

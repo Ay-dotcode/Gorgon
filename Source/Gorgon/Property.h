@@ -863,8 +863,8 @@ namespace Gorgon {
     void set##name(const type &v) { variable=v; } \
     type variable
 
-/// If property is there to call Update every time the value is changed, this mapper can handle this situation.
-/// Names the member variable as m_name. For proptype use the prefix part of the property name: Numeric for 
+/// This map the property to getter and setter
+/// For proptype use the prefix part of the property name: Numeric for 
 /// NumericProperty
 #define PROPERTY_GETSET(cls, proptype, type, name) \
     Gorgon::proptype##Property<cls, type, &cls::Get##name, &cls::Set##name> name = Gorgon::proptype##Property<cls, type, &cls::Get##name, &cls::Set##name>{this}

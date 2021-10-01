@@ -550,7 +550,7 @@ namespace Gorgon { namespace Widgets {
         return *prov;
     }
     
-    Graphics::BitmapRectangleProvider *SimpleGenerator::makeborder(Graphics::RGBA border, Graphics::RGBA bg, AssetID::BorderSide borders, int w, int r) {
+    Graphics::RectangularAnimationProvider *SimpleGenerator::makeborder(Graphics::RGBA border, Graphics::RGBA bg, AssetID::BorderSide borders, int w, int r) {
         if(w == -1)
             w = Border.Width;
         
@@ -564,7 +564,12 @@ namespace Gorgon { namespace Widgets {
         auto &bi = *new Graphics::Bitmap({bsize, bsize}, Graphics::ColorMode::RGBA);
         bi.Clear();
         
-        if(r == 0 || (AssetID::TotalBorders(borders) > 0 && AssetID::TotalBorders(borders) < 3)) {
+        if(r == 0 || AssetID::TotalBorders(borders) < 3) {
+            if(borders == AssetID::None) {
+                coff = 0;
+                off  = 0;
+            }
+            
             Geometry::PointList<Geometry::Pointf> list = {{off, bsize-off}, {bsize-off, bsize-off}, {bsize-off, off}, {off,off}};
             
             CGI::Polyfill(bi.GetData(), list, CGI::SolidFill<>(bg));
@@ -691,19 +696,26 @@ namespace Gorgon { namespace Widgets {
                 bi = bi.Rotate270();
             }
         }
-        
-        drawables.Add(bi);
 
-        auto ret = new Graphics::BitmapRectangleProvider(Graphics::Slice(bi, {
-            coff, 
-            coff, 
-            bsize-coff,
-            bsize-coff
-        }));
-        
-        ret->Prepare();
-        
-        return ret;
+        if(coff > 0) {
+            drawables.Add(bi);
+            
+            auto ret = new Graphics::BitmapRectangleProvider(Graphics::Slice(bi, {
+                coff, 
+                coff, 
+                bsize-coff,
+                bsize-coff
+            }));
+            
+            ret->Prepare();
+            
+            return ret;
+        }
+        else {
+            bi.Prepare();
+            
+            return &bi;
+        }
     }
     
     Graphics::BitmapRectangleProvider *SimpleGenerator::makecheckeredbg() {
@@ -2729,11 +2741,13 @@ namespace Gorgon { namespace Widgets {
         ;
 
         //Button container
-        temp.AddContainer(1, UI::ComponentCondition::Always)
-            .AddIndex(3) //button panel
+        auto &buttonsarea = temp.AddContainer(1, UI::ComponentCondition::Always)
+            //.AddIndex(3) //button panel
             .AddIndex(4) //additional graphics
-            .SetSizing(UI::ComponentTemplate::Fixed, UI::ComponentTemplate::Automatic)
         ;
+        buttonsarea.SetSizing(UI::ComponentTemplate::Fixed, UI::ComponentTemplate::GrowOnly);
+        buttonsarea.SetSize({100, UI::Dimension::Percent}, unitsize);
+        //buttonsarea.Background.SetAnimation(A(Background, Regular, None));
 
         auto &buttonspanel = temp.AddPlaceholder(3, UI::ComponentCondition::Always);
         buttonspanel.SetTag(UI::ComponentTemplate::ButtonsTag);
@@ -2742,9 +2756,13 @@ namespace Gorgon { namespace Widgets {
 
         auto &graph = temp.AddGraphics(4, UI::ComponentCondition::Always);
         graph.Content.SetAnimation(A(BorderFilled, Regular, None));
+        graph.SetSize({100, UI::Dimension::Percent}, {Border.Width, UI::Dimension::Pixel});
+        graph.SetFillArea(true);
+        graph.SetSizing(UI::ComponentTemplate::Fixed);
+        graph.SetAnchor(UI::Anchor::BottomRight, UI::Anchor::BottomLeft, UI::Anchor::BottomLeft);
 
         auto &btn = temp.AddPlaceholder(5, UI::ComponentCondition::Always);
-        btn.SetTemplate((*this)[Listbox_Regular]); // TODO replace
+        btn.SetTemplate((*this)[Checkbox_Button]); // TODO replace
         btn.SetTag(UI::ComponentTemplate::ButtonTag);
         btn.SetPositioning(UI::ComponentTemplate::Absolute);
 
