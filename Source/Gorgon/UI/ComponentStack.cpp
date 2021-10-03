@@ -8,6 +8,7 @@
 #include "math.h"
 
 //TODO:
+// Widgets that are not at the top of the stack still gets to be in the stack
 
 namespace Gorgon { namespace UI {
     
@@ -303,7 +304,7 @@ namespace Gorgon { namespace UI {
                     base.Add(substacks[&temp]);
                 }
                 else if(widgets.Exists(&temp)) {
-                    adapter.Add(widgets[&temp]);
+                    adapter.Add(widgets[&temp]); //TODO: do not add if not at the top of the stack
                 }
             }
         }
@@ -2355,6 +2356,70 @@ namespace Gorgon { namespace UI {
         }
 
         widgetgenerators[tag] = fn;
+        for(auto &t : temp) {
+            if(t.GetType() == ComponentType::Placeholder && t.GetTag() == tag) {
+                const auto &ptemp = dynamic_cast<const PlaceholderTemplate&>(t);
+
+                //if the placeholder has a subtemplate
+                if(ptemp.HasTemplate()) {
+                    if(fn) {
+                        auto w = fn(ptemp.GetTemplate());
+
+                        if(w) {
+                            widgets.Add(&t, w);
+                            auto ind = t.GetIndex();
+
+                            for(int i=0; i<stacksizes[ind]; i++) {
+                                if(&get(ind, i).GetTemplate() == &t) {
+                                    adapter.Add(*w);
+                                    break;
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+        Update();
+    }
+
+    void ComponentStack::SetWidget(ComponentTemplate::Tag tag, Widget *w) {
+        for(auto it=substacks.begin(); it.IsValid(); ) {
+            if(it.Current().first->GetTag() == tag)
+                it.Delete();
+            else
+                it.Next();
+        }
+
+        for(auto &t : temp) {
+            if(t.GetType() == ComponentType::Placeholder && t.GetTag() == tag) {
+                const auto &ptemp = dynamic_cast<const PlaceholderTemplate&>(t);
+
+                //if the placeholder has a subtemplate
+                if(ptemp.HasTemplate()) {
+                    if(w) {
+                        if(widgets.Exists(&t)) {
+                            widgets[&t].Remove();
+                        }
+                        widgets.Add(&t, w);
+                        auto ind = t.GetIndex();
+
+                        for(int i=0; i<stacksizes[ind]; i++) {
+                            if(&get(ind, i).GetTemplate() == &t) {
+                                adapter.Add(*w);
+                                break;
+                            }
+                        }
+                    }
+                    else {
+                        widgets.Remove(&t);
+                    }
+                }
+            }
+        }
+
         Update();
     }
 

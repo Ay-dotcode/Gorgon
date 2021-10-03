@@ -490,6 +490,10 @@ namespace Gorgon { namespace UI {
         
         /// Adds or replaces a generator for a specific tag
         void AddGenerator(ComponentTemplate::Tag tag, std::function<Widget *(const Template &)> fn);
+
+        /// Sets the widget for a given tag. If same tag exists multiple times, the last one will get
+        /// the widget
+        void SetWidget(ComponentTemplate::Tag tag, Widget *wgt);
         
         /// Removes the generator for a specific tag
         void RemoveGenerator(ComponentTemplate::Tag tag) {

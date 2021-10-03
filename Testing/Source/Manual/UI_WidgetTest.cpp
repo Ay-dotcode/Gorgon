@@ -5,6 +5,7 @@
 #include <Gorgon/UI/Organizers/Flow.h>
 #include <Gorgon/Widgets/Window.h>
 #include <Gorgon/Widgets/TabPanel.h>
+#include <Gorgon/Widgets/Button.h>
 
 std::string helptext =
     "Key list:\n"
@@ -22,6 +23,16 @@ int main() {
     
     org 
         << wgt1 ;
+
+    wgt1.New("Tab 1");
+    wgt1.New("Tab 2");
+
+    Widgets::Button btn1("Hey tab 1");
+    Widgets::Button btn2("Hey tab 2");
+
+    wgt1["Tab 1"].Add(btn1);
+    wgt1["Tab 2"].Add(btn2);
+
         
     
     app.wind.Run();

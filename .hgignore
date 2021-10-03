@@ -40,6 +40,7 @@ ipch
 CMakeSettings.json
 .vs
 .vscode
+GGE.code-workspace
 syntax: regexp
 .*\.kdev4(_.*)?
 

@@ -1067,6 +1067,56 @@ TestData test_anchbaseline2(Layer &layer) {
     return {"Baseline anchoring between textholders", "Size 10x10 and 10x20 objects on a 60x60 white background, first should be aligned to left, 20px from the top; second should be touching first object, should be from 10px from the top border. Objects are red and green.", stack};
 }
 
+TestData test_anchtozero(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(0, 30, Gorgon::UI::Dimension::Pixel);
+
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetSize(20, 20, Gorgon::UI::Dimension::Pixel);
+    cont3.SetAnchor(UI::Anchor::BottomRight, UI::Anchor::BottomLeft, UI::Anchor::BottomLeft);
+
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    return {"Anchors to zero width object", "Size 20x20 object on a 60x60 white background, the object should be 10px from top.", stack};
+}
+
+TestData test_anchtoreverseside(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60, 60);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddPlaceholder(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetSizing(Gorgon::UI::ComponentTemplate::Fixed, Gorgon::UI::ComponentTemplate::Fixed);
+    cont2.SetSize({0, Gorgon::UI::Dimension::Percent}, 30);
+
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetSize({100, Gorgon::UI::Dimension::Percent}, 20);
+    cont3.SetAnchor(UI::Anchor::None, UI::Anchor::BottomRight, UI::Anchor::BottomRight);
+
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    return {"Anchors to zero width placeholder", "Size 60x20 object on a 60x60 white background, the object should be aligned to bottom.", stack};
+}
+
 TestData test_abssliding(Layer &layer) {
     auto &temp = *new Template;
     temp.SetSize(80, 40);
@@ -3319,9 +3369,11 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     
     &test_relanch,
     &test_relanch2,
-    &test_relanchvert,*/
+    &test_relanchvert,
     &test_relanchvertrelsize,
-    
+    &test_anchtozero,*/
+    &test_anchtoreverseside,
+    /*
     &test_anchbaseline,
     &test_anchsetbaseline,
     &test_anchbaseline2,
@@ -3423,7 +3475,7 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_autosizedstack_complex,
     &test_autosizedstack_center,
     //END
-    /*
+
     //BEGIN Extra
     &test_anchacc,
     &test_ignored,
@@ -3454,7 +3506,7 @@ int main() {
     
     Graphics::Layer datalayer;
     app.wind.Add(datalayer);
-    datalayer.Move(w + xs *2, h-50);
+    datalayer.Move(w + xs *2, h-30);
     datalayer.Resize(app.wind.GetWidth() - w - xs*2 - 10, 50);
     
     grid.Draw(xs-20, ys-2, 20, 2, Graphics::Color::White);

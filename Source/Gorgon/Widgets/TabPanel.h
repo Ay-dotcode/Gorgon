@@ -5,6 +5,9 @@
 #include "../Containers/Collection.h"
 
 #include "Panel.h"
+#include "Checkbox.h"
+#include "../UI/RadioControl.h"
+#include "../UI/Organizers/Flow.h"
 
 namespace Gorgon { namespace Widgets {
     template <class Key_>
@@ -17,10 +20,23 @@ namespace Gorgon { namespace Widgets {
     class Tab : public Panel {
         friend class basic_TabPanel<Key_>;
     public:
-        //TODO icon
-        //blankpanel
+        //TODO: icon
         
+        Key_ GetKey() const {
+            return key;
+        }
+
+        void SetKey(const Key_ &value);
+
+        std::string GetTitle() const {
+            return title;
+        }
+
+        void SetTitle(const std::string &value);
         
+        PROPERTY_GETSET(Tab, , Key_, Key);
+        
+        PROPERTY_GETSET(Tab, , std::string, Title);
 
     private:
         Tab(basic_TabPanel<Key_> &parent, const UI::Template &temp, 
@@ -44,6 +60,7 @@ namespace Gorgon { namespace Widgets {
      */
     template <class Key_>
     class basic_TabPanel : public ComponentStackComposer {
+        friend class Tab<Key_>;
     public:
 
         /// Enumeration that controls how tab buttons are sized
@@ -80,18 +97,59 @@ namespace Gorgon { namespace Widgets {
         /// Construct a new panel
         explicit basic_TabPanel(const UI::Template &temp) : 
             ComponentStackComposer(temp, {
-                {UI::ComponentTemplate::ButtonTag, {}}
-            }) 
+                {UI::ComponentTemplate::ButtonTag, {}},
+                {UI::ComponentTemplate::PanelTag, {}},
+            })
         {
+            stack.AddGenerator(UI::ComponentTemplate::ButtonsTag, std::bind(&basic_TabPanel::getbtns, this, std::placeholders::_1));
+            radio.ChangedEvent.Register(*this, &basic_TabPanel::Activate);
+
+            Refresh();
         }
 
         /// Construct a new panel
         explicit basic_TabPanel(Registry::TemplateType type = Registry::TabPanel_Regular) : basic_TabPanel(Registry::Active()[type]) {
         }
 
+        ~basic_TabPanel() {
+            delete buttonspnl;
+            buttons.Destroy();
+            tabs.Destroy();
+        }
+
         /// Create a new tab with the given key and title
         Tab<Key_> &New(const Key_ &key, const std::string &title) {
+            auto layertemp = stack.GetTemplate(UI::ComponentTemplate::PanelTag);
+            if(!layertemp)
+                layertemp = &Registry::Active()[Registry::Panel_Blank];
             
+            auto buttontemp = stack.GetTemplate(UI::ComponentTemplate::ButtonTag);
+            if(!buttontemp)
+                buttontemp = &Registry::Active()[Registry::Checkbox_Button];
+
+            auto &tab = *new Tab<Key_>(
+                *this,
+                *layertemp,
+                key, title
+            );
+            tabs.Add(tab);
+            mapping.Add(key, tab);
+
+            auto &btn = *new Checkbox(*buttontemp, title);
+            btn.SetHorizonalAutosize(UI::Autosize::Unit);
+            buttons.Add(btn);
+            radio.Add(key, btn);
+
+            if(buttonspnl)
+                buttonspnl->Add(btn);
+
+            if(tabs.GetSize() == 1) {
+                Activate(key);
+            }
+
+            Refresh();
+
+            return tab;
         }
 
         /// Create a new tab with the given key, title will be determined from the key
@@ -153,10 +211,24 @@ namespace Gorgon { namespace Widgets {
         }
 
         /// Activates the tab with the key. If key does not exist nothing is done.
-        void Activate(const Key_ &key);
+        void Activate(const Key_ &key) {
+            if(mapping.Exists(key)) {
+                if(radio.Get() != key)
+                    radio.Set(key);
+
+                mapping[key].Resize(stack.GetTagSize(UI::ComponentTemplate::PanelTag));
+                stack.SetWidget(UI::ComponentTemplate::PanelTag, &mapping[key]);
+
+                hasactive = true;
+            }
+        }
 
         /// Deactivate the currently active tab.
-        void Deactivate();
+        void Deactivate() {
+            radio.Set(Key_{});
+            stack.SetWidget(UI::ComponentTemplate::PanelTag, nullptr);
+            hasactive = false;
+        }
 
         /// Activates the next tab
         void ActivateNext();
@@ -165,13 +237,25 @@ namespace Gorgon { namespace Widgets {
         void ActivatePrevious();
 
         /// Returns if there is an active tab.
-        bool HasActiveTab() const;
+        bool HasActiveTab() const {
+            return hasactive && radio.Exists(radio.Get()) && mapping.Exists(radio.Get());
+        }
 
         /// Returns the currently active tab. Throws is there is no active tab.
-        Tab<Key_> &GetActiveTab();
+        Tab<Key_> &GetActiveTab() {
+            if(!HasActiveTab())
+                throw std::runtime_error("No active tab");
+
+            return mapping[radio.Get()];
+        }
 
         /// Returns the currently active tab. Throws is there is no active tab.
-        const Tab<Key_> &GetActiveTab() const;
+        const Tab<Key_> &GetActiveTab() const {
+            if(!HasActiveTab())
+                throw std::runtime_error("No active tab");
+
+            return mapping[radio.Get()];
+        }
 
         /// Set how the tab buttons will be resized. Default is AutoUnit
         void SetButtonSizing(ButtonSizing value);
@@ -222,12 +306,31 @@ namespace Gorgon { namespace Widgets {
             return rollover;
         }
 
+        /// Refreshes the tab buttons and their locations. This function is called automatically.
+        void Refresh() {
+            int x = 0;
+            for(int i=0; i<tabs.GetCount(); i++) {
+                buttons[i].SetText(tabs[i].GetTitle());
+                buttons[i].Location.X = x;
+                x = buttons[i].GetBounds().Right;
+            }
+
+            if(buttonspnl) {
+                if(buttons.GetSize()) {
+                    buttonspnl->Resize((Geometry::Size)buttons.Last()->GetBounds().BottomRight());
+                }
+                else {
+                    buttonspnl->Resize({0, GetUnitWidth()});
+                }
+
+                stack.SetTagSize(UI::ComponentTemplate::ButtonsTag, buttonspnl->GetSize());
+            }
+        }
 
         /// Used to enumerate tabs
         auto begin() {
             return tabs.begin();
         }
-
 
         /// Used to enumerate tabs
         auto begin() const {
@@ -256,8 +359,37 @@ namespace Gorgon { namespace Widgets {
         ButtonOverflow  overflow        = Scale;
         Geometry::Size  buttonsize; //constructor will initialize to 3x1U
         bool            rollover        = false;
+        bool            hasactive       = false;
+
+        Panel *buttonspnl = nullptr;
+        Containers::Collection<Checkbox> buttons;
+
+        UI::RadioControl<Key_, Checkbox> radio;
+
+        UI::Widget* getbtns(const UI::Template& temp) {
+            buttonspnl = new Panel(temp);
+            //buttonspnl->CreateOrganizer<UI::Organizers::Flow>();
+            buttonspnl->EnableScroll(false, false);
+
+            return buttonspnl;
+        }
     };
 
+    template <class Key_>
+    void Tab<Key_>::SetKey(const Key_ &value) {
+        parent->mapping.Remove(key);
+        parent->mapping.Add(value, this);
+        parent->radio.ChangeValue(key, value);
+        key = value;
+    }
+
+    template<class Key_>
+    void Tab<Key_>::SetTitle(const std::string &value) {
+        title = value;
+        parent->Refresh();
+    }
+
     using TabPanel = basic_TabPanel<std::string>;
+
 
 } }

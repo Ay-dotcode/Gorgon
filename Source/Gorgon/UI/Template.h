@@ -968,6 +968,8 @@ namespace Gorgon {
             HelpTag,
             ButtonTag,
             ButtonsTag,
+            PanelTag,
+            ContainerTag
         };
         
         /// Some components are repeated along some axis, this property controls how they will be

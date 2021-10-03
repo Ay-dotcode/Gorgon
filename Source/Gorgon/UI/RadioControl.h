@@ -239,7 +239,7 @@ namespace Gorgon { namespace UI {
             return columns;
         }
         
-        Event<RadioControl, T_> ChangedEvent;
+        Event<RadioControl, const T_ &> ChangedEvent;
         
     protected:
         void changing(TwoStateControl &control, bool state, bool &allow) {

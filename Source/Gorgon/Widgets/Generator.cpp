@@ -2742,7 +2742,7 @@ namespace Gorgon { namespace Widgets {
 
         //Button container
         auto &buttonsarea = temp.AddContainer(1, UI::ComponentCondition::Always)
-            //.AddIndex(3) //button panel
+            .AddIndex(3) //button panel
             .AddIndex(4) //additional graphics
         ;
         buttonsarea.SetSizing(UI::ComponentTemplate::Fixed, UI::ComponentTemplate::GrowOnly);
@@ -2751,18 +2751,26 @@ namespace Gorgon { namespace Widgets {
 
         auto &buttonspanel = temp.AddPlaceholder(3, UI::ComponentCondition::Always);
         buttonspanel.SetTag(UI::ComponentTemplate::ButtonsTag);
-        buttonspanel.SetSize({100, UI::Dimension::Percent}, unitsize);
-        buttonspanel.SetSizing(UI::ComponentTemplate::Automatic, UI::ComponentTemplate::Fixed);
+        buttonspanel.SetSize({0, UI::Dimension::Percent}, 0);
+        buttonspanel.SetTemplate((*this)[Panel_Blank]);
+        buttonspanel.SetSizing(UI::ComponentTemplate::Fixed, UI::ComponentTemplate::Fixed);
 
         auto &graph = temp.AddGraphics(4, UI::ComponentCondition::Always);
         graph.Content.SetAnimation(A(BorderFilled, Regular, None));
-        graph.SetSize({100, UI::Dimension::Percent}, {Border.Width, UI::Dimension::Pixel});
+        graph.SetSize({100, UI::Dimension::Percent}, Border.Width);
         graph.SetFillArea(true);
         graph.SetSizing(UI::ComponentTemplate::Fixed);
         graph.SetAnchor(UI::Anchor::BottomRight, UI::Anchor::BottomLeft, UI::Anchor::BottomLeft);
 
+        auto &container = temp.AddPlaceholder(2, UI::ComponentCondition::Always);
+        container.SetTag(UI::ComponentTemplate::PanelTag);
+        container.SetTemplate((*this)[Panel_Top]); // TODO: replace
+        container.SetSize(100, 100, UI::Dimension::Percent);
+        container.SetSizing(UI::ComponentTemplate::Fixed);
+        container.SetAnchor(UI::Anchor::BottomLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+
         auto &btn = temp.AddPlaceholder(5, UI::ComponentCondition::Always);
-        btn.SetTemplate((*this)[Checkbox_Button]); // TODO replace
+        btn.SetTemplate((*this)[Checkbox_Button]); // TODO: replace
         btn.SetTag(UI::ComponentTemplate::ButtonTag);
         btn.SetPositioning(UI::ComponentTemplate::Absolute);
 
