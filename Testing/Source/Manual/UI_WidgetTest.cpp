@@ -25,8 +25,12 @@ int main() {
     org
         << wgt1;
 
+    wgt1.Focus();
+
     wgt1.New("Tab 1", "Tab 1 long text");
     wgt1.New("Tab 2");
+    wgt1.SetTabRollover(true);
+    //wgt1.SetButtonTextWrap(true);
 
     Widgets::Button btn1("Hey tab 1");
     Widgets::Label lbl1("Hey tab 2");
@@ -42,6 +46,7 @@ int main() {
     btn2.Location.Y = 400;
     btn2.Location.X = Widgets::Registry::Active().GetUnitSize(3) + Widgets::Registry::Active().GetSpacing();
 
+    wgt1.ActivateNext();
         
     
     app.wind.Run();

@@ -9,6 +9,8 @@
 #include "../UI/RadioControl.h"
 #include "../UI/Organizers/Flow.h"
 
+//TODO: Better tab buttons, Overflow options, Disable/hide tab, Tab icons
+
 namespace Gorgon { namespace Widgets {
     template <class Key_>
     class basic_TabPanel;
@@ -98,11 +100,22 @@ namespace Gorgon { namespace Widgets {
         explicit basic_TabPanel(const UI::Template &temp) : 
             ComponentStackComposer(temp, {
                 {UI::ComponentTemplate::ButtonTag, {}},
-                {UI::ComponentTemplate::PanelTag, {}},
-            })
+                {UI::ComponentTemplate::ContentsTag, {}},
+            }),
+            buttonsize(GetUnitWidth() * 3 + GetSpacing() * 2, GetUnitWidth())
         {
+            stack.SetMouseUpEvent([this](auto, auto, auto) {
+                Focus();
+            });
+
             stack.AddGenerator(UI::ComponentTemplate::ButtonsTag, std::bind(&basic_TabPanel::getbtns, this, std::placeholders::_1));
-            radio.ChangedEvent.Register(*this, &basic_TabPanel::Activate);
+            radio.ChangedEvent.Register([this](const Key_ &key) {
+                if(!updating) {
+                    Activate(key);
+                    if(HasActiveTab())
+                        GetActiveTab().Focus();
+                }
+            });
 
             Refresh();
         }
@@ -119,7 +132,7 @@ namespace Gorgon { namespace Widgets {
 
         /// Create a new tab with the given key and title
         Tab<Key_> &New(const Key_ &key, const std::string &title) {
-            auto layertemp = stack.GetTemplate(UI::ComponentTemplate::PanelTag);
+            auto layertemp = stack.GetTemplate(UI::ComponentTemplate::ContentsTag);
             if(!layertemp)
                 layertemp = &Registry::Active()[Registry::Panel_Blank];
             
@@ -135,13 +148,29 @@ namespace Gorgon { namespace Widgets {
             tabs.Add(tab);
             mapping.Add(key, tab);
 
-            auto &btn = *new Checkbox(*buttontemp, title);
-            btn.SetHorizonalAutosize(UI::Autosize::Unit);
-            buttons.Add(btn);
-            radio.Add(key, btn);
+            auto &button = *new Checkbox(*buttontemp, title);
+            buttons.Add(button);
+            radio.Add(key, button);
+
+            switch(sizing) {
+                default:
+                case Fill:
+                case Adaptive:
+                case AutoUnit:
+                    button.SetHorizonalAutosize(true);
+                    button.Resize(buttonsize);
+                    break;
+                case Auto:
+                    button.SetHorizonalAutosize(UI::Autosize::Automatic);
+                    button.Resize(buttonsize);
+                    break;
+                case Fixed:
+                    button.Resize(buttonsize);
+                    break;
+            }
 
             if(buttonspnl)
-                buttonspnl->Add(btn);
+                buttonspnl->Add(button);
 
             if(tabs.GetSize() == 1) {
                 Activate(key);
@@ -182,14 +211,18 @@ namespace Gorgon { namespace Widgets {
         }
 
         /// Remove the tab at the given key
-        void Remove(const Key_ &key);
-
-        /// Remove all tabs with the supplied title
-        void RemoveAllOf(const std::string &title);
+        void Remove(const Key_ &key) {
+            auto &tab = mapping[key];
+            tabs.Remove(tab);
+            mapping.Remove(key);
+            delete tab;
+        }
 
         /// Moves the tab at the given key before another tab. If the before tab does not exit, the tab
         /// will be moved to the end.
-        void MoveBefore(const Key_ &before, const Key_ &tab);
+        void MoveBefore(const Key_ &tab, const Key_ &before) {
+            tabs.MoveBefore(mapping[tab], mapping[before]);
+        }
 
         /// Return the tab with the supplied key
         Tab<Key_> &operator [](const Key_ &key) {
@@ -213,11 +246,16 @@ namespace Gorgon { namespace Widgets {
         /// Activates the tab with the key. If key does not exist nothing is done.
         void Activate(const Key_ &key) {
             if(mapping.Exists(key)) {
-                if(radio.Get() != key)
+                if(radio.Get() != key) {
+                    updating = true;
                     radio.Set(key);
+                    updating = false;
+                }
 
-                mapping[key].Resize(stack.GetTagSize(UI::ComponentTemplate::PanelTag));
-                stack.SetWidget(UI::ComponentTemplate::PanelTag, &mapping[key]);
+                mapping[key].Resize(stack.BoundsOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag)).GetSize());
+                //stack.SetWidget(UI::ComponentTemplate::ContentsTag, &mapping[key]);
+                Clear();
+                Add(mapping[key]);
 
                 hasactive = true;
             }
@@ -226,15 +264,55 @@ namespace Gorgon { namespace Widgets {
         /// Deactivate the currently active tab.
         void Deactivate() {
             radio.Set(Key_{});
-            stack.SetWidget(UI::ComponentTemplate::PanelTag, nullptr);
+            stack.SetWidget(UI::ComponentTemplate::ContentsTag, nullptr);
             hasactive = false;
         }
 
         /// Activates the next tab
-        void ActivateNext();
+        void ActivateNext() {
+            long ind = -1;
+            if(!HasActiveTab()) {
+                if(tabs.GetCount()) {
+                    ind = 0;
+                }
+            }
+            else {
+                ind = tabs.FindLocation(GetActiveTab());
+                if(ind == tabs.GetCount()-1) {
+                    if(rollover) {
+                        ind = 0;
+                    }
+                }
+                else {
+                    ind++;
+                }
+            }
+
+            if(ind != -1)
+                Activate(tabs[ind].GetKey());
+        }
 
         /// Activates the previous tab
-        void ActivatePrevious();
+        void ActivatePrevious() {
+            long ind = -1;
+            if(!HasActiveTab()) {
+                ind = tabs.GetCount() - 1;
+            }
+            else {
+                ind = tabs.FindLocation(GetActiveTab());
+                if(ind == 0) {
+                    if(rollover) {
+                        ind = tabs.GetCount() - 1;
+                    }
+                }
+                else {
+                    ind--;
+                }
+            }
+
+            if(ind != -1)
+                Activate(tabs[ind].GetKey());
+        }
 
         /// Returns if there is an active tab.
         bool HasActiveTab() const {
@@ -258,7 +336,33 @@ namespace Gorgon { namespace Widgets {
         }
 
         /// Set how the tab buttons will be resized. Default is AutoUnit
-        void SetButtonSizing(ButtonSizing value);
+        void SetButtonSizing(ButtonSizing value) {
+            if(value == sizing)
+                return;
+
+            sizing = value;
+
+            for(auto &button : buttons) {
+                switch(sizing) {
+                    default:
+                    case Fill:
+                    case Adaptive:
+                    case AutoUnit:
+                        button.SetHorizonalAutosize(true);
+                        button.Resize(buttonsize);
+                        break;
+                    case Auto:
+                        button.SetHorizonalAutosize(UI::Autosize::Automatic);
+                        button.Resize(buttonsize);
+                        break;
+                    case Fixed:
+                        button.Resize(buttonsize);
+                        break;
+                }
+            }
+
+            Refresh();
+        }
 
         /// Returns how the tab buttons will be resized
         ButtonSizing GetButtonSizing() const {
@@ -297,7 +401,21 @@ namespace Gorgon { namespace Widgets {
 
         /// Sets the size of the tab buttons. The size will be used according
         /// to ButtonSizing.
-        void SetButtonSize(const Geometry::Size &size);
+        void SetButtonSize(const Geometry::Size &value) {
+            if(buttonsize == value)
+                return;
+
+            buttonsize = value;
+            Refresh();
+        }
+
+        void SetButtonWidth(int size) {
+            SetButtonSize(size, buttonsize.Height);
+        }
+
+        void SetButtonHeight(int size) {
+            SetButtonSize(buttonsize.Width, size);
+        }
 
         /// Returns the size of the buttons
         Geometry::Size GetButtonSize() const {
@@ -305,7 +423,9 @@ namespace Gorgon { namespace Widgets {
         }
 
         /// Sets if next or previous tab switches will rollover. Default is false
-        void SetTabRollover(bool value);
+        void SetTabRollover(bool value) {
+            rollover = value;
+        }
 
         /// Returns if next or previous tab switches will rollover.
         bool GetTabRollover() const {
@@ -316,11 +436,14 @@ namespace Gorgon { namespace Widgets {
         void Refresh() {
             int x = 0;
             for(int i=0; i<tabs.GetCount(); i++) {
-                buttons[i].SetText(tabs[i].GetTitle());
-                buttons[i].Location.X = x;
-                buttons[i].SetTextWrap(buttontextwrap);
-                x = buttons[i].GetBounds().Right;
-                tabs[i].Resize(stack.BoundsOf(stack.IndexOfTag(UI::ComponentTemplate::PanelTag)).GetSize());
+                auto &button = buttons[i];
+                auto &tab    = tabs[i];
+                button.SetText(tab.GetTitle());
+                button.Location.X = x;
+                button.SetTextWrap(buttontextwrap);
+                x = button.GetBounds().Right;
+
+                tab.Resize(stack.BoundsOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag)).GetSize());
             }
 
             if(buttonspnl) {
@@ -355,6 +478,37 @@ namespace Gorgon { namespace Widgets {
             return tabs.end();
         }
 
+        bool KeyPressed(Input::Key key, float state) override {
+            namespace Keycodes = Input::Keyboard::Keycodes;
+
+            if(state == 0)
+                return false;
+
+            if(key == Keycodes::Tab) {
+                if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::Ctrl) {
+                    ActivateNext();
+
+                    if(HasActiveTab())
+                        GetActiveTab().Focus();
+
+                    return true;
+                }
+                else if(Input::Keyboard::CurrentModifier == Input::Keyboard::Modifier::ShiftCtrl) {
+                    ActivatePrevious();
+
+                    if(HasActiveTab())
+                        GetActiveTab().Focus();
+
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+
+
+
     private:
         //for key mapping
         Containers::Hashmap<Key_, Tab<Key_>> mapping;
@@ -364,10 +518,11 @@ namespace Gorgon { namespace Widgets {
 
         ButtonSizing    sizing          = AutoUnit;
         bool            buttontextwrap  = false;
-        ButtonOverflow  overflow        = Scale;
+        ButtonOverflow  overflow        = HideExcess;
         Geometry::Size  buttonsize; //constructor will initialize to 3x1U
         bool            rollover        = false;
         bool            hasactive       = false;
+        bool            updating        = false;
 
         Panel *buttonspnl = nullptr;
         Containers::Collection<Checkbox> buttons;

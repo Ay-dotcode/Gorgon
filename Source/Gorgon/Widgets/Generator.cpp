@@ -2778,7 +2778,7 @@ namespace Gorgon { namespace Widgets {
         graph.SetAnchor(UI::Anchor::BottomRight, UI::Anchor::BottomLeft, UI::Anchor::BottomLeft);
 
         auto &container = temp.AddPlaceholder(2, UI::ComponentCondition::Always);
-        container.SetTag(UI::ComponentTemplate::PanelTag);
+        container.SetTag(UI::ComponentTemplate::ContentsTag);
         auto &pnltmp = *new UI::Template(makepanel(AssetID::AllExceptTop, true));
         container.OwnTemplate(pnltmp);// TODO: replace?
         container.SetSize(100, 100, UI::Dimension::Percent);

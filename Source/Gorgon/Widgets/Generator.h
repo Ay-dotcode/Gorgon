@@ -235,7 +235,8 @@ namespace Gorgon { namespace Widgets {
                 Edit, //rectangle with background set to edit
                 FgFilled,
                 BorderFilled,
-                Caret
+                Caret,
+                TabButton,
             };
             
             enum BorderSide {
