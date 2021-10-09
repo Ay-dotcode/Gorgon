@@ -161,7 +161,7 @@ namespace Gorgon { namespace UI {
             stack.Refresh();
             boundschanged();
         }
-        
+
         /// Adjusts autosizing of the widget. In autosize mode, set width is used to limit
         /// text width so that it will flow to next line.
         void SetHorizonalAutosize(UI::Autosize value) {
@@ -169,7 +169,7 @@ namespace Gorgon { namespace UI {
             stack.Refresh();
             boundschanged();
         }
-        
+
         /// Adjusts autosizing of the widget. In autosize mode, set width is used to limit
         /// text width so that it will flow to next line.
         void SetVerticalAutosize(UI::Autosize value) {
@@ -177,7 +177,25 @@ namespace Gorgon { namespace UI {
             stack.Refresh();
             boundschanged();
         }
-        
+
+        /// Adjusts autosizing of the widget. Setting autosize to true sets the autosize to
+        /// automatic to nearest unit size
+        void SetAutosize(bool hor, bool ver) {
+            SetAutosize(hor ? Autosize::Unit : Autosize::None, ver ? Autosize::Unit : Autosize::None);
+        }
+
+        /// Adjusts autosizing of the widget. Setting autosize to true sets the autosize to
+        /// automatic to nearest unit size
+        void SetHorizonalAutosize(bool value) {
+            SetHorizonalAutosize(value ? Autosize::Unit : Autosize::None);
+        }
+
+        /// Adjusts autosizing of the widget. Setting autosize to true sets the autosize to
+        /// automatic to nearest unit size
+        void SetVerticalAutosize(bool value) {
+            SetVerticalAutosize(value ? Autosize::Unit : Autosize::None);
+        }
+
         /// Returns the horizontal autosize mode of the widget
         UI::Autosize GetHorizontalAutosize() const {
             return stack.GetAutosize().first;
@@ -213,4 +231,23 @@ namespace Gorgon { namespace UI {
         using ComponentStackWidget::GetHorizontalAutosize; \
         using ComponentStackWidget::GetVerticalAutosize
     
+#define GORGON_UI_CSW_WRAP_WIDGET(cls, tag, def) \
+        /** Text wrap controls if the text will be wrapped if it is too long. It also controls autosize behaviour. Default value is true. */ \
+        void SetTextWrap(const bool &value) { \
+            if(textwrap == value) \
+                return; \
+            textwrap = value; \
+            if(textwrap) stack.EnableTagWrap(UI::ComponentTemplate::tag); \
+            else         stack.DisableTagWrap(UI::ComponentTemplate::tag);\
+        } \
+        /** Text wrap controls if the text will be wrapped if it is too long. It also controls autosize behaviour. */ \
+        bool GetTextWrap() const { \
+            return textwrap; \
+        } \
+        private: \
+        bool textwrap = def;\
+        public:\
+        PROPERTY_GETSET(cls, Boolean, bool, TextWrap);
+
+
 } }

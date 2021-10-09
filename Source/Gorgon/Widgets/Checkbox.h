@@ -165,6 +165,7 @@ namespace Gorgon { namespace Widgets {
         
         virtual bool Activate() override;
         
+        GORGON_UI_CSW_WRAP_WIDGET(Checkbox, TextTag, true);
         GORGON_UI_CSW_AUTOSIZABLE_WIDGET;
         
         bool KeyPressed(Input::Key key, float state) override;

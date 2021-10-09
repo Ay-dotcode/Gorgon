@@ -465,6 +465,7 @@ namespace Gorgon { namespace UI {
         /// Disables text wrapping on a specific tag, default is enabled.
         void DisableTagWrap(ComponentTemplate::Tag tag) {
             tagnowrap.insert(tag);
+            Update();
         }
         
         /// Sets whether the ComponentStack should be autosized. Autosize

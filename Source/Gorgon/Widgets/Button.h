@@ -122,6 +122,7 @@ namespace Gorgon { namespace Widgets {
         /// Deactivates click repeat.
         void DeactivateClickRepeat();
         
+        GORGON_UI_CSW_WRAP_WIDGET(Button, TextTag, true);
         GORGON_UI_CSW_AUTOSIZABLE_WIDGET;
         
         virtual bool Activate() override;

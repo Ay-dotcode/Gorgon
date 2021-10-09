@@ -1073,6 +1073,7 @@ namespace Gorgon { namespace Widgets {
             txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             txt.SetDataEffect(UI::ComponentTemplate::Text);
             txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+            txt.SetTag(UI::ComponentTemplate::TextTag);
         };
         
         setuptext(FgC(Regular), UI::ComponentCondition::Always);
@@ -1162,6 +1163,7 @@ namespace Gorgon { namespace Widgets {
             txt.SetDataEffect(UI::ComponentTemplate::Text);
             txt.SetSize(100, 100, UI::Dimension::Percent);
             txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+            txt.SetTag(UI::ComponentTemplate::TextTag);
         };
         
         setuptext(FgC(Regular), UI::ComponentCondition::Always);
@@ -1259,6 +1261,7 @@ namespace Gorgon { namespace Widgets {
             txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
             txt.SetDataEffect(UI::ComponentTemplate::Text);
             txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+            txt.SetTag(UI::ComponentTemplate::TextTag);
         };
         
         setuptext(FgC(Regular), UI::ComponentCondition::Always);
@@ -1320,6 +1323,7 @@ namespace Gorgon { namespace Widgets {
             tt.SetDataEffect(UI::ComponentTemplate::Text);
             tt.SetSize(100, 100, UI::Dimension::Percent);
             tt.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
+            tt.SetTag(UI::ComponentTemplate::TextTag);
         };
         
         makestate(Graphics::Color::Regular, UI::ComponentCondition::Always);
@@ -1418,6 +1422,7 @@ namespace Gorgon { namespace Widgets {
             txt.SetDataEffect(UI::ComponentTemplate::Text);
             txt.SetSize(100, 100, UI::Dimension::Percent);
             txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+            txt.SetTag(UI::ComponentTemplate::TextTag);
         };
         
         setuptext(FgC(Regular), UI::ComponentCondition::Always);
@@ -1480,6 +1485,7 @@ namespace Gorgon { namespace Widgets {
             tt.SetDataEffect(UI::ComponentTemplate::Text);
             tt.SetSize(100, 100, UI::Dimension::Percent);
             tt.SetSizing(UI::ComponentTemplate::ShrinkOnly, UI::ComponentTemplate::ShrinkOnly);
+            tt.SetTag(UI::ComponentTemplate::TextTag);
         };
         
         makestate(Graphics::Color::Regular, UI::ComponentCondition::Always);
@@ -1492,6 +1498,7 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
+    //TODO: join labels into two or three functions
     UI::Template SimpleGenerator::Label() {
         Geometry::Size defsize = {GetUnitSize(6), borderlessheight};
         
@@ -1521,6 +1528,7 @@ namespace Gorgon { namespace Widgets {
         txt.SetAnchor(UI::Anchor::MiddleRight, UI::Anchor::MiddleLeft, UI::Anchor::MiddleLeft);
         txt.SetDataEffect(UI::ComponentTemplate::Text);
         txt.SetSize(100, 100, UI::Dimension::Percent);
+        txt.SetTag(UI::ComponentTemplate::ContentsTag);
         txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
         
         return temp;
@@ -1556,6 +1564,7 @@ namespace Gorgon { namespace Widgets {
         txt.SetDataEffect(UI::ComponentTemplate::Text);
         txt.SetSize(100, 100, UI::Dimension::Percent);
         txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        txt.SetTag(UI::ComponentTemplate::ContentsTag);
         
         //TODO: background?
         
@@ -1592,6 +1601,7 @@ namespace Gorgon { namespace Widgets {
         txt.SetDataEffect(UI::ComponentTemplate::Text);
         txt.SetSize(100, 100, UI::Dimension::Percent);
         txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        txt.SetTag(UI::ComponentTemplate::ContentsTag);
         
         return temp;
     }
@@ -1627,6 +1637,7 @@ namespace Gorgon { namespace Widgets {
         txt.SetDataEffect(UI::ComponentTemplate::Text);
         txt.SetSize(100, 100, UI::Dimension::Percent);
         txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        txt.SetTag(UI::ComponentTemplate::ContentsTag);
         
         auto &ln = temp.AddGraphics(3, UI::ComponentCondition::Always);
         ln.Content.SetAnimation(Graphics::BlankImage::Get());
@@ -1669,6 +1680,7 @@ namespace Gorgon { namespace Widgets {
         txt.SetDataEffect(UI::ComponentTemplate::Text);
         txt.SetSize(100, 100, UI::Dimension::Percent);
         txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        txt.SetTag(UI::ComponentTemplate::ContentsTag);
         
         auto &ln = temp.AddGraphics(3, UI::ComponentCondition::Always);
         ln.Content.SetAnimation(Graphics::BlankImage::Get());
@@ -1712,6 +1724,7 @@ namespace Gorgon { namespace Widgets {
         txt.SetDataEffect(UI::ComponentTemplate::Text);
         txt.SetSize(100, 100, UI::Dimension::Percent);
         txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        txt.SetTag(UI::ComponentTemplate::ContentsTag);
         
         auto &ln = temp.AddGraphics(3, UI::ComponentCondition::Always);
         ln.Content.SetAnimation(Graphics::BlankImage::Get());
@@ -1767,6 +1780,7 @@ namespace Gorgon { namespace Widgets {
         txt.SetDataEffect(UI::ComponentTemplate::Text);
         txt.SetSize(100, 100, UI::Dimension::Percent);
         txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        txt.SetTag(UI::ComponentTemplate::ContentsTag);
         
         
         return temp;
@@ -1801,6 +1815,7 @@ namespace Gorgon { namespace Widgets {
         txt.SetDataEffect(UI::ComponentTemplate::Text);
         txt.SetSize(100, 100, UI::Dimension::Percent);
         txt.SetSizing(UI::ComponentTemplate::ShrinkOnly);
+        txt.SetTag(UI::ComponentTemplate::ContentsTag);
         
         auto &icon = temp.AddGraphics(1, UI::ComponentCondition::Icon1IsSet);
         icon.SetDataEffect(UI::ComponentTemplate::Icon);
@@ -2725,7 +2740,7 @@ namespace Gorgon { namespace Widgets {
 
     UI::Template SimpleGenerator::TabPanel() {
         Geometry::Size defsize = {
-            GetUnitSize(6) + Border.Width * 2  + spacing * 2,
+            GetUnitSize(6) + Border.Width * 2  + spacing * 3 + (*this)[Scrollbar_Vertical].GetSize().Width,
             GetUnitSize(10) + Border.Width * 2 + spacing * 2
         };
 
@@ -2764,7 +2779,8 @@ namespace Gorgon { namespace Widgets {
 
         auto &container = temp.AddPlaceholder(2, UI::ComponentCondition::Always);
         container.SetTag(UI::ComponentTemplate::PanelTag);
-        container.SetTemplate((*this)[Panel_Top]); // TODO: replace
+        auto &pnltmp = *new UI::Template(makepanel(AssetID::AllExceptTop, true));
+        container.OwnTemplate(pnltmp);// TODO: replace?
         container.SetSize(100, 100, UI::Dimension::Percent);
         container.SetSizing(UI::ComponentTemplate::Fixed);
         container.SetAnchor(UI::Anchor::BottomLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);

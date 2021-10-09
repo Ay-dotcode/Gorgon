@@ -6,6 +6,7 @@
 #include <Gorgon/Widgets/Window.h>
 #include <Gorgon/Widgets/TabPanel.h>
 #include <Gorgon/Widgets/Button.h>
+#include <Gorgon/Widgets/Label.h>
 
 std::string helptext =
     "Key list:\n"
@@ -21,17 +22,25 @@ int main() {
     
     Widgets::TabPanel wgt1;
     
-    org 
-        << wgt1 ;
+    org
+        << wgt1;
 
-    wgt1.New("Tab 1");
+    wgt1.New("Tab 1", "Tab 1 long text");
     wgt1.New("Tab 2");
 
     Widgets::Button btn1("Hey tab 1");
+    Widgets::Label lbl1("Hey tab 2");
+    Widgets::Label lbl2("Tab control is now working, scroll down for the button");
+    lbl2.SetAutosize(true, true);
     Widgets::Button btn2("Hey tab 2");
 
     wgt1["Tab 1"].Add(btn1);
+    wgt1["Tab 2"].Add(lbl1);
+    wgt1["Tab 2"].Add(lbl2);
     wgt1["Tab 2"].Add(btn2);
+    lbl2.Location.Y = lbl1.GetBounds().Bottom + Widgets::Registry::Active().GetSpacing();
+    btn2.Location.Y = 400;
+    btn2.Location.X = Widgets::Registry::Active().GetUnitSize(3) + Widgets::Registry::Active().GetSpacing();
 
         
     

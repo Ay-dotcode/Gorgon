@@ -267,7 +267,13 @@ namespace Gorgon { namespace Widgets {
 
         /// Sets if the button text would be wrapped. If true, current tab size
         /// will be used to determine wrap width. Default value is false.
-        void SetButtonTextWrap(bool value);
+        void SetButtonTextWrap(bool value) {
+            if(value == buttontextwrap)
+                return;
+
+            buttontextwrap = value;
+            Refresh();
+        }
 
         /// Returns if the button text would wrapped.
         bool GetButtonTextWrap() const {
@@ -312,7 +318,9 @@ namespace Gorgon { namespace Widgets {
             for(int i=0; i<tabs.GetCount(); i++) {
                 buttons[i].SetText(tabs[i].GetTitle());
                 buttons[i].Location.X = x;
+                buttons[i].SetTextWrap(buttontextwrap);
                 x = buttons[i].GetBounds().Right;
+                tabs[i].Resize(stack.BoundsOf(stack.IndexOfTag(UI::ComponentTemplate::PanelTag)).GetSize());
             }
 
             if(buttonspnl) {

@@ -98,7 +98,8 @@ namespace Gorgon { namespace Widgets {
         void OwnIcon(Graphics::Bitmap &&value);
         
         virtual bool Activate() override;
-        
+
+        GORGON_UI_CSW_WRAP_WIDGET(Label, ContentsTag, true);
         GORGON_UI_CSW_AUTOSIZABLE_WIDGET;
 
         TextualProperty<Label, std::string, &Label::gettext, &Label::settext> Text;

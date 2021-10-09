@@ -953,6 +953,7 @@ namespace Gorgon {
             ExpandTag,
             ToggleTag,
             ContentsTag,
+            TextTag,
             ViewPortTag,
             SelectionTag,
             CaretTag,
