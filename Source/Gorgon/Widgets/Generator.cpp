@@ -303,10 +303,13 @@ namespace Gorgon { namespace Widgets {
         h2 = dynamic_cast<Graphics::BasicPrinter*>(h2renderer);
         h3 = dynamic_cast<Graphics::BasicPrinter*>(h3renderer);
         info = dynamic_cast<Graphics::BasicPrinter*>(smallrenderer);
-        
+
         centered.SetGlyphRenderer(*regularrenderer);
         centered.AlignCenter();
-        
+
+        infocentered.SetGlyphRenderer(*smallrenderer);
+        infocentered.AlignCenter();
+
         auto regcol = colors.Get(Graphics::Color::Regular).Forecolor;
         
         auto regularfnt = regular;
@@ -550,35 +553,38 @@ namespace Gorgon { namespace Widgets {
         return *prov;
     }
     
-    Graphics::RectangularAnimationProvider *SimpleGenerator::makeborder(Graphics::RGBA border, Graphics::RGBA bg, AssetID::BorderSide borders, int w, int r) {
+    Graphics::RectangularAnimationProvider *SimpleGenerator::makeborder(
+        Graphics::RGBA border, Graphics::RGBA bg,
+        AssetID::BorderSide borders, int w, int r
+    ) {
         if(w == -1)
             w = Border.Width;
-        
+
         if(r == -1)
             r = Border.Radius;
-        
+
         int coff = r + (border.A > 0 ? w+1 : 0);
         int bsize = coff * 2 + 16;
         float off = (border.A ? float(w / 2.0f) : 0);
-        
+
         auto &bi = *new Graphics::Bitmap({bsize, bsize}, Graphics::ColorMode::RGBA);
         bi.Clear();
-        
+
         if(r == 0 || AssetID::TotalBorders(borders) < 3) {
             if(borders == AssetID::None) {
                 coff = 0;
                 off  = 0;
             }
-            
+
             Geometry::PointList<Geometry::Pointf> list = {{off, bsize-off}, {bsize-off, bsize-off}, {bsize-off, off}, {off,off}};
-            
+
             CGI::Polyfill(bi.GetData(), list, CGI::SolidFill<>(bg));
-            
+
             if(border.A != 0) {
                 switch(borders) {
                 case AssetID::Horizontal:
                     CGI::DrawLines(bi.GetData(),
-                        {{off, off}, {bsize-off, off}}, 
+                        {{off, off}, {bsize-off, off}},
                         (float)w, CGI::SolidFill<>(border)
                     );
                     CGI::DrawLines(bi.GetData(),
@@ -588,7 +594,7 @@ namespace Gorgon { namespace Widgets {
                     break;
                 case AssetID::Vertical:
                     CGI::DrawLines(bi.GetData(),
-                        {{off, off}, {off, bsize-off}}, 
+                        {{off, off}, {off, bsize-off}},
                         (float)w, CGI::SolidFill<>(border)
                     );
                     CGI::DrawLines(bi.GetData(),
@@ -602,7 +608,7 @@ namespace Gorgon { namespace Widgets {
                     break;
                 case AssetID::Left:
                     CGI::DrawLines(bi.GetData(),
-                        {{off, off}, {off, bsize-off}}, 
+                        {{off, off}, {off, bsize-off}},
                         (float)w, CGI::SolidFill<>(border)
                     );
                     break;
@@ -614,7 +620,7 @@ namespace Gorgon { namespace Widgets {
                     break;
                 case AssetID::Top:
                     CGI::DrawLines(bi.GetData(),
-                        {{off, off}, {off, bsize-off}}, 
+                        {{off, off}, {off, bsize-off}},
                         (float)w, CGI::SolidFill<>(border)
                     );
                     break;
@@ -636,13 +642,13 @@ namespace Gorgon { namespace Widgets {
         }
         else {
             Geometry::PointList<Geometry::Pointf> list;
-            
+
             int div = Border.Divisions+1;
             float angperdivision = -PI/2/div;
             float angstart = -PI/2;
-            
+
             int missingedge = AssetID::TotalBorders(borders) == 3 ? borders - AssetID::AllExceptLeft : -1;
-            
+
             if(missingedge != -1) {
                 list.Push({off, 0});
             }
@@ -652,19 +658,19 @@ namespace Gorgon { namespace Widgets {
                     list.Push(Geometry::Pointf::FromVector((float)r, ang, Geometry::Pointf{off+r, off+r}));
                 }
             }
-            
+
             angstart = PI;
             for(int i=0; i<=div; i++) {
                 float ang = angstart + angperdivision*i;
                 list.Push(Geometry::Pointf::FromVector((float)r, ang, Geometry::Pointf{off+r, bsize-off-r}));
             }
-            
+
             angstart = PI/2;
             for(int i=0; i<=div; i++) {
                 float ang = angstart + angperdivision*i;
                 list.Push(Geometry::Pointf::FromVector((float)r, ang, Geometry::Pointf{bsize-off-r, bsize-off-r}));
             }
-            
+
             if(missingedge != -1) {
                 list.Push({bsize-off, 0});
             }
@@ -675,21 +681,21 @@ namespace Gorgon { namespace Widgets {
                     list.Push(Geometry::Pointf::FromVector((float)r, ang, Geometry::Pointf{bsize-off-r, off+r}));
                 }
             }
-            
+
             CGI::Polyfill(bi.GetData(), list, CGI::SolidFill<>(bg));
-            
-            
+
+
             if(missingedge == -1) {
                 list.Push(list.Front());
             }
-            
+
             if(border.A != 0)
                 CGI::DrawLines(bi.GetData(), list, (float)w, CGI::SolidFill<>(border));
-            
+
             if(missingedge == 0) {
                 bi = bi.Rotate90();
             }
-            else if(missingedge == 3) {
+            else if(missingedge == 1) {
                 bi = bi.Rotate180();
             }
             else if(missingedge == 2) {
@@ -699,25 +705,25 @@ namespace Gorgon { namespace Widgets {
 
         if(coff > 0) {
             drawables.Add(bi);
-            
+
             auto ret = new Graphics::BitmapRectangleProvider(Graphics::Slice(bi, {
-                coff, 
-                coff, 
+                coff,
+                coff,
                 bsize-coff,
                 bsize-coff
             }));
-            
+
             ret->Prepare();
-            
+
             return ret;
         }
         else {
             bi.Prepare();
-            
+
             return &bi;
         }
     }
-    
+
     Graphics::BitmapRectangleProvider *SimpleGenerator::makecheckeredbg() {
         //TODO: Use masked object
         auto r = Border.Radius;
@@ -1336,7 +1342,7 @@ namespace Gorgon { namespace Widgets {
         return temp;
     }
     
-    UI::Template SimpleGenerator::CheckboxButton() {
+    UI::Template SimpleGenerator::checkboxbutton(AssetID::BorderSide tabbutton) {
         
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
@@ -1357,17 +1363,31 @@ namespace Gorgon { namespace Widgets {
             bg.SetPositioning(UI::ComponentTemplate::Absolute);
         };
         
-        setupbg(A(Background, Regular), UI::ComponentCondition::Always);
-        setupbg(A(Background, Hover), UI::ComponentCondition::Hover);
-        setupbg(A(Background, Down), UI::ComponentCondition::Down);
-        setupbg(A(Background, Disabled), UI::ComponentCondition::Disabled);
+        if(tabbutton == AssetID::None) {
+            setupbg(A(Background, Regular), UI::ComponentCondition::Always);
+            setupbg(A(Background, Hover), UI::ComponentCondition::Hover);
+            setupbg(A(Background, Down), UI::ComponentCondition::Down);
+            setupbg(A(Background, Disabled), UI::ComponentCondition::Disabled);
+        }
+        else {
+            setupbg(GetAsset({AssetID::Background, Graphics::Color::Regular, tabbutton}), UI::ComponentCondition::Always);
+            setupbg(GetAsset({AssetID::Background, Graphics::Color::Hover, tabbutton}), UI::ComponentCondition::Hover);
+            setupbg(GetAsset({AssetID::Background, Graphics::Color::Down, tabbutton}), UI::ComponentCondition::Down);
+            setupbg(GetAsset({AssetID::Background, Graphics::Color::Disabled, tabbutton}), UI::ComponentCondition::Disabled);
+        }
         
         //checked border
         auto &border = temp.AddContainer(8, UI::ComponentCondition::Always, UI::ComponentCondition::State2);
         border.SetValueModification(UI::ComponentTemplate::ModifyAlpha, UI::ComponentTemplate::UseTransition);
         border.SetValueRange(0, 0.25, 1);
         border.SetReversible(true);
-        border.Background.SetAnimation(A(Frame, Hover));        
+
+        if(tabbutton == AssetID::None) {
+            border.Background.SetAnimation(A(Frame, Hover));
+        }
+        else {
+            border.Background.SetAnimation(GetAsset({AssetID::Frame, Graphics::Color::Hover, tabbutton}));
+        }
         
         //boxed content
         auto &boxed = temp.AddContainer(2, UI::ComponentCondition::Always)
@@ -1416,7 +1436,10 @@ namespace Gorgon { namespace Widgets {
         //Text only visible when no icon is set
         auto setuptext = [&](Graphics::RGBA color, UI::ComponentCondition condition) {
             auto &txt = temp.AddTextholder(7, condition);
-            txt.SetRenderer(centered);
+            if(tabbutton != AssetID::None)
+                txt.SetRenderer(infocentered);
+            else
+                txt.SetRenderer(centered);
             txt.SetColor(color);
             txt.SetAnchor(UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter, UI::Anchor::MiddleCenter);
             txt.SetDataEffect(UI::ComponentTemplate::Text);
@@ -1433,7 +1456,11 @@ namespace Gorgon { namespace Widgets {
 
         return temp;
     }
-    
+
+    UI::Template SimpleGenerator::CheckboxButton() {
+        return checkboxbutton(AssetID::None);
+    }
+
     UI::Template SimpleGenerator::RadioButton() {
         Geometry::Size defsize = {GetUnitSize(6), borderlessheight};
         
@@ -2750,6 +2777,7 @@ namespace Gorgon { namespace Widgets {
         //Main container
         temp.AddContainer(0, UI::ComponentCondition::Always)
             .AddIndex(1) //button container
+            .AddIndex(4) //additional graphics
             .AddIndex(2) //panel container
             .AddIndex(5) //Button
             .SetOrientation(Graphics::Orientation::Vertical)
@@ -2758,11 +2786,13 @@ namespace Gorgon { namespace Widgets {
         //Button container
         auto &buttonsarea = temp.AddContainer(1, UI::ComponentCondition::Always)
             .AddIndex(3) //button panel
-            .AddIndex(4) //additional graphics
         ;
         buttonsarea.SetSizing(UI::ComponentTemplate::Fixed, UI::ComponentTemplate::GrowOnly);
         buttonsarea.SetSize({100, UI::Dimension::Percent}, unitsize);
+        buttonsarea.SetTag(UI::ComponentTemplate::HeaderTag);
+        buttonsarea.SetAnchor(UI::Anchor::BottomLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
         //buttonsarea.Background.SetAnimation(A(Background, Regular, None));
+        buttonsarea.SetClip(true);
 
         auto &buttonspanel = temp.AddPlaceholder(3, UI::ComponentCondition::Always);
         buttonspanel.SetTag(UI::ComponentTemplate::ButtonsTag);
@@ -2773,9 +2803,10 @@ namespace Gorgon { namespace Widgets {
         auto &graph = temp.AddGraphics(4, UI::ComponentCondition::Always);
         graph.Content.SetAnimation(A(BorderFilled, Regular, None));
         graph.SetSize({100, UI::Dimension::Percent}, Border.Width);
+        //graph.SetPositioning(UI::ComponentTemplate::Absolute);
         graph.SetFillArea(true);
         graph.SetSizing(UI::ComponentTemplate::Fixed);
-        graph.SetAnchor(UI::Anchor::BottomRight, UI::Anchor::BottomLeft, UI::Anchor::BottomLeft);
+        graph.SetAnchor(UI::Anchor::BottomLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
 
         auto &container = temp.AddPlaceholder(2, UI::ComponentCondition::Always);
         container.SetTag(UI::ComponentTemplate::ContentsTag);
@@ -2784,9 +2815,11 @@ namespace Gorgon { namespace Widgets {
         container.SetSize(100, 100, UI::Dimension::Percent);
         container.SetSizing(UI::ComponentTemplate::Fixed);
         container.SetAnchor(UI::Anchor::BottomLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
+        container.SetClip(true);
 
         auto &btn = temp.AddPlaceholder(5, UI::ComponentCondition::Always);
-        btn.SetTemplate((*this)[Checkbox_Button]); // TODO: replace
+        auto &btntmp = *new UI::Template(checkboxbutton(AssetID::AllExceptBottom));
+        btn.OwnTemplate(btntmp);
         btn.SetTag(UI::ComponentTemplate::ButtonTag);
         btn.SetPositioning(UI::ComponentTemplate::Absolute);
 

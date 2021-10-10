@@ -9,7 +9,7 @@
 #include "../UI/RadioControl.h"
 #include "../UI/Organizers/Flow.h"
 
-//TODO: Better tab buttons, Overflow options, Disable/hide tab, Tab icons
+//TODO: More overflow options, repeat bar, Disable/hide tab, Tab icons
 
 namespace Gorgon { namespace Widgets {
     template <class Key_>
@@ -386,7 +386,11 @@ namespace Gorgon { namespace Widgets {
 
         /// Sets how the overflowing tab buttons are managed. Default is Scale.
         /// Some options are not implemented yet and will default to Scale.
-        void SetButtonOverflow(ButtonOverflow value);
+        void SetButtonOverflow(ButtonOverflow value) {
+            overflow = value;
+
+            Refresh();
+        }
 
         /// Returns how the overflowing tab buttons are managed.
         ButtonOverflow GetButtonOverflow() const {
@@ -435,26 +439,50 @@ namespace Gorgon { namespace Widgets {
         /// Refreshes the tab buttons and their locations. This function is called automatically.
         void Refresh() {
             int x = 0;
+            int y = 0;
+            int w = stack.BoundsOf(stack.IndexOfTag(UI::ComponentTemplate::HeaderTag)).Width();
+            int curh = 0;
+            int maxw = 0;
+
             for(int i=0; i<tabs.GetCount(); i++) {
                 auto &button = buttons[i];
                 auto &tab    = tabs[i];
                 button.SetText(tab.GetTitle());
-                button.Location.X = x;
-                button.SetTextWrap(buttontextwrap);
-                x = button.GetBounds().Right;
 
-                tab.Resize(stack.BoundsOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag)).GetSize());
+                if(button.GetWidth() + x > w && overflow == ExpandLines) {
+                    y += curh + GetSpacing();
+                    x = 0;
+                }
+
+                button.Location.X = x;
+                button.Location.Y = y;
+
+                button.SetTextWrap(buttontextwrap);
+
+                if(maxw < button.GetBounds().Right) {
+                    maxw = button.GetBounds().Right;
+                }
+
+                x = button.GetBounds().Right + GetSpacing();
+                if(button.GetHeight() > curh)
+                    curh = button.GetHeight();
             }
 
             if(buttonspnl) {
                 if(buttons.GetSize()) {
-                    buttonspnl->Resize((Geometry::Size)buttons.Last()->GetBounds().BottomRight());
+                    buttonspnl->Resize(maxw, buttons.Last()->GetBounds().Bottom);
                 }
                 else {
                     buttonspnl->Resize({0, GetUnitWidth()});
                 }
 
-                stack.SetTagSize(UI::ComponentTemplate::ButtonsTag, buttonspnl->GetSize());
+                stack.SetTagSize(UI::ComponentTemplate::ButtonsTag, {0, buttonspnl->GetHeight()});
+            }
+
+            stack.Update(true);
+            auto pnlsize = stack.BoundsOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag)).GetSize();
+            for(auto &tab : tabs) {
+                tab.Resize(pnlsize);
             }
         }
 

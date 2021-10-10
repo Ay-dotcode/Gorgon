@@ -235,8 +235,7 @@ namespace Gorgon { namespace Widgets {
                 Edit, //rectangle with background set to edit
                 FgFilled,
                 BorderFilled,
-                Caret,
-                TabButton,
+                Caret
             };
             
             enum BorderSide {
@@ -246,9 +245,9 @@ namespace Gorgon { namespace Widgets {
                 Right,
                 Bottom,
                 AllExceptLeft,
-                AllExceptTop,
-                AllExceptRight,
                 AllExceptBottom,
+                AllExceptRight,
+                AllExceptTop,
                 Horizontal,
                 Vertical,
                 All
@@ -701,6 +700,8 @@ namespace Gorgon { namespace Widgets {
         //will fit into the box of the same size
         Graphics::Bitmap *circlefill(Graphics::RGBA color, Geometry::Size size);
         Graphics::BitmapAnimationProvider *caret();
+
+        UI::Template checkboxbutton(AssetID::BorderSide tabbutton);
         
         
         /// This is the height of a bordered widget
@@ -778,6 +779,7 @@ namespace Gorgon { namespace Widgets {
         Graphics::BasicPrinter  *h3;
         Graphics::BasicPrinter  *info;
         Graphics::StyledPrinter  centered;
+        Graphics::StyledPrinter  infocentered;
         
         Graphics::AdvancedPrinter printer;
         Graphics::AdvancedPrinter infoprinter;

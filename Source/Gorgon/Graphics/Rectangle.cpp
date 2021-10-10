@@ -85,7 +85,7 @@ namespace Gorgon { namespace Graphics {
                   Geometry::Rectanglef(r.X + maxl, r.Y + maxt, r.Width-maxl-maxr, r.Height-maxt-maxb),
                   color);
         mr.DrawIn(target, prov.GetSideTiling() ? Tiling::Vertical : Tiling::None, 
-                  Geometry::Rectanglef(r.Right() - maxr, r.Y + maxt, (Float)ml.GetWidth(), r.Height-maxt-maxb),
+                  Geometry::Rectanglef(r.Right() - maxr, r.Y + maxt, (Float)mr.GetWidth(), r.Height-maxt-maxb),
                   color);
         
         

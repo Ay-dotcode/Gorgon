@@ -183,13 +183,24 @@ namespace Gorgon { namespace Geometry {
         void Push(P_ point) {
             Points.push_back(point);
         }
-        
+
         /// Adds a new point to the end of the point list
         template<class ...T_>
         void Push(T_&&... params) {
             Points.emplace_back(std::forward<T_>(params)...);
         }
-        
+
+        /// Adds a new point to the end of the point list
+        void Insert(long index, P_ point) {
+            Points.insert(Points.begin()+index, point);
+        }
+
+        /// Adds a new point to the end of the point list
+        template<class ...T_>
+        void Insert(long index, T_&&... params) {
+            Points.emplace(Points.begin()+index, std::forward<T_>(params)...);
+        }
+
         /// Removes the last point from the list
         void Pop() {
             Points.pop_back();

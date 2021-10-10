@@ -27,8 +27,10 @@ int main() {
 
     wgt1.Focus();
 
-    wgt1.New("Tab 1", "Tab 1 long text");
+    wgt1.New("Tab 1");
     wgt1.New("Tab 2");
+    wgt1.New("Tab 3");
+    wgt1.New("Tab 4");
     wgt1.SetTabRollover(true);
     //wgt1.SetButtonTextWrap(true);
 
