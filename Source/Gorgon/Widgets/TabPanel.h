@@ -102,7 +102,7 @@ namespace Gorgon { namespace Widgets {
                 {UI::ComponentTemplate::ButtonTag, {}},
                 {UI::ComponentTemplate::ContentsTag, {}},
             }),
-            buttonsize(GetUnitWidth() * 3 + GetSpacing() * 2, GetUnitWidth())
+            buttonsize(GetUnitSize() * 3 + GetSpacing() * 2, GetUnitSize())
         {
             stack.SetMouseUpEvent([this](auto, auto, auto) {
                 Focus();
@@ -473,7 +473,7 @@ namespace Gorgon { namespace Widgets {
                     buttonspnl->Resize(maxw, buttons.Last()->GetBounds().Bottom);
                 }
                 else {
-                    buttonspnl->Resize({0, GetUnitWidth()});
+                    buttonspnl->Resize({0, GetUnitSize()});
                 }
 
                 stack.SetTagSize(UI::ComponentTemplate::ButtonsTag, {0, buttonspnl->GetHeight()});

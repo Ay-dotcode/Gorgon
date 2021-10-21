@@ -1811,7 +1811,7 @@ namespace Gorgon { namespace Widgets {
         bool FitHeight(int maxpixels) {
             int curh = GetInteriorSize().Height;
             int overhead = GetHeight() - curh;
-            int defh = stack.GetTemplate().GetUnitWidth();
+            int defh = stack.GetTemplate().GetUnitSize();
             
             auto li = stack.GetTemplate(UI::ComponentTemplate::ItemTag);
             if(li)

@@ -23,7 +23,7 @@ namespace Gorgon { namespace UI {
         }
     }
 
-    int LayerAdapter::GetUnitWidth() const {
+    int LayerAdapter::GetUnitSize() const {
         if(issizesset) {
             return unitwidth;
         }

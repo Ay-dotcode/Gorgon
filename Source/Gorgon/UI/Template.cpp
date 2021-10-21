@@ -363,7 +363,7 @@ namespace Gorgon { namespace UI {
         size(std::move(other.size)),
         additional(std::move(other.additional)),
         spacing(std::move(other.spacing)),
-        unitwidth(std::move(other.unitwidth)),
+        unitsize(std::move(other.unitsize)),
         resizehandlesize(std::move(other.resizehandlesize)),
         direction(std::move(other.direction))
     {

@@ -47,7 +47,7 @@ namespace Gorgon { namespace Widgets {
             Center();
         }
         
-        minsize = GetSize() - GetInteriorSize() + Geometry::Size(stack.GetTemplate().GetUnitWidth()*2, stack.GetTemplate().GetUnitWidth());
+        minsize = GetSize() - GetInteriorSize() + Geometry::Size(stack.GetTemplate().GetUnitSize()*2, stack.GetTemplate().GetUnitSize());
     }
     
     Window::Window(const UI::Template &temp, const std::string &title, const Geometry::Size size, bool autoplace) : 

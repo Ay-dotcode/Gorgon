@@ -17,10 +17,10 @@ namespace Gorgon { namespace UI {
             stack.SetCeilToUnitSize([this](int s) {
                 int w;
                 if(HasParent()) {
-                    w = GetParent().GetUnitWidth();
+                    w = GetParent().GetUnitSize();
                 }
                 else {
-                    w = stack.GetTemplate().GetUnitWidth();
+                    w = stack.GetTemplate().GetUnitSize();
                 }
                 return (s + w - 1) / w * w;
             });
@@ -67,11 +67,11 @@ namespace Gorgon { namespace UI {
         virtual void SetWidthInUnits(int n) override {
             int w, s;
             if(HasParent()) {
-                w = GetParent().GetUnitWidth();
+                w = GetParent().GetUnitSize();
                 s = GetParent().GetSpacing();
             }
             else {
-                w = stack.GetTemplate().GetUnitWidth();
+                w = stack.GetTemplate().GetUnitSize();
                 s = stack.GetTemplate().GetSpacing();
             }
             SetWidth(w * n + s * (n-1));

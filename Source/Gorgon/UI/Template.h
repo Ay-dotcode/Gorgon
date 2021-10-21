@@ -591,10 +591,10 @@ namespace Gorgon {
         }
 
 
-        /// Sets the unit width for a widget. This size should be enough to
+        /// Sets the unit size for a widget. This size should be enough to
         /// have a bordered icon. 
-        void SetUnitWidth(int value) {
-            unitwidth = value;
+        void SetUnitSize(int value) {
+            unitsize = value;
             ChangedEvent();
         }
         
@@ -603,8 +603,8 @@ namespace Gorgon {
         /// width and spacing. A single unit width would be too small for
         /// most widgets. Multiple units can be calculated by following
         /// formula: W(n) = n * W(1) + (n-1) * Spacing
-        int GetUnitWidth() const {
-            return unitwidth;
+        int GetUnitSize() const {
+            return unitsize;
         }
 
 
@@ -618,7 +618,7 @@ namespace Gorgon {
         /// Returns the size for resize handles. Default is unitwidth.
         int GetResizeHandleSize() const {
             if(resizehandlesize == -1)
-                return unitwidth;
+                return unitsize;
             else
                 return resizehandlesize;
         }
@@ -671,7 +671,7 @@ namespace Gorgon {
         Geometry::Size size;
         Geometry::Size additional = {0, 0};
         int spacing = 4;
-        int unitwidth = 25;
+        int unitsize = 25;
         int resizehandlesize = -1;
 
         Direction direction;

@@ -56,11 +56,11 @@ namespace Gorgon { namespace Widgets {
         void SetWidthInUnits(int n) override {
             int w, s;
             if(HasParent()) {
-                w = GetParent().GetUnitWidth();
+                w = GetParent().GetUnitSize();
                 s = GetParent().GetSpacing();
             }
             else {
-                w = temp.GetUnitWidth();
+                w = temp.GetUnitSize();
                 s = temp.GetSpacing();
             }
             SetWidth(w * n + s * (n-1));

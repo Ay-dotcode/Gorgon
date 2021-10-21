@@ -107,7 +107,7 @@ namespace Gorgon { namespace Widgets {
         }
     }
 
-    int Composer::GetUnitWidth() const {
+    int Composer::GetUnitSize() const {
         if(issizesset) {
             return unitwidth;
         }
@@ -121,7 +121,7 @@ namespace Gorgon { namespace Widgets {
         int w, s;
 
         if(HasParent()) {
-            w = GetParent().GetUnitWidth();
+            w = GetParent().GetUnitSize();
             s = GetParent().GetSpacing();
         }
         else {
@@ -215,7 +215,7 @@ namespace Gorgon { namespace Widgets {
         }
     }
 
-    int ComponentStackComposer::GetUnitWidth() const {
+    int ComponentStackComposer::GetUnitSize() const {
         if(issizesset) {
             return unitwidth;
         }
@@ -228,7 +228,7 @@ namespace Gorgon { namespace Widgets {
         int w, s;
 
         if(HasParent()) {
-            w = GetParent().GetUnitWidth();
+            w = GetParent().GetUnitSize();
             s = GetParent().GetSpacing();
         }
         else {

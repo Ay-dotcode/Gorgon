@@ -47,7 +47,7 @@ namespace Gorgon { namespace Widgets {
 
         SetSmoothScrollSpeed(scrollspeed);
         
-        scrolldist = {temp.GetUnitWidth()*4, temp.GetUnitWidth()*2};
+        scrolldist = {temp.GetUnitSize()*4, temp.GetUnitSize()*2};
     }
 
     bool Panel::Activate() {
@@ -255,12 +255,12 @@ namespace Gorgon { namespace Widgets {
         }
     }
 
-    int Panel::GetUnitWidth() const {
+    int Panel::GetUnitSize() const {
         if(issizesset) {
             return unitwidth;
         }
         else {
-            return stack.GetTemplate().GetUnitWidth();
+            return stack.GetTemplate().GetUnitSize();
         }
     }
 

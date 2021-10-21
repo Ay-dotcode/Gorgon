@@ -452,8 +452,16 @@ namespace Gorgon { namespace UI {
         /// Returns the unit width for a widget. This size is enough to
         /// have a bordered icon. Widgets should be sized according to unit
         /// width and spacing. A single unit width would be too small for
-        /// most widgets. Multiple units can be obtained by GetUnitWidth(n)
-        virtual int GetUnitWidth() const = 0;
+        /// most widgets. Multiple units can be obtained by GetUnitSize(n)
+        virtual int GetUnitSize() const = 0;
+        
+        /// Returns the unit width for a widget. This size is enough to
+        /// have a bordered icon. Widgets should be sized according to unit
+        /// width and spacing. A single unit width would be too small for
+        /// most widgets. Multiple units can be obtained by GetUnitSize(n)
+        int GetUnitSize(int n) const {
+            return n*GetUnitSize() + (n-1)*GetSpacing();
+        }
 
     protected:
         /// This container is sorted by the focus order

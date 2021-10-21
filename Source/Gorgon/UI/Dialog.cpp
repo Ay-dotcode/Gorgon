@@ -101,9 +101,9 @@ namespace internal {
             if(!allowshrink)
                 sz.Width = diag->GetInteriorSize().Width;
 
-            if(sz.Width < diag->GetUnitWidth() * 6) {
+            if(sz.Width < diag->GetUnitSize() * 6) {
                 //too small, use 4units at least
-                sz.Width = diag->GetUnitWidth() * 6;
+                sz.Width = diag->GetUnitSize() * 6;
                 break;
             }
             else if(sz.Width <= maxw && sz.Height > diag->GetHeight()) {

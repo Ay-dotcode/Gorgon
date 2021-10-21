@@ -18,7 +18,7 @@ namespace Gorgon { namespace UI { namespace Organizers {
             Utils::NotImplemented("Tight organization is not implemented yet.");
         }
         else {
-            int uw = GetAttached().GetUnitWidth();
+            int uw = GetAttached().GetUnitSize();
             int y = 0;
             int maxy = 0;
             int rowc = 0;
@@ -81,7 +81,7 @@ namespace Gorgon { namespace UI { namespace Organizers {
                         nextalign = it->second.align;
                         break;
                     case Flow::Modifier::HSpace:
-                        xoff = it->second.size * att.GetUnitWidth() + GetSpacing();
+                        xoff = it->second.size * att.GetUnitSize() + GetSpacing();
                         break;
                     case Flow::Modifier::VSpace:
                         y += it->second.size * GetSpacing();
@@ -90,7 +90,7 @@ namespace Gorgon { namespace UI { namespace Organizers {
                         indent += it->second.size;
                         break;
                     case Flow::Modifier::IndentUnits:
-                        indent += it->second.size * att.GetUnitWidth() + GetSpacing();
+                        indent += it->second.size * att.GetUnitSize() + GetSpacing();
                         break;
                     case Flow::Modifier::IndentSpaces:
                         indent += it->second.size * GetSpacing();

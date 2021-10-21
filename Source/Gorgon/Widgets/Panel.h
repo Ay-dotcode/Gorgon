@@ -103,11 +103,13 @@ namespace Gorgon { namespace Widgets {
         /// The spacing should be left between widgets
         virtual int GetSpacing() const override;
         
+        using WidgetContainer::GetUnitSize;
+        
         /// Returns the unit width for a widget. This size is enough to
         /// have a bordered icon. Widgets should be sized according to unit
         /// width and spacing. A single unit width would be too small for
         /// most widgets.
-        virtual int GetUnitWidth() const override;
+        virtual int GetUnitSize() const override;
         
         /// Overrides default spacing and unitwidth
         void SetSizes(int spacing, int unitwidth) {

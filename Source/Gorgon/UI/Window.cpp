@@ -15,7 +15,7 @@ namespace Gorgon { namespace UI {
     }
 
     
-    int Window::GetUnitWidth() const {
+    int Window::GetUnitSize() const {
         if(issizesset) {
             return unitwidth;
         }

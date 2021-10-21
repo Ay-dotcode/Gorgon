@@ -469,7 +469,7 @@ namespace Gorgon { namespace Widgets {
     UI::Template SimpleGenerator::maketemplate() {
         UI::Template temp;
         temp.SetSpacing(spacing);
-        temp.SetUnitWidth(unitsize); //BorderedHeight = UnitWidth
+        temp.SetUnitSize(unitsize); //BorderedHeight = UnitSize
         
         return temp;
     }
@@ -2543,7 +2543,7 @@ namespace Gorgon { namespace Widgets {
         UI::Template &closebtn = *new UI::Template;
         closebtn.SetSize(objectheight, objectheight);
         closebtn.SetSpacing(spacing);
-        closebtn.SetUnitWidth(unitsize);
+        closebtn.SetUnitSize(unitsize);
         closebtn.AddContainer(0, UI::ComponentCondition::Always)
             .AddIndex(1)
             .Background.SetAnimation(A(Rectangle, Regular))

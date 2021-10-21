@@ -2196,7 +2196,7 @@ namespace Gorgon { namespace UI {
             auto ceilfn = ceiltounitsize_fn;
             if(!ceilfn) {
                 ceilfn = [this](int s) {
-                    return (s + temp.GetUnitWidth() - 1) / temp.GetUnitWidth() * temp.GetUnitWidth();
+                    return (s + temp.GetUnitSize() - 1) / temp.GetUnitSize() * temp.GetUnitSize();
                 };
             }
             
