@@ -732,40 +732,137 @@ namespace Gorgon {
 
         /// Joins a list of strings to a single string using the given glue text.
         template<class T_>
-        std::string Join(const T_ &vec, const std::string &glue = ", ") {
-            int totalsize = 0;
-            int gluesize = (int)glue.size();
-
-            for(const std::string &s : vec) {
-                if(totalsize)
-                    totalsize += gluesize;
-
-                totalsize += (int)s.size();
-            }
-
-            std::string ret;
-            ret.resize(totalsize);
+        std::string Join(const std::vector<T_> &vec, const std::string &glue = ", ") {
             bool first = true;
 
-            char *data = &ret[0];
-            const char *gluedata = glue.data();
+            std::stringstream ss;
 
-            for(const std::string &s : vec) {
-                if(!first) {
-                    std::memcpy(data, gluedata, gluesize);
-                    data += gluesize;
-                }
-                
-                std::memcpy(data, s.data(), s.size());
+            for(const auto &v : vec) {
+                if(!first)
+                    ss << glue;
 
-                data += s.size();
+                ss << v;
 
                 first = false;
             }
 
+            return ss.str();
+        }
+
+        template<class K_, class V_>
+        std::string Join(const std::map<K_, V_> &map, const std::string &assignment = " = ", const std::string &glue = "\n") {
+            bool first = true;
+
+            std::stringstream ss;
+
+            for(const auto &v : map) {
+                if(!first)
+                    ss << glue;
+
+                ss << v.first << assignment << v.second;
+
+                first = false;
+            }
+
+            return ss.str();
+        }
+
+        /// Splits a string to a vector using either a single character or a list of
+        /// characters as string. When nonempty is set to false, this function will
+        /// only return entries that has some characters in.
+        template<class K_ = std::string, class D_ = char>
+        std::vector<K_> Split(const std::string &str, const D_ &delimeter = '\n', bool nonempty = false) {
+            if(str.empty())
+                return {};
+
+            std::size_t start = 0;
+
+            std::vector<K_> ret;
+
+            while(true) { //exit from the middle
+                auto end = str.find_first_of(delimeter, start);
+
+                if(end > start || nonempty) {
+                    if(end != std::string::npos)
+                        ret.push_back(To<K_>(str.substr(start, end - start)));
+                    else {
+                        ret.push_back(To<K_>(str.substr(start)));
+
+                        return ret;
+                    }
+                }
+
+                start = end + 1;
+            }
+        }
+
+        /// Splits a string to a map using one character for assignment and another (or a list of characters)
+        /// for data endings. If a key occurs more than once, later one will be used.
+        template<class K_ = std::string, class V_ = std::string, class D_ = char>
+        std::map<K_, V_> Map(const std::string &str, char assignment = '=', const D_ &delimeter = '\n', bool trimkey = true, bool lefttrimvalue = true, bool righttrimvalue = false, bool allowemptykey = false) {
+            if(str.empty())
+                return {};
+
+            std::stringstream ss;
+            ss << assignment << delimeter;
+            auto split = ss.str();
+
+            std::size_t start = 0;
+
+            std::map<std::string, std::string> ret;
+
+            while(start != std::string::npos) { //exit from the middle
+                auto end = str.find_first_of(split, start);
+
+                std::string key = "";
+                if(end == std::string::npos) {
+                    key = str.substr(start);
+                }
+                else {
+                    key = str.substr(start, end-start);
+                }
+
+                if(trimkey)
+                    key = Trim(key);
+
+                std::string value = "";
+
+                if(end != std::string::npos && str[end] == assignment) {
+                    start = end+1;
+
+                    end = str.find_first_of(delimeter, start);
+
+                    if(end == std::string::npos) {
+                        value = str.substr(start);
+                    }
+                    else {
+                        value = str.substr(start, end-start);
+                    }
+                }
+
+                if(lefttrimvalue && righttrimvalue) {
+                    value = Trim(value);
+                }
+                else if(lefttrimvalue) {
+                    value = TrimStart(value);
+                }
+                else if(righttrimvalue) {
+                    value = TrimEnd(value);
+                }
+
+                if(allowemptykey || key != "") {
+                    ret[To<K_>(key)] = To<V_>(value);
+                }
+
+                start = end;
+
+                if(start != std::string::npos)
+                    start++;
+            }
+
             return ret;
         }
-        
+
         /// Extracts the part of the string up to the given marker. Extracted string and
         /// the marker is removed from the original string. If the given string does not
         /// contain marker, entire string will be extracted. It is possible to tokenize
