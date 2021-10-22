@@ -40,7 +40,9 @@ namespace Gorgon { namespace UI {
         size(size),
         temp(temp),
         widgetgenerators(generators),
-        adapter(*this)
+        adapter(*this),
+        unitsize(temp.GetUnitSize()),
+        spacing(temp.GetSpacing())
     {
         //find the number of elements required in the stack
         int maxindex = 0;
@@ -1161,7 +1163,7 @@ namespace Gorgon { namespace UI {
             
             case ComponentTemplate::ModifyRotation: {
                 int emsize = getemsize(*comp);
-                pnt -=  Convert(ct.GetCenter(), comp->size, emsize);
+                pnt -=  Convert(ct.GetCenter(), comp->size, unitsize, spacing, emsize);
                 
                 //TODO calculate the angle from the center and use it
                 break;
@@ -2578,11 +2580,11 @@ realign:
             //calculate maximum size for non-oriented direction and oriented direction for absolutely placed
             //components.
             auto parentmargin = Convert(
-                temp.GetMargin(), parent.innersize, emsize
+                temp.GetMargin(), parent.innersize, unitsize, spacing, emsize
                 ).CombinePadding(
-                    Convert(cont.GetPadding(), parent.innersize, emsize)
+                    Convert(cont.GetPadding(), parent.innersize, unitsize, spacing, emsize)
                 ) + 
-                Convert(temp.GetIndent(), parent.innersize, emsize);
+                Convert(temp.GetIndent(), parent.innersize, unitsize, spacing, emsize);
             
             auto maxsize = parent.innersize - parentmargin;
             int  curtw   = (textwidth == -1 ? maxsize.Width : textwidth) - parentmargin.TotalX();
@@ -2765,42 +2767,42 @@ realign:
             
             //this will convert width to pixels
             if(widthch == -1) { //value channel is not in effect
-                comp.size.Width = size.Width(maxsize.Width - tagsize.Width, emsize) + tagsize.Width;
-                curtw = size.Width(curtw - tagsize.Width, emsize) + tagsize.Width;
+                comp.size.Width = size.Width(maxsize.Width - tagsize.Width, unitsize, spacing, emsize) + tagsize.Width;
+                curtw = size.Width(curtw - tagsize.Width, unitsize, spacing, emsize) + tagsize.Width;
             }
             else {//calculate and use value channel
                 //original width will be used as minimum size
-                auto min = size.Width(maxsize.Width, emsize) + tagsize.Width;
+                auto min = size.Width(maxsize.Width, unitsize, spacing, emsize) + tagsize.Width;
                 
                 //calculate value and use it as basis point as relative size, then covert to pixels
                 comp.size.Width = 
                     Dimension{
                         int(calculatevalue(val, widthch, comp)*10000), Dimension::BasisPoint
-                    } (maxsize.Width - min, emsize)
+                    } (maxsize.Width - min, unitsize, spacing, emsize)
                     + min;
                 
-                min = size.Width(curtw, emsize) + tagsize.Width;
+                min = size.Width(curtw, unitsize, spacing, emsize) + tagsize.Width;
                 curtw = 
                     Dimension{
                         int(calculatevalue(val, widthch, comp)*10000), Dimension::BasisPoint
-                    } (curtw - min, emsize)
+                    } (curtw - min, unitsize, spacing, emsize)
                     + min;
                     
             }
             
             //this will convert height to pixels
             if(heightch == -1) { //value channel is not in effect
-                comp.size.Height = size.Height(maxsize.Height - tagsize.Height, emsize) + tagsize.Height;
+                comp.size.Height = size.Height(maxsize.Height - tagsize.Height, unitsize, spacing, emsize) + tagsize.Height;
             }
             else {//calculate and use value channel
                 //original height will be used as minimum size
-                auto min = size.Height(maxsize.Height, emsize) + tagsize.Height;
+                auto min = size.Height(maxsize.Height, unitsize, spacing, emsize) + tagsize.Height;
                 
                 //calculate value and use it as basis point as relative size, then covert to pixels
                 comp.size.Height = 
                     Dimension{
                         int(calculatevalue(val, heightch, comp)*10000), Dimension::BasisPoint
-                    } (maxsize.Height - min, emsize)
+                    } (maxsize.Height - min, unitsize, spacing, emsize)
                     + min;                
                     
                     comp.range.Width = maxsize.Height - min;
@@ -3012,11 +3014,11 @@ realign:
             //calculate maximum size for non-oriented direction and oriented direction for absolutely placed
             //components.
             auto parentmargin = Convert(
-                temp.GetMargin(), parent.innersize, emsize
+                temp.GetMargin(), parent.innersize, unitsize, spacing, emsize
                 ).CombinePadding(
-                    Convert(cont.GetPadding(), parent.innersize, emsize)
+                    Convert(cont.GetPadding(), parent.innersize, unitsize, spacing, emsize)
                 ) + 
-                Convert(temp.GetIndent(), parent.innersize, emsize);
+                Convert(temp.GetIndent(), parent.innersize, unitsize, spacing, emsize);
             
             auto maxsize = parent.innersize - parentmargin;
             
@@ -3080,7 +3082,9 @@ realign:
             //if to be anchored
             if(anch) {
                 //use the margin from the component to be anchored. All sides are calculated, one will be used.
-                margin = Convert(temp.GetMargin(), parent.innersize, emsize).CombineMargins(Convert(anch->GetTemplate().GetMargin(), parent.innersize, getemsize(*anch)));
+                margin = Convert(temp.GetMargin(), parent.innersize, unitsize, spacing, emsize).CombineMargins(
+                    Convert(anch->GetTemplate().GetMargin(), parent.innersize, unitsize, spacing, getemsize(*anch))
+                );
 
                 //revert back the unoriented direction
                 if(ishor) {
@@ -3253,39 +3257,39 @@ realign:
                 //this will convert x to pixels
                 if(xch == -1) { //value channel is not in effect
                     offset.X = pos.X(
-                        maxsize.Width - (sliding ? tagpos.X + comp.size.Width : tagpos.X), emsize
+                        maxsize.Width - (sliding ? tagpos.X + comp.size.Width : tagpos.X), unitsize, spacing, emsize
                     ) + tagpos.X;
                 }
                 else {//calculate and use value channel
                     //original width will be used as minimum size
                     offset.X = pos.X(
-                        maxsize.Width - (sliding ? tagpos.X + comp.size.Width : tagpos.X), emsize
+                        maxsize.Width - (sliding ? tagpos.X + comp.size.Width : tagpos.X), unitsize, spacing, emsize
                     ) + tagpos.X;
                     
                     //calculate value and use it as basis point as relative size, then covert to pixels
                     offset.X +=
                         Dimension{
                             int(calculatevalue(val, xch, comp)*10000), Dimension::BasisPoint
-                    } (maxsize.Width - (sliding ? offset.X + comp.size.Width : 0), emsize);
+                    } (maxsize.Width - (sliding ? offset.X + comp.size.Width : 0), unitsize, spacing, emsize);
                 }
 
                 //this will convert y to pixels
                 if(ych == -1) { //value channel is not in effect
                     offset.Y = pos.Y(
-                        maxsize.Height - (sliding ? tagpos.Y + comp.size.Height : tagpos.Y), emsize
+                        maxsize.Height - (sliding ? tagpos.Y + comp.size.Height : tagpos.Y), unitsize, spacing, emsize
                     ) + tagpos.Y;
                 }
                 else {//calculate and use value channel
                     //original width will be used as minimum size
                     offset.Y = pos.Y(
-                        maxsize.Height - (sliding ? tagpos.Y + comp.size.Height : tagpos.Y), emsize
+                        maxsize.Height - (sliding ? tagpos.Y + comp.size.Height : tagpos.Y), unitsize, spacing, emsize
                     ) + tagpos.Y;
 
                     //calculate value and use it as basis point as relative size, then covert to piyels
                     offset.Y +=
                         Dimension{
                             int(calculatevalue(val, ych, comp)*10000), Dimension::BasisPoint
-                    } (maxsize.Height - (sliding ? offset.Y + comp.size.Height : 0), emsize);
+                    } (maxsize.Height - (sliding ? offset.Y + comp.size.Height : 0), unitsize, spacing, emsize);
                 }
 
                 offsets[&comp] = offset;
@@ -3392,19 +3396,19 @@ realign:
                         endused = parent.innersize.Width - endmost->location.X;
                         
                         //calculate margin
-                        auto s = startmost->GetTemplate().GetMargin().Right(parent.innersize.Width, getemsize(*startmost));
-                        auto e = endmost->GetTemplate().GetMargin().Left(parent.innersize.Width, getemsize(*endmost));
+                        auto s = startmost->GetTemplate().GetMargin().Right(parent.innersize.Width, unitsize, spacing, getemsize(*startmost));
+                        auto e = endmost->GetTemplate().GetMargin().Left(parent.innersize.Width, unitsize, spacing, getemsize(*endmost));
                         
                         //add indent
                         lastspacing = calculatemargin(s, e);
                     }
                     else { //only start side is there
                         //calculate margin
-                        auto s = startmost->GetTemplate().GetMargin().Right(parent.innersize.Width, getemsize(*startmost));
-                        auto e = cont.GetPadding().Right(parent.innersize.Width, getemsize(*startmost));
+                        auto s = startmost->GetTemplate().GetMargin().Right(parent.innersize.Width, unitsize, spacing, getemsize(*startmost));
+                        auto e = cont.GetPadding().Right(parent.innersize.Width, unitsize, spacing, getemsize(*startmost));
                         
                         //add indent
-                        lastspacing = calculatemargin(s, e) + startmost->GetTemplate().GetIndent().Right(parent.innersize.Width, getemsize(*startmost));
+                        lastspacing = calculatemargin(s, e) + startmost->GetTemplate().GetIndent().Right(parent.innersize.Width, unitsize, spacing, getemsize(*startmost));
                     }
                 }
                 else if(endmost) { //only end side is there
@@ -3412,11 +3416,11 @@ realign:
                     endused = parent.innersize.Width - endmost->location.X;
                     
                     //calculate margin
-                    auto s = cont.GetPadding().Left(parent.innersize.Width, getemsize(*endmost));
-                    auto e = endmost->GetTemplate().GetMargin().Left(parent.innersize.Width, getemsize(*endmost));
+                    auto s = cont.GetPadding().Left(parent.innersize.Width, unitsize, spacing, getemsize(*endmost));
+                    auto e = endmost->GetTemplate().GetMargin().Left(parent.innersize.Width, unitsize, spacing, getemsize(*endmost));
                     
                     //add indent
-                    lastspacing = calculatemargin(s, e) + endmost->GetTemplate().GetIndent().Left(parent.innersize.Width, getemsize(*endmost));
+                    lastspacing = calculatemargin(s, e) + endmost->GetTemplate().GetIndent().Left(parent.innersize.Width, unitsize, spacing, getemsize(*endmost));
                 }
                 
                 //calculate remaining space for percent based components
@@ -3434,18 +3438,18 @@ realign:
                         endused = parent.innersize.Height - endmost->location.Y;
                         
                         //calculate margin
-                        auto s = startmost->GetTemplate().GetMargin().Bottom(parent.innersize.Height, getemsize(*startmost));
-                        auto e = endmost->GetTemplate().GetMargin().Top(parent.innersize.Height, getemsize(*endmost));
+                        auto s = startmost->GetTemplate().GetMargin().Bottom(parent.innersize.Height, unitsize, spacing, getemsize(*startmost));
+                        auto e = endmost->GetTemplate().GetMargin().Top(parent.innersize.Height, unitsize, spacing, getemsize(*endmost));
                         
                         lastspacing = calculatemargin(s, e);
                     }
                     else { //only start side is there
                         //calculate margin
-                        auto s = startmost->GetTemplate().GetMargin().Bottom(parent.innersize.Height, getemsize(*startmost));
-                        auto e = cont.GetPadding().Bottom(parent.innersize.Height, getemsize(*startmost));
+                        auto s = startmost->GetTemplate().GetMargin().Bottom(parent.innersize.Height, unitsize, spacing, getemsize(*startmost));
+                        auto e = cont.GetPadding().Bottom(parent.innersize.Height, unitsize, spacing, getemsize(*startmost));
                         
                         //add indent
-                        lastspacing = calculatemargin(s, e) + startmost->GetTemplate().GetIndent().Bottom(0, getemsize(*startmost));
+                        lastspacing = calculatemargin(s, e) + startmost->GetTemplate().GetIndent().Bottom(0, unitsize, spacing, getemsize(*startmost));
                     }
                 }
                 else if(endmost) { //only end side is there
@@ -3453,11 +3457,11 @@ realign:
                     endused = parent.innersize.Height - endmost->location.Y;
                     
                     //calculate margin
-                    auto s = cont.GetPadding().Top(parent.innersize.Height, getemsize(*endmost));
-                    auto e = endmost->GetTemplate().GetMargin().Top(0, getemsize(*endmost));
+                    auto s = cont.GetPadding().Top(parent.innersize.Height, unitsize, spacing, getemsize(*endmost));
+                    auto e = endmost->GetTemplate().GetMargin().Top(0, unitsize, spacing, getemsize(*endmost));
                     
                     //add indent
-                    lastspacing = calculatemargin(s, e) + endmost->GetTemplate().GetIndent().Top(0, getemsize(*endmost));
+                    lastspacing = calculatemargin(s, e) + endmost->GetTemplate().GetIndent().Top(0, unitsize, spacing, getemsize(*endmost));
                 }
                 
                 //calculate remaining space for percent based components
@@ -3483,11 +3487,11 @@ realign:
                 int r = comp.size.Width + std::max(0, comp.location.X);
                 
                 auto m = Convert(
-                        comp.GetTemplate().GetMargin(), parent.innersize, emsize
+                        comp.GetTemplate().GetMargin(), parent.innersize, unitsize, spacing, emsize
                     ).CombinePadding(
-                        Convert(cont.GetPadding(), parent.innersize, emsize)
+                        Convert(cont.GetPadding(), parent.innersize, unitsize, spacing, emsize)
                     ) + 
-                    Convert(comp.GetTemplate().GetIndent(), parent.innersize, emsize)
+                    Convert(comp.GetTemplate().GetIndent(), parent.innersize, unitsize, spacing, emsize)
                 ;
                 
                 r += m.Right;
@@ -3509,11 +3513,11 @@ realign:
                 int b = comp.size.Height + std::max(0, comp.location.Y);
                 
                 auto m = Convert(
-                        comp.GetTemplate().GetMargin(), parent.innersize, emsize
+                        comp.GetTemplate().GetMargin(), parent.innersize, unitsize, spacing, emsize
                     ).CombinePadding(
-                        Convert(cont.GetPadding(), parent.innersize, emsize)
+                        Convert(cont.GetPadding(), parent.innersize, unitsize, spacing, emsize)
                     ) + 
-                    Convert(comp.GetTemplate().GetIndent(), parent.innersize, emsize)
+                    Convert(comp.GetTemplate().GetIndent(), parent.innersize, unitsize, spacing, emsize)
                 ;
                 
                 b += m.Bottom;

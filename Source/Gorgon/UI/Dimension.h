@@ -5,6 +5,7 @@
 #include "../Geometry/Bounds.h"
 
 namespace Gorgon { namespace UI {
+
     /// Dimension data for components. Allows relative position and sizing.
     class Dimension {
     public:
@@ -33,21 +34,56 @@ namespace Gorgon { namespace UI {
             /// found, 10px will be used for EM dash. Thus, 1 unit will be 0.1
             /// pixels.
             EM,
-            
-            //todo add line height
+
+            /// Size in units defined by UI scale. Uses UnitSize and spacing
+            UnitSize,
+
+            /// Size in units defined by UI scale. Uses UnitSize and spacing
+            MilliUnitSize,
+
         };
 
-        /// Constructs a new dimension or type casts integer to dimension		 
+        /// Constructs a new dimension or type casts integer to dimension
         Dimension(int value = 0, Unit unit = Pixel) : value(value), unit(unit) {/* implicit */
         }
 
-        /// Returns the calculated dimension in pixels
-        int operator ()(int parentwidth, int emwidth = 10) const {
-            return Calculate(parentwidth, emwidth);
+
+        /// Constructs a new dimension or type casts real number to dimension
+        Dimension(double value, Unit unit = Percent) {
+            switch(unit) {
+            case Percent:
+                Set(int(std::round(value * 100)), unit);
+                break;
+            case MilliPixel:
+                Set(int(std::round(value * 1000)), unit);
+                break;
+            case BasisPoint:
+                Set(int(std::round(value * 10000)), unit);
+                break;
+            case EM:
+                Set(int(std::round(value * 100)), unit);
+                break;
+            case MilliUnitSize:
+                Set(int(std::round(value * 1000)), unit);
+                break;
+            default:
+                Set(int(std::round(value)), unit);
+                break;
+            }
+        }
+
+        /// Constructs a new dimension or type casts real number to dimension
+        Dimension(float value, Unit unit = Percent) : Dimension((double)value, unit) {
+
         }
 
         /// Returns the calculated dimension in pixels
-        int Calculate(int parentwidth, int emwidth = 10) const {
+        int operator ()(int parentwidth, int unitsize, int spacing, int emwidth = 10) const {
+            return Calculate(parentwidth, unitsize, spacing, emwidth);
+        }
+
+        /// Returns the calculated dimension in pixels
+        int Calculate(int parentwidth, int unitsize, int spacing, int emwidth = 10) const {
             switch(unit) {
                 case Percent:
                     return int(std::round((double)value * parentwidth / 100));
@@ -57,6 +93,14 @@ namespace Gorgon { namespace UI {
                     return int(std::round((double)value * parentwidth / 10000));
                 case EM:
                     return int(std::round(value * emwidth / 100));
+                case UnitSize:
+                    if(value >= -1 && value <= 1)
+                        return value * unitsize;
+                    return value * unitsize + (value - 1) * spacing;
+                case MilliUnitSize:
+                    if(value >= -1000 && value <= 1000)
+                        return int(std::round((double)value * unitsize / 1000));
+                    return int(std::round(((double)value * unitsize + (double)(value - 1000) * spacing) / 1000));
                 case Pixel:
                 default:
                     return value;
@@ -112,6 +156,22 @@ namespace Gorgon { namespace UI {
         Unit unit;
     };
 
+    /// Similar to Dimension except default unit is UnitSize and supports floats and
+    /// doubles for automatic conversion
+    class UnitDimension : public Dimension {
+    public:
+        UnitDimension(int value, Unit unit = UnitSize) : Dimension(value, unit) {
+        }
+
+        UnitDimension(double value, Unit unit = MilliUnitSize) : Dimension(value, unit) {
+        }
+
+        UnitDimension(float value, Unit unit = MilliUnitSize) : Dimension((double)value, unit) {
+        }
+
+        UnitDimension(const Dimension &d) : Dimension(d) { }
+    };
+
     /// This class stores the location information for a box object
     using Point = Geometry::basic_Point<Dimension>;
 
@@ -122,18 +182,18 @@ namespace Gorgon { namespace UI {
     using Margin = Geometry::basic_Margin<Dimension>;
     
     /// Converts a dimension based point to pixel based point
-    inline Geometry::Point Convert(const Point &p, const Geometry::Size &parent, int emwidth = 10) {
-        return {p.X(parent.Width, emwidth), p.Y(parent.Height, emwidth)};
+    inline Geometry::Point Convert(const Point &p, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10) {
+        return {p.X(parent.Width, unitsize, spacing, emwidth), p.Y(parent.Height, unitsize, spacing, emwidth)};
     }
     
     /// Converts a dimension based size to pixel based size
-    inline Geometry::Size Convert(const Size &s, const Geometry::Size &parent, int emwidth = 10) {
-        return {s.Width(parent.Width, emwidth), s.Height(parent.Height, emwidth)};
+    inline Geometry::Size Convert(const Size &s, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10) {
+        return {s.Width(parent.Width, unitsize, spacing, emwidth), s.Height(parent.Height, unitsize, spacing, emwidth)};
     }
     
     /// Converts a dimension based margin to pixel based margin
-    inline Geometry::Margin Convert(const Margin &m, const Geometry::Size &parent, int emwidth = 10) {
-        return {m.Left(parent.Width, emwidth), m.Top(parent.Height, emwidth), m.Right(parent.Width, emwidth), m.Bottom(parent.Height, emwidth), };
+    inline Geometry::Margin Convert(const Margin &m, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10) {
+        return {m.Left(parent.Width, unitsize, spacing, emwidth), m.Top(parent.Height, unitsize, spacing, emwidth), m.Right(parent.Width, unitsize, spacing, emwidth), m.Bottom(parent.Height, unitsize, spacing, emwidth), };
     }
 
 } }

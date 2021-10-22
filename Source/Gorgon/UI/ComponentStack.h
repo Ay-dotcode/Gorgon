@@ -339,6 +339,12 @@ namespace Gorgon { namespace UI {
         void SetEMSize(int value) {
             emsize = value;
         }
+
+        /// Changes the unitsize. Default value is obtained from the template.
+        void SetUnitSize(int unitsize, int spacing) {
+            this->unitsize = unitsize;
+            this->spacing = spacing;
+        }
         
         /// This function instructs stack to handle mouse to automatically change hover/down
         /// states, unless disabled state is active. Propagates to substacks.
@@ -854,6 +860,8 @@ namespace Gorgon { namespace UI {
         std::vector<Graphics::AdvancedPrinter::Region> regions;
         
         LayerAdapter adapter;
+
+        int unitsize, spacing;
     };
 
 }}
