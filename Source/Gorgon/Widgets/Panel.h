@@ -18,17 +18,10 @@ namespace Gorgon { namespace Widgets {
         
         explicit Panel(Registry::TemplateType type = Registry::Panel_Regular) : Panel(Registry::Active()[type]) { }
 
-        using Widget::Resize;
         
         using Widget::Remove;
         
         using WidgetContainer::Remove;
-        
-        virtual void Resize(const Geometry::Size &size) override;
-        
-        using Widget::Move;
-        
-        virtual void Move(const Geometry::Point &location) override;
         
 
         virtual bool Activate() override;
@@ -265,6 +258,13 @@ namespace Gorgon { namespace Widgets {
         int spacing   = 0;
         int unitwidth = 0;
         bool issizesset = false;
+        
+    private:
+                
+        virtual void resize(const Geometry::Size &size) override;
+        
+        virtual void move(const Geometry::Point &location) override;
+
     };
     
 } }

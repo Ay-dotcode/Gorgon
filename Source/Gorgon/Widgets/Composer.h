@@ -49,14 +49,11 @@ namespace Gorgon { namespace Widgets {
             
             return true;
         }
-        
-        virtual void Resize(const Geometry::Size &size) override;
 
         virtual Geometry::Point GetLocation() const override {
             return base.GetLocation();
         }
         
-        virtual void Move(const Geometry::Point &location) override;
         
         virtual void SetVisible(bool value) override {
             Widget::SetVisible(value);
@@ -175,6 +172,11 @@ namespace Gorgon { namespace Widgets {
         
         
     private:
+        
+        virtual void resize(const Geometry::Size &size) override;
+
+        virtual void move(const Geometry::Point &location) override;
+
         bool enabled = true;
         
         virtual void hide() override;
@@ -230,10 +232,6 @@ namespace Gorgon { namespace Widgets {
             return GetInteriorSize() == size;
         }
         
-        virtual void Resize(const Geometry::Size &size) override;
-
-        virtual void Move(const Geometry::Point &location) override;
-        
         virtual void SetVisible(bool value) override {
             ComponentStackWidget::SetVisible(value);
             distributeparentboundschanged();
@@ -272,7 +270,11 @@ namespace Gorgon { namespace Widgets {
         ComponentStackComposer(const UI::Template &temp, std::map<UI::ComponentTemplate::Tag, std::function<Widget *(const UI::Template &)>> generators = {}) :
             ComponentStackWidget(temp, generators)
         { }
-        
+
+        virtual void resize(const Geometry::Size &size) override;
+
+        virtual void move(const Geometry::Point &location) override;
+                
         virtual bool allowfocus() const override;
         
         virtual void focused() override;

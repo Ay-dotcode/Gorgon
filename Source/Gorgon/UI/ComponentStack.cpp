@@ -2767,42 +2767,42 @@ realign:
             
             //this will convert width to pixels
             if(widthch == -1) { //value channel is not in effect
-                comp.size.Width = size.Width(maxsize.Width - tagsize.Width, unitsize, spacing, emsize) + tagsize.Width;
-                curtw = size.Width(curtw - tagsize.Width, unitsize, spacing, emsize) + tagsize.Width;
+                comp.size.Width = size.Width(maxsize.Width - tagsize.Width, unitsize, spacing, emsize, true) + tagsize.Width;
+                curtw = size.Width(curtw - tagsize.Width, unitsize, spacing, emsize, true) + tagsize.Width;
             }
             else {//calculate and use value channel
                 //original width will be used as minimum size
-                auto min = size.Width(maxsize.Width, unitsize, spacing, emsize) + tagsize.Width;
+                auto min = size.Width(maxsize.Width, unitsize, spacing, emsize, true) + tagsize.Width;
                 
                 //calculate value and use it as basis point as relative size, then covert to pixels
                 comp.size.Width = 
                     Dimension{
                         int(calculatevalue(val, widthch, comp)*10000), Dimension::BasisPoint
-                    } (maxsize.Width - min, unitsize, spacing, emsize)
+                    } (maxsize.Width - min, unitsize, spacing, emsize, true)
                     + min;
                 
-                min = size.Width(curtw, unitsize, spacing, emsize) + tagsize.Width;
+                min = size.Width(curtw, unitsize, spacing, emsize, true) + tagsize.Width;
                 curtw = 
                     Dimension{
                         int(calculatevalue(val, widthch, comp)*10000), Dimension::BasisPoint
-                    } (curtw - min, unitsize, spacing, emsize)
+                    } (curtw - min, unitsize, spacing, emsize, true)
                     + min;
                     
             }
             
             //this will convert height to pixels
             if(heightch == -1) { //value channel is not in effect
-                comp.size.Height = size.Height(maxsize.Height - tagsize.Height, unitsize, spacing, emsize) + tagsize.Height;
+                comp.size.Height = size.Height(maxsize.Height - tagsize.Height, unitsize, spacing, emsize, true) + tagsize.Height;
             }
             else {//calculate and use value channel
                 //original height will be used as minimum size
-                auto min = size.Height(maxsize.Height, unitsize, spacing, emsize) + tagsize.Height;
+                auto min = size.Height(maxsize.Height, unitsize, spacing, emsize, true) + tagsize.Height;
                 
                 //calculate value and use it as basis point as relative size, then covert to pixels
                 comp.size.Height = 
                     Dimension{
                         int(calculatevalue(val, heightch, comp)*10000), Dimension::BasisPoint
-                    } (maxsize.Height - min, unitsize, spacing, emsize)
+                    } (maxsize.Height - min, unitsize, spacing, emsize, true)
                     + min;                
                     
                     comp.range.Width = maxsize.Height - min;
@@ -3151,13 +3151,13 @@ realign:
             if(temp.GetPositioning() == temp.PolarAbsolute) {
                 //center of parent
                 auto pcenter = Geometry::Pointf(
-                    cont.GetCenter().X.CalculateFloat((float)maxsize.Width, (float)emsize), 
-                    cont.GetCenter().Y.CalculateFloat((float)maxsize.Height, (float)emsize));
+                    cont.GetCenter().X.CalculateFloat((float)maxsize.Width, unitsize, spacing, (float)emsize), 
+                    cont.GetCenter().Y.CalculateFloat((float)maxsize.Height, unitsize, spacing, (float)emsize));
 
                 //center of object
                 auto center  = Geometry::Pointf(
-                    temp.GetCenter().X.CalculateFloat((float)comp.size.Width, (float)emsize), 
-                    temp.GetCenter().Y.CalculateFloat((float)comp.size.Height, (float)emsize)
+                    temp.GetCenter().X.CalculateFloat((float)comp.size.Width, unitsize, spacing, (float)emsize), 
+                    temp.GetCenter().Y.CalculateFloat((float)comp.size.Height, unitsize, spacing, (float)emsize)
                 );
 
                 pcenter += parentmargin.TopLeft();
@@ -3240,9 +3240,9 @@ realign:
 
                 //TODO use value channels
                 //calculate radius
-                auto r = pos.X.CalculateFloat(std::min(xrad, yrad), (float)emsize);
+                auto r = pos.X.CalculateFloat(std::min(xrad, yrad), unitsize, spacing, (float)emsize);
                 
-                auto a = pos.Y.CalculateFloat(float(maxang), 45) + stang; //em size for angle is 45
+                auto a = pos.Y.CalculateFloat(float(maxang), unitsize, spacing, 45) + stang; //em size for angle is 45
                 
                 //convert to radians
                 a *= -PI / 180.0f;

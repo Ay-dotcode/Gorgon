@@ -68,13 +68,13 @@ namespace Gorgon { namespace Widgets {
             boundschanged();
     }
 
-    void Composer::Resize(const Geometry::Size &size) {
+    void Composer::resize(const Geometry::Size &size) {
         base.Resize(size);
         if (IsVisible() && HasParent())
             boundschanged();
 
     }
-    void Composer::Move(const Geometry::Point &location) {
+    void Composer::move(const Geometry::Point &location) {
         base.Move(location);
         if (IsVisible() && HasParent())
             boundschanged();
@@ -173,8 +173,8 @@ namespace Gorgon { namespace Widgets {
             RemoveFocus();
     }
 
-    void ComponentStackComposer::Resize(const Geometry::Size &size) {
-        ComponentStackWidget::Resize(size);
+    void ComponentStackComposer::resize(const Geometry::Size &size) {
+        ComponentStackWidget::resize(size);
         
         if(HasOrganizer())
             GetOrganizer().Reorganize();
@@ -183,8 +183,8 @@ namespace Gorgon { namespace Widgets {
         distributeparentboundschanged();
     }
     
-    void ComponentStackComposer::Move(const Geometry::Point &location) {
-        ComponentStackWidget::Move(location);
+    void ComponentStackComposer::move(const Geometry::Point &location) {
+        ComponentStackWidget::move(location);
         
         distributeparentboundschanged();
     }

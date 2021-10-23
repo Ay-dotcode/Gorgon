@@ -78,12 +78,12 @@ namespace Gorgon { namespace UI {
         }
 
         /// Returns the calculated dimension in pixels
-        int operator ()(int parentwidth, int unitsize, int spacing, int emwidth = 10) const {
-            return Calculate(parentwidth, unitsize, spacing, emwidth);
+        int operator ()(int parentwidth, int unitsize, int spacing, int emwidth = 10, bool issize = false) const {
+            return Calculate(parentwidth, unitsize, spacing, emwidth, issize);
         }
 
         /// Returns the calculated dimension in pixels
-        int Calculate(int parentwidth, int unitsize, int spacing, int emwidth = 10) const {
+        int Calculate(int parentwidth, int unitsize, int spacing, int emwidth = 10, bool issize = false) const {
             switch(unit) {
                 case Percent:
                     return int(std::round((double)value * parentwidth / 100));
@@ -94,11 +94,15 @@ namespace Gorgon { namespace UI {
                 case EM:
                     return int(std::round(value * emwidth / 100));
                 case UnitSize:
-                    if(value >= -1 && value <= 1)
+                    if(!issize)
+                        return value * (unitsize + spacing);
+                    else if(value >= -1 && value <= 1)
                         return value * unitsize;
                     return value * unitsize + (value - 1) * spacing;
                 case MilliUnitSize:
-                    if(value >= -1000 && value <= 1000)
+                    if(!issize)
+                        return value * (unitsize + spacing);
+                    else if(value >= -1000 && value <= 1000)
                         return int(std::round((double)value * unitsize / 1000));
                     return int(std::round(((double)value * unitsize + (double)(value - 1000) * spacing) / 1000));
                 case Pixel:
@@ -108,7 +112,7 @@ namespace Gorgon { namespace UI {
         }
 
         /// Returns the calculated dimension in pixels
-        float CalculateFloat(float parentwidth, float emwidth = 10) const {
+        float CalculateFloat(float parentwidth, int unitsize, int spacing, float emwidth = 10, bool issize = false) const {
             switch(unit) {
                 case Percent:
                     return (float)value * parentwidth / 100.f;
@@ -118,6 +122,14 @@ namespace Gorgon { namespace UI {
                     return (float)value / 1000;
                 case EM:
                     return (float)value * emwidth / 100.f;
+                case UnitSize:
+                    if(!issize || (value >= -1 && value <= 1))
+                        return value * unitsize;
+                    return value * unitsize + (value - 1) * spacing;
+                case MilliUnitSize:
+                    if(!issize || (value >= -1000 && value <= 1000))
+                        return (float)value * unitsize / 1000;
+                    return ((float)value * unitsize + (float)(value - 1000) * spacing) / 1000;
                 case Pixel:
                 default:
                     return (float)value;
@@ -188,7 +200,7 @@ namespace Gorgon { namespace UI {
     
     /// Converts a dimension based size to pixel based size
     inline Geometry::Size Convert(const Size &s, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10) {
-        return {s.Width(parent.Width, unitsize, spacing, emwidth), s.Height(parent.Height, unitsize, spacing, emwidth)};
+        return {s.Width(parent.Width, unitsize, spacing, emwidth, true), s.Height(parent.Height, unitsize, spacing, emwidth, true)};
     }
     
     /// Converts a dimension based margin to pixel based margin

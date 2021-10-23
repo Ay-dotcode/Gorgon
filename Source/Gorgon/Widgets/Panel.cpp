@@ -119,8 +119,8 @@ namespace Gorgon { namespace Widgets {
         return stack.TagBounds(UI::ComponentTemplate::ContentsTag).GetSize() == size;
     }
     
-    void Panel::Resize(const Geometry::Size &size) { 
-        ComponentStackWidget::Resize(size);
+    void Panel::resize(const Geometry::Size &size) { 
+        ComponentStackWidget::resize(size);
         
         if(HasOrganizer())
             GetOrganizer().Reorganize();
@@ -129,8 +129,8 @@ namespace Gorgon { namespace Widgets {
         distributeparentboundschanged();
     }
     
-    void Panel::Move(const Geometry::Point &location) { 
-        ComponentStackWidget::Move(location);
+    void Panel::move(const Geometry::Point &location) { 
+        ComponentStackWidget::move(location);
         
         distributeparentboundschanged();
     }

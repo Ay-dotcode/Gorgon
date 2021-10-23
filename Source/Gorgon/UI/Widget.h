@@ -18,21 +18,18 @@ namespace Gorgon { namespace UI {
     friend class WidgetContainer;
         //Non-virtual functions for visual studio
 
-        void resize(const Geometry::Size &size) {
-            Resize(size);
-        }
+        virtual void resize(const Geometry::Size &size) = 0;
 
         Geometry::Size getsize() const {
             return GetSize();
         }
 
-        void move(const Geometry::Point &value) {
-            Move(value);
-        }
+        virtual void move(const Geometry::Point &value) = 0;
 
         Geometry::Point getlocation() const {
             return GetLocation();
         }
+        
     public:
         
         Widget() : Location(this), Size(this), Tooltip(this) {
@@ -46,7 +43,9 @@ namespace Gorgon { namespace UI {
         void Move(int x, int y) { Move({x, y}); }
         
         /// Moves this widget to the given position.
-        virtual void Move(const Geometry::Point &location) = 0;
+        void Move(const Geometry::Point &location) {
+            move(location);
+        }
 
         /// Returns the location of the widget
         virtual Geometry::Point GetLocation() const = 0;
@@ -55,7 +54,9 @@ namespace Gorgon { namespace UI {
         virtual void Resize(int w, int h) { Resize({w, h}); };
 
         /// Changes the size of the widget.
-        virtual void Resize(const Geometry::Size &size) = 0;
+        virtual void Resize(const Geometry::Size &size) {
+            resize(size);
+        }
 
         /// Returns the size of the widget
         virtual Geometry::Size GetSize() const = 0;
@@ -220,8 +221,8 @@ namespace Gorgon { namespace UI {
         /// invalidated in the event handlers registered to this function.
         Event<Widget> DestroyedEvent        = Event<Widget>{*this};
         
-        Geometry::PointProperty<Widget, &Widget::getlocation, &Widget::move> Location;
-        Geometry::SizeProperty<Widget, &Widget::getsize, &Widget::resize> Size;
+        Geometry::PointProperty<Widget, &Widget::getlocation, &Widget::Move> Location;
+        Geometry::SizeProperty<Widget, &Widget::getsize, &Widget::Resize> Size;
         TextualProperty<Widget, std::string, &Widget::GetTooltip, &Widget::SetTooltip> Tooltip;
         
         /// This is a debug feature
