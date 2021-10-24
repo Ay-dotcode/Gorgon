@@ -35,7 +35,7 @@ namespace Gorgon {
         main.Add(graphics);
         
         parent->Add(ui);
-        ui.Resize(parent->GetInteriorSize());
+        ui.Resize(UI::Pixels(parent->GetInteriorSize()));
         
         Animation::Governor::Activate();
 
@@ -174,7 +174,7 @@ namespace Gorgon {
         Scene(id, mouseinput)
     {
         this->parent = &parent;
-        ui.Resize(parent.GetInteriorSize());
+        ui.Resize(UI::Pixels(parent.GetInteriorSize()));
     }
 
 }

@@ -24,8 +24,6 @@ namespace Gorgon { namespace Widgets {
     public:
         ~Composer() { }
         
-        using Widget::Resize;
-    
         using Widget::Move;
 
         using Widget::Remove;
@@ -39,18 +37,17 @@ namespace Gorgon { namespace Widgets {
             return base.IsVisible() && IsVisible() && HasParent() && GetParent().IsDisplayed();
         }
 
-        
-        virtual Geometry::Size GetSize() const override {
+        virtual Geometry::Size GetCurrentSize() const override {
             return base.GetSize();
         }
 
         virtual bool ResizeInterior(Geometry::Size size) override {
-            Resize(size);
+            Resize(Pixels(size));
             
             return true;
         }
 
-        virtual Geometry::Point GetLocation() const override {
+        virtual Geometry::Point GetCurrentLocation() const override {
             return base.GetLocation();
         }
         
@@ -77,9 +74,6 @@ namespace Gorgon { namespace Widgets {
         virtual bool IsEnabled() const override {
             return enabled;
         }
-
-        /// Sets the width of the widget in unit widths.
-        void SetWidthInUnits(int n) override;
         
         /// This function should be called whenever a key is pressed or released.
         virtual bool KeyPressed(Input::Key key, float state) override { return distributekeyevent(key, state, true); }
@@ -90,7 +84,7 @@ namespace Gorgon { namespace Widgets {
 
     protected:
         //ensure this object is derived
-        Composer();
+        Composer(const UI::UnitSize &size);
         
         virtual bool allowfocus() const override;
         
@@ -171,12 +165,12 @@ namespace Gorgon { namespace Widgets {
         }
         
         
-    private:
-        
         virtual void resize(const Geometry::Size &size) override;
 
         virtual void move(const Geometry::Point &location) override;
 
+
+    private:
         bool enabled = true;
         
         virtual void hide() override;
@@ -222,12 +216,12 @@ namespace Gorgon { namespace Widgets {
         }
 
         
-        virtual Geometry::Size GetSize() const override {
+        virtual Geometry::Size GetCurrentSize() const override {
             return stack.GetSize();
         }
 
         virtual bool ResizeInterior(Geometry::Size size) override {
-            Resize(size + GetSize() - GetInteriorSize());
+            Resize(Pixels(size + GetCurrentSize() - GetInteriorSize()));
             
             return GetInteriorSize() == size;
         }
@@ -254,9 +248,6 @@ namespace Gorgon { namespace Widgets {
         virtual bool IsEnabled() const override {
             return ComponentStackWidget::IsEnabled();
         }
-
-        /// Sets the width of the widget in unit widths.
-        void SetWidthInUnits(int n) override;
         
         /// This function should be called whenever a key is pressed or released.
         virtual bool KeyPressed(Input::Key key, float state) override { return distributekeyevent(key, state, true); }

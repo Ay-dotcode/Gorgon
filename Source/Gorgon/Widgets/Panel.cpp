@@ -112,9 +112,9 @@ namespace Gorgon { namespace Widgets {
         auto innersize = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize();
         
         if(innersize.Area() != 0)
-            border = GetSize() - innersize;
+            border = GetCurrentSize() - innersize;
         
-        Resize(size + border);
+        Resize(Pixels(size + border));
 
         return stack.TagBounds(UI::ComponentTemplate::ContentsTag).GetSize() == size;
     }
@@ -235,7 +235,7 @@ namespace Gorgon { namespace Widgets {
                 if(!ans.Transformed) {
                     Geometry::Point offset = stack.TagBounds(UI::ComponentTemplate::ContentsTag).TopLeft();
                     
-                    ans.CoordinatesInExtender += GetLocation() + offset;
+                    ans.CoordinatesInExtender += GetCurrentLocation() + offset;
                 }
 
                 return ans;

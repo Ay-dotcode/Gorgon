@@ -258,12 +258,12 @@ namespace Gorgon { namespace Widgets {
         int spacing   = 0;
         int unitwidth = 0;
         bool issizesset = false;
-        
-    private:
                 
         virtual void resize(const Geometry::Size &size) override;
         
         virtual void move(const Geometry::Point &location) override;
+
+    private:
 
     };
     

@@ -1,38 +1,39 @@
 #include "Widget.h"
 #include "WidgetContainer.h"
+#include "../Widgets/Registry.h"
 
 namespace Gorgon { namespace UI {
 
-	bool Widget::Remove() {
-		if(!parent)
-			return true;
+    bool Widget::Remove() {
+        if(!parent)
+            return true;
 
-		return parent->Remove(*this);
-	}
+        return parent->Remove(*this);
+    }
 
-	bool Widget::Focus() {
-		if(!parent)
-			return false;
+    bool Widget::Focus() {
+        if(!parent)
+            return false;
 
-		if(!allowfocus() || !visible || !enabled)
-			return false;
+        if(!allowfocus() || !visible || !enabled)
+            return false;
 
-		return parent->SetFocusTo(*this);
-	}
+        return parent->SetFocusTo(*this);
+    }
 
-	bool Widget::Defocus() {
-		if(!IsFocused() || !parent)
-			return true;
+    bool Widget::Defocus() {
+        if(!IsFocused() || !parent)
+            return true;
 
-		return parent->RemoveFocus();
-	}
+        return parent->RemoveFocus();
+    }
 
-	WidgetContainer &Widget::GetParent() const {
-		if(parent == nullptr)
-			throw std::runtime_error("Widget has no parent");
+    WidgetContainer &Widget::GetParent() const {
+        if(parent == nullptr)
+            throw std::runtime_error("Widget has no parent");
 
-		return *parent;
-	}
+        return *parent;
+    }
 
 
     void Widget::SetVisible(bool value) {
@@ -133,6 +134,61 @@ namespace Gorgon { namespace UI {
             parent->SetHoveredWidget(nullptr);
 
         MouseLeaveEvent();
+    }
+
+
+    void Widget::Move(const UnitPoint &value) {
+        if(location == value)
+            return;
+
+        location = value;
+
+        //move out
+        int unitsize = 0, spacing = 0;
+        Geometry::Size sz;
+        if(HasParent()) {
+            unitsize = GetParent().GetUnitSize();
+            spacing = GetParent().GetSpacing();
+            sz = GetParent().GetInteriorSize();
+        }
+        else {
+            unitsize = Widgets::Registry::Active().GetUnitSize();
+            spacing  = Widgets::Registry::Active().GetSpacing();
+            sz = GetCurrentSize();
+        }
+
+        move(Convert(
+            location, sz,
+            unitsize, spacing,
+            Widgets::Registry::Active().GetEmSize()
+        ));
+    }
+
+    void Widget::Resize(const UnitSize& value) {
+        if(size == value)
+            return;
+
+        size = value;
+
+        //move out
+        int unitsize = 0, spacing = 0;
+        Geometry::Size sz;
+        if(HasParent()) {
+            unitsize = GetParent().GetUnitSize();
+            spacing = GetParent().GetSpacing();
+            sz = GetParent().GetInteriorSize();
+        }
+        else {
+            unitsize = Widgets::Registry::Active().GetUnitSize();
+            spacing  = Widgets::Registry::Active().GetSpacing();
+            sz = GetCurrentSize();
+        }
+
+        resize(Convert(
+            size, sz,
+            unitsize, spacing,
+            Widgets::Registry::Active().GetEmSize()
+        ));
     }
 
 } }

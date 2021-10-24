@@ -70,16 +70,14 @@ namespace Gorgon { namespace Widgets {
             owned.Delete(w);
         }
         
-        using Window::Resize;
-        
-        virtual void Resize(const Geometry::Size &size) override {
-            Window::Resize(size);
-            
+    protected:
+        virtual void resize(const Geometry::Size &size) override {
+            Window::resize(size);
+
             stack.Refresh();
             btnorg.Reorganize();
         }
-        
-    protected:
+
         UI::LayerAdapter buttonsarea;
         UI::Organizers::Flow btnorg;
     };

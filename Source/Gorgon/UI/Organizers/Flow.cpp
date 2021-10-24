@@ -55,10 +55,10 @@ namespace Gorgon { namespace UI { namespace Organizers {
                 }
                 
                 for(auto &cell : row) {
-                    cell.Move(
-                        cell.GetLocation() + 
-                        Geometry::Point{off, (maxy - cell.GetHeight())/2}
-                    );
+                    cell.Move(Pixels(
+                        cell.GetCurrentLocation() +
+                        Geometry::Point{off, (maxy - cell.GetCurrentHeight())/2}
+                    ));
                 }
                 
                 x = 0;
@@ -103,7 +103,7 @@ namespace Gorgon { namespace UI { namespace Organizers {
                     continue;
                 }
                 
-                int w = widget.GetWidth();
+                int w = widget.GetCurrentWidth();
                 
                 if((x + w > width && rowc > 0) && breaks == 0)
                     breaks = 1;
@@ -119,12 +119,12 @@ namespace Gorgon { namespace UI { namespace Organizers {
                 x += xoff;
                 align = nextalign;
 
-                int h = widget.GetHeight();
+                int h = widget.GetCurrentHeight();
                 if(h > maxy) {
                     maxy = h;
                 }
                 
-                widget.Move(x, y);
+                widget.Move(Pixels(x, y));
                 x += w + s;
                 rowc++;
                 
@@ -182,7 +182,7 @@ namespace Gorgon { namespace UI { namespace Organizers {
 
     Flow &Flow::Add(Widget &widget) {
         if(nextsize != -1) {
-            widget.SetWidthInUnits(nextsize);
+            widget.SetWidth(Units(nextsize));
             nextsize = -1;
         }
         

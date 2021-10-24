@@ -329,16 +329,16 @@ namespace Gorgon { namespace UI {
         text->SetAutosize(Autosize::Automatic, Autosize::Automatic);
         diag->Add(*text);
         diag->Own(*text);
-        inp->Move(0, text->GetBounds().Bottom + diag->GetSpacing());
+        inp->Move(Pixels(0, text->GetBounds().Bottom + diag->GetSpacing()));
         
         Widgets::Label *l = nullptr;
         
         if(!label.empty()) {
             l = new Widgets::Label(label);
             l->SetHorizonalAutosize(Autosize::Automatic);
-            l->Move(0, text->GetBounds().Bottom + diag->GetSpacing());
+            l->Move(Pixels(0, text->GetBounds().Bottom + diag->GetSpacing()));
             l->SetHeight(inp->GetHeight());
-            inp->Location.X = l->GetBounds().Right + diag->GetSpacing()*2;
+            inp->Location.X = Pixels(l->GetBounds().Right + diag->GetSpacing()*2);
             
             diag->Add(*l);
             diag->Own(*l);
@@ -375,21 +375,21 @@ namespace Gorgon { namespace UI {
         );
         
         diag->ResizeInterior(negotiatesize(diag, text, false));
-        
         if(l) {
-            l->Move(text->Location.X, text->GetBounds().Bottom + text->Location.Y);
+            l->Move(Pixels(text->GetCurrentLocation().X, text->GetBounds().Bottom + text->GetCurrentLocation().Y));
             l->SetHeight(inp->GetHeight());
-            inp->Move(l->GetBounds().Right + diag->GetSpacing()*2, l->Location.Y);
-            inp->SetWidth(diag->GetInteriorSize().Width - inp->Location.X - text->Location.X);
+            inp->Move(Pixels(l->GetBounds().Right + diag->GetSpacing()*2, l->GetCurrentLocation().Y));
+            inp->SetWidth(Pixels(diag->GetInteriorSize().Width - inp->GetCurrentLocation().X - text->GetCurrentLocation().X));
         }
         else {
-            inp->Move(text->Location.X, text->GetBounds().Bottom + text->Location.Y);
-            inp->SetWidth(diag->GetInteriorSize().Width - text->Location.X*2);
+            inp->Move(Pixels(text->GetCurrentLocation().X, text->GetBounds().Bottom + text->GetCurrentLocation().Y));
+            inp->SetWidth(Pixels(diag->GetInteriorSize().Width - text->GetCurrentLocation().X*2));
         }
+
         
         diag->ResizeInterior({diag->GetInteriorSize().Width, inp->GetBounds().Bottom});
-        diag->ResizeInterior(Geometry::Size(inp->GetBounds().BottomRight() + text->Location));
-        
+        diag->ResizeInterior(Geometry::Size(inp->GetBounds().BottomRight() + text->GetCurrentLocation()));
+
         place(diag);
         diag->Center(); //input dialogs will be centered
     }
@@ -578,16 +578,16 @@ namespace Gorgon { namespace UI {
         text->SetAutosize(Autosize::Automatic, Autosize::Automatic);
         diag->Add(*text);
         diag->Own(*text);
-        inp->Move(0, text->GetBounds().Bottom + diag->GetSpacing());
+        inp->Move(Pixels(0, text->GetBounds().Bottom + diag->GetSpacing()));
         
         Widgets::Label *l = nullptr;
         
         if(!label.empty()) {
             l = new Widgets::Label(label);
             l->SetHorizonalAutosize(Autosize::Automatic);
-            l->Move(0, text->GetBounds().Bottom + diag->GetSpacing());
+            l->Move(Pixels(0, text->GetBounds().Bottom + diag->GetSpacing()));
             l->SetHeight(inp->GetHeight());
-            inp->Location.X = l->GetBounds().Right + diag->GetSpacing()*2;
+            inp->Location.X = Pixels(l->GetBounds().Right + diag->GetSpacing()*2);
             
             diag->Add(*l);
             diag->Own(*l);
@@ -631,21 +631,19 @@ namespace Gorgon { namespace UI {
         );
         
         diag->ResizeInterior(negotiatesize(diag, text, false));
-        
         if(l) {
-            l->Move(text->Location.X, text->GetBounds().Bottom + text->Location.Y);
+            l->Move(Pixels(text->GetCurrentLocation().X, text->GetBounds().Bottom + text->GetCurrentLocation().Y));
             l->SetHeight(inp->GetHeight());
-            inp->Move(l->GetBounds().Right + diag->GetSpacing()*2, l->Location.Y);
-            inp->SetWidth(diag->GetInteriorSize().Width - inp->Location.X - text->Location.X);
+            inp->Move(Pixels(l->GetBounds().Right + diag->GetSpacing()*2, l->GetCurrentLocation().Y));
+            inp->SetWidth(Pixels(diag->GetInteriorSize().Width - inp->GetCurrentLocation().X - text->GetCurrentLocation().X));
         }
         else {
-            inp->Move(text->Location.X, text->GetBounds().Bottom + text->Location.Y);
-            inp->SetWidth(diag->GetInteriorSize().Width - text->Location.X*2);
+            inp->Move(Pixels(text->GetCurrentLocation().X, text->GetBounds().Bottom + text->GetCurrentLocation().Y));
+            inp->SetWidth(Pixels(diag->GetInteriorSize().Width - text->GetCurrentLocation().X*2));
         }
         
         diag->ResizeInterior({diag->GetInteriorSize().Width, inp->GetBounds().Bottom});
-        diag->ResizeInterior(Geometry::Size(inp->GetBounds().BottomRight() + text->Location));
-        
+        diag->ResizeInterior(Geometry::Size(inp->GetBounds().BottomRight() + text->GetCurrentLocation()));
         place(diag);
         diag->Center(); //input dialogs will be centered
     }

@@ -185,16 +185,16 @@ namespace Gorgon { namespace UI {
                 
                 container.Add(*w);
                 
-                w->Move(loc);
+                w->Move(Pixels(loc));
                 
                 col++;
                 if(col%columns == 0) {
                     loc.X = start.X;
-                    loc.Y += w->GetSize().Height + spacing;
+                    loc.Y += w->GetCurrentHeight() + spacing;
                     col = 0;
                 }
                 else {
-                    loc.X += w->GetSize().Width + spacing;
+                    loc.X += w->GetCurrentWidth() + spacing;
                 }
             }
         }

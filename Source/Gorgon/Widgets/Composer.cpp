@@ -4,7 +4,10 @@
 
 namespace Gorgon { namespace Widgets {
 
-    Composer::Composer() {
+    Composer::Composer(const UI::UnitSize &size) :
+        Widget(Pixels(0, 0)) //Resize is needed to convert unitsize to pixels
+    {
+        Resize(size);
         base.Add(inputlayer);
         
         inputlayer.SetOver([this]{
@@ -88,7 +91,7 @@ namespace Gorgon { namespace Widgets {
 
             if(ans.Extender) {
                 if(!ans.Transformed)
-                    ans.CoordinatesInExtender += GetLocation();
+                    ans.CoordinatesInExtender += GetCurrentLocation();
 
                 return ans;
             }
@@ -117,22 +120,6 @@ namespace Gorgon { namespace Widgets {
     }
     
 
-    void Composer::SetWidthInUnits(int n) {
-        int w, s;
-
-        if(HasParent()) {
-            w = GetParent().GetUnitSize();
-            s = GetParent().GetSpacing();
-        }
-        else {
-            w = Registry::Active().GetUnitSize();
-            s = Registry::Active().GetSpacing();
-        }
-
-        SetWidth(w * n + s * (n - 1));
-    }
-
-    
     bool ComponentStackComposer::Activate() {
         if(!Focus())
             return false;
@@ -196,7 +183,7 @@ namespace Gorgon { namespace Widgets {
 
             if(ans.Extender) {
                 if(!ans.Transformed)
-                    ans.CoordinatesInExtender += GetLocation();
+                    ans.CoordinatesInExtender += GetCurrentLocation();
 
                 return ans;
             }
@@ -222,21 +209,6 @@ namespace Gorgon { namespace Widgets {
         else {
             return Widgets::Registry::Active().GetUnitSize();
         }
-    }
-
-    void ComponentStackComposer::SetWidthInUnits(int n) {
-        int w, s;
-
-        if(HasParent()) {
-            w = GetParent().GetUnitSize();
-            s = GetParent().GetSpacing();
-        }
-        else {
-            w = Registry::Active().GetUnitSize();
-            s = Registry::Active().GetSpacing();
-        }
-
-        SetWidth(w * n + s * (n - 1));
     }
 
 } }

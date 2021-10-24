@@ -1623,17 +1623,17 @@ namespace Gorgon { namespace Widgets {
                 this->sel_apply(i, *w, v);
                 
                 if(y == 0) {
-                    y = -int(std::round(w->GetHeight() * (scrolloffset - int(scrolloffset))));
+                    y = -int(std::round(w->GetCurrentHeight() * (scrolloffset - int(scrolloffset))));
                 }
                 
                 indexes.insert({w, i});
                 widgetlist.insert({i, w});
                 
-                w->Move(0, y);
+                w->Move(Pixels(0, y));
                 
                 //to be moved to resize
-                w->SetWidth(b.Width());
-                auto advance = w->GetHeight() + stack.GetTemplate().GetSpacing() / 2;
+                w->SetWidth(Pixels(b.Width()));
+                auto advance = w->GetCurrentHeight() + stack.GetTemplate().GetSpacing() / 2;
                 y += advance;
                 totalh += advance;
                 i++;
@@ -1810,7 +1810,7 @@ namespace Gorgon { namespace Widgets {
         /// elements have different heights. But it will never surpass maxpixels.
         bool FitHeight(int maxpixels) {
             int curh = GetInteriorSize().Height;
-            int overhead = GetHeight() - curh;
+            int overhead = GetCurrentHeight() - curh;
             int defh = stack.GetTemplate().GetUnitSize();
             
             auto li = stack.GetTemplate(UI::ComponentTemplate::ItemTag);
@@ -1826,7 +1826,7 @@ namespace Gorgon { namespace Widgets {
                 int tried = 0;
                 
                 do {
-                    SetHeight(expected);
+                    SetHeight(Pixels(expected));
                     stack.Update(true);
                     Refresh();
                     
@@ -1837,7 +1837,7 @@ namespace Gorgon { namespace Widgets {
                         return true;
                     
                     curh = GetInteriorSize().Height;
-                    overhead = GetHeight() - curh;
+                    overhead = GetCurrentHeight() - curh;
                     int curexpected = int( std::ceil( (this->GetCount()+overscroll) * (curh/maxdisplay) ) ) + overhead;
                     
                     if(abs(expected - curexpected) == 0) { //no progress, exit
@@ -1855,7 +1855,7 @@ namespace Gorgon { namespace Widgets {
                 
             }
             
-            SetHeight(maxpixels);
+            SetHeight(Pixels(maxpixels));
             return false;
         }
         

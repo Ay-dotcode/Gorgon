@@ -80,9 +80,6 @@ namespace Gorgon { namespace Widgets {
         
         //SetCellSize
         
-        using ComponentStackWidget::Resize;
-        
-        virtual void Resize(const Geometry::Size &size) override;
         
         void Refresh();
         
@@ -120,6 +117,8 @@ namespace Gorgon { namespace Widgets {
         ColorType color = Graphics::Color::Black;
     
     protected:
+        virtual void resize(const Geometry::Size &size) override;
+
         void click(Geometry::Point location);
         
         Gorgon::Layer &getlayer() const {

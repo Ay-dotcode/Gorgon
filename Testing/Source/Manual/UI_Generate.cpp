@@ -28,6 +28,9 @@
 #include <Gorgon/UI/Dialog.h>
 #include <Gorgon/OS.h>
 
+using Gorgon::UI::Pixels;
+using namespace Gorgon::UI::literals;
+
 enum DaysOfWeek {
     Monday,
     Tuesday,
@@ -106,8 +109,8 @@ int main() {
 //     generator.Activate();
 
     Widgets::Panel blank(Widgets::Registry::Panel_Right);
-    blank.Move(5, 50);
-    blank.SetHeight(300);
+    blank.Move(Pixels(5, 50));
+    blank.SetHeight(300_px);
     auto icon = Triangle(5, 10);
     icon.Prepare();
     Graphics::TintedBitmapProvider icon2(icon.Rotate270(), Graphics::Color::Charcoal);
@@ -137,24 +140,26 @@ int main() {
     Gorgon::Widgets::Checkbox chkbutton("C", Gorgon::Widgets::Registry::Checkbox_Button);
     Gorgon::Widgets::Progressbar bar(Gorgon::Widgets::Registry::Progress_Regular);
     Gorgon::Widgets::Panel toppanel(Gorgon::Widgets::Registry::Panel_Top);
-    toppanel.Resize({ 30,30 });
+    toppanel.Resize(Pixels( 30,30 ));
     Gorgon::Widgets::Label toplabel("Panel Top");
     Gorgon::Widgets::Button topbtn("regular",Gorgon::Widgets::Registry::Button_Regular);
     toppanel.Add(toplabel);
     toppanel.Add(topbtn);
-    topbtn.Move(toplabel.GetLocation().X, toplabel.GetLocation().Y + toplabel.GetSize().Height);
+    topbtn.Move(Pixels(toplabel.GetCurrentLocation().X, toplabel.GetCurrentLocation().Y + toplabel.GetCurrentSize().Height));
+
+    chk.SetWidth(5_u);
     
     chkbutton.SetIconProvider(icon2);
 
     Gorgon::Widgets::Panel leftpanel(Gorgon::Widgets::Registry::Panel_Left);
-    leftpanel.Resize({ 30,30 });
+    leftpanel.Resize(Pixels( 30,30 ));
     Gorgon::Widgets::Label leftlabel("Panel Left");
     leftpanel.Add(leftlabel);
 
     Gorgon::Widgets::Panel rightpanel(Gorgon::Widgets::Registry::Panel_Right);
     Gorgon::Widgets::Label rightlabel("Panel Right");
     rightpanel.Add(rightlabel);
-    rightpanel.Resize({ 30,30 });
+    rightpanel.Resize(Pixels( 30,30 ));
 
     Gorgon::Widgets::Panel bottompanel(Gorgon::Widgets::Registry::Panel_Bottom);
     Gorgon::Widgets::Label bottomlabel("Panel bottom");
@@ -213,7 +218,7 @@ int main() {
     list.AddToSelection(3);
     list.AddToSelection(1, 4);
     list.InvertSelection();
-    list.SetWidthInUnits(5);
+    list.SetWidth(5_u);
 //     std::ofstream file("fonts.txt");
 //     OS::DumpFontFamilies(file);
 //     file.close();
@@ -315,7 +320,7 @@ int main() {
         if(!allow)
             std::cout << "Click once more to close." << std::endl;
     });
-    btn.Move(0,0);
+    btn.Move(Pixels(0,0));
     btn.Disable();
     Widgets::Checkbox enableclosebtn("Enable close button", true);
     enableclosebtn.SetAutosize(Gorgon::UI::Autosize::Unit, Gorgon::UI::Autosize::Automatic);
@@ -356,11 +361,13 @@ int main() {
             }, 2
         );
     }).SetHorizonalAutosize(Gorgon::UI::Autosize::Automatic);
+
+    wind.Move(20_perc, 5_perc);
     
     Widgets::Label tiplabel("Some text here", Gorgon::Widgets::Registry::Label_Info);
     tiplabel.SetAutosize(Gorgon::UI::Autosize::None, Gorgon::UI::Autosize::Automatic);
     app.wind.Add(tiplabel);
-    tiplabel.Move(0, 550);
+    tiplabel.Move(0_px, 550_px);
 
     blank.Tooltip = "This is the container.\n\n* Yehaaw there is tons of text here. \n   * With markdown support \n\nA potential for next line. Even one more...";
     app.wind.Add(blank);

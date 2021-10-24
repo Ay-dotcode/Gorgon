@@ -11,10 +11,10 @@ namespace Gorgon { namespace UI { namespace Organizers {
         
         for(auto &widget : GetAttached()) {
             if(widget.IsVisible() && !widget.IsFloating()) {
-                widget.Move(0, y);
-                widget.SetWidth(w);
+                widget.Move(Pixels(0, y));
+                widget.SetWidth(Pixels(w));
                 
-                y += widget.GetHeight() + s;
+                y += widget.GetCurrentHeight() + s;
             }
         }
     }

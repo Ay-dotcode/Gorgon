@@ -47,10 +47,11 @@ namespace Gorgon { namespace Widgets {
             Center();
         }
         
-        minsize = GetSize() - GetInteriorSize() + Geometry::Size(stack.GetTemplate().GetUnitSize()*2, stack.GetTemplate().GetUnitSize());
+        //TODO interior sizing
+        minsize = GetCurrentSize() - GetInteriorSize() + Geometry::Size(stack.GetTemplate().GetUnitSize()*2, stack.GetTemplate().GetUnitSize());
     }
     
-    Window::Window(const UI::Template &temp, const std::string &title, const Geometry::Size size, bool autoplace) : 
+    Window::Window(const UI::Template &temp, const std::string &title, const UI::UnitSize size, bool autoplace) :
         Window(temp, title, autoplace)
     {
         Resize(size);
@@ -186,7 +187,7 @@ namespace Gorgon { namespace Widgets {
                 dragoffset = location;
             }
             else if(allowresize && tag == UI::ComponentTemplate::ResizeTag) {
-                auto size = GetSize();
+                auto size = GetCurrentSize();
                 int maxdist = stack.GetTemplate().GetResizeHandleSize();
                 
                 int leftdist = location.X, rightdist  = size.Width  - location.X;
@@ -283,7 +284,7 @@ namespace Gorgon { namespace Widgets {
             }
         }
         else if(allowresize && tag == UI::ComponentTemplate::ResizeTag) {
-            auto size = GetSize();
+            auto size = GetCurrentSize();
             int maxdist = stack.GetTemplate().GetResizeHandleSize();
             
             int leftdist = location.X, rightdist  = size.Width  - location.X;
@@ -357,43 +358,43 @@ namespace Gorgon { namespace Widgets {
             return;
         
         if(moving) {
-            auto newlocation = GetLocation() + location-dragoffset;
+            auto newlocation = GetCurrentLocation() + location-dragoffset;
             if(HasParent()) {
-                FitInto(newlocation.X, 0, GetParent().GetInteriorSize().Width - GetWidth()/2);
-                FitInto(newlocation.Y, 0, GetParent().GetInteriorSize().Height - GetHeight()/2);
+                FitInto(newlocation.X, 0, GetParent().GetInteriorSize().Width - GetCurrentWidth()/2);
+                FitInto(newlocation.Y, 0, GetParent().GetInteriorSize().Height - GetCurrentHeight()/2);
             }
             
-            Move(newlocation);
+            Move(Pixels(newlocation));
         }
         
         switch(resizing) {
         case bottomleft:
         case bottomright:
         case bottom: {
-            int ch = GetHeight();
+            int ch = GetCurrentHeight();
             int h = ch + location.Y - dragoffset.Y;
             
             if(HasParent()) {
-                FitInto(h, minsize.Height, std::min((GetParent().GetInteriorSize().Height - GetLocation().Y) * 2, GetParent().GetInteriorSize().Height));
+                FitInto(h, minsize.Height, std::min((GetParent().GetInteriorSize().Height - GetCurrentLocation().Y) * 2, GetParent().GetInteriorSize().Height));
             }
             
-            SetHeight(h);
+            SetHeight(Pixels(h));
             dragoffset.Y = location.Y;
             break;
         }
         case topleft:
         case topright:
         case top: {
-            int ch = GetHeight();
+            int ch = GetCurrentHeight();
             int h = ch - location.Y + dragoffset.Y;
             
             if(HasParent()) {
-                FitInto(h, minsize.Height, GetHeight()+GetLocation().Y);
+                FitInto(h, minsize.Height, GetCurrentHeight()+GetCurrentLocation().Y);
             }
             
-            SetHeight(h);
+            SetHeight(Pixels(h));
             
-            Move(GetLocation() + Geometry::Point(0, ch-h));
+            Move(Pixels(GetCurrentLocation() + Geometry::Point(0, ch-h)));
             
             break;
         }
@@ -406,14 +407,14 @@ namespace Gorgon { namespace Widgets {
         case topright:
         case bottomright:
         case right: {
-            int cw = GetWidth();
+            int cw = GetCurrentWidth();
             int w = cw + location.X - dragoffset.X;
             
             if(HasParent()) {
-                FitInto(w, minsize.Width, std::min((GetParent().GetInteriorSize().Width - GetLocation().X) * 2, GetParent().GetInteriorSize().Width));
+                FitInto(w, minsize.Width, std::min((GetParent().GetInteriorSize().Width - GetCurrentLocation().X) * 2, GetParent().GetInteriorSize().Width));
             }
             
-            SetWidth(w);
+            SetWidth(Pixels(w));
             
             dragoffset.X = location.X;
             break;
@@ -421,16 +422,16 @@ namespace Gorgon { namespace Widgets {
         case topleft:
         case bottomleft:
         case left: {
-            int cw = GetWidth();
+            int cw = GetCurrentWidth();
             int w = cw - location.X + dragoffset.X;
             
             if(HasParent()) {
-                FitInto(w, minsize.Width, GetWidth()+GetLocation().X);
+                FitInto(w, minsize.Width, GetCurrentWidth()+GetCurrentLocation().X);
             }
             
-            SetWidth(w);
+            SetWidth(Pixels(w));
             
-            Move(GetLocation() + Geometry::Point(cw-w, 0));
+            Move(Pixels(GetCurrentLocation() + Geometry::Point(cw-w, 0)));
             
             break;
         }
@@ -518,7 +519,7 @@ namespace Gorgon { namespace Widgets {
 
     void Window::Center() {
         if(HasParent())
-            Move(Geometry::Point((GetParent().GetInteriorSize() - GetSize())/2));
+            Move(Pixels(Geometry::Point((GetParent().GetInteriorSize() - GetCurrentSize())/2)));
     }
     
     bool Window::allowfocus() const {

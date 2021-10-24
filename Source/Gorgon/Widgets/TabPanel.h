@@ -252,7 +252,7 @@ namespace Gorgon { namespace Widgets {
                     updating = false;
                 }
 
-                mapping[key].Resize(stack.BoundsOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag)).GetSize());
+                mapping[key].Resize(Pixels(stack.BoundsOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag)).GetSize()));
                 //stack.SetWidget(UI::ComponentTemplate::ContentsTag, &mapping[key]);
                 Clear();
                 Add(mapping[key]);
@@ -449,13 +449,12 @@ namespace Gorgon { namespace Widgets {
                 auto &tab    = tabs[i];
                 button.SetText(tab.GetTitle());
 
-                if(button.GetWidth() + x > w && overflow == ExpandLines) {
+                if(button.GetCurrentWidth() + x > w && overflow == ExpandLines) {
                     y += curh + GetSpacing();
                     x = 0;
                 }
 
-                button.Location.X = x;
-                button.Location.Y = y;
+                button.Move(Pixels(x, y));
 
                 button.SetTextWrap(buttontextwrap);
 
@@ -464,19 +463,19 @@ namespace Gorgon { namespace Widgets {
                 }
 
                 x = button.GetBounds().Right + GetSpacing();
-                if(button.GetHeight() > curh)
-                    curh = button.GetHeight();
+                if(button.GetCurrentHeight() > curh)
+                    curh = button.GetCurrentHeight();
             }
 
             if(buttonspnl) {
                 if(buttons.GetSize()) {
-                    buttonspnl->Resize(maxw, buttons.Last()->GetBounds().Bottom);
+                    buttonspnl->Resize(Pixels(maxw, buttons.Last()->GetBounds().Bottom));
                 }
                 else {
-                    buttonspnl->Resize({0, GetUnitSize()});
+                    buttonspnl->Resize(Pixels(0, GetUnitSize()));
                 }
 
-                stack.SetTagSize(UI::ComponentTemplate::ButtonsTag, {0, buttonspnl->GetHeight()});
+                stack.SetTagSize(UI::ComponentTemplate::ButtonsTag, {0, buttonspnl->GetCurrentHeight()});
             }
 
             stack.Update(true);

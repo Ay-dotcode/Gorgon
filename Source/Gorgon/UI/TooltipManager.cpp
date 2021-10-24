@@ -234,7 +234,7 @@ namespace Gorgon { namespace UI {
         
         if(target->IsVisible() && target->HasParent()) {
             auto offset = loc - target->GetParent().GetLayer().TranslateToTopLevel({0, 0}) + Geometry::Point(0, Widgets::Registry::Active().GetEmSize());
-            auto size   = target->GetSize();
+            auto size   = target->GetCurrentSize();
             auto csize = target->GetParent().GetLayer().GetCalculatedSize();
             
             if(offset.X + size.Width > csize.Width) {
@@ -245,7 +245,7 @@ namespace Gorgon { namespace UI {
                 offset.Y = csize.Height - size.Height;
             }
             
-            target->Move(offset);
+            target->Move(Pixels(offset));
         }
     }
     

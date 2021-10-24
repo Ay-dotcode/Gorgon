@@ -22,7 +22,7 @@ namespace Gorgon { namespace Widgets {
         
         explicit Window(const UI::Template &temp, const std::string &title = "", bool autoplace = true);
         
-                 Window(const UI::Template &temp, const std::string &title, const Geometry::Size size, bool autoplace = true);
+                 Window(const UI::Template &temp, const std::string &title, const UI::UnitSize size, bool autoplace = true);
         
                  Window(const UI::Template &temp, const Geometry::Size size, bool autoplace = true) : Window(temp, "", size, autoplace) { }
         

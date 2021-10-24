@@ -13,7 +13,7 @@ namespace Gorgon { namespace Widgets {
     {
         stack.AddGenerator(UI::ComponentTemplate::ListTag, {}); 
         
-        defaultsize  = plane.GetSize();
+        defaultsize  = plane.GetCurrentSize();
         
         updatevaluedisplay(false);
         
@@ -96,7 +96,7 @@ namespace Gorgon { namespace Widgets {
         
         opened = true;
         
-        int below = res.TotalSize.Height-res.CoordinatesInExtender.Y-GetHeight();
+        int below = res.TotalSize.Height - res.CoordinatesInExtender.Y - GetCurrentHeight();
         int above = res.CoordinatesInExtender.Y;
         reversed  = false;
         
@@ -105,31 +105,31 @@ namespace Gorgon { namespace Widgets {
         plane.LCDensity  = lcdensity;
         
         if(below < defaultsize.Height && above > below) {
-            plane.SetHeight(std::min(defaultsize.Height, above));
+            plane.SetHeight(Pixels(std::min(defaultsize.Height, above)));
                 
             reversed = true;
         }
         else {
-            plane.SetHeight(std::min(defaultsize.Height, below));
+            plane.SetHeight(Pixels(std::min(defaultsize.Height, below)));
         }
         
-        int targetx = res.CoordinatesInExtender.X - (defaultsize.Width - GetWidth());
+        int targetx = res.CoordinatesInExtender.X - (defaultsize.Width - GetCurrentWidth());
         
         if(targetx < 0) {
-            plane.SetWidth(std::min(defaultsize.Width, res.TotalSize.Width - res.CoordinatesInExtender.X));
+            plane.SetWidth(Pixels(std::min(defaultsize.Width, res.TotalSize.Width - res.CoordinatesInExtender.X)));
             
             targetx = 0;
         }
         else {
-            plane.SetWidth(defaultsize.Width);
+            plane.SetWidth(Pixels(defaultsize.Width));
         }
         
         
         if(reversed) {
-            plane.Move(targetx, res.CoordinatesInExtender.Y - plane.GetHeight());
+            plane.Move(Pixels(targetx, res.CoordinatesInExtender.Y - plane.GetCurrentHeight()));
         }
         else {
-            plane.Move(targetx, res.CoordinatesInExtender.Y + GetHeight());
+            plane.Move(Pixels(targetx, res.CoordinatesInExtender.Y + GetCurrentHeight()));
         }
         
         //plane.SetWidth(GetWidth());

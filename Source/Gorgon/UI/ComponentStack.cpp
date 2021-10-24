@@ -3839,8 +3839,8 @@ realign:
             }
             else if(widgets.Exists(&temp)) {
                 auto &w = widgets[&temp];
-                w.Move(comp.location + offset + target->GetLocation());
-                w.Resize(comp.size);
+                w.Move(Pixels(comp.location + offset + target->GetLocation()));
+                w.Resize(Pixels(comp.size));
             }
             
             if(imagedata.Exists(ph.GetDataEffect())) {

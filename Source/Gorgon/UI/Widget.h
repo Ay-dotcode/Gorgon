@@ -6,6 +6,7 @@
 #include "../Property.h"
 #include "../Geometry/PointProperty.h"
 #include "../Geometry/SizeProperty.h"
+#include "Dimension.h"
 
 namespace Gorgon { namespace UI {
 
@@ -15,69 +16,70 @@ namespace Gorgon { namespace UI {
     * This class is the base for all widgets. 
     */
     class Widget {
-    friend class WidgetContainer;
-        //Non-virtual functions for visual studio
+        friend class WidgetContainer;
 
-        virtual void resize(const Geometry::Size &size) = 0;
-
-        Geometry::Size getsize() const {
-            return GetSize();
-        }
-
-        virtual void move(const Geometry::Point &value) = 0;
-
-        Geometry::Point getlocation() const {
-            return GetLocation();
-        }
-        
     public:
         
-        Widget() : Location(this), Size(this), Tooltip(this) {
+        explicit Widget(const UnitSize &size) : Location(this), Size(this), Tooltip(this), size(size) {
         }
         
         Widget(Widget &&) = default;
         
         virtual ~Widget();
         
-        /// Moves this widget to the given position.
-        void Move(int x, int y) { Move({x, y}); }
+        /// Moves this widget to the given position. Widget might be
+        /// moved by organizers.
+        void Move(UnitDimension x, UnitDimension y) { Move({x, y}); }
         
         /// Moves this widget to the given position.
-        void Move(const Geometry::Point &location) {
-            move(location);
+        void Move(const UnitPoint &value);
+
+        /// Returns the location of the widget. This is the assigned location
+        /// and may not reflect actual position. Widget might be moved by
+        /// organizers.
+        UnitPoint GetLocation() const {
+            return location;
         }
 
-        /// Returns the location of the widget
-        virtual Geometry::Point GetLocation() const = 0;
+        /// Returns the current location of the widget in pixels. This might
+        /// be different than location that is set.
+        virtual Geometry::Point GetCurrentLocation() const = 0;
 
         /// Changes the size of the widget.
-        virtual void Resize(int w, int h) { Resize({w, h}); };
+        virtual void Resize(UnitDimension w, UnitDimension h) { Resize({w, h}); };
 
         /// Changes the size of the widget.
-        virtual void Resize(const Geometry::Size &size) {
-            resize(size);
-        }
+        virtual void Resize(const UnitSize &size);
 
         /// Returns the size of the widget
-        virtual Geometry::Size GetSize() const = 0;
+        UnitSize GetSize() const {
+            return size;
+        }
+
+        /// Returns the current size of the widget in pixels. This might be
+        /// different than the size that is set.
+        virtual Geometry::Size GetCurrentSize() const = 0;
         
-        /// Returns the bounds of the widget
-        Geometry::Bounds GetBounds() const { return {GetLocation(), GetSize()}; }
+        /// Returns the bounds of the widget in pixels.
+        Geometry::Bounds GetBounds() const { return {GetCurrentLocation(), GetCurrentSize()}; }
         
         /// Returns the width of the widget
-        int GetWidth() const { return GetSize().Width; }
+        UnitDimension GetWidth() const { return GetSize().Width; }
         
         /// Returns the height of the widget
-        int GetHeight() const { return GetSize().Height; }
+        UnitDimension GetHeight() const { return GetSize().Height; }
         
+        /// Returns the width of the widget in pixels.
+        int GetCurrentWidth() const { return GetCurrentSize().Width; }
+
+        /// Returns the height of the widget in pixels.
+        int GetCurrentHeight() const { return GetCurrentSize().Height; }
+
         /// Sets the width of the widget
-        void SetWidth(int width) { Resize(width, GetHeight()); }
-        
-        /// Sets the width of the widget in unit widths.
-        virtual void SetWidthInUnits(int n) = 0;
+        void SetWidth(UnitDimension width) { Resize(width, GetHeight()); }
         
         /// Sets the height of the widget
-        void SetHeight(int height) { Resize(GetWidth(), height); }
+        void SetHeight(UnitDimension height) { Resize(GetWidth(), height); }
         
         /// Activates the widget. This might perform the action if the
         /// widget is a button, forward the focus if it is a label or
@@ -221,8 +223,8 @@ namespace Gorgon { namespace UI {
         /// invalidated in the event handlers registered to this function.
         Event<Widget> DestroyedEvent        = Event<Widget>{*this};
         
-        Geometry::PointProperty<Widget, &Widget::getlocation, &Widget::Move> Location;
-        Geometry::SizeProperty<Widget, &Widget::getsize, &Widget::Resize> Size;
+        Geometry::basic_PointProperty<Widget, UnitPoint, &Widget::GetLocation, &Widget::Move> Location;
+        Geometry::basic_SizeProperty<Widget, UnitSize, &Widget::GetSize, &Widget::Resize> Size;
         TextualProperty<Widget, std::string, &Widget::GetTooltip, &Widget::SetTooltip> Tooltip;
         
         /// This is a debug feature
@@ -237,6 +239,12 @@ namespace Gorgon { namespace UI {
 #endif
 
     protected:
+        /// Should resize the widget in pixels
+        virtual void resize(const Geometry::Size &size) = 0;
+
+        /// Should move the widget in pixels
+        virtual void move(const Geometry::Point &value) = 0;
+
         /// Called when it is about to be added to the given container
         virtual bool addingto(WidgetContainer &) { return true; }
         
@@ -293,12 +301,16 @@ namespace Gorgon { namespace UI {
         virtual void mouseleave();
         
         std::string tooltip;
+
         
     private:
         bool visible = true;
         bool enabled = true;
         bool focus   = false;
         bool floating= false;
+
+        UnitPoint location;
+        UnitSize  size;
         
         /// Never call this function
         virtual void hide() = 0;
@@ -310,4 +322,12 @@ namespace Gorgon { namespace UI {
     };
     
     
-} }
+}
+namespace Widgets {
+    using UI::Pixels;
+    using UI::Percentage;
+    using UI::Units;
+    using UI::Dimension;
+    using UI::UnitDimension;
+}
+}

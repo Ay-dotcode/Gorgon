@@ -54,7 +54,7 @@ namespace Gorgon { namespace Widgets {
                 Toggle();
             });
             list.SetOverscroll(0.5);
-            defaultheight = list.GetHeight();
+            defaultheight = list.GetCurrentHeight();
         }
         
         template <class ...A_>
@@ -100,7 +100,7 @@ namespace Gorgon { namespace Widgets {
             
             opened = true;
             
-            int below = res.TotalSize.Height-res.CoordinatesInExtender.Y-GetHeight();
+            int below = res.TotalSize.Height-res.CoordinatesInExtender.Y-GetCurrentHeight();
             int above = res.CoordinatesInExtender.Y;
             reversed  = false;
             
@@ -109,7 +109,7 @@ namespace Gorgon { namespace Widgets {
                 if(!fit) {
                     fit = list.FitHeight(above);
                     if(!fit)
-                        list.SetHeight(above);
+                        list.SetHeight(Pixels(above));
                     
                     reversed = true;
                 }
@@ -119,10 +119,10 @@ namespace Gorgon { namespace Widgets {
             }
             
             if(reversed) {
-                list.Move(res.CoordinatesInExtender.X, res.CoordinatesInExtender.Y - list.GetHeight());
+                list.Move(Pixels(res.CoordinatesInExtender.X, res.CoordinatesInExtender.Y - list.GetCurrentHeight()));
             }
             else {
-                list.Move(res.CoordinatesInExtender.X, res.CoordinatesInExtender.Y + GetHeight());
+                list.Move(Pixels(res.CoordinatesInExtender.X, res.CoordinatesInExtender.Y + GetCurrentHeight()));
             }
             
             list.SetWidth(GetWidth());

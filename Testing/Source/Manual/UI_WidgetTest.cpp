@@ -44,9 +44,9 @@ int main() {
     wgt1["Tab 2"].Add(lbl1);
     wgt1["Tab 2"].Add(lbl2);
     wgt1["Tab 2"].Add(btn2);
-    lbl2.Location.Y = lbl1.GetBounds().Bottom + Widgets::Registry::Active().GetSpacing();
-    btn2.Location.Y = 400;
-    btn2.Location.X = Widgets::Registry::Active().GetUnitSize(3) + Widgets::Registry::Active().GetSpacing();
+    //lbl2.Location.Y = lbl1.GetBounds().Bottom + Widgets::Registry::Active().GetSpacing();
+    //btn2.Location.Y = 400;
+    //btn2.Location.X = Widgets::Registry::Active().GetUnitSize(3) + Widgets::Registry::Active().GetSpacing();
 
     wgt1.ActivateNext();
         

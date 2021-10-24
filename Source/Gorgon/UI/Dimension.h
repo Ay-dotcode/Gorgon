@@ -42,48 +42,48 @@ namespace Gorgon { namespace UI {
             MilliUnitSize,
 
         };
+    private:
 
-        /// Constructs a new dimension or type casts integer to dimension
-        Dimension(int value = 0, Unit unit = Pixel) : value(value), unit(unit) {/* implicit */
-        }
-
-
-        /// Constructs a new dimension or type casts real number to dimension
-        Dimension(double value, Unit unit = Percent) {
+        constexpr int dimension_calc(double value, Unit unit) {
             switch(unit) {
             case Percent:
-                Set(int(std::round(value * 100)), unit);
-                break;
+                return int(std::round(value * 100));
             case MilliPixel:
-                Set(int(std::round(value * 1000)), unit);
-                break;
+                return int(std::round(value * 1000));
             case BasisPoint:
-                Set(int(std::round(value * 10000)), unit);
-                break;
+                return int(std::round(value * 10000));
             case EM:
-                Set(int(std::round(value * 100)), unit);
-                break;
+                return int(std::round(value * 100));
             case MilliUnitSize:
-                Set(int(std::round(value * 1000)), unit);
-                break;
+                return int(std::round(value * 1000));
             default:
-                Set(int(std::round(value)), unit);
-                break;
+                return int(std::round(value));
             }
         }
 
+    public:
+
+        /// Constructs a new dimension or type casts integer to dimension
+        constexpr Dimension(int value = 0, Unit unit = Pixel) : value(value), unit(unit) {/* implicit */
+        }
+
         /// Constructs a new dimension or type casts real number to dimension
-        Dimension(float value, Unit unit = Percent) : Dimension((double)value, unit) {
+        constexpr Dimension(double value, Unit unit = Percent) : value(dimension_calc(value, unit)), unit(unit) {
+
+        }
+
+        /// Constructs a new dimension or type casts real number to dimension
+        constexpr Dimension(float value, Unit unit = Percent) : Dimension((double)value, unit) {
 
         }
 
         /// Returns the calculated dimension in pixels
-        int operator ()(int parentwidth, int unitsize, int spacing, int emwidth = 10, bool issize = false) const {
+        constexpr int operator ()(int parentwidth, int unitsize, int spacing, int emwidth = 10, bool issize = false) const {
             return Calculate(parentwidth, unitsize, spacing, emwidth, issize);
         }
 
         /// Returns the calculated dimension in pixels
-        int Calculate(int parentwidth, int unitsize, int spacing, int emwidth = 10, bool issize = false) const {
+        constexpr int Calculate(int parentwidth, int unitsize, int spacing, int emwidth = 10, bool issize = false) const {
             switch(unit) {
                 case Percent:
                     return int(std::round((double)value * parentwidth / 100));
@@ -112,7 +112,7 @@ namespace Gorgon { namespace UI {
         }
 
         /// Returns the calculated dimension in pixels
-        float CalculateFloat(float parentwidth, int unitsize, int spacing, float emwidth = 10, bool issize = false) const {
+        constexpr float CalculateFloat(float parentwidth, int unitsize, int spacing, float emwidth = 10, bool issize = false) const {
             switch(unit) {
                 case Percent:
                     return (float)value * parentwidth / 100.f;
@@ -137,30 +137,38 @@ namespace Gorgon { namespace UI {
         }
         
         /// Returns if the dimension is relative to the parentwidth
-        bool IsRelative() const {
+        constexpr bool IsRelative() const {
             return unit == Percent || unit == BasisPoint;
         }
 
         /// Returns the value of the dimension, should not be considered as
         /// pixels
-        int GetValue() const {
+        constexpr int GetValue() const {
             return value;
         }
 
         /// Returns the unit of the dimension
-        Unit GetUnit() const {
+        constexpr Unit GetUnit() const {
             return unit;
         }
 
         /// Changes the value of the dimension without modifying the units
-        void Set(int value) {
+        constexpr void Set(int value) {
             this->value = value;
         }
 
         /// Changes the value and unit of the dimension.
-        void Set(int value, Unit unit) {
+        constexpr void Set(int value, Unit unit) {
             this->value = value;
             this->unit = unit;
+        }
+
+        constexpr bool operator ==(const Dimension &other) const {
+            return other.unit == unit && other.value == value;
+        }
+
+        constexpr bool operator !=(const Dimension &other) const {
+            return !(*this == other);
         }
 
     private:
@@ -172,16 +180,21 @@ namespace Gorgon { namespace UI {
     /// doubles for automatic conversion
     class UnitDimension : public Dimension {
     public:
-        UnitDimension(int value, Unit unit = UnitSize) : Dimension(value, unit) {
+        /*constexpr UnitDimension(int value = 0, Unit unit = UnitSize) : Dimension(value, unit) {
+        }*/
+
+        constexpr UnitDimension() : Dimension() { }
+
+        constexpr UnitDimension(int value, Unit unit) : Dimension(value, unit) {
         }
 
-        UnitDimension(double value, Unit unit = MilliUnitSize) : Dimension(value, unit) {
+        constexpr UnitDimension(double value, Unit unit/* = MilliUnitSize*/) : Dimension(value, unit) {
         }
 
-        UnitDimension(float value, Unit unit = MilliUnitSize) : Dimension((double)value, unit) {
+        constexpr UnitDimension(float value, Unit unit/* = MilliUnitSize*/) : Dimension((double)value, unit) {
         }
 
-        UnitDimension(const Dimension &d) : Dimension(d) { }
+        constexpr UnitDimension(const Dimension &d) : Dimension(d) { }
     };
 
     /// This class stores the location information for a box object
@@ -190,6 +203,12 @@ namespace Gorgon { namespace UI {
     /// This class stores the size information for a box object
     using Size = Geometry::basic_Size<Dimension>;
 
+    /// This class stores the location information for a box object
+    using UnitPoint = Geometry::basic_Point<UnitDimension>;
+
+    /// This class stores the size information for a box object
+    using UnitSize = Geometry::basic_Size<UnitDimension>;
+
     /// This class stores the margin information for a box object
     using Margin = Geometry::basic_Margin<Dimension>;
     
@@ -197,15 +216,172 @@ namespace Gorgon { namespace UI {
     inline Geometry::Point Convert(const Point &p, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10) {
         return {p.X(parent.Width, unitsize, spacing, emwidth), p.Y(parent.Height, unitsize, spacing, emwidth)};
     }
-    
+
     /// Converts a dimension based size to pixel based size
     inline Geometry::Size Convert(const Size &s, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10) {
         return {s.Width(parent.Width, unitsize, spacing, emwidth, true), s.Height(parent.Height, unitsize, spacing, emwidth, true)};
     }
-    
+
+    /// Converts a dimension based point to pixel based point
+    inline Geometry::Point Convert(const UnitPoint &p, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10) {
+        return {p.X(parent.Width, unitsize, spacing, emwidth), p.Y(parent.Height, unitsize, spacing, emwidth)};
+    }
+
+    /// Converts a dimension based size to pixel based size
+    inline Geometry::Size Convert(const UnitSize &s, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10) {
+        return {s.Width(parent.Width, unitsize, spacing, emwidth, true), s.Height(parent.Height, unitsize, spacing, emwidth, true)};
+    }
+
     /// Converts a dimension based margin to pixel based margin
     inline Geometry::Margin Convert(const Margin &m, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10) {
         return {m.Left(parent.Width, unitsize, spacing, emwidth), m.Top(parent.Height, unitsize, spacing, emwidth), m.Right(parent.Width, unitsize, spacing, emwidth), m.Bottom(parent.Height, unitsize, spacing, emwidth), };
+    }
+
+    /// Converts the given value to dimension with pixel units
+    inline constexpr Dimension Pixels(int val) {
+        return {val, Dimension::Pixel};
+    }
+
+    /// Converts the given value to dimension with percentage units
+    inline constexpr Dimension Percentage(int val) {
+        return {val, Dimension::Percent};
+    }
+
+    /// Converts the given value to dimension with percentage units
+    inline constexpr Dimension Percentage(double val) {
+        return {val, Dimension::Percent};
+    }
+
+    /// Converts the given value to dimension with percentage units
+    inline constexpr Dimension Percentage(float val) {
+        return {val, Dimension::Percent};
+    }
+
+    /// Converts the given value to dimension with unit size
+    inline constexpr Dimension Units(int val) {
+        return {val, Dimension::UnitSize};
+    }
+
+    /// Converts the given value to dimension with unit size
+    inline constexpr Dimension Units(float val) {
+        return {val, Dimension::UnitSize};
+    }
+
+    /// Converts the given value to dimension with unit size
+    inline constexpr Dimension Units(double val) {
+        return {val, Dimension::UnitSize};
+    }
+
+    class DualDimension {
+    public:
+        Dimension one, two;
+
+        operator Point() const {
+            return {one, two};
+        }
+
+        operator UnitPoint() const {
+            return {one, two};
+        }
+
+        operator Size() const {
+            return {one, two};
+        }
+
+        operator UnitSize() const {
+            return {one, two};
+        }
+    };
+
+    /// Converts the given value to dimension with pixel units
+    inline constexpr DualDimension Pixels(int one, int two) {
+        return {{one, Dimension::Pixel}, {two, Dimension::Pixel}};
+    }
+
+    /// Converts the given value to dimension with percentage units
+    inline constexpr DualDimension Percentage(int one, int two) {
+        return {{one, Dimension::Percent}, {two, Dimension::Percent}};
+    }
+
+    /// Converts the given one, given twoue to dimension with percentage units
+    inline constexpr DualDimension Percentage(double one, double two) {
+        return {{one, Dimension::Percent}, {two, Dimension::Percent}};
+    }
+
+    /// Converts the given one, given twoue to dimension with percentage units
+    inline constexpr DualDimension Percentage(float one, float two) {
+        return {{one, Dimension::Percent}, {two, Dimension::Percent}};
+    }
+
+    /// Converts the given one, given twoue to dimension with unit size
+    inline constexpr DualDimension Units(int one, int two) {
+        return {{one, Dimension::UnitSize}, {two, Dimension::UnitSize}};
+    }
+
+    /// Converts the given one, given twoue to dimension with unit size
+    inline constexpr DualDimension Units(float one, float two) {
+        return {{one, Dimension::MilliUnitSize}, {two, Dimension::MilliUnitSize}};
+    }
+
+    /// Converts the given one, given twoue to dimension with unit size
+    inline constexpr DualDimension Units(double one, double two) {
+        return {{one, Dimension::MilliUnitSize}, {two, Dimension::MilliUnitSize}};
+    }
+
+    /// Converts the given value to dimension with pixel units
+    inline Point Pixels(const Geometry::Point &val) {
+        return {{val.X, Dimension::Pixel}, {val.Y, Dimension::Pixel}};
+    }
+
+    /// Converts the given value to dimension with percentage units
+    inline Point Percentage(const Geometry::Point &val) {
+        return {{val.X, Dimension::Percent}, {val.Y, Dimension::Percent}};
+    }
+
+    /// Converts the given value to dimension with unit size
+    inline Point Units(const Geometry::Point &val) {
+        return {{val.X, Dimension::UnitSize}, {val.Y, Dimension::UnitSize}};
+    }
+
+    /// Converts the given value to dimension with pixel units
+    inline Size Pixels(const Geometry::Size &val) {
+        return {{val.Width, Dimension::Pixel}, {val.Height, Dimension::Pixel}};
+    }
+
+    /// Converts the given value to dimension with percentage units
+    inline Size Percentage(const Geometry::Size &val) {
+        return {{val.Width, Dimension::Percent}, {val.Height, Dimension::Percent}};
+    }
+
+    /// Converts the given value to dimension with unit size
+    inline Size Units(const Geometry::Size &val) {
+        return {{val.Width, Dimension::UnitSize}, {val.Height, Dimension::UnitSize}};
+    }
+
+    namespace literals {
+        inline Dimension operator""_px(unsigned long long val) {
+            return Pixels(int(val));
+        }
+
+        inline Dimension operator""_px(long double val) {
+            return {(double)val, Dimension::MilliPixel};
+        }
+
+        inline Dimension operator""_perc(unsigned long long val) {
+            return Percentage(int(val));
+        }
+
+        inline Dimension operator""_perc(long double val) {
+            return Percentage(double(val));
+        }
+
+        inline Dimension operator""_u(unsigned long long val) {
+            return Units(int(val));
+        }
+
+        inline Dimension operator""_u(long double val) {
+            return Units(double(val));
+        }
     }
 
 } }

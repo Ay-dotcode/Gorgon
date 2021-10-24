@@ -18,10 +18,10 @@ namespace Gorgon { namespace Widgets {
         inputlayer.SetClick(this, &ColorPlane::click);
     }
     
-    void ColorPlane::Resize(const Geometry::Size &size) {
+    void ColorPlane::resize(const Geometry::Size &size) {
         auto oldsz = getinteriorsize();
 
-        ComponentStackWidget::Resize(size);
+        ComponentStackWidget::resize(size);
         
         auto newsz = getinteriorsize();
 

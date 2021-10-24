@@ -88,7 +88,7 @@ namespace internal {
     }
 
     Geometry::Size negotiatesize(Widgets::DialogWindow *diag, Widget *text, bool allowshrink) {
-        text->SetWidth(diag->GetInteriorSize().Width);
+        text->SetWidth(Pixels(diag->GetInteriorSize().Width));
 
         Geometry::Size sz;
         int maxw = int(diag->GetParent().GetInteriorSize().Width * 0.9);
@@ -96,7 +96,7 @@ namespace internal {
         bool compact = false;
         
         for(int i=0; i<5; i++) { //maximum 5 iterations
-            sz = text->GetSize();
+            sz = text->GetCurrentSize();
 
             if(!allowshrink)
                 sz.Width = diag->GetInteriorSize().Width;
@@ -106,7 +106,7 @@ namespace internal {
                 sz.Width = diag->GetUnitSize() * 6;
                 break;
             }
-            else if(sz.Width <= maxw && sz.Height > diag->GetHeight()) {
+            else if(sz.Width <= maxw && sz.Height > diag->GetCurrentHeight()) {
                 //too high, increase width
                 sz.Width = int(sz.Width * 1.5);
                 if(sz.Width >= maxw) {
@@ -114,8 +114,8 @@ namespace internal {
                     return sz;
                 }
                 else {
-                    diag->SetWidth(sz.Width);
-                    text->SetWidth(diag->GetInteriorSize().Width);
+                    diag->SetWidth(Pixels(sz.Width));
+                    text->SetWidth(Pixels(diag->GetInteriorSize().Width));
                 }
                 
                 compact = true;
@@ -126,12 +126,12 @@ namespace internal {
         }
         
         if(compact) {
-            text->Move(diag->GetSpacing(), diag->GetSpacing());
+            text->Move(Pixels(diag->GetSpacing(), diag->GetSpacing()));
             sz.Width  += diag->GetSpacing()*2;
             sz.Height += diag->GetSpacing()*2;
         }
         else {
-            text->Move(diag->GetSpacing()*4, diag->GetSpacing()*4);
+            text->Move(Pixels(diag->GetSpacing()*4, diag->GetSpacing()*4));
             sz.Width  += diag->GetSpacing()*8;
             sz.Height += diag->GetSpacing()*8;
         }
@@ -150,15 +150,15 @@ namespace internal {
             auto lp = dynamic_cast<Gorgon::Window*>(&layer.GetTopLevel());
             
             if(lp)
-                location = lp->GetMouseLocation() - Geometry::Point(diag->GetSize()/2) - layer.GetEffectiveBounds().TopLeft();
+                location = lp->GetMouseLocation() - Geometry::Point(diag->GetCurrentSize()/2) - layer.GetEffectiveBounds().TopLeft();
         }
         if(dynamic_cast<Gorgon::Window*>(parent)) {
-            location = dynamic_cast<Gorgon::Window*>(parent)->GetMouseLocation() - Geometry::Point(diag->GetSize()/2);
+            location = dynamic_cast<Gorgon::Window*>(parent)->GetMouseLocation() - Geometry::Point(diag->GetCurrentSize()/2);
         }
         
         if(location != Geometry::Point{std::numeric_limits<int>::min(), std::numeric_limits<int>::min()}) {
             auto psz = diag->GetParent().GetInteriorSize();
-            auto sz  = diag->GetSize();
+            auto sz  = diag->GetCurrentSize();
             
             if(location.X < 0)
                 location.X = 0;
@@ -169,12 +169,12 @@ namespace internal {
             if(location.Y + sz.Height > psz.Height)
                 location.Y = psz.Height - sz.Height;
             
-            diag->Move(location);
+            diag->Move(Pixels(location));
         }
         else {
-            auto sz = diag->GetParent().GetInteriorSize() - diag->GetSize();
+            auto sz = diag->GetParent().GetInteriorSize() - diag->GetCurrentSize();
             sz /= 10;
-            diag->Move(Geometry::Point(sz * std::min(10, (int)internal::dialogs.GetCount()+3)));
+            diag->Move(Pixels(Geometry::Point(sz * std::min(10, (int)internal::dialogs.GetCount()+3))));
         }
         
         diag->Focus();
@@ -267,7 +267,7 @@ namespace internal {
                 closethis(diag);
                 onselect(index);
             });
-            btn.SetWidthInUnits(10); //allow up to 10 units
+            btn.SetWidth(Units(10)); //allow up to 10 units
             btn.SetHorizonalAutosize(Autosize::Automatic);
             
             buttontexts += opt + " | ";
@@ -295,11 +295,11 @@ namespace internal {
 
         int totw = 0;
         for(auto &w : btnsarea) {
-            totw += w.GetWidth();
+            totw += w.GetCurrentWidth();
         }
         totw += diag->ButtonAreaOrganizer().GetSpacing() * (btnsarea.GetCount()-1);
 
-        if(totw > diag->GetWidth())
+        if(totw > diag->GetCurrentWidth())
             diag->ResizeInterior({totw, diag->GetInteriorSize().Height});
 
         diag->ResizeInterior(negotiatesize(diag, text, false));
@@ -411,16 +411,17 @@ namespace internal {
         text->SetAutosize(Autosize::Automatic, Autosize::Automatic);
         diag->Add(*text);
         diag->Own(*text);
-        inp->Move(0, text->GetBounds().Bottom + diag->GetSpacing());
+        inp->Move(Pixels(0, text->GetBounds().Bottom + diag->GetSpacing()));
         
         Widgets::Label *l = nullptr;
         
         if(!label.empty()) {
             l = new Widgets::Label(label);
             l->SetHorizonalAutosize(Autosize::Automatic);
-            l->Move(0, text->GetBounds().Bottom + diag->GetSpacing());
+            l->Move(Pixels(0, text->GetBounds().Bottom + diag->GetSpacing()));
             l->SetHeight(inp->GetHeight());
-            inp->Location.X = l->GetBounds().Right + diag->GetSpacing()*2;
+            //TODO
+            //inp->Location.X = l->GetBounds().Right + diag->GetSpacing()*2;
             
             diag->Add(*l);
             diag->Own(*l);
@@ -464,21 +465,19 @@ namespace internal {
         );
         
         diag->ResizeInterior(negotiatesize(diag, text, false));
-        
         if(l) {
-            l->Move(text->Location.X, text->GetBounds().Bottom + text->Location.Y);
+            l->Move(Pixels(text->GetCurrentLocation().X, text->GetBounds().Bottom + text->GetCurrentLocation().Y));
             l->SetHeight(inp->GetHeight());
-            inp->Move(l->GetBounds().Right + diag->GetSpacing()*2, l->Location.Y);
-            inp->SetWidth(diag->GetInteriorSize().Width - inp->Location.X - text->Location.X);
+            inp->Move(Pixels(l->GetBounds().Right + diag->GetSpacing()*2, l->GetCurrentLocation().Y));
+            inp->SetWidth(Pixels(diag->GetInteriorSize().Width - inp->GetCurrentLocation().X - text->GetCurrentLocation().X));
         }
         else {
-            inp->Move(text->Location.X, text->GetBounds().Bottom + text->Location.Y);
-            inp->SetWidth(diag->GetInteriorSize().Width - text->Location.X*2);
+            inp->Move(Pixels(text->GetCurrentLocation().X, text->GetBounds().Bottom + text->GetCurrentLocation().Y));
+            inp->SetWidth(Pixels(diag->GetInteriorSize().Width - text->GetCurrentLocation().X*2));
         }
         
         diag->ResizeInterior({diag->GetInteriorSize().Width, inp->GetBounds().Bottom});
-        diag->ResizeInterior(Geometry::Size(inp->GetBounds().BottomRight() + text->Location));
-        
+        diag->ResizeInterior(Geometry::Size(inp->GetBounds().BottomRight() + text->GetCurrentLocation()));
         place(diag);
         diag->Center(); //input dialogs will be centered
     }

@@ -3334,7 +3334,7 @@ TestData test_autosizedstack_center(Layer &layer) {
 
 std::vector<std::function<TestData(Layer &)>> tests = {
     //BEGIN layout
-    /*&test_graphic,
+    &test_graphic,
     &test_text,
     
     &test_setsize,
@@ -3371,9 +3371,9 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_relanch2,
     &test_relanchvert,
     &test_relanchvertrelsize,
-    &test_anchtozero,*/
+    &test_anchtozero,
     &test_anchtoreverseside,
-    /*
+
     &test_anchbaseline,
     &test_anchsetbaseline,
     &test_anchbaseline2,
@@ -3480,7 +3480,7 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_anchacc,
     &test_ignored,
     //END
-    */
+
 };
 
 //END tests

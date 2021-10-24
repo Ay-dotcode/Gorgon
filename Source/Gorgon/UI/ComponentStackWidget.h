@@ -13,7 +13,10 @@ namespace Gorgon { namespace UI {
     */
     class ComponentStackWidget : public Widget {
     public:
-        ComponentStackWidget(const Template &temp, std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> generators = {}) : stack(*new ComponentStack(temp, temp.GetSize(), generators)) {
+        ComponentStackWidget(const Template &temp, std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> generators = {}) :
+            Widget(Pixels(temp.GetSize())),
+            stack(*new ComponentStack(temp, temp.GetSize(), generators))
+        {
             stack.SetCeilToUnitSize([this](int s) {
                 int w;
                 if(HasParent()) {
@@ -37,26 +40,12 @@ namespace Gorgon { namespace UI {
             delete &stack;
         }
 
-        virtual Geometry::Point GetLocation() const override {
+        virtual Geometry::Point GetCurrentLocation() const override {
             return stack.GetLocation();
         }
 
-        virtual Geometry::Size GetSize() const override {
+        virtual Geometry::Size GetCurrentSize() const override {
             return stack.GetSize();
-        }
-        
-        /// Sets the width of the widget in unit widths.
-        virtual void SetWidthInUnits(int n) override {
-            int w, s;
-            if(HasParent()) {
-                w = GetParent().GetUnitSize();
-                s = GetParent().GetSpacing();
-            }
-            else {
-                w = stack.GetTemplate().GetUnitSize();
-                s = stack.GetTemplate().GetSpacing();
-            }
-            SetWidth(w * n + s * (n-1));
         }
 
         virtual void SetEnabled(bool value) override {
