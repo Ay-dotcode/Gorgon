@@ -83,7 +83,9 @@ namespace Gorgon { namespace Widgets {
     public:
         using Inputbox::operator=;
         
-        using Widget::Move;
+        using Widget::Resize;
+        using Widget::SetWidth;
+        using Widget::SetHeight;
 
 
         /// Initializes the inputbox
@@ -115,7 +117,10 @@ namespace Gorgon { namespace Widgets {
     public:
         using Inputbox::operator=;
 
-        using Widget::Move;
+        using Widget::Resize;
+        using Widget::SetWidth;
+        using Widget::SetHeight;
+
 
 
         /// Initializes the inputbox
@@ -148,6 +153,12 @@ namespace Gorgon { namespace Widgets {
     public:
         using Inputbox::operator=;
 
+        using Widget::Move;
+        using Widget::Resize;
+        using Widget::SetWidth;
+        using Widget::SetHeight;
+
+
         /// Initializes the inputbox
         explicit Boundsbox(const UI::Template &temp, Geometry::Bounds value = {0, 0, 0, 0}) : Inputbox(temp, value) {
         }
@@ -177,6 +188,11 @@ namespace Gorgon { namespace Widgets {
     class Marginbox : public Inputbox<Geometry::Margin> {
     public:
         using Inputbox::operator=;
+
+        using Widget::Move;
+        using Widget::Resize;
+        using Widget::SetWidth;
+        using Widget::SetHeight;
 
         /// Initializes the inputbox
         explicit Marginbox(const UI::Template &temp, Geometry::Margin value = {0, 0, 0, 0}) : Inputbox(temp, value) {

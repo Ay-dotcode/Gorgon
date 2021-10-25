@@ -285,7 +285,7 @@ namespace Gorgon { namespace UI {
         virtual void boundschanged();
         
         /// Call this function when the bounds of the parent is changed
-        virtual void parentboundschanged() { }
+        virtual void parentboundschanged();
         
         /// This function is called when the parent's enabled state changes.
         virtual void parentenabledchanged(bool /*state*/) { }

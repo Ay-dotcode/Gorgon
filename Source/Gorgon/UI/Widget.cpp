@@ -191,4 +191,35 @@ namespace Gorgon { namespace UI {
         ));
     }
 
+
+    void Widget::parentboundschanged() {
+        //for now
+
+        //move out
+        int unitsize = 0, spacing = 0;
+        Geometry::Size sz;
+        if(HasParent()) {
+            unitsize = GetParent().GetUnitSize();
+            spacing = GetParent().GetSpacing();
+            sz = GetParent().GetInteriorSize();
+        }
+        else {
+            unitsize = Widgets::Registry::Active().GetUnitSize();
+            spacing  = Widgets::Registry::Active().GetSpacing();
+            sz = GetCurrentSize();
+        }
+
+        move(Convert(
+            location, sz,
+            unitsize, spacing,
+            Widgets::Registry::Active().GetEmSize()
+        ));
+
+        resize(Convert(
+            size, sz,
+            unitsize, spacing,
+            Widgets::Registry::Active().GetEmSize()
+        ));
+    }
+
 } }
