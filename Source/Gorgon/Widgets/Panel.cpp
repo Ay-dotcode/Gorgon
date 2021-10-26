@@ -200,7 +200,7 @@ namespace Gorgon { namespace Widgets {
         
         stack.SetTagSize(UI::ComponentTemplate::ContentsTag, {maxx, maxy});
         
-        ScrollTo(ScrollOffset(), scrollclipped);
+        ScrollTo(ScrollTarget(), scrollclipped);
 
         auto size = GetInteriorSize();
         auto val = stack.GetValue();

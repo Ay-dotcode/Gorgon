@@ -180,9 +180,14 @@ namespace Gorgon { namespace Widgets {
             ScrollTo(target.X + x, target.Y + y, clip);
         }
         
-        /// Returns the current scroll offset
+        /// Returns the current scroll offset, updates during animations
         Geometry::Point ScrollOffset() const {
             return scrolloffset;
+        }
+        
+        /// Returns the current scroll offset target.
+        Geometry::Point ScrollTarget() const {
+            return target;
         }
         
         /// Returns the current maximum scroll offset

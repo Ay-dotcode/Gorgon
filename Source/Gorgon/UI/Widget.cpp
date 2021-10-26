@@ -193,8 +193,6 @@ namespace Gorgon { namespace UI {
 
 
     void Widget::parentboundschanged() {
-        //for now
-
         //move out
         int unitsize = 0, spacing = 0;
         Geometry::Size sz;
@@ -208,18 +206,25 @@ namespace Gorgon { namespace UI {
             spacing  = Widgets::Registry::Active().GetSpacing();
             sz = GetCurrentSize();
         }
-
-        move(Convert(
+        
+        auto l= Convert(
             location, sz,
             unitsize, spacing,
             Widgets::Registry::Active().GetEmSize()
-        ));
-
-        resize(Convert(
+        );
+        
+        if(GetCurrentLocation() != l) {
+            move(l);
+        }
+        
+        auto s = Convert(
             size, sz,
             unitsize, spacing,
             Widgets::Registry::Active().GetEmSize()
-        ));
+        );
+        
+        if(GetCurrentSize() != s)
+            resize(s);
     }
 
 } }
