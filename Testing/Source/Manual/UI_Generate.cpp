@@ -108,8 +108,10 @@ int main() {
 //     generator.UpdateDimensions();
 //     generator.Activate();
 
-    Widgets::Panel blank(Widgets::Registry::Panel_Right);
+    Widgets::Panel blank/*(Widgets::Registry::Panel_Right)*/;
     blank.Move(Pixels(5, 50));
+    blank.SetWidth(6_u);
+    std::cout << float(blank.GetInteriorSize().Width + blank.GetSpacing()) / (blank.GetUnitSize() + blank.GetSpacing()) << std::endl;
     blank.SetHeight(300_px);
     auto icon = Triangle(5, 10);
     icon.Prepare();
@@ -117,10 +119,14 @@ int main() {
     icon2.Prepare();
 
     Gorgon::Widgets::Button btn("Save Âj", Gorgon::Widgets::Registry::Button_Regular);
+    Gorgon::Widgets::Button btn2("Another", Gorgon::Widgets::Registry::Button_Regular);
     Gorgon::Widgets::Button icnbtn("+", Gorgon::Widgets::Registry::Button_Icon);
     Gorgon::Widgets::Button icnbtn2("Âj", Gorgon::Widgets::Registry::Button_Icon);
     Gorgon::Widgets::Button icnbtn3("X", Gorgon::Widgets::Registry::Button_Icon);
     btn.OwnIcon(icon2.CreateAnimation());
+    btn.Size.Width = 50_perc;
+    btn2.Size.Width = 50_perc;
+    btn2.Location.X = 50_perc;
 
     icnbtn.OwnIcon(icon2.CreateAnimation());
 
@@ -308,11 +314,14 @@ int main() {
     ;
     
     org << org.Action("Ok", [&]() { std::cout << "Ok clicked" << std::endl; });
-    btn.SetHorizonalAutosize(Gorgon::UI::Autosize::Unit);
+    //btn.SetHorizonalAutosize(Gorgon::UI::Autosize::Unit);
 
     
-    Widgets::DialogWindow wind("My window", {200, 300});
+    Widgets::DialogWindow wind("My window", {6, 6});
     wind.Add(btn);
+    wind.Add(btn2);
+    btn.Move(Pixels(0,0));
+    btn.Disable();
     wind.OwnIcon(icon.CreateAnimation());
     int closetrycount = 0;
     wind.ClosingEvent.Register([&](bool &allow) {
@@ -320,16 +329,13 @@ int main() {
         if(!allow)
             std::cout << "Click once more to close." << std::endl;
     });
-    btn.Move(Pixels(0,0));
-    btn.Disable();
     Widgets::Checkbox enableclosebtn("Enable close button", true);
+    enableclosebtn.SetWidth(7_u);
     enableclosebtn.SetAutosize(Gorgon::UI::Autosize::Unit, Gorgon::UI::Autosize::Automatic);
     enableclosebtn.ChangedEvent.Register([&] { wind.SetCloseButtonEnabled(bool(enableclosebtn)); });
-    wind.Add(enableclosebtn);
-    wind.CreateOrganizer<UI::Organizers::List>() 
-        .Add("Try resize")
-        .Add("Click close twice")
-    ;
+    wind.AddUnder(enableclosebtn);
+    wind.AddUnder("Try resize");
+    wind.AddNextTo("Click close twice");
     wind.AllowResize();
     std::vector<std::string> opts = {"Zero", "One", "Two"};
     wind.AddButton("?", [&]{

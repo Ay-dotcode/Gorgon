@@ -325,4 +325,22 @@ namespace Gorgon { namespace UI {
             this->scrollto(scrollto);
     }
 
+
+    void ScrollingWidget::SetScrollDistance(Geometry::Point dist) {
+        scrolldist = dist;
+
+        auto vscroller = dynamic_cast<Widgets::VScrollbar*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
+
+        if(vscroller != nullptr) {
+            vscroller->SetSmallChange(dist.Y);
+        }
+
+        auto hscroller = dynamic_cast<Widgets::HScrollbar*>(stack.GetWidget(UI::ComponentTemplate::HScrollTag));
+
+        if(hscroller != nullptr) {
+            hscroller->SetSmallChange(dist.X);
+        }
+
+    }
+
 } }

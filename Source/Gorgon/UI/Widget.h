@@ -17,6 +17,10 @@ namespace Gorgon { namespace UI {
     */
     class Widget {
         friend class WidgetContainer;
+        //non virtual functions for VS
+        void resize_(const UnitSize &size) {
+            Resize(size);
+        }
 
     public:
         
@@ -46,7 +50,7 @@ namespace Gorgon { namespace UI {
         virtual Geometry::Point GetCurrentLocation() const = 0;
 
         /// Changes the size of the widget.
-        virtual void Resize(UnitDimension w, UnitDimension h) { Resize({w, h}); };
+        void Resize(UnitDimension w, UnitDimension h) { Resize({w, h}); };
 
         /// Changes the size of the widget.
         virtual void Resize(const UnitSize &size);
@@ -224,7 +228,7 @@ namespace Gorgon { namespace UI {
         Event<Widget> DestroyedEvent        = Event<Widget>{*this};
         
         Geometry::basic_PointProperty<Widget, UnitPoint, &Widget::GetLocation, &Widget::Move> Location;
-        Geometry::basic_SizeProperty<Widget, UnitSize, &Widget::GetSize, &Widget::Resize> Size;
+        Geometry::basic_SizeProperty<Widget, UnitSize, &Widget::GetSize, &Widget::resize_> Size;
         TextualProperty<Widget, std::string, &Widget::GetTooltip, &Widget::SetTooltip> Tooltip;
         
         /// This is a debug feature
@@ -299,6 +303,10 @@ namespace Gorgon { namespace UI {
         virtual void mouseenter();
         
         virtual void mouseleave();
+
+        /// This function will recalculate location and the size of the widget
+        /// and if there is a change it will call necessary functions.
+        void calculatebounds();
         
         std::string tooltip;
 
@@ -311,6 +319,9 @@ namespace Gorgon { namespace UI {
 
         UnitPoint location;
         UnitSize  size;
+
+        Geometry::Point llocation = {0, 0};
+        Geometry::Size  lsize     = {-1, -1};
         
         /// Never call this function
         virtual void hide() = 0;

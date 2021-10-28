@@ -51,10 +51,12 @@ namespace Gorgon { namespace Widgets {
         }
     }
     
-    DialogWindow::DialogWindow(const UI::Template &temp, const std::string &title, const Geometry::Size size, AutoplaceTarget autoplace) : 
+    DialogWindow::DialogWindow(const UI::Template &temp, const std::string &title, const UI::UnitSize size, AutoplaceTarget autoplace) :
         DialogWindow(temp, title, autoplace)
     {
-        Resize(size);
+        interiorsized = true;
+        Panel::Resize(size);
+
         updatescrollvisibility();
         
         if(buttonsarea.IsReady())

@@ -24,9 +24,9 @@ namespace Gorgon { namespace Widgets {
         
         explicit DialogWindow(const UI::Template &temp, const std::string &title = "", AutoplaceTarget autoplace = DialogLevel);
         
-                 DialogWindow(const UI::Template &temp, const std::string &title, const Geometry::Size size, AutoplaceTarget autoplace = DialogLevel);
+                 DialogWindow(const UI::Template &temp, const std::string &title, const UI::UnitSize size, AutoplaceTarget autoplace = DialogLevel);
         
-                 DialogWindow(const UI::Template &temp, const Geometry::Size size, AutoplaceTarget autoplace = DialogLevel) : 
+                 DialogWindow(const UI::Template &temp, const UI::UnitSize size, AutoplaceTarget autoplace = DialogLevel) :
                     DialogWindow(temp, "", size, autoplace) 
                  { }
         
@@ -40,19 +40,19 @@ namespace Gorgon { namespace Widgets {
                     DialogWindow(Registry::Active()[type], title) 
                  { }
 
-                 DialogWindow(const std::string &title, const Geometry::Size size, AutoplaceTarget autoplace = DialogLevel, Registry::TemplateType type = Registry::Window_Dialog) : 
+                 DialogWindow(const std::string &title, const UI::UnitSize size, AutoplaceTarget autoplace = DialogLevel, Registry::TemplateType type = Registry::Window_Dialog) :
                     DialogWindow(Registry::Active()[type], title, size, autoplace) 
                  { }
 
-                 DialogWindow(const std::string &title, const Geometry::Size size, Registry::TemplateType type) : 
+                 DialogWindow(const std::string &title, const UI::UnitSize size, Registry::TemplateType type) :
                     DialogWindow(Registry::Active()[type], title, size) 
                  { }
 
-                 DialogWindow(const Geometry::Size size, AutoplaceTarget autoplace = DialogLevel, Registry::TemplateType type = Registry::Window_Dialog) : 
+                 DialogWindow(const UI::UnitSize size, AutoplaceTarget autoplace = DialogLevel, Registry::TemplateType type = Registry::Window_Dialog) :
                     DialogWindow(Registry::Active()[type], "", size, autoplace) 
                  { }
         
-                 DialogWindow(const Geometry::Size size, Registry::TemplateType type) : 
+                 DialogWindow(const UI::UnitSize size, Registry::TemplateType type) :
                     DialogWindow(Registry::Active()[type], "", size) 
                  { }
         

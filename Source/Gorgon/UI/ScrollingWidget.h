@@ -34,7 +34,7 @@ namespace Gorgon { namespace UI {
         }
         
         /// Adjusts the smooth scrolling speed of the panel. Given value is
-        /// in pixels per second, default value is 250.
+        /// in pixels per second, default value is 500.
         void SetSmoothScrollSpeed(int value);
         
         /// Returns the smooth scrolling speed of the panel. If smooth scroll
@@ -62,6 +62,27 @@ namespace Gorgon { namespace UI {
             return maxscrolltime;
         }
         
+        /// Sets the horizontal scroll distance per click in pixels. Default depends
+        /// on the default size of the panel.
+        void SetScrollDistance(int vert) {
+            SetScrollDistance({scrolldist.X, vert});
+        }
+
+        /// Sets the scroll distance per click in pixels. Default depends
+        /// on the default size of the panel.
+        void SetScrollDistance(int hor, int vert) {
+            SetScrollDistance({hor, vert});
+        }
+
+        /// Sets the scroll distance per click in pixels. Default depends
+        /// on the default size of the panel.
+        void SetScrollDistance(Geometry::Point dist);
+
+        /// Returns the scroll distance per click
+        Geometry::Point GetScrollDistance() const {
+            return scrolldist;
+        }
+
     protected:
 
         /// Ensures given region is visible

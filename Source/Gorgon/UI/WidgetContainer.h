@@ -7,7 +7,15 @@
 #include "../Input/Keyboard.h"
 #include "Organizers/Base.h"
 
-namespace Gorgon { namespace UI {
+namespace Gorgon {
+
+namespace Widgets {
+
+    class Label;
+
+}
+
+namespace UI {
     
     class WidgetContainer;
     
@@ -77,6 +85,60 @@ namespace Gorgon { namespace UI {
         /// focus order. If the given widget cannot be added, this
         /// function will return false.
         bool Add(Widget &widget);
+
+        /// Adds a new label with the given text. Ownership of this
+        /// newly created widget lies with the container. This
+        /// function enables horizontal autosizing.
+        Widgets::Label &Add(const std::string &text);
+
+        /// Adds a new label with the given text. Ownership of this
+        /// newly created widget lies with the container. This
+        /// function enables horizontal autosizing.
+        Widgets::Label &AddUnder(const std::string &text);
+
+        /// Adds a new label with the given text. Ownership of this
+        /// newly created widget lies with the container. This
+        /// function enables horizontal autosizing.
+        Widgets::Label &AddUnder(const std::string &text, const Widget &other);
+
+        /// Adds a new label with the given text. Ownership of this
+        /// newly created widget lies with the container. This
+        /// function enables horizontal autosizing.
+        Widgets::Label &AddNextTo(const std::string &text);
+
+        /// Adds a new label with the given text. Ownership of this
+        /// newly created widget lies with the container. This
+        /// function enables horizontal autosizing.
+        Widgets::Label &AddNextTo(const std::string &text, const Widget &other);
+
+        /// Adds the given widget to this container and locates it
+        /// under the last widget at the start of the next line.
+        /// If container is empty, the widget will be located at
+        /// the top left. Note that this does not create a bond
+        /// between widgets thus if target widget is moved or
+        /// resized, added widget will not move.
+        bool AddUnder(Widget &widget);
+
+        /// Adds the given widget to this container and locates it
+        /// under the given widget at the start of the next line.
+        /// Note that this does not create a bond between widgets
+        /// thus if target widget is moved or resized, added widget
+        /// will not move.
+        bool AddUnder(Widget &widget, const Widget &other);
+
+        /// Adds the given widget to this container and locates it
+        /// next to the given widget.
+        /// If container is empty, the widget will be located at
+        /// the top left. Note that this does not create a bond
+        /// between widgets thus if target widget is moved or
+        /// resized, added widget will not move.
+        bool AddNextTo(Widget &widget);
+
+        /// Adds the given widget to this container and locates it
+        /// next to the given widget. Note that this does not create
+        /// a bond between widgets thus if target widget is moved or
+        /// resized, added widget will not move.
+        bool AddNextTo(Widget &widget, const Widget &other);
 
         /// Add the given widget to this container. Widget will
         /// be placed to the top of the z-order, and to the specified

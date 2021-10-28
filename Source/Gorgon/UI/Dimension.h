@@ -84,7 +84,31 @@ namespace Gorgon { namespace UI {
 
         /// Returns the calculated dimension in pixels
         constexpr int Calculate(int parentwidth, int unitsize, int spacing, int emwidth = 10, bool issize = false) const {
-            switch(unit) {
+            if(issize) {
+                switch(unit) {
+                case Percent:
+                    return int(std::floor((double)value * parentwidth / 100));
+                case MilliPixel:
+                    return int(std::floor((double)value / 1000));
+                case BasisPoint:
+                    return int(std::floor((double)value * parentwidth / 10000));
+                case EM:
+                    return int(std::round(value * emwidth / 100));
+                case UnitSize:
+                    if(value >= -1 && value <= 1)
+                        return value * unitsize;
+                    return value * unitsize + (value - 1) * spacing;
+                case MilliUnitSize:
+                    if(value >= -1000 && value <= 1000)
+                        return int(std::floor((double)value * unitsize / 1000));
+                    return int(std::floor(((double)value * unitsize + (double)(value - 1000) * spacing) / 1000));
+                case Pixel:
+                default:
+                    return value;
+                }
+            }
+            else {
+                switch(unit) {
                 case Percent:
                     return int(std::round((double)value * parentwidth / 100));
                 case MilliPixel:
@@ -94,20 +118,13 @@ namespace Gorgon { namespace UI {
                 case EM:
                     return int(std::round(value * emwidth / 100));
                 case UnitSize:
-                    if(!issize)
-                        return value * (unitsize + spacing);
-                    else if(value >= -1 && value <= 1)
-                        return value * unitsize;
-                    return value * unitsize + (value - 1) * spacing;
+                    return value * (unitsize + spacing);
                 case MilliUnitSize:
-                    if(!issize)
-                        return value * (unitsize + spacing);
-                    else if(value >= -1000 && value <= 1000)
-                        return int(std::round((double)value * unitsize / 1000));
-                    return int(std::round(((double)value * unitsize + (double)(value - 1000) * spacing) / 1000));
+                    return int(std::round((double)value * (unitsize + spacing) / 1000));
                 case Pixel:
                 default:
                     return value;
+                }
             }
         }
 
@@ -180,18 +197,13 @@ namespace Gorgon { namespace UI {
     /// doubles for automatic conversion
     class UnitDimension : public Dimension {
     public:
-        /*constexpr UnitDimension(int value = 0, Unit unit = UnitSize) : Dimension(value, unit) {
-        }*/
-
-        constexpr UnitDimension() : Dimension() { }
-
-        constexpr UnitDimension(int value, Unit unit) : Dimension(value, unit) {
+        constexpr UnitDimension(int value = 0, Unit unit = UnitSize) : Dimension(value, unit) {
         }
 
-        constexpr UnitDimension(double value, Unit unit/* = MilliUnitSize*/) : Dimension(value, unit) {
+        constexpr UnitDimension(double value, Unit unit = MilliUnitSize) : Dimension(value, unit) {
         }
 
-        constexpr UnitDimension(float value, Unit unit/* = MilliUnitSize*/) : Dimension((double)value, unit) {
+        constexpr UnitDimension(float value, Unit unit = MilliUnitSize) : Dimension((double)value, unit) {
         }
 
         constexpr UnitDimension(const Dimension &d) : Dimension(d) { }
@@ -264,12 +276,12 @@ namespace Gorgon { namespace UI {
 
     /// Converts the given value to dimension with unit size
     inline constexpr Dimension Units(float val) {
-        return {val, Dimension::UnitSize};
+        return {val, Dimension::MilliUnitSize};
     }
 
     /// Converts the given value to dimension with unit size
     inline constexpr Dimension Units(double val) {
-        return {val, Dimension::UnitSize};
+        return {val, Dimension::MilliUnitSize};
     }
 
     class DualDimension {

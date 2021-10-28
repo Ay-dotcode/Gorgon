@@ -47,13 +47,13 @@ namespace Gorgon { namespace Widgets {
             Center();
         }
         
-        //TODO interior sizing
         minsize = GetCurrentSize() - GetInteriorSize() + Geometry::Size(stack.GetTemplate().GetUnitSize()*2, stack.GetTemplate().GetUnitSize());
     }
     
     Window::Window(const UI::Template &temp, const std::string &title, const UI::UnitSize size, bool autoplace) :
         Window(temp, title, autoplace)
     {
+        interiorsized = true;
         Resize(size);
         updatescrollvisibility();
         
@@ -527,6 +527,32 @@ namespace Gorgon { namespace Widgets {
             return false;
         
         return true;
+    }
+
+    bool Window::ResizeInterior(Geometry::Size size) {
+        interiorsized = true;
+
+        Panel::Resize(Pixels(size));
+
+        return stack.TagBounds(UI::ComponentTemplate::ContentsTag).GetSize() == size;
+    }
+
+
+    void Window::resize(const Geometry::Size& size) {
+        if(interiorsized) {
+            Geometry::Size border = {0, 0};
+
+            auto innersize = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize();
+
+            if(innersize.Area() != 0)
+                border = GetCurrentSize() - innersize;
+
+            Panel::resize(size + border);
+        }
+        else {
+            Panel::resize(size);
+        }
+
     }
 
 } }

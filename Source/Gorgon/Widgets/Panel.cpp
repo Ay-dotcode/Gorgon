@@ -47,7 +47,7 @@ namespace Gorgon { namespace Widgets {
 
         SetSmoothScrollSpeed(scrollspeed);
         
-        scrolldist = {temp.GetUnitSize()*4, temp.GetUnitSize()*2};
+        SetScrollDistance(temp.GetUnitSize()*4, temp.GetUnitSize()*2);
     }
 
     bool Panel::Activate() {
@@ -128,7 +128,6 @@ namespace Gorgon { namespace Widgets {
         childboundschanged(nullptr);
         distributeparentboundschanged();
     }
-    
     void Panel::move(const Geometry::Point &location) { 
         ComponentStackWidget::move(location);
         

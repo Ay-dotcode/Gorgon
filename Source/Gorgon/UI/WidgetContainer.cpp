@@ -1,5 +1,6 @@
 #include "WidgetContainer.h"
 #include "../Widgets/Composer.h"
+#include "../Widgets/Label.h"
 
 namespace Gorgon { namespace UI {
     
@@ -609,5 +610,95 @@ namespace Gorgon { namespace UI {
         if(IsWidget() && AsWidget().HasParent())
             AsWidget().GetParent().SetHoveredWidget(widget);
     }
+
+
+    Widgets::Label &WidgetContainer::Add(const std::string& text) {
+        auto &l = *new Widgets::Label(text);
+        l.SetHorizonalAutosize(true);
+        Add(l);
+        owned.Add(l);
+
+        return l;
+    }
+
+    Widgets::Label &WidgetContainer::AddUnder(const std::string& text) {
+        auto &l = *new Widgets::Label(text);
+        AddUnder(l);
+        l.SetHorizonalAutosize(true);
+        owned.Add(l);
+
+        return l;
+    }
+
+    Widgets::Label &WidgetContainer::AddUnder(const std::string& text, const Widget &other) {
+        auto &l = *new Widgets::Label(text);
+        AddUnder(l, other);
+        l.SetHorizonalAutosize(true);
+        owned.Add(l);
+
+        return l;
+    }
+
+    Widgets::Label &WidgetContainer::AddNextTo(const std::string& text) {
+        auto &l = *new Widgets::Label(text);
+        l.SetHorizonalAutosize(true);
+        AddNextTo(l);
+        owned.Add(l);
+
+        return l;
+    }
+
+    Widgets::Label &WidgetContainer::AddNextTo(const std::string& text, const Widget &other) {
+        auto &l = *new Widgets::Label(text);
+        l.SetHorizonalAutosize(true);
+        AddNextTo(l, other);
+        owned.Add(l);
+
+        return l;
+    }
+
+    bool WidgetContainer::AddUnder(Widget &widget) {
+        if(GetCount())
+            return AddUnder(widget, *widgets.Last());
+        else {
+            bool res = Add(widget);
+            if(res)
+                widget.Move(Pixels(0, 0));
+
+            return res;
+        }
+    }
+
+    bool WidgetContainer::AddUnder(Widget &widget, const Widget &other) {
+        bool res = Add(widget);
+        if(res) {
+            widget.Move(Pixels(0, other.GetBounds().Bottom + GetSpacing()));
+        }
+
+        return res;
+    }
+
+    bool WidgetContainer::AddNextTo(Widget &widget) {
+        if(GetCount())
+            return AddNextTo(widget, *widgets.Last());
+        else {
+            bool res = Add(widget);
+            if(res)
+                widget.Move(Pixels(0, 0));
+
+            return res;
+        }
+    }
+
+    bool WidgetContainer::AddNextTo(Widget &widget, const Widget &other) {
+        bool res = Add(widget);
+        if(res) {
+            auto b = other.GetBounds();
+            widget.Move(Pixels(b.Right + GetSpacing(), b.Top));
+        }
+
+        return res;
+    }
+
 
 } }

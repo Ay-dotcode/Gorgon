@@ -136,20 +136,13 @@ namespace Gorgon { namespace UI {
         MouseLeaveEvent();
     }
 
-
-    void Widget::Move(const UnitPoint &value) {
-        if(location == value)
-            return;
-
-        location = value;
-
-        //move out
+    void Widget::calculatebounds() {
         int unitsize = 0, spacing = 0;
         Geometry::Size sz;
         if(HasParent()) {
             unitsize = GetParent().GetUnitSize();
             spacing = GetParent().GetSpacing();
-            sz = GetParent().GetInteriorSize();
+            sz = GetParent().GetInteriorSize() + Geometry::Size(spacing, spacing);
         }
         else {
             unitsize = Widgets::Registry::Active().GetUnitSize();
@@ -157,11 +150,44 @@ namespace Gorgon { namespace UI {
             sz = GetCurrentSize();
         }
 
-        move(Convert(
+        auto l= Convert(
             location, sz,
             unitsize, spacing,
             Widgets::Registry::Active().GetEmSize()
-        ));
+        );
+
+        if(llocation != l) {
+            move(l);
+            llocation = l;
+        }
+
+        auto s = Convert(
+            size, sz,
+            unitsize, spacing,
+            Widgets::Registry::Active().GetEmSize()
+        );
+
+        if(size.Width.IsRelative()) {
+            s.Width -= spacing;
+        }
+
+        if(size.Height.IsRelative()) {
+            s.Height -= spacing;
+        }
+
+        if(lsize != s) {
+            resize(s);
+            lsize = s;
+        }
+    }
+
+    void Widget::Move(const UnitPoint &value) {
+        if(location == value)
+            return;
+
+        location = value;
+
+        calculatebounds();
     }
 
     void Widget::Resize(const UnitSize& value) {
@@ -170,61 +196,12 @@ namespace Gorgon { namespace UI {
 
         size = value;
 
-        //move out
-        int unitsize = 0, spacing = 0;
-        Geometry::Size sz;
-        if(HasParent()) {
-            unitsize = GetParent().GetUnitSize();
-            spacing = GetParent().GetSpacing();
-            sz = GetParent().GetInteriorSize();
-        }
-        else {
-            unitsize = Widgets::Registry::Active().GetUnitSize();
-            spacing  = Widgets::Registry::Active().GetSpacing();
-            sz = GetCurrentSize();
-        }
-
-        resize(Convert(
-            size, sz,
-            unitsize, spacing,
-            Widgets::Registry::Active().GetEmSize()
-        ));
+        calculatebounds();
     }
 
 
     void Widget::parentboundschanged() {
-        //move out
-        int unitsize = 0, spacing = 0;
-        Geometry::Size sz;
-        if(HasParent()) {
-            unitsize = GetParent().GetUnitSize();
-            spacing = GetParent().GetSpacing();
-            sz = GetParent().GetInteriorSize();
-        }
-        else {
-            unitsize = Widgets::Registry::Active().GetUnitSize();
-            spacing  = Widgets::Registry::Active().GetSpacing();
-            sz = GetCurrentSize();
-        }
-        
-        auto l= Convert(
-            location, sz,
-            unitsize, spacing,
-            Widgets::Registry::Active().GetEmSize()
-        );
-        
-        if(GetCurrentLocation() != l) {
-            move(l);
-        }
-        
-        auto s = Convert(
-            size, sz,
-            unitsize, spacing,
-            Widgets::Registry::Active().GetEmSize()
-        );
-        
-        if(GetCurrentSize() != s)
-            resize(s);
+        calculatebounds();
     }
 
 } }

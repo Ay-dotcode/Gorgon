@@ -1933,7 +1933,7 @@ namespace Gorgon { namespace Widgets {
             vs.SetSizing(UI::ComponentTemplate::Fixed);
             vs.SetAnchor(UI::Anchor::TopRight, UI::Anchor::TopRight, UI::Anchor::TopLeft);
             vs.SetMargin(spacing, 0, 0, 0);
-            
+
             auto &hs = temp.AddPlaceholder(4, UI::ComponentCondition::HScroll);
             hs.SetPositioning(UI::ComponentTemplate::Absolute);
             hs.SetTemplate(hst);
