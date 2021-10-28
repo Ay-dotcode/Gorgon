@@ -161,7 +161,12 @@ namespace Gorgon { namespace Widgets {
     }
 
     void ComponentStackComposer::resize(const Geometry::Size &size) {
-        ComponentStackWidget::resize(size);
+        if(interiorsized) {
+            ComponentStackWidget::resize(size + GetCurrentSize() - GetInteriorSize());
+        }
+        else {
+            ComponentStackWidget::resize(size);
+        }
         
         if(HasOrganizer())
             GetOrganizer().Reorganize();

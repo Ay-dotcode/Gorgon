@@ -54,8 +54,7 @@ namespace Gorgon { namespace Widgets {
     DialogWindow::DialogWindow(const UI::Template &temp, const std::string &title, const UI::UnitSize size, AutoplaceTarget autoplace) :
         DialogWindow(temp, title, autoplace)
     {
-        interiorsized = true;
-        Panel::Resize(size);
+        ResizeInterior(size);
 
         updatescrollvisibility();
         

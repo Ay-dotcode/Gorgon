@@ -300,5 +300,20 @@ namespace Gorgon { namespace UI {
         return *this;
     }
 
+    bool Window::ResizeInterior(const UI::UnitSize &size) {
+
+        const auto &mon = WindowManager::Monitor::FromLocation(GetLocation());
+
+        Geometry::Size s = {0, 0};
+
+        if(mon)
+            s = mon->GetSize();
+
+        auto sz = Convert(size, s, GetUnitSize(), GetSpacing());
+
+        Gorgon::Window::Resize(sz);
+
+        return GetSize() == sz;
+    }
 
 } }

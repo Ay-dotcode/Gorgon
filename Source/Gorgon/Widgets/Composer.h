@@ -41,8 +41,8 @@ namespace Gorgon { namespace Widgets {
             return base.GetSize();
         }
 
-        virtual bool ResizeInterior(Geometry::Size size) override {
-            Resize(Pixels(size));
+        virtual bool ResizeInterior(const UI::UnitSize &size) override {
+            Resize(size);
             
             return true;
         }
@@ -220,10 +220,11 @@ namespace Gorgon { namespace Widgets {
             return stack.GetSize();
         }
 
-        virtual bool ResizeInterior(Geometry::Size size) override {
-            Resize(Pixels(size + GetCurrentSize() - GetInteriorSize()));
+        virtual bool ResizeInterior(const UI::UnitSize &size) override {
+            interiorsized = true;
+            Resize(size);
             
-            return GetInteriorSize() == size;
+            return GetInteriorSize() == lsize;
         }
         
         virtual void SetVisible(bool value) override {
@@ -256,7 +257,15 @@ namespace Gorgon { namespace Widgets {
         /// operating system.
         virtual bool CharacterPressed(Char c) override { return distributecharevent(c); }
 
+        virtual void Resize(const UI::UnitSize &size) override {
+            interiorsized = false;
+            ComponentStackWidget::Resize(size);
+        }
+
     protected:
+
+        bool interiorsized = false;
+
         //ensure this object is derived
         ComponentStackComposer(const UI::Template &temp, std::map<UI::ComponentTemplate::Tag, std::function<Widget *(const UI::Template &)>> generators = {}) :
             ComponentStackWidget(temp, generators)

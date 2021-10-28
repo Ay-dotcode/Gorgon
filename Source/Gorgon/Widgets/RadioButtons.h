@@ -152,11 +152,6 @@ namespace Gorgon { namespace Widgets {
             return GetCurrentSize();
         }
         
-        bool ResizeInterior(Geometry::Size size) override {
-            Resize(size);
-            
-            return size == GetCurrentSize();
-        }
         
         using Widget::Resize;
 

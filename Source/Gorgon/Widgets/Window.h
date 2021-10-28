@@ -191,16 +191,6 @@ namespace Gorgon { namespace Widgets {
             Focus();
         }
 
-        using Panel::Resize;
-
-        virtual void Resize(const UI::UnitSize &size) override {
-            interiorsized = false;
-            Panel::Resize(size);
-        }
-
-        using Panel::ResizeInterior;
-        virtual bool ResizeInterior(Geometry::Size size) override;
-        
         /// Centers the window to its container. After resizing the window or 
         /// changing its parent you need to recenter it. All windows open 
         /// centered to the first UI::Window that is opened.
@@ -239,8 +229,6 @@ namespace Gorgon { namespace Widgets {
         
         virtual bool allowfocus() const override;
 
-        virtual void resize(const Geometry::Size &size) override;
-        
         void updatescrollvisibility();
         
         void mouse_down(UI::ComponentTemplate::Tag tag, Geometry::Point location, Input::Mouse::Button button);
@@ -250,8 +238,6 @@ namespace Gorgon { namespace Widgets {
         void mouse_move(UI::ComponentTemplate::Tag tag, Geometry::Point location);
         
         void mouse_click(UI::ComponentTemplate::Tag tag, Geometry::Point location, Input::Mouse::Button button);
-        
-        bool interiorsized = false;
 
     private:
         enum resizedir {

@@ -25,7 +25,7 @@ namespace Gorgon { namespace UI {
 
     int LayerAdapter::GetUnitSize() const {
         if(issizesset) {
-            return unitwidth;
+            return unitsize;
         }
         else {
             return Widgets::Registry::Active().GetUnitSize();
@@ -43,4 +43,19 @@ namespace Gorgon { namespace UI {
         }
     }
     
+
+    bool LayerAdapter::ResizeInterior(const UnitSize& size) {
+        Geometry::Size s;
+        if(base->HasParent()) {
+            s = base->GetParent().GetCalculatedSize();
+        }
+        else {
+            s = base->GetCalculatedSize();
+        }
+
+        base->Resize(Convert(size, s, GetUnitSize(), GetSpacing()));
+
+        return true;
+    }
+
 } }

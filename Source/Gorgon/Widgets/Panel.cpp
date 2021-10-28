@@ -106,21 +106,27 @@ namespace Gorgon { namespace Widgets {
         return size;
     }
 
-    bool Panel::ResizeInterior(Geometry::Size size) {
-        Geometry::Size border = {0, 0};
-        
-        auto innersize = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize();
-        
-        if(innersize.Area() != 0)
-            border = GetCurrentSize() - innersize;
-        
-        Resize(Pixels(size + border));
+    bool Panel::ResizeInterior(const UI::UnitSize &size) {
+        interiorsized = true;
+        ComponentStackWidget::Resize(size);
 
-        return stack.TagBounds(UI::ComponentTemplate::ContentsTag).GetSize() == size;
+        return stack.TagBounds(UI::ComponentTemplate::ContentsTag).GetSize() == lsize;
     }
     
-    void Panel::resize(const Geometry::Size &size) { 
-        ComponentStackWidget::resize(size);
+    void Panel::resize(const Geometry::Size &size) {
+        if(interiorsized) {
+            Geometry::Size border = {0, 0};
+
+            auto innersize = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize();
+
+            if(innersize.Area() != 0)
+                border = GetCurrentSize() - innersize;
+
+            ComponentStackWidget::resize(size + border);
+        }
+        else {
+            ComponentStackWidget::resize(size);
+        }
         
         if(HasOrganizer())
             GetOrganizer().Reorganize();
@@ -128,6 +134,7 @@ namespace Gorgon { namespace Widgets {
         childboundschanged(nullptr);
         distributeparentboundschanged();
     }
+
     void Panel::move(const Geometry::Point &location) { 
         ComponentStackWidget::move(location);
         

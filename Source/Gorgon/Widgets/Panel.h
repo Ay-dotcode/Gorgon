@@ -44,7 +44,7 @@ namespace Gorgon { namespace Widgets {
         virtual Geometry::Size GetInteriorSize() const override;
 
 
-        virtual bool ResizeInterior(Geometry::Size size) override;
+        virtual bool ResizeInterior(const UI::UnitSize &size) override;
         
         /// Controls whether scrolling will be enabled vertically or horizontally.
         /// It is possible to use ScrollTo function without enabling scrolling but
@@ -195,6 +195,13 @@ namespace Gorgon { namespace Widgets {
             return maxscrolloffset();
         }
         
+        using ComponentStackWidget::Resize;
+
+        virtual void Resize(const UI::UnitSize &size) override {
+            interiorsized = false;
+            ComponentStackWidget::Resize(size);
+        }
+
         
     protected:
         virtual bool allowfocus() const override;
@@ -244,6 +251,8 @@ namespace Gorgon { namespace Widgets {
         virtual void resize(const Geometry::Size &size) override;
         
         virtual void move(const Geometry::Point &location) override;
+
+        bool interiorsized = false;
 
     private:
 

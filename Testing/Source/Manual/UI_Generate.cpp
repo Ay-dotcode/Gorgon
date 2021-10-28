@@ -330,7 +330,7 @@ int main() {
             std::cout << "Click once more to close." << std::endl;
     });
     Widgets::Checkbox enableclosebtn("Enable close button", true);
-    enableclosebtn.SetWidth(7_u);
+    enableclosebtn.SetWidth(6_u);
     enableclosebtn.SetAutosize(Gorgon::UI::Autosize::Unit, Gorgon::UI::Autosize::Automatic);
     enableclosebtn.ChangedEvent.Register([&] { wind.SetCloseButtonEnabled(bool(enableclosebtn)); });
     wind.AddUnder(enableclosebtn);

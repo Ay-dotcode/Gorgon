@@ -166,11 +166,7 @@ namespace Gorgon { namespace UI {
             distributeparentboundschanged();
         }
         
-        virtual bool ResizeInterior(Geometry::Size size) override {
-            Gorgon::Window::Resize(size);
-            
-            return GetSize() == size;
-        }
+        virtual bool ResizeInterior(const UI::UnitSize &size) override;
         
         /// Closes the window, returning the execution to the
         /// point where Run function is called. It allows current

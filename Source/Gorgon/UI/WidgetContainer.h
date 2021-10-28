@@ -283,12 +283,14 @@ namespace UI {
         }
         
         /// Should return the interior (usable) size of the container.
+        /// This value is calculated and might differ from the value
+        /// set by ResizeInterior
         virtual Geometry::Size GetInteriorSize() const = 0;
         
         /// Should resize the interior (usable) size of the container.
         /// If resize operation cannot set the size exactly to the
         /// requested size, this function returns false.
-        virtual bool ResizeInterior(Geometry::Size size) = 0;
+        virtual bool ResizeInterior(const UI::UnitSize &size) = 0;
         
         /// Check if tab switch is enabled. Tab switch allows user to change
         /// focus to the next widget using tab key. Default is enabled.

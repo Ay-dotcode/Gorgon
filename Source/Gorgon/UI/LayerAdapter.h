@@ -30,11 +30,7 @@ namespace Gorgon { namespace UI {
             return base->GetCalculatedSize();
         }
         
-        virtual bool ResizeInterior(Geometry::Size size) override {
-            base->Resize(size);
-            
-            return true;
-        }
+        virtual bool ResizeInterior(const UI::UnitSize &size) override;
         
         virtual bool IsDisplayed () const override {
             return base->IsVisible();
@@ -74,7 +70,7 @@ namespace Gorgon { namespace UI {
         /// Overrides default spacing and unitwidth
         void SetSizes(int spacing, int unitwidth) {
             this->spacing = spacing;
-            this->unitwidth = unitwidth;
+            this->unitsize = unitwidth;
             issizesset = true;
         }
         
@@ -85,9 +81,9 @@ namespace Gorgon { namespace UI {
             
             this->spacing   = spacing;
             issizesset      = true;
-            this->unitwidth = ( base->GetWidth() - spacing * (units-1) ) / units;
+            this->unitsize = ( base->GetWidth() - spacing * (units-1) ) / units;
             
-            return base->GetWidth() - (this->unitwidth * units + this->spacing * (units-1));
+            return base->GetWidth() - (this->unitsize * units + this->spacing * (units-1));
         }
         
         /// Return to use default sizes
@@ -117,7 +113,7 @@ namespace Gorgon { namespace UI {
         Layer *base = nullptr;
         
         int spacing   = 0;
-        int unitwidth = 0;
+        int unitsize = 0;
         bool issizesset = false;
     };
     
