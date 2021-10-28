@@ -53,7 +53,7 @@ namespace Gorgon { namespace UI {
             s = base->GetCalculatedSize();
         }
 
-        base->Resize(Convert(size, s, GetUnitSize(), GetSpacing()));
+        base->Resize(Convert(size, s, GetUnitSize(), GetSpacing(), Widgets::Registry::Active().GetEmSize()));
 
         return true;
     }

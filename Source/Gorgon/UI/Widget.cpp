@@ -150,7 +150,7 @@ namespace Gorgon { namespace UI {
             sz = GetCurrentSize();
         }
 
-        auto l= Convert(
+        auto l= UI::Convert(
             location, sz,
             unitsize, spacing,
             Widgets::Registry::Active().GetEmSize()
@@ -161,7 +161,7 @@ namespace Gorgon { namespace UI {
             llocation = l;
         }
 
-        auto s = Convert(
+        auto s = UI::Convert(
             size, sz,
             unitsize, spacing,
             Widgets::Registry::Active().GetEmSize()
@@ -199,6 +199,165 @@ namespace Gorgon { namespace UI {
         calculatebounds();
     }
 
+    int Widget::Convert(const UnitDimension &val, bool vertical, bool size) const {
+        int unitsize = 0, spacing = 0;
+        Geometry::Size sz;
+        if(HasParent()) {
+            unitsize = GetParent().GetUnitSize();
+            spacing = GetParent().GetSpacing();
+            sz = GetParent().GetInteriorSize() + Geometry::Size(spacing, spacing);
+        }
+        else {
+            unitsize = Widgets::Registry::Active().GetUnitSize();
+            spacing  = Widgets::Registry::Active().GetSpacing();
+            sz = GetCurrentSize();
+        }
+
+        return val(vertical ? sz.Height : sz.Width, unitsize, spacing, size, Widgets::Registry::Active().GetEmSize());
+    }
+
+    Geometry::Size Widget::Convert(const UnitSize &val) const {
+        int unitsize = 0, spacing = 0;
+        Geometry::Size sz;
+        if(HasParent()) {
+            unitsize = GetParent().GetUnitSize();
+            spacing = GetParent().GetSpacing();
+            sz = GetParent().GetInteriorSize() + Geometry::Size(spacing, spacing);
+        }
+        else {
+            unitsize = Widgets::Registry::Active().GetUnitSize();
+            spacing  = Widgets::Registry::Active().GetSpacing();
+            sz = GetCurrentSize();
+        }
+
+        return UI::Convert(val, sz, unitsize, spacing, Widgets::Registry::Active().GetEmSize());
+    }
+
+    Geometry::Point Widget::Convert(const UnitPoint &val) const {
+        int unitsize = 0, spacing = 0;
+        Geometry::Size sz;
+        if(HasParent()) {
+            unitsize = GetParent().GetUnitSize();
+            spacing = GetParent().GetSpacing();
+            sz = GetParent().GetInteriorSize() + Geometry::Size(spacing, spacing);
+        }
+        else {
+            unitsize = Widgets::Registry::Active().GetUnitSize();
+            spacing  = Widgets::Registry::Active().GetSpacing();
+            sz = GetCurrentSize();
+        }
+
+        return UI::Convert(val, sz, unitsize, spacing, Widgets::Registry::Active().GetEmSize());
+    }
+
+    UnitDimension Widget::Convert(Dimension::Unit target, const UnitDimension &val, bool vertical, bool size) const {
+        int unitsize = 0, spacing = 0;
+        Geometry::Size sz;
+        if(HasParent()) {
+            unitsize = GetParent().GetUnitSize();
+            spacing = GetParent().GetSpacing();
+            sz = GetParent().GetInteriorSize() + Geometry::Size(spacing, spacing);
+        }
+        else {
+            unitsize = Widgets::Registry::Active().GetUnitSize();
+            spacing  = Widgets::Registry::Active().GetSpacing();
+            sz = GetCurrentSize();
+        }
+
+        int em = Widgets::Registry::Active().GetEmSize();
+
+        int px = val(vertical ? sz.Height : sz.Width, unitsize, spacing, size, em);
+
+        switch(target) {
+        case Dimension::Pixel:
+        default:
+            return Pixels(px);
+        case Dimension::MilliPixel:
+            return {(float)px, Dimension::MilliPixel};
+        case Dimension::Percent:
+        case Dimension::BasisPoint:
+            return {(float)px/(vertical ? sz.Height : sz.Width), target};
+        case Dimension::UnitSize:
+        case Dimension::MilliUnitSize:
+            if(size)
+                return {(float)(px+spacing)/(unitsize+spacing), target};
+            else
+                return {(float)px/(unitsize+spacing), target};
+        case Dimension::EM:
+            return {(float)px/em, Dimension::EM};
+        }
+    }
+
+    UnitSize Widget::Convert(Dimension::Unit target, const UnitSize &val) const {
+        int unitsize = 0, spacing = 0;
+        Geometry::Size sz;
+        if(HasParent()) {
+            unitsize = GetParent().GetUnitSize();
+            spacing = GetParent().GetSpacing();
+            sz = GetParent().GetInteriorSize() + Geometry::Size(spacing, spacing);
+        }
+        else {
+            unitsize = Widgets::Registry::Active().GetUnitSize();
+            spacing  = Widgets::Registry::Active().GetSpacing();
+            sz = GetCurrentSize();
+        }
+
+        int em = Widgets::Registry::Active().GetEmSize();
+
+        auto px = UI::Convert(val, sz, unitsize, spacing, em);
+
+        switch(target) {
+        case Dimension::Pixel:
+        default:
+            return Pixels(px);
+        case Dimension::MilliPixel:
+            return {{(float)px.Width, target}, {(float)px.Height, target}};;
+        case Dimension::Percent:
+        case Dimension::BasisPoint:
+            return {{(float)px.Width/sz.Width, target}, {(float)px.Height/sz.Height, target}};;
+        case Dimension::UnitSize:
+        case Dimension::MilliUnitSize:
+            return {{(float)(px.Width+spacing)/(unitsize+spacing), target}, {(float)(px.Height+spacing)/(unitsize+spacing), target}};
+        case Dimension::EM:
+            return {{(float)px.Width/em, Dimension::EM}, {(float)px.Height/em, Dimension::EM}};;
+        }
+    }
+
+    UnitPoint Widget::Convert(Dimension::Unit target, const UnitPoint &val) const {
+        int unitsize = 0, spacing = 0;
+        Geometry::Size sz;
+        if(HasParent()) {
+            unitsize = GetParent().GetUnitSize();
+            spacing = GetParent().GetSpacing();
+            sz = GetParent().GetInteriorSize() + Geometry::Size(spacing, spacing);
+        }
+        else {
+            unitsize = Widgets::Registry::Active().GetUnitSize();
+            spacing  = Widgets::Registry::Active().GetSpacing();
+            sz = GetCurrentSize();
+        }
+
+        int em = Widgets::Registry::Active().GetEmSize();
+
+
+        auto px = UI::Convert(val, sz, unitsize, spacing, em);
+
+        switch(target) {
+        case Dimension::Pixel:
+        default:
+            return Pixels(px);
+        case Dimension::MilliPixel:
+            return {{(float)px.X, target}, {(float)px.Y, target}};;
+        case Dimension::Percent:
+        case Dimension::BasisPoint:
+            return {{(float)px.X/sz.Width, target}, {(float)px.Y/sz.Height, target}};;
+        case Dimension::UnitSize:
+        case Dimension::MilliUnitSize:
+            return {{(float)px.X/(unitsize+spacing), target}, {(float)px.Y/(unitsize+spacing), target}};
+        case Dimension::EM:
+            return {{(float)px.X/em, Dimension::EM}, {(float)px.Y/em, Dimension::EM}};;
+        }
+    }
 
     void Widget::parentboundschanged() {
         calculatebounds();

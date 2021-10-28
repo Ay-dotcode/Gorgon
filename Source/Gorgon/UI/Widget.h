@@ -49,6 +49,11 @@ namespace Gorgon { namespace UI {
         /// be different than location that is set.
         virtual Geometry::Point GetCurrentLocation() const = 0;
 
+        /// Returns the current location converted to requested units
+        UnitPoint GetCalculatedLocation(Dimension::Unit units = Dimension::MilliUnitSize) const {
+            return Convert(units, GetCurrentLocation());
+        }
+
         /// Changes the size of the widget.
         void Resize(UnitDimension w, UnitDimension h) { Resize({w, h}); };
 
@@ -64,6 +69,10 @@ namespace Gorgon { namespace UI {
         /// different than the size that is set.
         virtual Geometry::Size GetCurrentSize() const = 0;
         
+        /// Returns the current size converted to requested units
+        UnitSize GetCalculatedSize(Dimension::Unit units = Dimension::MilliUnitSize) const {
+            return Convert(units, GetCurrentSize());
+        }
         /// Returns the bounds of the widget in pixels.
         Geometry::Bounds GetBounds() const { return {GetCurrentLocation(), GetCurrentSize()}; }
         
@@ -199,6 +208,24 @@ namespace Gorgon { namespace UI {
         std::string GetTooltip() const {
             return tooltip;
         }
+
+        /// Converts the given size in units to pixels
+        int Convert(const UnitDimension &val, bool vertical, bool size = false) const;
+
+        /// Converts the given size in units to pixels
+        Geometry::Size Convert(const UnitSize &size) const;
+
+        /// Converts the given location in units to pixels
+        Geometry::Point Convert(const UnitPoint &location) const;
+
+        /// Converts the given size in units to requested units.
+        UnitDimension Convert(Dimension::Unit target, const UnitDimension &val, bool vertical, bool size = false) const;
+
+        /// Converts the given size in units to requested units.
+        UnitSize Convert(Dimension::Unit target, const UnitSize &size) const;
+
+        /// Converts the given location in units to requested units.
+        UnitPoint Convert(Dimension::Unit target, const UnitPoint &location) const;
 
         /// This event will be fired when the widget receives or looses focus.
         Event<Widget> FocusEvent = Event<Widget>{*this};

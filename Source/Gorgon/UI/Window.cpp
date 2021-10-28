@@ -309,7 +309,7 @@ namespace Gorgon { namespace UI {
         if(mon)
             s = mon->GetSize();
 
-        auto sz = Convert(size, s, GetUnitSize(), GetSpacing());
+        auto sz = Convert(size, s, GetUnitSize(), GetSpacing(), Widgets::Registry::Active().GetEmSize());
 
         Gorgon::Window::Resize(sz);
 
