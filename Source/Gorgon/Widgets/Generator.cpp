@@ -1286,7 +1286,7 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::Checkbox() {
-        UnitSize defsize = {Units(1), Pixels(borderlessheight)};
+        UnitSize defsize = {Units(6), Pixels(borderlessheight)};
         
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);

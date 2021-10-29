@@ -344,10 +344,10 @@ namespace Gorgon { namespace UI {
             diag->Own(*l);
         }
         
-        diag->ResizeInterior({
+        diag->ResizeInterior(Pixels(
             std::max(diag->GetInteriorSize().Width, inp->GetBounds().Right), 
             inp->GetBounds().Bottom
-        });
+        ));
         
         diag->KeyEvent.Register(
             [inp, message, label](Input::Key key, float state) {
@@ -387,8 +387,8 @@ namespace Gorgon { namespace UI {
         }
 
         
-        diag->ResizeInterior({diag->GetInteriorSize().Width, inp->GetBounds().Bottom});
-        diag->ResizeInterior(Geometry::Size(inp->GetBounds().BottomRight() + text->GetCurrentLocation()));
+        diag->ResizeInterior(Pixels(diag->GetInteriorSize().Width, inp->GetBounds().Bottom));
+        diag->ResizeInterior(Pixels(Geometry::Size(inp->GetBounds().BottomRight() + text->GetCurrentLocation())));
 
         place(diag);
         diag->Center(); //input dialogs will be centered
@@ -593,10 +593,10 @@ namespace Gorgon { namespace UI {
             diag->Own(*l);
         }
         
-        diag->ResizeInterior({
+        diag->ResizeInterior(Pixels(
             std::max(diag->GetInteriorSize().Width, inp->GetBounds().Right), 
             inp->GetBounds().Bottom
-        });
+        ));
         
         diag->KeyEvent.Register(
             [inp, message, label](Input::Key key, float state) {
@@ -630,7 +630,7 @@ namespace Gorgon { namespace UI {
             }
         );
         
-        diag->ResizeInterior(negotiatesize(diag, text, false));
+        diag->ResizeInterior(Pixels(negotiatesize(diag, text, false)));
         if(l) {
             l->Move(Pixels(text->GetCurrentLocation().X, text->GetBounds().Bottom + text->GetCurrentLocation().Y));
             l->SetHeight(inp->GetHeight());
@@ -642,8 +642,8 @@ namespace Gorgon { namespace UI {
             inp->SetWidth(Pixels(diag->GetInteriorSize().Width - text->GetCurrentLocation().X*2));
         }
         
-        diag->ResizeInterior({diag->GetInteriorSize().Width, inp->GetBounds().Bottom});
-        diag->ResizeInterior(Geometry::Size(inp->GetBounds().BottomRight() + text->GetCurrentLocation()));
+        diag->ResizeInterior(Pixels(diag->GetInteriorSize().Width, inp->GetBounds().Bottom));
+        diag->ResizeInterior(Pixels(Geometry::Size(inp->GetBounds().BottomRight() + text->GetCurrentLocation())));
         place(diag);
         diag->Center(); //input dialogs will be centered
     }

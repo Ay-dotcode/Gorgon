@@ -110,7 +110,7 @@ int main() {
 
     Widgets::Panel blank/*(Widgets::Registry::Panel_Right)*/;
     blank.Move(Pixels(5, 50));
-    blank.SetWidth(6_u);
+    blank.SetInteriorWidth(6_u);
     std::cout << float(blank.GetInteriorSize().Width + blank.GetSpacing()) / (blank.GetUnitSize() + blank.GetSpacing()) << std::endl;
     blank.SetHeight(300_px);
     auto icon = Triangle(5, 10);

@@ -35,11 +35,11 @@ namespace Gorgon { namespace UI {
         
         /// Adjusts the smooth scrolling speed of the panel. Given value is
         /// in pixels per second, default value is 500.
-        void SetSmoothScrollSpeed(int value);
+        void SetSmoothScrollSpeed(const UnitDimension &value);
         
         /// Returns the smooth scrolling speed of the panel. If smooth scroll
         /// is disabled, this value will be 0.
-        int GetSmoothScrollSpeed() const {
+        UnitDimension GetSmoothScrollSpeed() const {
             return scrollspeed;
         }
         
@@ -64,22 +64,22 @@ namespace Gorgon { namespace UI {
         
         /// Sets the horizontal scroll distance per click in pixels. Default depends
         /// on the default size of the panel.
-        void SetScrollDistance(int vert) {
+        void SetScrollDistance(const UnitDimension &vert) {
             SetScrollDistance({scrolldist.X, vert});
         }
 
         /// Sets the scroll distance per click in pixels. Default depends
         /// on the default size of the panel.
-        void SetScrollDistance(int hor, int vert) {
+        void SetScrollDistance(const UnitDimension &hor, const UnitDimension &vert) {
             SetScrollDistance({hor, vert});
         }
 
         /// Sets the scroll distance per click in pixels. Default depends
         /// on the default size of the panel.
-        void SetScrollDistance(Geometry::Point dist);
+        void SetScrollDistance(const UnitPoint &dist);
 
         /// Returns the scroll distance per click
-        Geometry::Point GetScrollDistance() const {
+        UnitPoint GetScrollDistance() const {
             return scrolldist;
         }
 
@@ -119,33 +119,25 @@ namespace Gorgon { namespace UI {
         /// Returns the current maximum scroll offset
         Geometry::Point maxscrolloffset() const;
         
-        /// Sets the scroll distance per click in pixels. Default depends
-        /// on the default size of the panel.
-        void setscrolldistance(Geometry::Point dist) {
-            scrolldist = dist;
-        }
-        
-        /// Returns the scroll distance per click
-        Geometry::Point getscrolldistance() const {
-            return scrolldist;
-        }
-        
         virtual UI::Widget *createvscroll(const UI::Template &temp);
         
         virtual UI::Widget *createhscroll(const UI::Template &temp);
-        
         
         virtual void updatescroll();
         
         virtual void updatebars();
         
         virtual void moved() { }
+
+        virtual void parentboundschanged() override;
         
         int overscroll = 0;
         bool scrollclipped = true;
-        Geometry::Point scrolldist = {80, 45};
+        Geometry::Point scrolldistpx = {108, 54};
+        UnitPoint scrolldist = Units(4, 2);
         Geometry::Point scrolloffset = {0, 0};
-        int scrollspeed = 500;
+        UnitDimension scrollspeed = Units(20);
+        int scrollspeedpx = 540;
         int maxscrolltime = 500;
         Geometry::Point target = {0, 0};
         bool isscrolling = false;

@@ -17,7 +17,7 @@ namespace Gorgon { namespace UI {
         vscroller->Maximum = stack.TagBounds(UI::ComponentTemplate::ContentsTag).Height();
         vscroller->Range   = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).Height();
         *vscroller         = target.Y;
-        vscroller->SetSmoothChangeSpeed(scrollspeed);
+        vscroller->SetSmoothChangeSpeed(Convert(scrollspeed, true));
         vscroller->ValueChanged.Register(*this, &ScrollingWidget::scrolltoy);
         
         return vscroller;
@@ -28,7 +28,7 @@ namespace Gorgon { namespace UI {
         hscroller->Maximum = stack.TagBounds(UI::ComponentTemplate::ContentsTag).Width();
         hscroller->Range   = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).Width();
         *hscroller         = target.X;
-        hscroller->SetSmoothChangeSpeed(scrollspeed);
+        hscroller->SetSmoothChangeSpeed(Convert(scrollspeed, false));
         hscroller->ValueChanged.Register(*this, &ScrollingWidget::scrolltox);
         
         return hscroller;
@@ -81,9 +81,9 @@ namespace Gorgon { namespace UI {
         
         auto cur = -b.TopLeft();
         
-        auto curspeed = scrollspeed;
+        auto curspeed = scrollspeedpx;
         
-        if(1000*target.ManhattanDistance(cur)/scrollspeed > maxscrolltime) {
+        if(1000*target.ManhattanDistance(cur)/scrollspeedpx > maxscrolltime) {
             //due to integer division, this value would be scrollspeed at some points, which will reset smooth speed
             //if not, when scrolling is finished it will be reset
             curspeed = int(1000*target.ManhattanDistance(cur) / maxscrolltime);
@@ -139,11 +139,11 @@ namespace Gorgon { namespace UI {
                 
             auto vscroller = dynamic_cast<Widgets::VScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
             if(vscroller)
-                vscroller->SetSmoothChangeSpeed(scrollspeed);
+                vscroller->SetSmoothChangeSpeed(scrollspeedpx);
             
             auto hscroller = dynamic_cast<Widgets::HScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::HScrollTag));
             if(hscroller)
-                hscroller->SetSmoothChangeSpeed(scrollspeed);
+                hscroller->SetSmoothChangeSpeed(scrollspeedpx);
                     
             scrollleftover = 0;
         }
@@ -199,13 +199,14 @@ namespace Gorgon { namespace UI {
         return {xscroll, yscroll};
     }
 
-    void ScrollingWidget::SetSmoothScrollSpeed(int value){
+    void ScrollingWidget::SetSmoothScrollSpeed(const UnitDimension &value){
         auto b = stack.TagBounds(UI::ComponentTemplate::ContentsTag);
         auto s = b.GetSize();
         
         scrollspeed = value;
+        scrollspeedpx = Convert(scrollspeed, true);
         
-        if(value == 0 && isscrolling) {
+        if(scrollspeedpx == 0 && isscrolling) {
             stack.SetTagLocation(UI::ComponentTemplate::ContentsTag, target);
             
             isscrolling = false;
@@ -216,19 +217,19 @@ namespace Gorgon { namespace UI {
         auto vscroller = dynamic_cast<Widgets::VScrollbar*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
         
         if(vscroller != nullptr) {
-            vscroller->SetSmoothChangeSpeed(scrollspeed);
+            vscroller->SetSmoothChangeSpeed(scrollspeedpx);
         }
         
         auto hscroller = dynamic_cast<Widgets::HScrollbar*>(stack.GetWidget(UI::ComponentTemplate::HScrollTag));
         
         if(hscroller != nullptr) {
-            hscroller->SetSmoothChangeSpeed(scrollspeed);
+            hscroller->SetSmoothChangeSpeed(scrollspeedpx);
         }
         
         if(s.Area() == 0) 
             stack.SetValueTransitionSpeed({0, 0, 0, 0});
         else
-            stack.SetValueTransitionSpeed({(float)value / s.Width, (float)value / s.Height, 0, 0});
+            stack.SetValueTransitionSpeed({(float)scrollspeedpx / s.Width, (float)scrollspeedpx / s.Height, 0, 0});
     }
     
     bool ScrollingWidget::MouseScroll(Input::Mouse::EventType type, Geometry::Point, float amount) {
@@ -247,7 +248,7 @@ namespace Gorgon { namespace UI {
             if(amount>0 && scrolloffset.Y <= 0)
                 return false;
             
-            scrollby(0, -(int)amount*scrolldist.Y);
+            scrollby(0, -(int)amount*scrolldistpx.Y);
             return true;
         }
         
@@ -258,7 +259,7 @@ namespace Gorgon { namespace UI {
             if(amount>0 && scrolloffset.X <= 0)
                 return false;
             
-            scrollby(-(int)amount*scrolldist.X, 0);
+            scrollby(-(int)amount*scrolldistpx.X, 0);
             return true;
         }
         
@@ -326,21 +327,27 @@ namespace Gorgon { namespace UI {
     }
 
 
-    void ScrollingWidget::SetScrollDistance(Geometry::Point dist) {
+    void ScrollingWidget::SetScrollDistance(const UnitPoint &dist) {
         scrolldist = dist;
+        scrolldistpx = Convert(scrolldist);
 
         auto vscroller = dynamic_cast<Widgets::VScrollbar*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
 
         if(vscroller != nullptr) {
-            vscroller->SetSmallChange(dist.Y);
+            vscroller->SetSmallChange(scrolldistpx.Y);
         }
 
         auto hscroller = dynamic_cast<Widgets::HScrollbar*>(stack.GetWidget(UI::ComponentTemplate::HScrollTag));
 
         if(hscroller != nullptr) {
-            hscroller->SetSmallChange(dist.X);
+            hscroller->SetSmallChange(scrolldistpx.X);
         }
+    }
 
+    void ScrollingWidget::parentboundschanged() {
+        ComponentStackWidget::parentboundschanged();
+        scrolldistpx = Convert(scrolldist);
+        scrollspeedpx = Convert(scrollspeed, true);
     }
 
 } }

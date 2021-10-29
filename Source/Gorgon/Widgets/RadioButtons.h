@@ -232,7 +232,7 @@ namespace Gorgon { namespace Widgets {
 
         /// Radio buttons height is automatically adjusted. Only width will be used.
         virtual void resize(const Geometry::Size &size) override {
-            Composer::Resize(size);
+            Composer::resize(size);
 
             for(auto p : this->elements) {
                 p.second.SetWidth(Pixels((GetCurrentWidth() - spacing * (GetColumns() - 1)) / GetColumns()));

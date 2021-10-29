@@ -230,6 +230,7 @@ namespace Gorgon { namespace Widgets {
         virtual void childboundschanged(Widget *source) override;
         
         virtual void parentboundschanged () override {
+            ScrollingWidget::parentboundschanged();
             distributeparentboundschanged();
         }
         

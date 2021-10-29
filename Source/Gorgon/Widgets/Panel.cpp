@@ -26,28 +26,24 @@ namespace Gorgon { namespace Widgets {
             
             switch(key) {
             case Keycodes::Down:
-                ScrollBy(scrolldist.Y);
+                ScrollBy(scrolldistpx.Y);
                 break;
                 
             case Keycodes::Up:
-                ScrollBy(-scrolldist.Y);
+                ScrollBy(-scrolldistpx.Y);
                 break;
                 
             case Keycodes::PageDown:
-                ScrollBy(std::max(scrolldist.Y, GetInteriorSize().Height - scrolldist.Y));
+                ScrollBy(std::max(scrolldistpx.Y, GetInteriorSize().Height - scrolldistpx.Y));
                 break;
                 
             case Keycodes::PageUp:
-                ScrollBy(-std::max(scrolldist.Y, GetInteriorSize().Height - scrolldist.Y));
+                ScrollBy(-std::max(scrolldistpx.Y, GetInteriorSize().Height - scrolldistpx.Y));
                 break;
             }
         });
         
         stack.AddCondition(UI::ComponentCondition::VScroll);
-
-        SetSmoothScrollSpeed(scrollspeed);
-        
-        SetScrollDistance(temp.GetUnitSize()*4, temp.GetUnitSize()*2);
     }
 
     bool Panel::Activate() {

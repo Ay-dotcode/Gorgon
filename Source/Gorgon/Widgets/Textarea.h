@@ -112,29 +112,6 @@ namespace Gorgon { namespace Widgets {
             return maxscrolloffset();
         }
         
-        /// Sets the horizontal scroll distance per click in pixels. Default depends
-        /// on the default size of the panel.
-        void SetScrollDistance(int vert) {
-            SetScrollDistance({scrolldist.X, vert});
-        }
-        
-        /// Sets the scroll distance per click in pixels. Default depends
-        /// on the default size of the panel.
-        void SetScrollDistance(int hor, int vert) {
-            SetScrollDistance({hor, vert});
-        }
-        
-        /// Sets the scroll distance per click in pixels. Default depends
-        /// on the default size of the panel.
-        void SetScrollDistance(Geometry::Point dist) {
-            setscrolldistance(dist);
-        }
-        
-        /// Returns the scroll distance per click
-        Geometry::Point GetScrollDistance() const {
-            return scrolldist;
-        }
-        
         /// Returns the length of the text in this inputbox. This value is in glyphs.
         int Length() const {
             return glyphcount;
