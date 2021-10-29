@@ -162,12 +162,22 @@ namespace Gorgon { namespace UI {
         
         virtual void Resize(const Geometry::Size &size) override {
             Gorgon::Window::Resize(size);
+
+            interiorsize = Pixels(size);
             
             distributeparentboundschanged();
         }
         
         virtual bool ResizeInterior(const UI::UnitSize &size) override;
         
+        virtual bool SetInteriorWidth(const UI::UnitDimension &size) override {
+            return ResizeInterior({size, interiorsize.Height});
+        }
+
+        virtual bool SetInteriorHeight(const UI::UnitDimension &size) override {
+            return ResizeInterior({interiorsize.Width, size});
+        }
+
         /// Closes the window, returning the execution to the
         /// point where Run function is called. It allows current
         /// frame to be completed before quiting.
@@ -280,6 +290,8 @@ namespace Gorgon { namespace UI {
                 focusedadapter = nullptr;
             }
         }
+
+        UnitSize interiorsize;
 
     private:
         bool quiting = false;

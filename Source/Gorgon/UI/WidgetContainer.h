@@ -291,7 +291,17 @@ namespace UI {
         /// If resize operation cannot set the size exactly to the
         /// requested size, this function returns false.
         virtual bool ResizeInterior(const UI::UnitSize &size) = 0;
-        
+
+        /// Should resize the interior (usable) size of the container.
+        /// If resize operation cannot set the size exactly to the
+        /// requested size, this function returns false.
+        virtual bool SetInteriorWidth(const UnitDimension &size) = 0;
+
+        /// Should resize the interior (usable) size of the container.
+        /// If resize operation cannot set the size exactly to the
+        /// requested size, this function returns false.
+        virtual bool SetInteriorHeight(const UnitDimension &size) = 0;
+
         /// Check if tab switch is enabled. Tab switch allows user to change
         /// focus to the next widget using tab key. Default is enabled.
         virtual bool IsTabSwitchEnabled() const { return tabswitch; }

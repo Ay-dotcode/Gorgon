@@ -31,7 +31,6 @@ namespace Gorgon { namespace Widgets {
             distributeparentboundschanged();
         }
 
-
         virtual bool KeyPressed(Input::Key, float) override;
 
 
@@ -43,9 +42,16 @@ namespace Gorgon { namespace Widgets {
 
         virtual Geometry::Size GetInteriorSize() const override;
 
+        UI::UnitSize GetCalculatedInteriorSize(UI::Dimension::Unit unit) {
+            return Convert(unit, UI::Pixels(GetInteriorSize()));
+        }
 
         virtual bool ResizeInterior(const UI::UnitSize &size) override;
-        
+
+        virtual bool SetInteriorWidth(const UI::UnitDimension &size) override;
+
+        virtual bool SetInteriorHeight(const UI::UnitDimension &size) override;
+
         /// Controls whether scrolling will be enabled vertically or horizontally.
         /// It is possible to use ScrollTo function without enabling scrolling but
         /// the user will not be able to scroll in this case. Enabling scrolling
@@ -64,6 +70,12 @@ namespace Gorgon { namespace Widgets {
             return hscroll;
         }
         
+        /// Sets the width of the widget
+        virtual void SetWidth(UnitDimension width) override { Resize({width, GetHeight()}, {false, interiorsized.second}); }
+
+        /// Sets the height of the widget
+        virtual void SetHeight(UnitDimension height) override { Resize({GetWidth(), height}, {interiorsized.first, false}); }
+
         
         virtual bool Done() override {
             if(HasFocusedWidget())
@@ -198,9 +210,10 @@ namespace Gorgon { namespace Widgets {
         using ComponentStackWidget::Resize;
 
         virtual void Resize(const UI::UnitSize &size) override {
-            interiorsized = false;
-            ComponentStackWidget::Resize(size);
+            Resize(size, {false, false});
         }
+
+        void Resize(const UI::UnitSize &size, std::pair<bool, bool> interiorsized);
 
         
     protected:
@@ -224,10 +237,6 @@ namespace Gorgon { namespace Widgets {
         
         virtual void moved() override { distributeparentboundschanged(); }
         
-        bool updaterequired = false;
-        
-        Input::KeyRepeater repeater;
-        
         FocusStrategy getparentfocusstrategy() const override {
             if(HasParent())
                 return GetParent().CurrentFocusStrategy();
@@ -243,16 +252,20 @@ namespace Gorgon { namespace Widgets {
             else if(state && IsEnabled())
                 distributeparentenabled(state);
         }
-        
-        int spacing   = 0;
-        int unitwidth = 0;
-        bool issizesset = false;
                 
         virtual void resize(const Geometry::Size &size) override;
         
         virtual void move(const Geometry::Point &location) override;
 
-        bool interiorsized = false;
+        bool updaterequired = false;
+
+        Input::KeyRepeater repeater;
+
+        int spacing   = 0;
+        int unitwidth = 0;
+        bool issizesset = false;
+
+        std::pair<bool, bool> interiorsized = {false, false};
 
     private:
 

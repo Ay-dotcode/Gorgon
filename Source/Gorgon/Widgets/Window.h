@@ -197,6 +197,22 @@ namespace Gorgon { namespace Widgets {
         void Center();
         
         virtual void EnableScroll(bool vertical, bool horizontal) override;
+
+        /// Sets minimum internal size of the widget, default value is 2x1 units.
+        void SetMinSize(const UI::UnitSize &value);
+
+        /// Returns minimum internal size of the widget
+        UI::UnitSize GetMinSize() const {
+            return minsize;
+        }
+
+        /// Sets maximum external size of the widget, default value is 100%, 100%
+        void SetMaxSize(const UI::UnitSize &value);
+
+        /// Sets maximum external size of the widget
+        UI::UnitSize GetMaxSize() const {
+            return maxsize;
+        }
         
         /// Window title
         TextualProperty<Window, std::string, &Window::GetTitle, &Window::SetTitle> Title;
@@ -239,6 +255,8 @@ namespace Gorgon { namespace Widgets {
         
         void mouse_click(UI::ComponentTemplate::Tag tag, Geometry::Point location, Input::Mouse::Button button);
 
+        void resize(const Geometry::Size &size) override;
+
     private:
         enum resizedir {
             none,
@@ -264,8 +282,11 @@ namespace Gorgon { namespace Widgets {
         Geometry::Point dragoffset;
         resizedir resizing = none;
         bool allowresize = false;
-        Geometry::Size minsize;
+        Geometry::Size minsizepx, maxsizepx;
+        UI::UnitSize minsize = UI::Units(2, 1), maxsize = UI::Percent(100, 100);
         Graphics::PointerStack::Token pointertoken;
+        bool hscrollon = false, vscrollon = true;
+        bool updatingminmax = false;
     };
     
 } }

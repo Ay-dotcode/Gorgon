@@ -31,7 +31,15 @@ namespace Gorgon { namespace UI {
         }
         
         virtual bool ResizeInterior(const UI::UnitSize &size) override;
-        
+
+        virtual bool SetInteriorWidth(const UI::UnitDimension &size) override {
+            return ResizeInterior({size, interiorsize.Height});
+        }
+
+        virtual bool SetInteriorHeight(const UI::UnitDimension &size) override {
+            return ResizeInterior({interiorsize.Width, size});
+        }
+
         virtual bool IsDisplayed () const override {
             return base->IsVisible();
         }
@@ -115,6 +123,7 @@ namespace Gorgon { namespace UI {
         int spacing   = 0;
         int unitsize = 0;
         bool issizesset = false;
+        UnitSize interiorsize;
     };
     
 } }

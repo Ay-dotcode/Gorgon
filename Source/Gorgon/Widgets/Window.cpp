@@ -46,8 +46,6 @@ namespace Gorgon { namespace Widgets {
             
             Center();
         }
-        
-        minsize = GetCurrentSize() - GetInteriorSize() + Geometry::Size(stack.GetTemplate().GetUnitSize()*2, stack.GetTemplate().GetUnitSize());
     }
     
     Window::Window(const UI::Template &temp, const std::string &title, const UI::UnitSize size, bool autoplace) :
@@ -149,17 +147,38 @@ namespace Gorgon { namespace Widgets {
     void Window::updatescrollvisibility() {
         auto val = stack.GetTargetValue();
         
+        bool changed = false;
         if(val[2] == 1 || val[2] == 0 || !hscroll) {
-            stack.RemoveCondition(UI::ComponentCondition::HScroll);
+            if(hscrollon) {
+                stack.RemoveCondition(UI::ComponentCondition::HScroll);
+                changed = true;
+                hscrollon = false;
+            }
         }
         else {
-            stack.AddCondition(UI::ComponentCondition::HScroll);
+            if(!hscrollon) {
+                stack.AddCondition(UI::ComponentCondition::HScroll);
+                changed = true;
+                hscrollon = true;
+            }
         }
         if(val[3] == 1 || val[3] == 0 || !vscroll) {
-            stack.RemoveCondition(UI::ComponentCondition::VScroll);
+            if(vscrollon) {
+                stack.RemoveCondition(UI::ComponentCondition::VScroll);
+                changed = true;
+                vscrollon = false;
+            }
         }
         else {
-            stack.AddCondition(UI::ComponentCondition::VScroll);
+            if(!vscrollon) {
+                stack.AddCondition(UI::ComponentCondition::VScroll);
+                changed = true;
+                vscrollon = true;
+            }
+        }
+
+        if(changed) {
+            Panel::resize(lsize);
         }
     }
     
@@ -231,6 +250,7 @@ namespace Gorgon { namespace Widgets {
         if(button == Input::Mouse::Button::Left) {
             moving = false;
             resizing = none;
+            pointertoken.Revert();
         }
     }
     
@@ -374,7 +394,8 @@ namespace Gorgon { namespace Widgets {
             int h = ch + location.Y - dragoffset.Y;
             
             if(HasParent()) {
-                FitInto(h, minsize.Height, std::min((GetParent().GetInteriorSize().Height - GetCurrentLocation().Y) * 2, GetParent().GetInteriorSize().Height));
+                FitInto(h, minsizepx.Height, std::min((GetParent().GetInteriorSize().Height - GetCurrentLocation().Y) * 2, maxsizepx.Height));
+                std::cout << h << std::endl;
             }
             
             SetHeight(Pixels(h));
@@ -388,7 +409,7 @@ namespace Gorgon { namespace Widgets {
             int h = ch - location.Y + dragoffset.Y;
             
             if(HasParent()) {
-                FitInto(h, minsize.Height, GetCurrentHeight()+GetCurrentLocation().Y);
+                FitInto(h, minsizepx.Height, std::min(GetCurrentHeight()+GetCurrentLocation().Y, maxsizepx.Height));
             }
             
             SetHeight(Pixels(h));
@@ -410,7 +431,7 @@ namespace Gorgon { namespace Widgets {
             int w = cw + location.X - dragoffset.X;
             
             if(HasParent()) {
-                FitInto(w, minsize.Width, std::min((GetParent().GetInteriorSize().Width - GetCurrentLocation().X) * 2, GetParent().GetInteriorSize().Width));
+                FitInto(w, minsizepx.Width, std::min((GetParent().GetInteriorSize().Width - GetCurrentLocation().X) * 2, maxsizepx.Width));
             }
             
             SetWidth(Pixels(w));
@@ -425,7 +446,7 @@ namespace Gorgon { namespace Widgets {
             int w = cw - location.X + dragoffset.X;
             
             if(HasParent()) {
-                FitInto(w, minsize.Width, GetCurrentWidth()+GetCurrentLocation().X);
+                FitInto(w, minsizepx.Width, std::min(GetCurrentWidth()+GetCurrentLocation().X, maxsizepx.Width));
             }
             
             SetWidth(Pixels(w));
@@ -528,6 +549,63 @@ namespace Gorgon { namespace Widgets {
         return true;
     }
 
+    void Window::resize(const Geometry::Size& size) {
+        Panel::resize(size);
 
+        //prevent recursion if there is a problem with min-max sizing
+        if(!updatingminmax) {
+            updatingminmax = true;
+            minsizepx = Convert(minsize);
+            maxsizepx = Convert(maxsize);
+            auto sz = GetInteriorSize();
+
+            if(sz.Width < minsizepx.Width && sz.Height < minsizepx.Height) {
+                ResizeInterior(minsize);
+            }
+            else if(sz.Width < minsizepx.Width) {
+                SetInteriorWidth(minsize.Width);
+            }
+            else if(sz.Height < minsizepx.Height) {
+                SetInteriorHeight(minsize.Height);
+            }
+
+            sz = GetCurrentSize();
+            if(sz.Width > maxsizepx.Width && sz.Height > maxsizepx.Height) {
+                Resize(maxsize);
+            }
+            else if(sz.Width > maxsizepx.Width) {
+                SetWidth(maxsize.Width);
+            }
+            else if(sz.Height > maxsizepx.Height) {
+                SetHeight(maxsize.Height);
+            }
+
+            Geometry::Size border = {0, 0};
+
+            auto innersize = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize();
+
+            border = GetCurrentSize() - innersize;
+
+            minsizepx += border;
+
+
+            updatingminmax = false;
+        }
+    }
+
+    void Window::SetMinSize(const UI::UnitSize& value) {
+        minsize = value;
+
+        lsize = {-1, -1}; //force update
+        Resize(GetSize(), interiorsized);
+    }
+
+
+    void Window::SetMaxSize(const UI::UnitSize& value) {
+        maxsize = value;
+
+        lsize = {-1, -1}; //force update
+        Resize(GetSize(), interiorsized);
+    }
 
 } }

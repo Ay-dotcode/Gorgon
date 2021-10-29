@@ -161,13 +161,24 @@ namespace Gorgon { namespace Widgets {
     }
 
     void ComponentStackComposer::resize(const Geometry::Size &size) {
-        if(interiorsized) {
-            ComponentStackWidget::resize(size + GetCurrentSize() - GetInteriorSize());
+        if(interiorsized.first || interiorsized.second) {
+            Geometry::Size border = {0, 0};
+
+            auto innersize = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize();
+
+            border = GetCurrentSize() - innersize;
+
+            if(!interiorsized.first)
+                border.Width = 0;
+            if(!interiorsized.second)
+                border.Height = 0;
+
+            ComponentStackWidget::resize(size + border);
         }
         else {
             ComponentStackWidget::resize(size);
         }
-        
+
         if(HasOrganizer())
             GetOrganizer().Reorganize();
         
@@ -215,5 +226,40 @@ namespace Gorgon { namespace Widgets {
             return Widgets::Registry::Active().GetUnitSize();
         }
     }
+
+    bool ComponentStackComposer::ResizeInterior(const UI::UnitSize &size) {
+        if(interiorsized != std::make_pair(true, true))
+            lsize = {-1, -1};
+        interiorsized = {true, true};
+        ComponentStackWidget::Resize(size);
+
+        return stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize() == lsize;
+    }
+
+    bool ComponentStackComposer::SetInteriorWidth(const UI::UnitDimension &size) {
+        if(interiorsized.first != true)
+            lsize = {-1, -1};
+        interiorsized = {true, interiorsized.second};
+        ComponentStackWidget::Resize(size, GetSize().Height);
+
+        return stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize().Width == lsize.Width;
+    }
+
+    bool ComponentStackComposer::SetInteriorHeight(const UI::UnitDimension &size) {
+        if(interiorsized.second != true)
+            lsize = {-1, -1};
+        interiorsized = {interiorsized.first, true};
+        ComponentStackWidget::Resize(GetSize().Width, size);
+
+        return stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize().Height == lsize.Height;
+    }
+
+
+void ComponentStackComposer::Resize(const UI::UnitSize& size, std::pair< bool, bool > interiorsized) {
+    if(this->interiorsized != interiorsized)
+        lsize = {-1, -1};
+    this->interiorsized = interiorsized;
+    ComponentStackWidget::Resize(size);
+}
 
 } }

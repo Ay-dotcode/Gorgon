@@ -59,6 +59,8 @@ namespace Gorgon { namespace Widgets {
      * a container, its members are. Each tab is associated with a key.
      * Creating another with the same key will erase the tab, removing its
      * contents.
+     *
+     * TODO: InteriorSizing
      */
     template <class Key_>
     class basic_TabPanel : public ComponentStackComposer {

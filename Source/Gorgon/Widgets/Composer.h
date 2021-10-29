@@ -47,6 +47,16 @@ namespace Gorgon { namespace Widgets {
             return true;
         }
 
+        virtual bool SetInteriorWidth(const UI::UnitDimension &size) override {
+            SetWidth(size);
+            return true;
+        }
+
+        virtual bool SetInteriorHeight(const UI::UnitDimension &size) override {
+            SetHeight(size);
+            return true;
+        }
+
         virtual Geometry::Point GetCurrentLocation() const override {
             return base.GetLocation();
         }
@@ -220,13 +230,6 @@ namespace Gorgon { namespace Widgets {
             return stack.GetSize();
         }
 
-        virtual bool ResizeInterior(const UI::UnitSize &size) override {
-            interiorsized = true;
-            Resize(size);
-            
-            return GetInteriorSize() == lsize;
-        }
-        
         virtual void SetVisible(bool value) override {
             ComponentStackWidget::SetVisible(value);
             distributeparentboundschanged();
@@ -258,13 +261,15 @@ namespace Gorgon { namespace Widgets {
         virtual bool CharacterPressed(Char c) override { return distributecharevent(c); }
 
         virtual void Resize(const UI::UnitSize &size) override {
-            interiorsized = false;
-            ComponentStackWidget::Resize(size);
+            Resize(size, {false, false});
         }
+
+        void Resize(const UI::UnitSize &size, std::pair<bool, bool> interiorsized);
+
 
     protected:
 
-        bool interiorsized = false;
+        std::pair<bool, bool> interiorsized = {false, false};
 
         //ensure this object is derived
         ComponentStackComposer(const UI::Template &temp, std::map<UI::ComponentTemplate::Tag, std::function<Widget *(const UI::Template &)>> generators = {}) :
@@ -323,6 +328,14 @@ namespace Gorgon { namespace Widgets {
             return true;
         }
         
+
+        virtual bool ResizeInterior(const UI::UnitSize &size) override;
+
+        virtual bool SetInteriorWidth(const UI::UnitDimension &size) override;
+
+        virtual bool SetInteriorHeight(const UI::UnitDimension &size) override;
+
+
         virtual Geometry::Size GetInteriorSize() const override {
             return stack.GetLayerOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag)).GetSize();
         }

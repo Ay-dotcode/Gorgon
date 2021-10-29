@@ -107,20 +107,47 @@ namespace Gorgon { namespace Widgets {
     }
 
     bool Panel::ResizeInterior(const UI::UnitSize &size) {
-        interiorsized = true;
+        if(interiorsized != std::make_pair(true, true))
+            lsize = {-1, -1};
+
+        interiorsized = {true, true};
         ComponentStackWidget::Resize(size);
 
-        return stack.TagBounds(UI::ComponentTemplate::ContentsTag).GetSize() == lsize;
+        return stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize() == lsize;
     }
-    
+
+    bool Panel::SetInteriorWidth(const UI::UnitDimension &size) {
+        if(interiorsized.first != true)
+            lsize = {-1, -1};
+
+        interiorsized = {true, interiorsized.second};
+        ComponentStackWidget::Resize({size, GetSize().Height});
+
+        return stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize().Width == lsize.Width;
+    }
+
+    bool Panel::SetInteriorHeight(const UI::UnitDimension &size) {
+         if(interiorsized.second != true)
+            lsize = {-1, -1};
+
+       interiorsized = {interiorsized.first, true};
+        ComponentStackWidget::Resize({GetSize().Width, size});
+
+        return stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize().Height == lsize.Height;
+    }
+
     void Panel::resize(const Geometry::Size &size) {
-        if(interiorsized) {
+        if(interiorsized.first || interiorsized.second) {
             Geometry::Size border = {0, 0};
 
             auto innersize = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize();
 
-            if(innersize.Area() != 0)
-                border = GetCurrentSize() - innersize;
+            border = GetCurrentSize() - innersize;
+
+            if(!interiorsized.first)
+                border.Width = 0;
+            if(!interiorsized.second)
+                border.Height = 0;
 
             ComponentStackWidget::resize(size + border);
         }
@@ -269,6 +296,14 @@ namespace Gorgon { namespace Widgets {
             return stack.GetTemplate().GetUnitSize();
         }
     }
+
+
+void Panel::Resize(const UI::UnitSize& size, std::pair< bool, bool > interiorsized) {
+    if(this->interiorsized != interiorsized)
+        lsize = {-1, -1};
+    this->interiorsized = interiorsized;
+    ComponentStackWidget::Resize(size);
+}
 
 } }
 

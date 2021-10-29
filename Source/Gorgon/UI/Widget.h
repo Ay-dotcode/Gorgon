@@ -89,10 +89,10 @@ namespace Gorgon { namespace UI {
         int GetCurrentHeight() const { return GetCurrentSize().Height; }
 
         /// Sets the width of the widget
-        void SetWidth(UnitDimension width) { Resize(width, GetHeight()); }
+        virtual void SetWidth(UnitDimension width) { Resize(width, GetHeight()); }
         
         /// Sets the height of the widget
-        void SetHeight(UnitDimension height) { Resize(GetWidth(), height); }
+        virtual void SetHeight(UnitDimension height) { Resize(GetWidth(), height); }
         
         /// Activates the widget. This might perform the action if the
         /// widget is a button, forward the focus if it is a label or

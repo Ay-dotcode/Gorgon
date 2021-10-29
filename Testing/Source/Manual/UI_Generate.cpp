@@ -320,6 +320,8 @@ int main() {
     Widgets::DialogWindow wind("My window", {6, 6});
     wind.Add(btn);
     wind.Add(btn2);
+    wind.SetMinSize({6,1});
+    wind.SetMaxSize({50_perc,8});
     btn.Move(Pixels(0,0));
     btn.Disable();
     wind.OwnIcon(icon.CreateAnimation());
@@ -331,7 +333,7 @@ int main() {
     });
     Widgets::Checkbox enableclosebtn("Enable close button", true);
     enableclosebtn.SetWidth(6_u);
-    enableclosebtn.SetAutosize(Gorgon::UI::Autosize::Unit, Gorgon::UI::Autosize::Automatic);
+    //enableclosebtn.SetAutosize(Gorgon::UI::Autosize::Unit, Gorgon::UI::Autosize::Automatic);
     enableclosebtn.ChangedEvent.Register([&] { wind.SetCloseButtonEnabled(bool(enableclosebtn)); });
     wind.AddUnder(enableclosebtn);
     wind.AddUnder("Try resize");

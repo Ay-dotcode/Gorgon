@@ -311,17 +311,17 @@ namespace Gorgon { namespace UI {
     }
 
     /// Converts the given value to dimension with percentage units
-    inline constexpr DualDimension Percentage(int one, int two) {
+    inline constexpr DualDimension Percent(int one, int two) {
         return {{one, Dimension::Percent}, {two, Dimension::Percent}};
     }
 
     /// Converts the given one, given twoue to dimension with percentage units
-    inline constexpr DualDimension Percentage(double one, double two) {
+    inline constexpr DualDimension Percent(double one, double two) {
         return {{one, Dimension::Percent}, {two, Dimension::Percent}};
     }
 
     /// Converts the given one, given twoue to dimension with percentage units
-    inline constexpr DualDimension Percentage(float one, float two) {
+    inline constexpr DualDimension Percent(float one, float two) {
         return {{one, Dimension::Percent}, {two, Dimension::Percent}};
     }
 

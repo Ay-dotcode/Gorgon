@@ -302,6 +302,8 @@ namespace Gorgon { namespace UI {
 
     bool Window::ResizeInterior(const UI::UnitSize &size) {
 
+        interiorsize = size;
+
         const auto &mon = WindowManager::Monitor::FromLocation(GetLocation());
 
         Geometry::Size s = {0, 0};
