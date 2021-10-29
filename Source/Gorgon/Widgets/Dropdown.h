@@ -105,9 +105,9 @@ namespace Gorgon { namespace Widgets {
             reversed  = false;
             
             if(below < defaultheight && above > below) {
-                bool fit = list.FitHeight(below);
+                bool fit = list.FitHeight(Pixels(below));
                 if(!fit) {
-                    fit = list.FitHeight(above);
+                    fit = list.FitHeight(Pixels(above));
                     if(!fit)
                         list.SetHeight(Pixels(above));
                     
@@ -115,7 +115,7 @@ namespace Gorgon { namespace Widgets {
                 }
             }
             else {
-                list.FitHeight(std::min(defaultheight, below));
+                list.FitHeight(Pixels(std::min(defaultheight, below)));
             }
             
             if(reversed) {

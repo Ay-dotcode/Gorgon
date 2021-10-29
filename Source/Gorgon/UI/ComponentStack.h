@@ -63,9 +63,9 @@ namespace Gorgon { namespace UI {
         ComponentStack(const Template &temp, Geometry::Size size, std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> generators = {});
         
         /// Initiates a component stack with default size
-        explicit ComponentStack(const Template &temp) : ComponentStack(temp, temp.GetSize()) 
+        explicit ComponentStack(const Template &temp) : ComponentStack(temp, temp.GetSize({0,0}))
         { }
-        
+
         /// Destructor
         virtual ~ComponentStack();
 

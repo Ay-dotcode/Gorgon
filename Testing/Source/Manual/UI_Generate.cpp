@@ -245,7 +245,7 @@ int main() {
         /*if(index >= 1)
             list.Remove(index - 1);*/
     });
-    list.EnsureVisible(11);
+    //list.EnsureVisible(11);
     list.EnsureVisible(1);
     //list.Clear();
     //list.FitHeight(list.GetHeight());

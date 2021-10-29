@@ -21,7 +21,7 @@ namespace Gorgon { namespace Widgets {
     class RadioButtons : public Composer, protected UI::RadioControl<T_, W_> {
         friend class UI::WidgetContainer;
     public:
-        explicit RadioButtons(const UI::Template &temp) : Composer(Pixels(temp.GetSize())), temp(temp) {
+        explicit RadioButtons(const UI::Template &temp) : Composer(temp.GetSize()), temp(temp) {
             spacing = temp.GetSpacing();
             this->own = true;
         }

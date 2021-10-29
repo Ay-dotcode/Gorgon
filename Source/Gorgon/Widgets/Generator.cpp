@@ -41,6 +41,11 @@
 #define BdC(c) Colors[Graphics::Color::c].Bordercolor
 
 namespace Gorgon { namespace Widgets {
+    using UI::UnitSize;
+    using UI::UnitDimension;
+    using UI::Units;
+    using UI::Pixels;
+
     //for std::map
     bool operator <(const SimpleGenerator::AssetID &l, const SimpleGenerator::AssetID &r) {
         return MultiLess(
@@ -998,7 +1003,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::Button(bool border) {
-        Geometry::Size defsize = {GetUnitSize(3), border ? unitsize : borderlessheight};
+        UnitSize defsize = {Units(3), border ? Units(1): Pixels(borderlessheight)};
         
         UI::Template temp = maketemplate();
         temp.SetSize(defsize);
@@ -1096,7 +1101,7 @@ namespace Gorgon { namespace Widgets {
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
         
-        temp.SetSize(GetUnitSize(), GetUnitSize());
+        temp.SetSize(Units(1, 1));
         
         temp.AddContainer(0, UI::ComponentCondition::Always)
             .AddIndex(1) //background
@@ -1181,7 +1186,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::DialogButton() {
-        Geometry::Size defsize = {GetUnitSize(3), unitsize};
+        UnitSize defsize = Units(3, 1);
         
         UI::Template temp = maketemplate();
         temp.SetSize(defsize);
@@ -1281,7 +1286,7 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::Checkbox() {
-        Geometry::Size defsize = {GetUnitSize(6), borderlessheight};
+        UnitSize defsize = {Units(1), Pixels(borderlessheight)};
         
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
@@ -1346,7 +1351,7 @@ namespace Gorgon { namespace Widgets {
         
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
-        temp.SetSize(unitsize, unitsize);
+        temp.SetSize(Units(1, 1));
         
 
         temp.AddContainer(0, UI::ComponentCondition::Always)
@@ -1462,7 +1467,7 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::RadioButton() {
-        Geometry::Size defsize = {GetUnitSize(6), borderlessheight};
+        UnitSize defsize = {Units(6), Pixels(borderlessheight)};
         
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
@@ -1527,7 +1532,7 @@ namespace Gorgon { namespace Widgets {
     
     //TODO: join labels into two or three functions
     UI::Template SimpleGenerator::Label() {
-        Geometry::Size defsize = {GetUnitSize(6), borderlessheight};
+        UnitSize defsize = {Units(6), Pixels(borderlessheight)};
         
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
@@ -1562,7 +1567,7 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::ErrorLabel() {
-        Geometry::Size defsize = {GetUnitSize(6), borderlessheight};
+        UnitSize defsize = {Units(6), Pixels(borderlessheight)};
         
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
@@ -1599,7 +1604,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::BoldLabel() {
-        Geometry::Size defsize = {GetUnitSize(6), borderlessheight};
+        UnitSize defsize = {Units(6), Pixels(borderlessheight)};
         
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
@@ -1634,7 +1639,7 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::TitleLabel() {
-        Geometry::Size defsize = {GetUnitSize(6), borderlessheight + h1renderer->GetHeight() - regularrenderer->GetHeight()};
+        UnitSize defsize = {GetUnitSize(6), Pixels(borderlessheight + h1renderer->GetHeight() - regularrenderer->GetHeight())};
         
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
@@ -1677,7 +1682,7 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::SubtitleLabel() {
-        Geometry::Size defsize = {GetUnitSize(6), borderlessheight + h3renderer->GetHeight() - regularrenderer->GetHeight()};
+        UnitSize defsize = {GetUnitSize(6), Pixels(borderlessheight + h3renderer->GetHeight() - regularrenderer->GetHeight())};
         
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
@@ -1721,7 +1726,7 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::LeadingLabel() {
-        Geometry::Size defsize = {GetUnitSize(6), borderlessheight + bold.GetHeight() - regularrenderer->GetHeight()};
+        UnitSize defsize = {GetUnitSize(6), Pixels(borderlessheight + bold.GetHeight() - regularrenderer->GetHeight())};
         
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
@@ -1765,7 +1770,7 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::InfoLabel() {
-        Geometry::Size defsize = {GetUnitSize(6), unitsize};
+        UnitSize defsize = {Units(6), Units(1)};
         
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
@@ -1814,7 +1819,7 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::IconLabel() {
-        Geometry::Size defsize = {GetUnitSize(1), GetUnitSize(1)};
+        UnitSize defsize = Units(1, 1);
         
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
@@ -1856,10 +1861,10 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::makepanel(SimpleGenerator::AssetID::BorderSide edge, bool scrollers, bool spaced, bool nobg) {
-        Geometry::Size defsize = {
+        UnitSize defsize = Pixels(
             GetUnitSize(6) + Border.Width * 2 * spaced + spacing * 2,
             GetUnitSize(10) + Border.Width * 2 * spaced + spacing * 2
-        };
+        );
         
         if(AssetID::VBorders(edge) == 1) {
             defsize.Height = unitsize + Border.Width + spacing * 2;
@@ -1919,7 +1924,7 @@ namespace Gorgon { namespace Widgets {
             auto &vst = operator[](Scrollbar_Vertical);
             auto &hst = operator[](Scrollbar_Horizontal);
             
-            temp.SetSize(temp.GetWidth() + vst.GetWidth() + spacing, temp.GetHeight());
+            temp.SetSize(Pixels(temp.GetSize({0, 0}).Width + vst.GetSize({0, 0}).Width + spacing), temp.GetHeight());
             
             bg
                 .AddIndex(3) //VScroll
@@ -1941,7 +1946,7 @@ namespace Gorgon { namespace Widgets {
             hs.SetSize({100, UI::Dimension::Percent}, hst.GetHeight());
             hs.SetSizing(UI::ComponentTemplate::Fixed);
             hs.SetAnchor(UI::Anchor::None, UI::Anchor::BottomCenter, UI::Anchor::BottomCenter);
-            hs.SetMargin(0, spacing, vst.GetWidth()+spacing, 0);
+            hs.SetMargin(0, spacing, vst.GetSize({0,0}).Width+spacing, 0);
             
             auto &vp = temp.AddContainer(1, UI::ComponentCondition::HScroll)
                 .AddIndex(2)
@@ -1950,7 +1955,7 @@ namespace Gorgon { namespace Widgets {
             vp.SetSize(100, 100, UI::Dimension::Percent);
             vp.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
             vp.SetClip(true);
-            vp.SetIndent(0, 0, 0, hst.GetHeight()+spacing);
+            vp.SetIndent(0, 0, 0, hst.GetSize({0,0}).Height+spacing);
         }
         
         return temp;
@@ -1985,7 +1990,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::Inputbox() {
-        Geometry::Size defsize = {GetUnitSize(3), unitsize};
+        UnitSize defsize = Units(3, 1);
         
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
@@ -2084,7 +2089,7 @@ namespace Gorgon { namespace Widgets {
 
     UI::Template SimpleGenerator::Progressbar() {
         int h = std::max(Border.Radius * 2 + Border.Width * 2 + 4, spacing * 3);
-        Geometry::Size defsize = {GetUnitSize(6), h};
+        UnitSize defsize = {Units(6), Pixels(h)};
         
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
@@ -2117,7 +2122,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::BlankLayerbox() {
-        Geometry::Size defsize = {GetUnitSize(6), GetUnitSize(4)};
+        UnitSize defsize = Units(6, 4);
         
         UI::Template temp = maketemplate();
         temp.SetSize(defsize);
@@ -2139,7 +2144,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::Layerbox() {
-        Geometry::Size defsize = {GetUnitSize(6), GetUnitSize(4)};
+        UnitSize defsize = Units(6, 4);
         
         UI::Template temp = maketemplate();
         temp.SetSize(defsize);
@@ -2167,7 +2172,7 @@ namespace Gorgon { namespace Widgets {
         auto dist = int(std::round(spacing / 3.f));
         int w = std::max(Border.Radius * 2 + std::max(0, dist - Border.Radius / 2) * 2, spacing * 2);
         
-        Geometry::Size defsize = {w, unitsize * 3 - Border.Width * 2};
+        UnitSize defsize = {Pixels(w), Units(3)};
         
         UI::Template temp = maketemplate();
         temp.SetSize(defsize);
@@ -2205,7 +2210,7 @@ namespace Gorgon { namespace Widgets {
         auto dist = int(std::round(spacing / 3.f));
         int h = std::max(Border.Radius * 2 + std::max(0, dist - Border.Radius / 2) * 2, spacing * 2);
         
-        Geometry::Size defsize = {GetUnitSize(6), h};
+        UnitSize defsize = {Units(6), Pixels(h)};
         
         UI::Template temp = maketemplate();
         temp.SetSize(defsize);
@@ -2239,7 +2244,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::Listbox() {
-        Geometry::Size defsize = {GetUnitSize(6), GetUnitSize(8)};
+        UnitSize defsize = Units(6, 8);
         
         UI::Template temp = maketemplate();
         
@@ -2260,7 +2265,7 @@ namespace Gorgon { namespace Widgets {
         auto &viewport = temp.AddContainer(1, UI::ComponentCondition::Always)
             .AddIndex(2)
         ;
-        viewport.SetTag(UI::ComponentTemplate::ContentsTag);
+        viewport.SetTag(UI::ComponentTemplate::ViewPortTag);
         viewport.SetClip(true);
         
         auto &contents = temp.AddContainer(2, UI::ComponentCondition::Always);
@@ -2291,7 +2296,7 @@ namespace Gorgon { namespace Widgets {
         //****** listitem
         
         //TODO fix height
-        listbox_listitem.SetSize(defsize.Width - (Border.Width + std::max(Border.Radius / 2, Focus.Spacing)) * 2, borderlessheight);
+        listbox_listitem.SetSize(Pixels(defsize.Width(0, GetUnitSize(), GetSpacing()) - (Border.Width + std::max(Border.Radius / 2, Focus.Spacing)) * 2, borderlessheight));
         
         listbox_listitem.AddContainer(0, UI::ComponentCondition::Always)
             .AddIndex(1) //background
@@ -2392,7 +2397,7 @@ namespace Gorgon { namespace Widgets {
     }
     
     UI::Template SimpleGenerator::Dropdown() {
-        Geometry::Size defsize = {GetUnitSize(4), GetUnitSize()};
+        UnitSize defsize = Units(4, 1);
         
         UI::Template temp = maketemplate();
         temp.SetSize(defsize);
@@ -2483,7 +2488,7 @@ namespace Gorgon { namespace Widgets {
     
     UI::Template SimpleGenerator::Window() {
         auto tmp = makepanel(AssetID::All, true, false);
-        tmp.SetSize({GetUnitSize(9), GetUnitSize(10)});
+        tmp.SetSize(Units(10, 8));
         
         auto &cbg = dynamic_cast<UI::ContainerTemplate&>(tmp[0]);
         cbg.Background.SetAnimation(A(Background, Container));
@@ -2583,7 +2588,7 @@ namespace Gorgon { namespace Widgets {
     
     UI::Template SimpleGenerator::DialogWindow() {
         auto temp = Window();
-        temp.SetSize({GetUnitSize(10) + Border.Width*2 + spacing*2, GetUnitSize(5)});
+        temp.SetSize(Pixels(GetUnitSize(10) + Border.Width*2 + spacing*2, GetUnitSize(5)));
         
         auto &cbg = dynamic_cast<UI::ContainerTemplate&>(temp[0]);
         //auto tmp = makepanel(AssetID::AllExceptBottom, true);
@@ -2627,13 +2632,13 @@ namespace Gorgon { namespace Widgets {
         auto temp = Layerbox();
         auto w = GetUnitSize(6);
         auto h = (w-26)/12*9 + 22;
-        temp.SetSize(w, h);
+        temp.SetSize(Pixels(w, h));
         
         return temp;
     }
     
     UI::Template SimpleGenerator::ColorPicker() {
-        Geometry::Size defsize = {GetUnitSize(4), GetUnitSize()};
+        UnitSize defsize = Units(4, 1);
         
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
@@ -2766,10 +2771,10 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::TabPanel() {
-        Geometry::Size defsize = {
-            GetUnitSize(6) + Border.Width * 2  + spacing * 3 + (*this)[Scrollbar_Vertical].GetSize().Width,
+        UnitSize defsize = Pixels(
+            GetUnitSize(6) + Border.Width * 2  + spacing * 3 + (*this)[Scrollbar_Vertical].GetSize().Width(GetUnitSize(6), GetUnitSize(), GetSpacing(), GetEmSize()),
             GetUnitSize(10) + Border.Width * 2 + spacing * 2
-        };
+        );
 
         UI::Template temp = maketemplate();
         temp.SetSize(defsize);
@@ -2827,7 +2832,7 @@ namespace Gorgon { namespace Widgets {
     }
 
     UI::Template SimpleGenerator::Textarea() {
-        Geometry::Size defsize = {GetUnitSize(6), GetUnitSize(3)};
+        UnitSize defsize = Units(6, 3);
 
         UI::Template temp = maketemplate();
         temp.SetSpacing(spacing);
@@ -2921,7 +2926,7 @@ namespace Gorgon { namespace Widgets {
         auto &vst = operator[](Scrollbar_Vertical);
         auto &hst = operator[](Scrollbar_Horizontal);
 
-        temp.SetSize(temp.GetWidth() + vst.GetWidth() + spacing, temp.GetHeight());
+        temp.SetSize(Pixels(GetUnitSize(6) + vst.GetSize({0, 0}).Width + spacing), temp.GetHeight());
 
         boxed
             .AddIndex(9) //VScroll
@@ -2943,7 +2948,7 @@ namespace Gorgon { namespace Widgets {
         hs.SetSize({100, UI::Dimension::Percent}, hst.GetHeight());
         hs.SetSizing(UI::ComponentTemplate::Fixed);
         hs.SetAnchor(UI::Anchor::None, UI::Anchor::BottomCenter, UI::Anchor::BottomCenter);
-        hs.SetMargin(0, spacing, vst.GetWidth()+spacing, 0);
+        hs.SetMargin(0, spacing, vst.GetSize({0,0}).Width+spacing, 0);
 
 
         auto &contenthscroll = temp.AddContainer(5, UI::ComponentCondition::HScroll)
@@ -2955,7 +2960,7 @@ namespace Gorgon { namespace Widgets {
         contenthscroll.SetPositioning(UI::ComponentTemplate::Absolute);
         contenthscroll.SetAnchor(UI::Anchor::TopLeft, UI::Anchor::TopLeft, UI::Anchor::TopLeft);
         contenthscroll.SetTag(UI::ComponentTemplate::ViewPortTag);
-        contenthscroll.SetIndent(0, 0, 0, hst.GetHeight()+spacing);
+        contenthscroll.SetIndent(0, 0, 0, hst.GetSize({0,0}).Height+spacing);
 
 
         return temp;

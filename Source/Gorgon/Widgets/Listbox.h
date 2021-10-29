@@ -1803,62 +1803,6 @@ namespace Gorgon { namespace Widgets {
             return maxdisplay;
         }
         
-        /// This function will try to set the height of the listbox to contain
-        /// all its elements. If the size necessary to do so is larger than
-        /// maxpixels, then maxpixels will be used and this function will return
-        /// false. This function may give up before fully exceeding maxpixels if
-        /// elements have different heights. But it will never surpass maxpixels.
-        bool FitHeight(int maxpixels) {
-            int curh = GetInteriorSize().Height;
-            int overhead = GetCurrentHeight() - curh;
-            int defh = stack.GetTemplate().GetUnitSize();
-            
-            auto li = stack.GetTemplate(UI::ComponentTemplate::ItemTag);
-            if(li)
-                defh = li->GetHeight();
-            
-            int expected = int( std::ceil( (this->GetCount()+overscroll) * (maxdisplay == 0 ? defh : curh/maxdisplay) ) ) + overhead;
-            bool smalldone = false;
-            
-            //will possibly fit
-            if(expected < maxpixels) {
-                
-                int tried = 0;
-                
-                do {
-                    SetHeight(Pixels(expected));
-                    stack.Update(true);
-                    Refresh();
-                    
-                    auto diff = maxdisplay - (this->GetCount()+overscroll);
-                    
-                    //it fits everything, might not be tightest but that's ok. We can also eat up a bit of overscroll
-                    if((diff < 1 && diff >= -overscroll/2) || maxdisplay == 0)
-                        return true;
-                    
-                    curh = GetInteriorSize().Height;
-                    overhead = GetCurrentHeight() - curh;
-                    int curexpected = int( std::ceil( (this->GetCount()+overscroll) * (curh/maxdisplay) ) ) + overhead;
-                    
-                    if(abs(expected - curexpected) == 0) { //no progress, exit
-                        break;
-                    }
-                    else if(abs(expected - curexpected) < 0.1 && smalldone) { //we will allow one small progress, no more
-                        break;
-                    }
-                    else if(abs(expected - curexpected) < 0.1) {
-                        smalldone = true;
-                    }
-                    expected = curexpected;
-                    tried++;
-                } while(expected < maxpixels && tried < 5);
-                
-            }
-            
-            SetHeight(Pixels(maxpixels));
-            return false;
-        }
-        
         Geometry::Size GetInteriorSize() const {
             auto b = stack.TagBounds(UI::ComponentTemplate::ViewPortTag);
             if(b.Width() == 0 || b.Height() == 0)
@@ -1918,7 +1862,37 @@ namespace Gorgon { namespace Widgets {
 
             return false;
         }
-        
+
+        /// This function will try to set the height of the listbox to contain
+        /// all its elements. If the size necessary to do so is larger than
+        /// maxsize, then maxsize will be used and this function will return
+        /// false. This function may give up before fully exceeding maxsize if
+        /// elements have different heights. But it will never surpass maxsize.
+        bool FitHeight(const UI::UnitDimension &maxsize) {
+            return fitheight(Convert(maxsize, true, true));
+        }
+
+        /// This function will try to set the height of the listbox to contain
+        /// all its elements. If the size necessary to do so is larger than
+        /// maxsize, then maxsize will be used and this function will return
+        /// false. This function may give up before fully exceeding maxsize if
+        /// elements have different heights. But it will never surpass maxsize.
+        bool FitHeight(float elms) {
+            if(widgetlist.empty())
+                return fitheight(Convert(Units(elms), true, true));
+            else {
+                int sp = stack.GetTemplate().GetSpacing() / 2;
+                int border = 0;
+
+                auto innersize = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).GetSize();
+                border = GetCurrentSize().Height - innersize.Height;
+                if(border < 0)
+                    border = 0;
+
+                return fitheight((int)std::round((widgetlist.begin()->second->GetCurrentHeight() + sp)*elms - sp + border));
+            }
+        }
+
     protected:
         ListboxWidgetBase(const UI::Template &temp) : 
             ComponentStackWidget(temp, { 
@@ -1990,9 +1964,60 @@ namespace Gorgon { namespace Widgets {
                     EnsureVisible(ind);
                 }
 
-            });            
+            });
         }
         
+        bool fitheight(int maxpixels) {
+            int curh = GetInteriorSize().Height;
+            int overhead = GetCurrentHeight() - curh;
+            int defh = stack.GetTemplate().GetUnitSize();
+
+            auto li = stack.GetTemplate(UI::ComponentTemplate::ItemTag);
+            if(li)
+                defh = li->GetSize(GetCurrentSize()).Height;
+
+            int expected = int( std::ceil( (this->GetCount()+overscroll) * (maxdisplay == 0 ? defh : curh/maxdisplay) ) ) + overhead;
+            bool smalldone = false;
+
+            //will possibly fit
+            if(expected < maxpixels) {
+
+                int tried = 0;
+
+                do {
+                    SetHeight(Pixels(expected));
+                    stack.Update(true);
+                    Refresh();
+
+                    auto diff = maxdisplay - (this->GetCount()+overscroll);
+
+                    //it fits everything, might not be tightest but that's ok. We can also eat up a bit of overscroll
+                    if((diff < 1 && diff >= -overscroll/2) || maxdisplay == 0)
+                        return true;
+
+                    curh = GetInteriorSize().Height;
+                    overhead = GetCurrentHeight() - curh;
+                    int curexpected = int( std::ceil( (this->GetCount()+overscroll) * (curh/maxdisplay) ) ) + overhead;
+
+                    if(abs(expected - curexpected) == 0) { //no progress, exit
+                        break;
+                    }
+                    else if(abs(expected - curexpected) < 0.1 && smalldone) { //we will allow one small progress, no more
+                        break;
+                    }
+                    else if(abs(expected - curexpected) < 0.1) {
+                        smalldone = true;
+                    }
+                    expected = curexpected;
+                    tried++;
+                } while(expected < maxpixels && tried < 5);
+
+            }
+
+            SetHeight(Pixels(maxpixels));
+            return false;
+        }
+
         ~ListboxWidgetBase() {
             for(auto &p : widgets) {
                 p.second.Destroy();
@@ -2120,7 +2145,7 @@ namespace Gorgon { namespace Widgets {
         virtual void boundschanged() override {
             Refresh();
         }
-        
+
         std::map<UI::ComponentTemplate::Tag, Containers::Collection<W_>> widgets;
         std::map<const W_*, long> indexes;
         std::map<long, W_*> widgetlist;

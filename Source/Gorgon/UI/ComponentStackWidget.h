@@ -14,8 +14,8 @@ namespace Gorgon { namespace UI {
     class ComponentStackWidget : public Widget {
     public:
         ComponentStackWidget(const Template &temp, std::map<ComponentTemplate::Tag, std::function<Widget *(const Template &)>> generators = {}) :
-            Widget(Pixels(temp.GetSize())),
-            stack(*new ComponentStack(temp, temp.GetSize(), generators))
+            Widget(temp.GetSize()),
+            stack(*new ComponentStack(temp, temp.GetSize({0, 0}), generators))
         {
             stack.SetCeilToUnitSize([this](int s) {
                 int w;

@@ -2926,7 +2926,7 @@ realign:
                     else if(widgets.Exists(&temp)) {
                         //use default size of the template. Once widget autosizing
                         //is complete this should be updated
-                        comp.size = ph.GetTemplate().GetSize();
+                        comp.size = ph.GetTemplate().GetSize(this->size);
                     }
                     else {
                         //nothing found, reset to zero

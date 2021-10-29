@@ -516,34 +516,39 @@ namespace Gorgon {
         }
 
         /// Changes the size of the template
-        void SetSize(int w, int h) {
+        void SetSize(const UnitDimension &w, const UnitDimension &h) {
             size = {w, h};
             ChangedEvent();
         }
 
         /// Changes the size of the template
-        void SetSize(Geometry::Size value) {
+        void SetSize(const UnitSize &value) {
             size = value;
             ChangedEvent();
         }
 
         /// Returns the size of the template
-        Geometry::Size GetSize() const {
+        UnitSize GetSize() const {
             return size;
         }
 
+        /// Returns the size of the template in Pixels
+        Geometry::Size GetSize(const Geometry::Size &parentsize) const {
+            return Convert(size, parentsize, GetUnitSize(), GetSpacing());
+        }
+
         /// Returns the size of the template
-        int GetWidth() const {
+        UnitDimension GetWidth() const {
             return size.Width;
         }
 
         /// Returns the size of the template
-        int GetHeight() const {
+        UnitDimension GetHeight() const {
             return size.Height;
         }
 
         /// Changes the additional size of the template. This value should only be set and
-        /// used if the size mode is multiple
+        /// used if the size mode is multiple. This value is in pixels
         void SetAdditionalSize(int w, int h) {
             additional = {w, h};
             ChangedEvent();
@@ -659,7 +664,8 @@ namespace Gorgon {
 
         /// This event is fired whenever template or its components are changed.
         Event<Template> ChangedEvent = Event<Template>{*this};
-        
+
+        /// This is mainly for debugging
         std::string Name;
         
     private:
@@ -668,7 +674,7 @@ namespace Gorgon {
         std::map<std::pair<ComponentCondition, ComponentCondition>, int> durations;
 
         SizeMode xsizing = Free, ysizing = Free;
-        Geometry::Size size;
+        UnitSize size;
         Geometry::Size additional = {0, 0};
         int spacing = 4;
         int unitsize = 25;
