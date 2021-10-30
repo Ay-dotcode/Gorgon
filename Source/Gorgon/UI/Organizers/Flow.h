@@ -2,6 +2,7 @@
 
 #include "Base.h"
 #include "../../Graphics.h"
+#include "../Dimension.h"
 
 #include <iosfwd>
 #include <unordered_set>
@@ -54,8 +55,6 @@ namespace Organizers {
                 HSpace,
                 VSpace,
                 Indent,
-                IndentUnits,
-                IndentSpaces,
             };
             
             Modifier(BreakTag) : type(Break) {
@@ -64,13 +63,13 @@ namespace Organizers {
             
             Modifier(Graphics::TextAlignment align) : type(Align), align(align) { }
             
-            Modifier(Type type, int size) : type(type), size(size) { }
+            Modifier(Type type, const UnitDimension &size) : type(type), size(size) { }
             
             Type type;
             
             union {
                 Graphics::TextAlignment align;
-                int size;
+                UnitDimension size;
             };
             
         };
@@ -120,7 +119,7 @@ namespace Organizers {
             }
             
             /// Sets the size of the next widget in unit sizes
-            Flower &operator << (int size) {
+            Flower &operator << (const UnitDimension &size) {
                 base->flow(size);
                 
                 return *this;
@@ -234,28 +233,28 @@ namespace Organizers {
         }
         
         /// This will create a modifier object that should be inserted into ui stream
-        Modifier HSpace(int unitsize) {
-            return {Modifier::HSpace, unitsize};
+        Modifier HSpace(const UnitDimension &size) {
+            return {Modifier::HSpace, size};
         }
-        
+
         /// This will create a modifier object that should be inserted into ui stream
-        Modifier VSpace(int spaces) {
-            return {Modifier::VSpace, spaces};
+        Modifier VSpace(const UnitDimension &dist) {
+            return {Modifier::VSpace, dist};
         }
-        
+
         /// This will create a modifier object that should be inserted into ui stream
-        Modifier IndentPixels(int pixels) {
-            return {Modifier::Indent, pixels};
+        Modifier VSpaceSpaces(int spaces) {
+            return {Modifier::VSpace, Pixels(spaces*spacing)};
         }
-        
+
         /// This will create a modifier object that should be inserted into ui stream
-        Modifier IndentUnits(int unitsize) {
-            return {Modifier::IndentUnits, unitsize};
+        Modifier Indent(const UnitDimension &dist) {
+            return {Modifier::Indent, dist};
         }
         
         /// This will create a modifier object that should be inserted into ui stream
         Modifier IndentSpaces(int spaces) {
-            return {Modifier::IndentSpaces, spaces};
+            return {Modifier::Indent, Pixels(spaces*spacing)};
         }
         
         virtual Flow &Add(const std::string &title) override {
@@ -292,7 +291,7 @@ namespace Organizers {
         }
         
         /// Sets the size of the next widget in unit sizes
-        Flower operator << (unsigned size) {
+        Flower operator << (const UnitDimension &size) {
             return std::move(Flower(this) << size);
         }
         
@@ -334,7 +333,7 @@ namespace Organizers {
         
         void flow(BreakTag);
         
-        void flow(unsigned size) {
+        void flow(const UnitDimension &size) {
             nextsize = size;
         }
         
@@ -347,7 +346,7 @@ namespace Organizers {
         bool usedefaultspacing = true;
         int spacing = 0;
         bool tight = false;
-        int nextsize = -1;
+        UnitDimension nextsize = -1;
         std::unordered_multimap<int, Modifier> modifiers;
         Graphics::TextAlignment defaultalign = Graphics::TextAlignment::Left;
     };

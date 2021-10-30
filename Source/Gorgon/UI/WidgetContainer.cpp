@@ -508,8 +508,17 @@ namespace Gorgon { namespace UI {
     }
 
     void WidgetContainer::distributeparentboundschanged() {
+        //children might react to bounds changed events, instead of
+        //reorganizing everytime, only reorganize at the end.
+        if(organizer)
+            organizer->PauseReorganize();
+
         for(auto &w : widgets)
             w.parentboundschanged();
+
+        if(organizer) {
+            organizer->StartReorganize();
+        }
     }
 
     void WidgetContainer::childboundschanged(Widget *) {

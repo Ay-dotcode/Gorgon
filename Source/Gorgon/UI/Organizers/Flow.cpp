@@ -12,7 +12,10 @@ namespace Gorgon { namespace UI { namespace Organizers {
         auto &att = GetAttached();
         int x = 0;
         int width = att.GetInteriorSize().Width;
+        int height = att.GetInteriorSize().Height;
+        int usize = att.GetUnitSize();
         int s = GetSpacing();
+        int em = Widgets::Registry::Active().GetEmSize();
         
         if(tight) {
             Utils::NotImplemented("Tight organization is not implemented yet.");
@@ -25,6 +28,7 @@ namespace Gorgon { namespace UI { namespace Organizers {
             int ind = 0;
             int indent = 0;
             int breaks = 0;
+            int breakspace = 0;
             int xoff;
             auto align = defaultalign;
             auto nextalign = defaultalign;
@@ -39,7 +43,7 @@ namespace Gorgon { namespace UI { namespace Organizers {
                 y += maxy + s;
                 
                 if(breaks > 0)
-                    y += (breaks-1) * (uw + s);
+                    y += (breaks-1) * (uw + s) + breakspace;
                 
                 int w = 0;
                 if(row.GetCount())
@@ -65,6 +69,7 @@ namespace Gorgon { namespace UI { namespace Organizers {
                 rowc = 0;
                 maxy = 0;
                 row.Clear();
+                breakspace = 0;
             };
             
             for(auto &widget : att)  {
@@ -76,24 +81,19 @@ namespace Gorgon { namespace UI { namespace Organizers {
                     switch(it->second.type) {
                     case Flow::Modifier::Break:
                         breaks++;
+                        breakspace += it->second.size(width, usize, s, em);
                         break;
                     case Flow::Modifier::Align:
                         nextalign = it->second.align;
                         break;
                     case Flow::Modifier::HSpace:
-                        xoff = it->second.size * att.GetUnitSize() + GetSpacing();
+                        xoff = it->second.size(width, usize, s, em);
                         break;
                     case Flow::Modifier::VSpace:
-                        y += it->second.size * GetSpacing();
+                        y += it->second.size(height, usize, s, em);
                         break;
                     case Flow::Modifier::Indent:
-                        indent += it->second.size;
-                        break;
-                    case Flow::Modifier::IndentUnits:
-                        indent += it->second.size * att.GetUnitSize() + GetSpacing();
-                        break;
-                    case Flow::Modifier::IndentSpaces:
-                        indent += it->second.size * GetSpacing();
+                        indent += it->second.size(width, usize, s, em);
                         break;
                     }
                 }
@@ -105,8 +105,10 @@ namespace Gorgon { namespace UI { namespace Organizers {
                 
                 int w = widget.GetCurrentWidth();
                 
-                if((x + w > width && rowc > 0) && breaks == 0)
+                if(x + w + xoff > width && rowc > 0 && breaks == 0) {
                     breaks = 1;
+                    xoff = 0;
+                }
                 
                 if(breaks) {
                     dorow();
@@ -181,9 +183,9 @@ namespace Gorgon { namespace UI { namespace Organizers {
     }
 
     Flow &Flow::Add(Widget &widget) {
-        if(nextsize != -1) {
-            widget.SetWidth(Units(nextsize));
-            nextsize = -1;
+        if(nextsize != Units(-1)) {
+            widget.SetWidth(nextsize);
+            nextsize = Units(-1);
         }
         
         Base::Add(widget);
@@ -220,12 +222,8 @@ namespace Gorgon { namespace UI { namespace Organizers {
     }
     
     void Flow::flow(BreakTag) {
-        InsertBreak();
-        
-        if(nextsize != -1) {
-            flow(Modifier(Flow::Modifier::VSpace, nextsize));
-            nextsize = -1;
-        }
+        flow(Modifier(Flow::Modifier::Break, nextsize != -1 ? nextsize : 0));
+        nextsize = -1;
     }
 
     void Flow::flow(const std::string& title) {

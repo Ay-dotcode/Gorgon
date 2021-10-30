@@ -180,11 +180,11 @@ namespace Gorgon { namespace UI {
             this->unit = unit;
         }
 
-        constexpr bool operator ==(const Dimension &other) const {
+        bool operator ==(const Dimension &other) const {
             return other.unit == unit && other.value == value;
         }
 
-        constexpr bool operator !=(const Dimension &other) const {
+        bool operator !=(const Dimension &other) const {
             return !(*this == other);
         }
 
@@ -207,6 +207,14 @@ namespace Gorgon { namespace UI {
         }
 
         constexpr UnitDimension(const Dimension &d) : Dimension(d) { }
+
+        bool operator ==(const UnitDimension &other) const {
+            return (const Unit&)(*this) == (const Unit&)(other);
+        }
+
+        bool operator !=(const UnitDimension &other) const {
+            return !(*this == other);
+        }
     };
 
     /// This class stores the location information for a box object
@@ -394,6 +402,16 @@ namespace Gorgon { namespace UI {
         inline Dimension operator""_u(long double val) {
             return Units(double(val));
         }
+
+        inline Dimension operator""_em(unsigned long long val) {
+            return {int(val)*100, Dimension::EM};
+        }
+
+        inline Dimension operator""_em(long double val) {
+            return {double(val), Dimension::EM};
+        }
+
+
     }
 
 } }
