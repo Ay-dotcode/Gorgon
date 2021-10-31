@@ -137,12 +137,13 @@ namespace Gorgon { namespace UI {
     }
 
     void Widget::calculatebounds() {
-        int unitsize = 0, spacing = 0;
+        int unitsize = 0, spacing = 0, fr = 6;
         Geometry::Size sz;
         if(HasParent()) {
             unitsize = GetParent().GetUnitSize();
             spacing = GetParent().GetSpacing();
             sz = GetParent().GetInteriorSize() + Geometry::Size(spacing, spacing);
+            fr = GetParent().GetFractionCount();
         }
         else {
             unitsize = Widgets::Registry::Active().GetUnitSize();
@@ -153,7 +154,8 @@ namespace Gorgon { namespace UI {
         auto l= UI::Convert(
             location, sz,
             unitsize, spacing,
-            Widgets::Registry::Active().GetEmSize()
+            Widgets::Registry::Active().GetEmSize(),
+            fr
         );
 
         if(llocation != l) {
@@ -164,13 +166,13 @@ namespace Gorgon { namespace UI {
         auto s = UI::Convert(
             size, sz,
             unitsize, spacing,
-            Widgets::Registry::Active().GetEmSize()
+            Widgets::Registry::Active().GetEmSize(),
+            fr
         );
 
         if(size.Width.IsRelative()) {
             s.Width -= spacing;
         }
-
         if(size.Height.IsRelative()) {
             s.Height -= spacing;
         }
@@ -200,63 +202,27 @@ namespace Gorgon { namespace UI {
     }
 
     int Widget::Convert(const UnitDimension &val, bool vertical, bool size) const {
-        int unitsize = 0, spacing = 0;
-        Geometry::Size sz;
-        if(HasParent()) {
-            unitsize = GetParent().GetUnitSize();
-            spacing = GetParent().GetSpacing();
-            sz = GetParent().GetInteriorSize() + Geometry::Size(spacing, spacing);
-        }
-        else {
-            unitsize = Widgets::Registry::Active().GetUnitSize();
-            spacing  = Widgets::Registry::Active().GetSpacing();
-            sz = GetCurrentSize();
-        }
-
-        return val(vertical ? sz.Height : sz.Width, unitsize, spacing, size, Widgets::Registry::Active().GetEmSize());
+        return Convert(Dimension::Pixel, val, vertical, size).GetValue();
     }
 
     Geometry::Size Widget::Convert(const UnitSize &val) const {
-        int unitsize = 0, spacing = 0;
-        Geometry::Size sz;
-        if(HasParent()) {
-            unitsize = GetParent().GetUnitSize();
-            spacing = GetParent().GetSpacing();
-            sz = GetParent().GetInteriorSize() + Geometry::Size(spacing, spacing);
-        }
-        else {
-            unitsize = Widgets::Registry::Active().GetUnitSize();
-            spacing  = Widgets::Registry::Active().GetSpacing();
-            sz = GetCurrentSize();
-        }
-
-        return UI::Convert(val, sz, unitsize, spacing, Widgets::Registry::Active().GetEmSize());
+        auto s = Convert(Dimension::Pixel, val);
+        return {s.Width.GetValue(), s.Height.GetValue()};
     }
 
     Geometry::Point Widget::Convert(const UnitPoint &val) const {
-        int unitsize = 0, spacing = 0;
-        Geometry::Size sz;
-        if(HasParent()) {
-            unitsize = GetParent().GetUnitSize();
-            spacing = GetParent().GetSpacing();
-            sz = GetParent().GetInteriorSize() + Geometry::Size(spacing, spacing);
-        }
-        else {
-            unitsize = Widgets::Registry::Active().GetUnitSize();
-            spacing  = Widgets::Registry::Active().GetSpacing();
-            sz = GetCurrentSize();
-        }
-
-        return UI::Convert(val, sz, unitsize, spacing, Widgets::Registry::Active().GetEmSize());
+        auto p = Convert(Dimension::Pixel, val);
+        return {p.X.GetValue(), p.Y.GetValue()};
     }
 
     UnitDimension Widget::Convert(Dimension::Unit target, const UnitDimension &val, bool vertical, bool size) const {
-        int unitsize = 0, spacing = 0;
+        int unitsize = 0, spacing = 0, fr = 6;
         Geometry::Size sz;
         if(HasParent()) {
             unitsize = GetParent().GetUnitSize();
             spacing = GetParent().GetSpacing();
             sz = GetParent().GetInteriorSize() + Geometry::Size(spacing, spacing);
+            fr = GetParent().GetFractionCount();
         }
         else {
             unitsize = Widgets::Registry::Active().GetUnitSize();
@@ -266,7 +232,11 @@ namespace Gorgon { namespace UI {
 
         int em = Widgets::Registry::Active().GetEmSize();
 
-        int px = val(vertical ? sz.Height : sz.Width, unitsize, spacing, size, em);
+        int px = val(vertical ? sz.Height : sz.Width, unitsize, spacing, em, fr, size);
+
+        if(size && val.IsRelative()) {
+            px -= spacing;
+        }
 
         switch(target) {
         case Dimension::Pixel:
@@ -276,25 +246,28 @@ namespace Gorgon { namespace UI {
             return {(float)px, Dimension::MilliPixel};
         case Dimension::Percent:
         case Dimension::BasisPoint:
-            return {(float)px/(vertical ? sz.Height : sz.Width), target};
+            return {(float)(px+size*spacing)/(vertical ? sz.Height : sz.Width), target};
         case Dimension::UnitSize:
         case Dimension::MilliUnitSize:
             if(size)
-                return {(float)(px+spacing)/(unitsize+spacing), target};
+                return {(float)(px+size*spacing)/(unitsize+spacing), target};
             else
-                return {(float)px/(unitsize+spacing), target};
+                return {(float)px/(unitsize+size*spacing), target};
+        case Dimension::Fractions:
+                return {(int)std::round((float)fr * (px+size*spacing) / (vertical ? sz.Height : sz.Width)), target};
         case Dimension::EM:
             return {(float)px/em, Dimension::EM};
         }
     }
 
     UnitSize Widget::Convert(Dimension::Unit target, const UnitSize &val) const {
-        int unitsize = 0, spacing = 0;
+        int unitsize = 0, spacing = 0, fr = 6;
         Geometry::Size sz;
         if(HasParent()) {
             unitsize = GetParent().GetUnitSize();
             spacing = GetParent().GetSpacing();
             sz = GetParent().GetInteriorSize() + Geometry::Size(spacing, spacing);
+            fr = GetParent().GetFractionCount();
         }
         else {
             unitsize = Widgets::Registry::Active().GetUnitSize();
@@ -304,7 +277,14 @@ namespace Gorgon { namespace UI {
 
         int em = Widgets::Registry::Active().GetEmSize();
 
-        auto px = UI::Convert(val, sz, unitsize, spacing, em);
+        auto px = UI::Convert(val, sz, unitsize, spacing, em, fr);
+
+        if(val.Width.IsRelative()) {
+            px.Width -= spacing;
+        }
+        if(val.Height.IsRelative()) {
+            px.Height -= spacing;
+        }
 
         switch(target) {
         case Dimension::Pixel:
@@ -314,22 +294,28 @@ namespace Gorgon { namespace UI {
             return {{(float)px.Width, target}, {(float)px.Height, target}};;
         case Dimension::Percent:
         case Dimension::BasisPoint:
-            return {{(float)px.Width/sz.Width, target}, {(float)px.Height/sz.Height, target}};;
+            return {{(float)(px.Width+spacing)/sz.Width, target}, {(float)(px.Height+spacing)/sz.Height, target}};;
         case Dimension::UnitSize:
         case Dimension::MilliUnitSize:
             return {{(float)(px.Width+spacing)/(unitsize+spacing), target}, {(float)(px.Height+spacing)/(unitsize+spacing), target}};
+        case Dimension::Fractions:
+                return {
+                    {(int)std::round((float)fr * (px.Width+spacing) / sz.Width), target},
+                    {(int)std::round((float)fr * (px.Height+spacing) / sz.Height), target},
+                };
         case Dimension::EM:
             return {{(float)px.Width/em, Dimension::EM}, {(float)px.Height/em, Dimension::EM}};;
         }
     }
 
     UnitPoint Widget::Convert(Dimension::Unit target, const UnitPoint &val) const {
-        int unitsize = 0, spacing = 0;
+        int unitsize = 0, spacing = 0, fr = 6;
         Geometry::Size sz;
         if(HasParent()) {
             unitsize = GetParent().GetUnitSize();
             spacing = GetParent().GetSpacing();
             sz = GetParent().GetInteriorSize() + Geometry::Size(spacing, spacing);
+            fr = GetParent().GetFractionCount();
         }
         else {
             unitsize = Widgets::Registry::Active().GetUnitSize();
@@ -339,8 +325,7 @@ namespace Gorgon { namespace UI {
 
         int em = Widgets::Registry::Active().GetEmSize();
 
-
-        auto px = UI::Convert(val, sz, unitsize, spacing, em);
+        auto px = UI::Convert(val, sz, unitsize, spacing, em, fr);
 
         switch(target) {
         case Dimension::Pixel:
@@ -354,6 +339,11 @@ namespace Gorgon { namespace UI {
         case Dimension::UnitSize:
         case Dimension::MilliUnitSize:
             return {{(float)px.X/(unitsize+spacing), target}, {(float)px.Y/(unitsize+spacing), target}};
+        case Dimension::Fractions:
+                return {
+                    {(int)std::round((float)fr * px.X / sz.Width), target},
+                    {(int)std::round((float)fr * px.Y / sz.Height), target},
+                };
         case Dimension::EM:
             return {{(float)px.X/em, Dimension::EM}, {(float)px.Y/em, Dimension::EM}};;
         }

@@ -294,12 +294,12 @@ namespace Gorgon { namespace Widgets {
     }
 
 
-void Panel::Resize(const UI::UnitSize& size, std::pair< bool, bool > interiorsized) {
-    if(this->interiorsized != interiorsized)
-        lsize = {-1, -1};
-    this->interiorsized = interiorsized;
-    ComponentStackWidget::Resize(size);
-}
+    void Panel::Resize(const UI::UnitSize& size, std::pair< bool, bool > interiorsized) {
+        if(this->interiorsized != interiorsized)
+            lsize = {-1, -1};
+        this->interiorsized = interiorsized;
+        ComponentStackWidget::Resize(size);
+    }
 
 } }
 

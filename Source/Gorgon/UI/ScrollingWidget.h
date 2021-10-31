@@ -20,11 +20,11 @@ namespace Gorgon { namespace UI {
         /// Sets the amount of extra scrolling distance after the bottom-most
         /// widget is completely visible in pixels. Default is 0. Does not
         /// apply if everything is visible.
-        void SetOverscroll(int value);
+        void SetOverscroll(const UnitDimension &value);
         
         /// Returns the amount of extra scrolling distance after the bottom-most
         /// widget is completely visible in pixels.
-        int GetOverscroll() const {
+        UnitDimension GetOverscroll() const {
             return overscroll;
         }
         
@@ -131,7 +131,8 @@ namespace Gorgon { namespace UI {
 
         virtual void parentboundschanged() override;
         
-        int overscroll = 0;
+        int overscrollpx = 0;
+        UnitDimension overscroll = 0;
         bool scrollclipped = true;
         Geometry::Point scrolldistpx = {108, 54};
         UnitPoint scrolldist = Units(4, 2);

@@ -210,7 +210,7 @@ namespace Gorgon { namespace UI {
         }
 
         /// Converts the given size in units to pixels
-        int Convert(const UnitDimension &val, bool vertical, bool size = false) const;
+        int Convert(const UnitDimension &val, bool isvertical, bool issize = false) const;
 
         /// Converts the given size in units to pixels
         Geometry::Size Convert(const UnitSize &size) const;
@@ -219,7 +219,7 @@ namespace Gorgon { namespace UI {
         Geometry::Point Convert(const UnitPoint &location) const;
 
         /// Converts the given size in units to requested units.
-        UnitDimension Convert(Dimension::Unit target, const UnitDimension &val, bool vertical, bool size = false) const;
+        UnitDimension Convert(Dimension::Unit target, const UnitDimension &val, bool isvertical, bool issize = false) const;
 
         /// Converts the given size in units to requested units.
         UnitSize Convert(Dimension::Unit target, const UnitSize &size) const;

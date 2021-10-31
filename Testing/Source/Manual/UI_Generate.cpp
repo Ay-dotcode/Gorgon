@@ -25,6 +25,7 @@
 #include <Gorgon/Widgets/Dropdown.h>
 #include <Gorgon/Widgets/Window.h>
 #include <Gorgon/Widgets/DialogWindow.h>
+#include <Gorgon/Widgets/ColorPicker.h>
 #include <Gorgon/UI/Dialog.h>
 #include <Gorgon/OS.h>
 
@@ -124,9 +125,9 @@ int main() {
     Gorgon::Widgets::Button icnbtn2("Âj", Gorgon::Widgets::Registry::Button_Icon);
     Gorgon::Widgets::Button icnbtn3("X", Gorgon::Widgets::Registry::Button_Icon);
     btn.OwnIcon(icon2.CreateAnimation());
-    btn.Size.Width = 50_perc;
-    btn2.Size.Width = 50_perc;
-    btn2.Location.X = 50_perc;
+    btn.Size.Width = 2_fr;
+    btn2.Size.Width = 3_fr;
+    btn2.Location.X = 2_fr;
 
     icnbtn.OwnIcon(icon2.CreateAnimation());
 
@@ -203,7 +204,7 @@ int main() {
     scroll2.Range = 20;
     //scroll2.SetValue(200, false);
 
-    Gorgon::Widgets::Inputbox<Graphics::RGBAf> colorin;
+    /*Gorgon::Widgets::Inputbox<Graphics::RGBAf>*/Gorgon::Widgets::ColorPicker colorin;
     colorin.ChangedEvent.Register([&] {
         std::cout << "size f changed " << colorin.GetText();
     });
@@ -295,7 +296,7 @@ int main() {
     
     
     auto &org = blank.CreateOrganizer<UI::Organizers::Flow>();
-    blank.SetOverscroll(15);
+    blank.SetOverscroll(5_spcs);
 
     //org.SetAlignment(org.Center);
     
@@ -321,6 +322,7 @@ int main() {
     wind.Add(btn);
     wind.Add(btn2);
     wind.SetMinSize({6,1});
+    wind.SetFractionCount(5);
     wind.SetMaxSize({50_perc,8});
     btn.Move(Pixels(0,0));
     btn.Disable();
@@ -370,7 +372,7 @@ int main() {
         );
     }).SetHorizonalAutosize(Gorgon::UI::Autosize::Automatic);
 
-    wind.Move(20_perc, 5_perc);
+    wind.Move(35_perc, 5_perc);
     
     Widgets::Label tiplabel("Some text here", Gorgon::Widgets::Registry::Label_Info);
     tiplabel.SetAutosize(Gorgon::UI::Autosize::None, Gorgon::UI::Autosize::Automatic);

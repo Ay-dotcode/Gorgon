@@ -38,8 +38,14 @@ namespace Gorgon { namespace UI {
             /// Size in units defined by UI scale. Uses UnitSize and spacing
             UnitSize,
 
-            /// Size in units defined by UI scale. Uses UnitSize and spacing
+            /// Size in units defined by UI scale. Uses UnitSize and spacing.
             MilliUnitSize,
+
+            /// Spaces defined by UI scale.
+            Spaces,
+
+            /// Fractions of the container. Defaults to 6 if not set.
+            Fractions
 
         };
     private:
@@ -78,20 +84,22 @@ namespace Gorgon { namespace UI {
         }
 
         /// Returns the calculated dimension in pixels
-        constexpr int operator ()(int parentwidth, int unitsize, int spacing, int emwidth = 10, bool issize = false) const {
-            return Calculate(parentwidth, unitsize, spacing, emwidth, issize);
+        constexpr int operator ()(int parentwidth, int unitsize, int spacing, int emwidth = 10, int fractions = 6, bool issize = false) const {
+            return Calculate(parentwidth, unitsize, spacing, emwidth, fractions, issize);
         }
 
         /// Returns the calculated dimension in pixels
-        constexpr int Calculate(int parentwidth, int unitsize, int spacing, int emwidth = 10, bool issize = false) const {
+        constexpr int Calculate(int parentwidth, int unitsize, int spacing, int emwidth = 10, int fractions = 6, bool issize = false) const {
             if(issize) {
                 switch(unit) {
                 case Percent:
                     return int(std::floor((double)value * parentwidth / 100));
-                case MilliPixel:
-                    return int(std::floor((double)value / 1000));
                 case BasisPoint:
                     return int(std::floor((double)value * parentwidth / 10000));
+                case Fractions:
+                    return int(std::floor((double)value * parentwidth / fractions));
+                case MilliPixel:
+                    return int(std::floor((double)value / 1000));
                 case EM:
                     return int(std::round(value * emwidth / 100));
                 case UnitSize:
@@ -102,6 +110,8 @@ namespace Gorgon { namespace UI {
                     if(value >= -1000 && value <= 1000)
                         return int(std::floor((double)value * unitsize / 1000));
                     return int(std::floor(((double)value * unitsize + (double)(value - 1000) * spacing) / 1000));
+                case Spaces:
+                    return value * spacing;
                 case Pixel:
                 default:
                     return value;
@@ -111,16 +121,20 @@ namespace Gorgon { namespace UI {
                 switch(unit) {
                 case Percent:
                     return int(std::round((double)value * parentwidth / 100));
-                case MilliPixel:
-                    return int(std::round((double)value / 1000));
                 case BasisPoint:
                     return int(std::round((double)value * parentwidth / 10000));
+                case Fractions:
+                    return int(std::floor((double)value * parentwidth / fractions));
+                case MilliPixel:
+                    return int(std::round((double)value / 1000));
                 case EM:
                     return int(std::round(value * emwidth / 100));
                 case UnitSize:
                     return value * (unitsize + spacing);
                 case MilliUnitSize:
                     return int(std::round((double)value * (unitsize + spacing) / 1000));
+                case Spaces:
+                    return value * spacing;
                 case Pixel:
                 default:
                     return value;
@@ -129,33 +143,62 @@ namespace Gorgon { namespace UI {
         }
 
         /// Returns the calculated dimension in pixels
-        constexpr float CalculateFloat(float parentwidth, int unitsize, int spacing, float emwidth = 10, bool issize = false) const {
-            switch(unit) {
-                case Percent:
-                    return (float)value * parentwidth / 100.f;
-                case BasisPoint:
-                    return (float)value * parentwidth / 10000.f;
-                case MilliPixel:
-                    return (float)value / 1000;
-                case EM:
-                    return (float)value * emwidth / 100.f;
-                case UnitSize:
-                    if(!issize || (value >= -1 && value <= 1))
-                        return value * unitsize;
-                    return value * unitsize + (value - 1) * spacing;
-                case MilliUnitSize:
-                    if(!issize || (value >= -1000 && value <= 1000))
-                        return (float)value * unitsize / 1000;
-                    return ((float)value * unitsize + (float)(value - 1000) * spacing) / 1000;
-                case Pixel:
-                default:
-                    return (float)value;
+        constexpr float CalculateFloat(float parentwidth, int unitsize, int spacing, float emwidth = 10, int fractions = 6, bool issize = false) const {
+            if(issize) {
+                switch(unit) {
+                    case Percent:
+                        return (float)value * parentwidth / 100.f;
+                    case BasisPoint:
+                        return (float)value * parentwidth / 10000.f;
+                    case Fractions:
+                        return (float)value * parentwidth / fractions;
+                    case MilliPixel:
+                        return (float)value / 1000;
+                    case EM:
+                        return (float)value * emwidth / 100.f;
+                    case UnitSize:
+                        if(!issize || (value >= -1 && value <= 1))
+                            return value * unitsize;
+                        return value * unitsize + (value - 1) * spacing;
+                    case MilliUnitSize:
+                        if(!issize || (value >= -1000 && value <= 1000))
+                            return (float)value * unitsize / 1000;
+                        return ((float)value * unitsize + (float)(value - 1000) * spacing) / 1000;
+                    case Spaces:
+                        return float(value * spacing);
+                    case Pixel:
+                    default:
+                        return (float)value;
+                }
+            }
+            else {
+                switch(unit) {
+                    case Percent:
+                        return (float)value * parentwidth / 100.f;
+                    case BasisPoint:
+                        return (float)value * parentwidth / 10000.f;
+                    case Fractions:
+                        return (float)value * parentwidth / fractions;
+                    case MilliPixel:
+                        return (float)value / 1000;
+                    case EM:
+                        return (float)value * emwidth / 100.f;
+                    case UnitSize:
+                        return value * (unitsize + spacing);
+                    case MilliUnitSize:
+                        return (float)value * (unitsize + spacing) / 1000;
+                    case Spaces:
+                        return float(value * spacing);
+                    case Pixel:
+                    default:
+                        return (float)value;
+                }
             }
         }
         
         /// Returns if the dimension is relative to the parentwidth
         constexpr bool IsRelative() const {
-            return unit == Percent || unit == BasisPoint;
+            return unit == Percent || unit == BasisPoint || unit == Fractions;
         }
 
         /// Returns the value of the dimension, should not be considered as
@@ -188,7 +231,7 @@ namespace Gorgon { namespace UI {
             return !(*this == other);
         }
 
-    private:
+    protected:
         int value;
         Unit unit;
     };
@@ -209,7 +252,7 @@ namespace Gorgon { namespace UI {
         constexpr UnitDimension(const Dimension &d) : Dimension(d) { }
 
         bool operator ==(const UnitDimension &other) const {
-            return (const Unit&)(*this) == (const Unit&)(other);
+            return other.unit == unit && other.value == value;
         }
 
         bool operator !=(const UnitDimension &other) const {
@@ -233,28 +276,28 @@ namespace Gorgon { namespace UI {
     using Margin = Geometry::basic_Margin<Dimension>;
     
     /// Converts a dimension based point to pixel based point
-    inline Geometry::Point Convert(const Point &p, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10) {
-        return {p.X(parent.Width, unitsize, spacing, emwidth), p.Y(parent.Height, unitsize, spacing, emwidth)};
+    inline Geometry::Point Convert(const Point &p, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10, int fractions = 6) {
+        return {p.X(parent.Width, unitsize, spacing, emwidth, fractions), p.Y(parent.Height, unitsize, spacing, emwidth, fractions)};
     }
 
     /// Converts a dimension based size to pixel based size
-    inline Geometry::Size Convert(const Size &s, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10) {
-        return {s.Width(parent.Width, unitsize, spacing, emwidth, true), s.Height(parent.Height, unitsize, spacing, emwidth, true)};
+    inline Geometry::Size Convert(const Size &s, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10, int fractions = 6) {
+        return {s.Width(parent.Width, unitsize, spacing, emwidth, fractions, true), s.Height(parent.Height, unitsize, spacing, emwidth, fractions, true)};
     }
 
     /// Converts a dimension based point to pixel based point
-    inline Geometry::Point Convert(const UnitPoint &p, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10) {
-        return {p.X(parent.Width, unitsize, spacing, emwidth), p.Y(parent.Height, unitsize, spacing, emwidth)};
+    inline Geometry::Point Convert(const UnitPoint &p, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10, int fractions = 6) {
+        return {p.X(parent.Width, unitsize, spacing, emwidth, fractions), p.Y(parent.Height, unitsize, spacing, emwidth, fractions)};
     }
 
     /// Converts a dimension based size to pixel based size
-    inline Geometry::Size Convert(const UnitSize &s, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10) {
-        return {s.Width(parent.Width, unitsize, spacing, emwidth, true), s.Height(parent.Height, unitsize, spacing, emwidth, true)};
+    inline Geometry::Size Convert(const UnitSize &s, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10, int fractions = 6) {
+        return {s.Width(parent.Width, unitsize, spacing, emwidth, fractions, true), s.Height(parent.Height, unitsize, spacing, emwidth, fractions, true)};
     }
 
     /// Converts a dimension based margin to pixel based margin
-    inline Geometry::Margin Convert(const Margin &m, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10) {
-        return {m.Left(parent.Width, unitsize, spacing, emwidth), m.Top(parent.Height, unitsize, spacing, emwidth), m.Right(parent.Width, unitsize, spacing, emwidth), m.Bottom(parent.Height, unitsize, spacing, emwidth), };
+    inline Geometry::Margin Convert(const Margin &m, const Geometry::Size &parent, int unitsize, int spacing, int emwidth = 10, int fractions = 6) {
+        return {m.Left(parent.Width, unitsize, spacing, emwidth, fractions), m.Top(parent.Height, unitsize, spacing, emwidth, fractions), m.Right(parent.Width, unitsize, spacing, emwidth, fractions), m.Bottom(parent.Height, unitsize, spacing, emwidth, fractions), };
     }
 
     /// Converts the given value to dimension with pixel units
@@ -275,6 +318,11 @@ namespace Gorgon { namespace UI {
     /// Converts the given value to dimension with percentage units
     inline constexpr Dimension Percentage(float val) {
         return {val, Dimension::Percent};
+    }
+
+    /// Converts the given value to dimension with fractions units
+    inline constexpr Dimension Fractions(int val) {
+        return {val, Dimension::Fractions};
     }
 
     /// Converts the given value to dimension with unit size
@@ -333,6 +381,11 @@ namespace Gorgon { namespace UI {
         return {{one, Dimension::Percent}, {two, Dimension::Percent}};
     }
 
+    /// Converts the given value to dimension with percentage units
+    inline constexpr DualDimension Fractions(int one, int two) {
+        return {{one, Dimension::Fractions}, {two, Dimension::Fractions}};
+    }
+
     /// Converts the given one, given twoue to dimension with unit size
     inline constexpr DualDimension Units(int one, int two) {
         return {{one, Dimension::UnitSize}, {two, Dimension::UnitSize}};
@@ -358,6 +411,11 @@ namespace Gorgon { namespace UI {
         return {{val.X, Dimension::Percent}, {val.Y, Dimension::Percent}};
     }
 
+    /// Converts the given value to dimension with percentage units
+    inline Point Fractions(const Geometry::Point &val) {
+        return {{val.X, Dimension::Fractions}, {val.Y, Dimension::Fractions}};
+    }
+
     /// Converts the given value to dimension with unit size
     inline Point Units(const Geometry::Point &val) {
         return {{val.X, Dimension::UnitSize}, {val.Y, Dimension::UnitSize}};
@@ -371,6 +429,11 @@ namespace Gorgon { namespace UI {
     /// Converts the given value to dimension with percentage units
     inline Size Percentage(const Geometry::Size &val) {
         return {{val.Width, Dimension::Percent}, {val.Height, Dimension::Percent}};
+    }
+
+    /// Converts the given value to dimension with percentage units
+    inline Size Fractions(const Geometry::Size &val) {
+        return {{val.Width, Dimension::Fractions}, {val.Height, Dimension::Fractions}};
     }
 
     /// Converts the given value to dimension with unit size
@@ -411,6 +474,13 @@ namespace Gorgon { namespace UI {
             return {double(val), Dimension::EM};
         }
 
+        inline Dimension operator""_spcs(unsigned long long val) {
+            return {int(val), Dimension::Spaces};
+        }
+
+        inline Dimension operator""_fr(unsigned long long val) {
+            return {int(val), Dimension::Fractions};
+        }
 
     }
 

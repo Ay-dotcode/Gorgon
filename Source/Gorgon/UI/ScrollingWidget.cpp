@@ -155,7 +155,7 @@ namespace Gorgon { namespace UI {
         auto vscroller = dynamic_cast<Widgets::VScrollbar*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
         
         if(vscroller != nullptr) {
-            vscroller->Maximum = b.Height() + overscroll;
+            vscroller->Maximum = b.Height() + overscrollpx;
             vscroller->Range   = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).Height();
             *vscroller         = target.Y;
         }
@@ -163,14 +163,15 @@ namespace Gorgon { namespace UI {
         auto hscroller = dynamic_cast<Widgets::HScrollbar*>(stack.GetWidget(UI::ComponentTemplate::HScrollTag));
         
         if(hscroller != nullptr) {
-            hscroller->Maximum = b.Width() + overscroll;
+            hscroller->Maximum = b.Width() + overscrollpx;
             hscroller->Range   = stack.TagBounds(UI::ComponentTemplate::ViewPortTag).Width();
             *hscroller         = target.X;
         }
     }
     
-    void ScrollingWidget::SetOverscroll(int value) {
+    void ScrollingWidget::SetOverscroll(const UnitDimension &value) {
         overscroll = value;
+        overscrollpx = Convert(overscroll, true);
         
         updatebars();
         
@@ -187,14 +188,14 @@ namespace Gorgon { namespace UI {
         if(xscroll <= 0)
             xscroll = 0;
         else
-            xscroll += overscroll;
+            xscroll += overscrollpx;
         
         int yscroll = cont.Height() - size.Height;
         
         if(yscroll <= 0)
             yscroll = 0;
         else
-            yscroll += overscroll;
+            yscroll += overscrollpx;
         
         return {xscroll, yscroll};
     }
@@ -306,7 +307,7 @@ namespace Gorgon { namespace UI {
                 doscroll = true;
             }
             else if(cb.Right < wb.Right) {
-                scrollto.X = target.X + (wb.Right - cb.Right) + overscroll;
+                scrollto.X = target.X + (wb.Right - cb.Right) + overscrollpx;
                 doscroll = true;
             }
         }
@@ -317,7 +318,7 @@ namespace Gorgon { namespace UI {
                 doscroll = true;
             }
             else if(cb.Bottom < wb.Bottom) {
-                scrollto.Y = target.Y + (wb.Bottom - cb.Bottom) + overscroll;
+                scrollto.Y = target.Y + (wb.Bottom - cb.Bottom) + overscrollpx;
                 doscroll = true;
             }
         }
@@ -348,6 +349,7 @@ namespace Gorgon { namespace UI {
         ComponentStackWidget::parentboundschanged();
         scrolldistpx = Convert(scrolldist);
         scrollspeedpx = Convert(scrollspeed, true);
+        overscrollpx = Convert(overscroll, true);
     }
 
 } }

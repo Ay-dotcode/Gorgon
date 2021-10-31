@@ -537,6 +537,24 @@ namespace UI {
             return n*GetUnitSize() + (n-1)*GetSpacing();
         }
 
+        /// Number of fractions that this container have. This value can
+        /// be ignored and the used value can be calculated by the
+        /// organizers. Default value is 6.
+        void SetFractionCount(int value) {
+            if(value == fractions)
+                return;
+
+            fractions = value;
+            distributeparentboundschanged();
+        }
+
+        /// Number of fractions that this container have. This value can
+        /// be ignored and the used value can be calculated by the
+        /// organizers. Default value is 6.
+        int GetFractionCount() const {
+            return fractions;
+        }
+
     protected:
         /// This container is sorted by the focus order
         Containers::Collection<Widget> widgets;
@@ -594,6 +612,8 @@ namespace UI {
         virtual void deleted(Widget *widget);
 
         Containers::Collection<const Widget> owned;
+
+        int fractions = 6;
         
     private:
         bool isenabled              = true;
