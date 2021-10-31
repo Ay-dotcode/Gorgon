@@ -47,7 +47,6 @@ namespace Gorgon { namespace Widgets {
             buttonsarea.SetFocusStrategy(Deny);
             btnorg.AttachTo(buttonsarea);
             btnorg.SetAlignment(Graphics::TextAlignment::Right);
-            buttonsarea.AutomaticUnitSize(temp.GetSpacing());
         }
     }
     
@@ -57,9 +56,6 @@ namespace Gorgon { namespace Widgets {
         ResizeInterior(size);
 
         updatescrollvisibility();
-        
-        if(buttonsarea.IsReady())
-            buttonsarea.AutomaticUnitSize(temp.GetSpacing());
         
         if(autoplace != None)
             Center();

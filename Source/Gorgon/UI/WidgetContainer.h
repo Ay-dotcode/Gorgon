@@ -322,10 +322,6 @@ namespace UI {
         /// change focus to the next widget using tab key
         virtual void SetTabSwitchEnabledState(bool state) { tabswitch = state; }
 
-        /// Sets the unit size automatically. Full width will be at least
-        /// given units wide. Returns remaining size.
-        virtual int AutomaticUnitSize(int spacing, int units = 6) = 0;
-        
         /// Returns the begin iterator for the contained widgets
         auto begin() {
             return widgets.begin();

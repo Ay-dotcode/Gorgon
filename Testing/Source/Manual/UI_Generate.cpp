@@ -125,9 +125,9 @@ int main() {
     Gorgon::Widgets::Button icnbtn2("Âj", Gorgon::Widgets::Registry::Button_Icon);
     Gorgon::Widgets::Button icnbtn3("X", Gorgon::Widgets::Registry::Button_Icon);
     btn.OwnIcon(icon2.CreateAnimation());
-    btn.Size.Width = 2_fr;
-    btn2.Size.Width = 3_fr;
-    btn2.Location.X = 2_fr;
+    btn.Size.Width = 3_fr;
+    btn2.Size.Width = 4_fr;
+    btn2.Location.X = 3_fr;
 
     icnbtn.OwnIcon(icon2.CreateAnimation());
 
@@ -322,7 +322,7 @@ int main() {
     wind.Add(btn);
     wind.Add(btn2);
     wind.SetMinSize({6,1});
-    wind.SetFractionCount(5);
+    wind.SetFractionCount(7);
     wind.SetMaxSize({50_perc,8});
     btn.Move(Pixels(0,0));
     btn.Disable();

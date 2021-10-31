@@ -223,7 +223,7 @@ namespace internal {
                 text = new Widgets::Label(message);
         }
         
-        text->SetAutosize(Autosize::Automatic, Autosize::Automatic);
+        text->SetAutosize(Autosize::None, Autosize::Automatic);
         diag->Add(*text);
         diag->Own(*text);
         
