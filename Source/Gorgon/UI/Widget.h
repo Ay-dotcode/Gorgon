@@ -349,8 +349,8 @@ namespace Gorgon { namespace UI {
         bool focus   = false;
         bool floating= false;
 
-        UnitPoint location;
-        UnitSize  size;
+        UnitPoint location = {0, 0};
+        UnitSize  size = {-1, -1};
         
         /// Never call this function
         virtual void hide() = 0;
