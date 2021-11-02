@@ -55,6 +55,7 @@ namespace Organizers {
                 HSpace,
                 VSpace,
                 Indent,
+                ResetIndent,
             };
             
             Modifier(BreakTag) : type(Break) {
@@ -233,28 +234,25 @@ namespace Organizers {
         }
         
         /// This will create a modifier object that should be inserted into ui stream
-        Modifier HSpace(const UnitDimension &size) {
+        Modifier HSpace(const UnitDimension &size) const {
             return {Modifier::HSpace, size};
         }
 
-        /// This will create a modifier object that should be inserted into ui stream
-        Modifier VSpace(const UnitDimension &dist) {
+        /// This will create a vertical space modifier object that should be inserted into
+        /// ui stream
+        Modifier VSpace(const UnitDimension &dist) const {
             return {Modifier::VSpace, dist};
         }
 
-        /// This will create a modifier object that should be inserted into ui stream
-        Modifier VSpaceSpaces(int spaces) {
-            return {Modifier::VSpace, Pixels(spaces*spacing)};
-        }
-
-        /// This will create a modifier object that should be inserted into ui stream
-        Modifier Indent(const UnitDimension &dist) {
+        /// Adds to the indent amount, use ResetIndent to set it to zero. Insert this
+        /// into the UI stream to use.
+        Modifier Indent(const UnitDimension &dist) const {
             return {Modifier::Indent, dist};
         }
-        
-        /// This will create a modifier object that should be inserted into ui stream
-        Modifier IndentSpaces(int spaces) {
-            return {Modifier::Indent, Pixels(spaces*spacing)};
+
+        /// Removes the indent Insert this into the UI stream to use.
+        Modifier ResetIndent() const {
+            return {Modifier::ResetIndent, 0};
         }
         
         virtual Flow &Add(const std::string &title) override {
@@ -283,6 +281,11 @@ namespace Organizers {
         /// Inserts a line break.
         Flower operator << (BreakTag tag) {
             return std::move(Flower(this) << tag);
+        }
+
+        /// Inserts a line break.
+        Flower operator << (const Modifier &mod) {
+            return std::move(Flower(this) << mod);
         }
         
         /// Changes the alignment of the widgets if the line is not full

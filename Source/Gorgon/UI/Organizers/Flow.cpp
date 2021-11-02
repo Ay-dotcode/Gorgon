@@ -76,7 +76,6 @@ namespace Gorgon { namespace UI { namespace Organizers {
                 auto p = modifiers.equal_range(ind);
                 breaks = 0;
                 xoff   = 0;
-                indent = 0;
                 for(auto it = p.first; it != p.second; it++) {
                     switch(it->second.type) {
                     case Flow::Modifier::Break:
@@ -94,6 +93,9 @@ namespace Gorgon { namespace UI { namespace Organizers {
                         break;
                     case Flow::Modifier::Indent:
                         indent += it->second.size(width, usize, s, em);
+                        break;
+                    case Flow::Modifier::ResetIndent:
+                        indent = 0;
                         break;
                     }
                 }
