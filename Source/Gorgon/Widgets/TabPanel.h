@@ -103,8 +103,7 @@ namespace Gorgon { namespace Widgets {
             ComponentStackComposer(temp, {
                 {UI::ComponentTemplate::ButtonTag, {}},
                 {UI::ComponentTemplate::ContentsTag, {}},
-            }),
-            buttonsize(GetUnitSize() * 3 + GetSpacing() * 2, GetUnitSize())
+            })
         {
             stack.SetMouseUpEvent([this](auto, auto, auto) {
                 Focus();
@@ -483,7 +482,7 @@ namespace Gorgon { namespace Widgets {
             stack.Update(true);
             auto pnlsize = stack.BoundsOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag)).GetSize();
             for(auto &tab : tabs) {
-                tab.Resize(pnlsize);
+                tab.Resize(Pixels(pnlsize));
             }
         }
 
@@ -548,7 +547,7 @@ namespace Gorgon { namespace Widgets {
         ButtonSizing    sizing          = AutoUnit;
         bool            buttontextwrap  = false;
         ButtonOverflow  overflow        = HideExcess;
-        Geometry::Size  buttonsize; //constructor will initialize to 3x1U
+        UI::UnitSize    buttonsize      = UI::Units(3, 1);
         bool            rollover        = false;
         bool            hasactive       = false;
         bool            updating        = false;

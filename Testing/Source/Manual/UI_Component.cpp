@@ -26,6 +26,7 @@ std::string helptext =
 ;
 
 using namespace Gorgon::UI;
+using namespace Gorgon::UI::literals;
 namespace Color = Gorgon::Graphics::Color;
 
 struct TestData {
@@ -215,7 +216,7 @@ const Graphics::BlankImage *testimages[] = {
 
 TestData test_graphic(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -235,7 +236,7 @@ TestData test_text(Layer &layer) {
     auto &app = getapp();
 
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -255,7 +256,7 @@ TestData test_text(Layer &layer) {
 
 TestData test_setsize(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -274,7 +275,7 @@ TestData test_setsize(Layer &layer) {
 
 TestData test_setsizepercent(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 60);
+    temp.SetSize(60_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -293,7 +294,7 @@ TestData test_setsizepercent(Layer &layer) {
 
 TestData test_setsizepercent_percent(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 60);
+    temp.SetSize(60_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -317,7 +318,7 @@ TestData test_setsizepercent_percent(Layer &layer) {
 
 TestData test_setsizepercent_rel(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 60);
+    temp.SetSize(60_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -342,7 +343,7 @@ TestData test_setsizepercent_rel(Layer &layer) {
 
 TestData test_sizepercent_center(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 80);
+    temp.SetSize(80_px, 80_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -362,7 +363,7 @@ TestData test_sizepercent_center(Layer &layer) {
 
 TestData test_sizepercent_centerabs(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 80);
+    temp.SetSize(80_px, 80_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -383,7 +384,7 @@ TestData test_sizepercent_centerabs(Layer &layer) {
 
 TestData test_setborder(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -403,7 +404,7 @@ TestData test_setborder(Layer &layer) {
 
 TestData test_setborder2(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(70, 70);
+    temp.SetSize(70_px, 70_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -423,7 +424,7 @@ TestData test_setborder2(Layer &layer) {
 
 TestData test_setoverlay(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.Background.SetAnimation(whiteimg());
@@ -440,7 +441,7 @@ TestData test_setoverlay(Layer &layer) {
 
 TestData test_setpadding(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -460,7 +461,7 @@ TestData test_setpadding(Layer &layer) {
 
 TestData test_setpadding2(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(70, 70);
+    temp.SetSize(70_px, 70_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -480,7 +481,7 @@ TestData test_setpadding2(Layer &layer) {
 
 TestData test_setpadding_percent(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(100, 100);
+    temp.SetSize(100_px, 100_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -500,7 +501,7 @@ TestData test_setpadding_percent(Layer &layer) {
 
 TestData test_setpadding_border(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(120, 120);
+    temp.SetSize(120_px, 120_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -521,7 +522,7 @@ TestData test_setpadding_border(Layer &layer) {
 
 TestData test_setmargin_parent(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -541,7 +542,7 @@ TestData test_setmargin_parent(Layer &layer) {
 
 TestData test_setmargin_parent_percent(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -561,7 +562,7 @@ TestData test_setmargin_parent_percent(Layer &layer) {
 
 TestData test_margin_parent_padding(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 60);
+    temp.SetSize(50_px, 60_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -582,7 +583,7 @@ TestData test_margin_parent_padding(Layer &layer) {
 
 TestData test_setindent(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -602,7 +603,7 @@ TestData test_setindent(Layer &layer) {
 
 TestData test_indent_padding(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -623,7 +624,7 @@ TestData test_indent_padding(Layer &layer) {
 
 TestData test_setpadding_negative(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -644,7 +645,7 @@ TestData test_setpadding_negative(Layer &layer) {
 
 TestData test_setmargin_negative(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -665,7 +666,7 @@ TestData test_setmargin_negative(Layer &layer) {
 
 TestData test_border_padding_margin_size(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(120, 120);
+    temp.SetSize(120_px, 120_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -693,7 +694,7 @@ TestData test_border_padding_margin_size(Layer &layer) {
 
 TestData test_absanch_samepoint(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(70, 70);
+    temp.SetSize(70_px, 70_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     for(int i=1; i<=9; i++) 
@@ -726,7 +727,7 @@ TestData test_absanch_samepoint(Layer &layer) {
 
 TestData test_paranch_samepoint(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(70, 70);
+    temp.SetSize(70_px, 70_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     for(int i=1; i<=9; i++) 
@@ -758,7 +759,7 @@ TestData test_paranch_samepoint(Layer &layer) {
 
 TestData test_absanch_centertopoint(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 80);
+    temp.SetSize(80_px, 80_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     for(int i=1; i<=9; i++) 
@@ -791,7 +792,7 @@ TestData test_absanch_centertopoint(Layer &layer) {
 
 TestData test_absanchoff(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 60);
+    temp.SetSize(60_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -811,7 +812,7 @@ TestData test_absanchoff(Layer &layer) {
 
 TestData test_absanchoffsize(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 60);
+    temp.SetSize(60_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -833,7 +834,7 @@ TestData test_absanchoffsize(Layer &layer) {
 
 TestData test_absanchoffrev(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 60);
+    temp.SetSize(60_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -855,7 +856,7 @@ TestData test_absanchoffrev(Layer &layer) {
 
 TestData test_relanch(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 60);
+    temp.SetSize(60_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -879,7 +880,7 @@ TestData test_relanch(Layer &layer) {
 
 TestData test_relanchvert(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 60);
+    temp.SetSize(60_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -905,7 +906,7 @@ TestData test_relanchvert(Layer &layer) {
 
 TestData test_relanchvertrelsize(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 110);
+    temp.SetSize(60_px, 110_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -939,7 +940,7 @@ TestData test_relanchvertrelsize(Layer &layer) {
 
 TestData test_relanch2(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 60);
+    temp.SetSize(60_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -964,7 +965,7 @@ TestData test_relanch2(Layer &layer) {
 
 TestData test_anchbaseline(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 60);
+    temp.SetSize(60_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -996,7 +997,7 @@ TestData test_anchbaseline(Layer &layer) {
 
 TestData test_anchsetbaseline(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 60);
+    temp.SetSize(60_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1031,7 +1032,7 @@ TestData test_anchsetbaseline(Layer &layer) {
 
 TestData test_anchbaseline2(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 60);
+    temp.SetSize(60_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1069,7 +1070,7 @@ TestData test_anchbaseline2(Layer &layer) {
 
 TestData test_anchtozero(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 60);
+    temp.SetSize(60_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1094,7 +1095,7 @@ TestData test_anchtozero(Layer &layer) {
 
 TestData test_anchtoreverseside(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 60);
+    temp.SetSize(60_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1119,7 +1120,7 @@ TestData test_anchtoreverseside(Layer &layer) {
 
 TestData test_abssliding(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 40);
+    temp.SetSize(80_px, 40_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1154,7 +1155,7 @@ TestData test_abssliding(Layer &layer) {
 
 TestData test_abspolar(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(100, 60);
+    temp.SetSize(100_px, 60_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1188,7 +1189,7 @@ TestData test_abspolar(Layer &layer) {
 
 TestData test_abspolar2(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(120, 70);
+    temp.SetSize(120_px, 70_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1223,7 +1224,7 @@ TestData test_abspolar2(Layer &layer) {
 
 TestData test_modify_position_sliding(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 40);
+    temp.SetSize(80_px, 40_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1249,7 +1250,7 @@ TestData test_modify_position_sliding(Layer &layer) {
 
 TestData test_modify_position_slidingvert(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(40, 80);
+    temp.SetSize(40_px, 80_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1276,7 +1277,7 @@ TestData test_modify_position_slidingvert(Layer &layer) {
 
 TestData test_modify_rev(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 40);
+    temp.SetSize(80_px, 40_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1303,7 +1304,7 @@ TestData test_modify_rev(Layer &layer) {
 
 TestData test_modify_minmax(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 40);
+    temp.SetSize(80_px, 40_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1330,7 +1331,7 @@ TestData test_modify_minmax(Layer &layer) {
 
 TestData test_modify_chmap2(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 40);
+    temp.SetSize(80_px, 40_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1357,7 +1358,7 @@ TestData test_modify_chmap2(Layer &layer) {
 
 TestData test_modify_chmap3(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 40);
+    temp.SetSize(80_px, 40_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1384,7 +1385,7 @@ TestData test_modify_chmap3(Layer &layer) {
 
 TestData test_modify_chmap4(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 40);
+    temp.SetSize(80_px, 40_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1411,7 +1412,7 @@ TestData test_modify_chmap4(Layer &layer) {
 
 TestData test_modify_ch4_minmax(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 40);
+    temp.SetSize(80_px, 40_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1437,7 +1438,7 @@ TestData test_modify_ch4_minmax(Layer &layer) {
 
 TestData test_modify_position_2ch(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 80);
+    temp.SetSize(80_px, 80_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1464,7 +1465,7 @@ TestData test_modify_position_2ch(Layer &layer) {
 
 TestData test_modify_position_absolute(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(70, 70);
+    temp.SetSize(70_px, 70_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1491,7 +1492,7 @@ TestData test_modify_position_absolute(Layer &layer) {
 
 TestData test_modify_x(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 80);
+    temp.SetSize(80_px, 80_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1518,7 +1519,7 @@ TestData test_modify_x(Layer &layer) {
 
 TestData test_modify_y(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 80);
+    temp.SetSize(80_px, 80_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1545,7 +1546,7 @@ TestData test_modify_y(Layer &layer) {
 
 TestData test_modify_size(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 40);
+    temp.SetSize(80_px, 40_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1571,7 +1572,7 @@ TestData test_modify_size(Layer &layer) {
 
 TestData test_modify_sizevert(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(40, 80);
+    temp.SetSize(40_px, 80_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1598,7 +1599,7 @@ TestData test_modify_sizevert(Layer &layer) {
 
 TestData test_modify_sizemin(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 40);
+    temp.SetSize(80_px, 40_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1624,7 +1625,7 @@ TestData test_modify_sizemin(Layer &layer) {
 
 TestData test_modify_sizexy(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 40);
+    temp.SetSize(80_px, 40_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1651,7 +1652,7 @@ TestData test_modify_sizexy(Layer &layer) {
 
 TestData test_modify_alpha(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 80);
+    temp.SetSize(80_px, 80_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1675,7 +1676,7 @@ TestData test_modify_alpha(Layer &layer) {
 
 TestData test_modify_blend1(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 80);
+    temp.SetSize(80_px, 80_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1700,7 +1701,7 @@ TestData test_modify_blend1(Layer &layer) {
 
 TestData test_modify_blend2(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 80);
+    temp.SetSize(80_px, 80_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1725,7 +1726,7 @@ TestData test_modify_blend2(Layer &layer) {
 
 TestData test_modify_blend4(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 80);
+    temp.SetSize(80_px, 80_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1750,7 +1751,7 @@ TestData test_modify_blend4(Layer &layer) {
 
 TestData test_modify_animation(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 80);
+    temp.SetSize(80_px, 80_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1774,7 +1775,7 @@ TestData test_data_settext(Layer &layer) {
     auto &app = getapp();
 
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1796,7 +1797,7 @@ TestData test_data_textwrap(Layer &layer) {
     auto &app = getapp();
 
     auto &temp = *new Template;
-    temp.SetSize(70, 50);
+    temp.SetSize(70_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1819,7 +1820,7 @@ TestData test_data_textclip(Layer &layer) {
     auto &app = getapp();
 
     auto &temp = *new Template;
-    temp.SetSize(70, 50);
+    temp.SetSize(70_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1843,7 +1844,7 @@ TestData test_data_settitle(Layer &layer) {
     auto &app = getapp();
 
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1865,7 +1866,7 @@ TestData test_data_settexttitle(Layer &layer) {
     auto &app = getapp();
 
     auto &temp = *new Template;
-    temp.SetSize(120, 50);
+    temp.SetSize(120_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1894,7 +1895,7 @@ TestData test_data_settexttitle(Layer &layer) {
 
 TestData test_data_setimage(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1912,7 +1913,7 @@ TestData test_data_setimage(Layer &layer) {
 
 TestData test_data_setimagegt(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1930,7 +1931,7 @@ TestData test_data_setimagegt(Layer &layer) {
 
 TestData test_data_setimage2(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1953,7 +1954,7 @@ TestData test_data_setimage2(Layer &layer) {
 
 TestData test_data_setstate(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(90, 30);
+    temp.SetSize(90_px, 30_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -1991,7 +1992,7 @@ TestData test_data_setstate(Layer &layer) {
 
 TestData test_repeat_pos(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(90, 30);
+    temp.SetSize(90_px, 30_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2020,7 +2021,7 @@ TestData test_repeat_pos(Layer &layer) {
 
 TestData test_repeat_size(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(90, 50);
+    temp.SetSize(90_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2050,7 +2051,7 @@ TestData test_repeat_size(Layer &layer) {
 
 TestData test_repeat_alpha(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(90, 50);
+    temp.SetSize(90_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2080,7 +2081,7 @@ TestData test_repeat_alpha(Layer &layer) {
 
 TestData test_repeat_sizealpha(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(90, 50);
+    temp.SetSize(90_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2118,7 +2119,7 @@ TestData test_repeat_sizealpha(Layer &layer) {
 
 TestData test_repeat_possizealpha(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(90, 50);
+    temp.SetSize(90_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2162,7 +2163,7 @@ TestData test_repeat_possizealpha(Layer &layer) {
 
 TestData test_gettagbounds1(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2183,7 +2184,7 @@ TestData test_gettagbounds1(Layer &layer) {
 
 TestData test_gettagbounds2(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2206,7 +2207,7 @@ TestData test_gettagbounds2(Layer &layer) {
 
 TestData test_gettagbounds3(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2234,7 +2235,7 @@ TestData test_gettagbounds3(Layer &layer) {
 
 TestData test_gettagbounds_modifysize(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(70, 80);
+    temp.SetSize(70_px, 80_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2265,7 +2266,7 @@ TestData test_gettagbounds_modifysize(Layer &layer) {
 
 TestData test_gettagbounds_modifypos(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 80);
+    temp.SetSize(80_px, 80_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2296,7 +2297,7 @@ TestData test_gettagbounds_modifypos(Layer &layer) {
 
 TestData test_indexoftag(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2317,7 +2318,7 @@ TestData test_indexoftag(Layer &layer) {
 
 TestData test_haslayer(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2340,7 +2341,7 @@ TestData test_haslayer(Layer &layer) {
 
 TestData test_componentat1(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2372,7 +2373,7 @@ TestData test_componentat1(Layer &layer) {
 
 TestData test_componentat2(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2406,7 +2407,7 @@ TestData test_componentat2(Layer &layer) {
 
 TestData test_componentexists(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2436,7 +2437,7 @@ TestData test_componentexists(Layer &layer) {
 
 TestData test_settagpos(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2458,7 +2459,7 @@ TestData test_settagpos(Layer &layer) {
 
 TestData test_settagposabs(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2482,7 +2483,7 @@ TestData test_settagposabs(Layer &layer) {
 
 TestData test_settagposval(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(70, 70);
+    temp.SetSize(70_px, 70_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2507,7 +2508,7 @@ TestData test_settagposval(Layer &layer) {
 
 TestData test_settagposrem(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2530,7 +2531,7 @@ TestData test_settagposrem(Layer &layer) {
 
 TestData test_settagsize(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2556,7 +2557,7 @@ TestData test_tagtextwrap(Layer &layer) {
     auto &app = getapp();
 
     auto &temp = *new Template;
-    temp.SetSize(70, 50);
+    temp.SetSize(70_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2583,7 +2584,7 @@ TestData test_tagtextwrap2(Layer &layer) {
     auto &app = getapp();
 
     auto &temp = *new Template;
-    temp.SetSize(70, 50);
+    temp.SetSize(70_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2609,7 +2610,7 @@ TestData test_tagtextwrap2(Layer &layer) {
 
 TestData test_autosize_graphic(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2633,7 +2634,7 @@ TestData test_autosize_graphic(Layer &layer) {
 
 TestData test_autosize_text(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2666,7 +2667,7 @@ TestData test_autosize_text(Layer &layer) {
 
 TestData test_autosize_cont_graphic(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(50, 50);
+    temp.SetSize(50_px, 50_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2695,7 +2696,7 @@ TestData test_autosize_cont_graphic(Layer &layer) {
 
 TestData test_autosize_cont_border(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(70, 70);
+    temp.SetSize(70_px, 70_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2726,7 +2727,7 @@ TestData test_autosize_cont_border(Layer &layer) {
 
 TestData test_autosize_cont_padding(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(90, 90);
+    temp.SetSize(90_px, 90_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2758,7 +2759,7 @@ TestData test_autosize_cont_padding(Layer &layer) {
 
 TestData test_autosize_cont_padding2(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(90, 90);
+    temp.SetSize(90_px, 90_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2795,7 +2796,7 @@ TestData test_autosize_cont_padding2(Layer &layer) {
 
 TestData test_autosize_cont_text(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(80, 60);
+    temp.SetSize(80_px, 60_px);
     
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2834,78 +2835,9 @@ TestData test_autosize_cont_text(Layer &layer) {
     , stack};
 }
 
-
-TestData test_anchacc(Layer &layer) {
-    auto &temp = *new Template;
-    temp.SetSize(60, 60);
-
-    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
-    cont1.AddIndex(1);
-    cont1.AddIndex(2);
-    cont1.AddIndex(3);
-    cont1.Background.SetAnimation(whiteimg());
-
-    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
-    cont2.Background.SetAnimation(greenimg());
-    cont2.SetSize(10, 20, Gorgon::UI::Dimension::Pixel);
-    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
-
-    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
-    cont3.Background.SetAnimation(redimg());
-    cont3.SetSize(10, 19, Gorgon::UI::Dimension::Pixel);
-    cont3.SetAnchor(Gorgon::UI::Anchor::MiddleRight, Gorgon::UI::Anchor::MiddleLeft, Gorgon::UI::Anchor::MiddleLeft);
-    
-    auto &cont4 = temp.AddContainer(3, Gorgon::UI::ComponentCondition::Always);
-    cont4.Background.SetAnimation(blueimg());
-    cont4.SetSize(10, 20, Gorgon::UI::Dimension::Pixel);
-    cont4.SetAnchor(Gorgon::UI::Anchor::MiddleRight, Gorgon::UI::Anchor::MiddleLeft, Gorgon::UI::Anchor::MiddleLeft);
-
-    auto &stack = *new ComponentStack(temp);
-
-    layer.Add(stack);
-
-    return {"Anchoring accuracy", "Size 10x20, 10x19 and 10x20 objects on a 60x60 white background, second could be 0 or 1px from the top, first and third should be touching to the top.", stack};
-}
-
-TestData test_ignored(Layer &layer) {
-    auto &temp = *new Template;
-    temp.SetSize(60, 60);
-
-    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
-    cont1.AddIndex(1);
-    cont1.AddIndex(2);
-    cont1.AddIndex(3);
-    cont1.AddIndex(4);
-    cont1.Background.SetAnimation(whiteimg());
-
-    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
-    cont2.Background.SetAnimation(greenimg());
-    cont2.SetSize(10, 20, Gorgon::UI::Dimension::Pixel);
-    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
-
-    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
-    cont3.Background.SetAnimation(redimg());
-    cont3.SetSize(10, 19, Gorgon::UI::Dimension::Pixel);
-    cont3.SetAnchor(Gorgon::UI::Anchor::MiddleRight, Gorgon::UI::Anchor::MiddleLeft, Gorgon::UI::Anchor::MiddleLeft);
-
-    temp.AddIgnored(3, Gorgon::UI::ComponentCondition::Always);
-    
-    auto &cont5 = temp.AddContainer(4, Gorgon::UI::ComponentCondition::Always);
-    cont5.Background.SetAnimation(blueimg());
-    cont5.SetSize(10, 20, Gorgon::UI::Dimension::Pixel);
-    cont5.SetAnchor(Gorgon::UI::Anchor::MiddleRight, Gorgon::UI::Anchor::MiddleLeft, Gorgon::UI::Anchor::MiddleLeft);
-
-    auto &stack = *new ComponentStack(temp);
-
-    layer.Add(stack);
-
-    return {"Ignored template", "Size 10x20, 10x19 and 10x20 objects on a 60x60 white background, second could be 0 or 1px from the top, first and third should be touching to the top.", stack};
-}
-
-
 TestData test_autosizedstack(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 60);
+    temp.SetSize(60_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -2928,7 +2860,7 @@ TestData test_autosizedstack(Layer &layer) {
 
 TestData test_autosizedstack_double(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 60);
+    temp.SetSize(60_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always)
         .AddIndex(1)
@@ -2962,7 +2894,7 @@ TestData test_autosizedstack_double(Layer &layer) {
 
 TestData test_autosizedstack_padding(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(20, 20);
+    temp.SetSize(20_px, 20_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always)
         .AddIndex(1)
@@ -2998,7 +2930,7 @@ TestData test_autosizedstack_padding(Layer &layer) {
 
 TestData test_autosizedstack_border(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(20, 20);
+    temp.SetSize(20_px, 20_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always)
         .AddIndex(1)
@@ -3034,7 +2966,7 @@ TestData test_autosizedstack_border(Layer &layer) {
 
 TestData test_autosizedstack_nested(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(10, 10);
+    temp.SetSize(10_px, 10_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always)
         .AddIndex(3)
@@ -3074,7 +3006,7 @@ TestData test_autosizedstack_nested(Layer &layer) {
 
 TestData test_autosizedstack_text(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(100, 60);
+    temp.SetSize(100_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -3106,7 +3038,7 @@ TestData test_autosizedstack_text(Layer &layer) {
 
 TestData test_autosizedstack_textnested(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(100, 60);
+    temp.SetSize(100_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -3141,7 +3073,7 @@ TestData test_autosizedstack_textnested(Layer &layer) {
 
 TestData test_autosizedstack_textnested_sister(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(100, 60);
+    temp.SetSize(100_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -3182,7 +3114,7 @@ TestData test_autosizedstack_textnested_sister(Layer &layer) {
 
 TestData test_autosizedstack_textdoublenested(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(100, 60);
+    temp.SetSize(100_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -3222,7 +3154,7 @@ TestData test_autosizedstack_textdoublenested(Layer &layer) {
 
 TestData test_autosizedstack_clip(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(60, 60);
+    temp.SetSize(60_px, 60_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont1.AddIndex(1);
@@ -3245,7 +3177,7 @@ TestData test_autosizedstack_clip(Layer &layer) {
 
 TestData test_autosizedstack_complex(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(100, 60);
+    temp.SetSize(100_px, 60_px);
 
     auto &cont0 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
     cont0.AddIndex(1);
@@ -3306,7 +3238,7 @@ TestData test_autosizedstack_complex(Layer &layer) {
 
 TestData test_autosizedstack_center(Layer &layer) {
     auto &temp = *new Template;
-    temp.SetSize(30, 30);
+    temp.SetSize(30_px, 30_px);
 
     auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always)
         .AddIndex(1)
@@ -3331,6 +3263,163 @@ TestData test_autosizedstack_center(Layer &layer) {
 
     return {"Autosized stack center aligned", String::Concat((s.operator ==({40, 70}) ? "Passed" : "Failed"), ". Size = ", s, ". Size 40x70 white background with 20x30 green at center"), stack};
 }
+
+TestData test_anchacc(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60_px, 60_px);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.AddIndex(3);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(10, 20, Gorgon::UI::Dimension::Pixel);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetSize(10, 19, Gorgon::UI::Dimension::Pixel);
+    cont3.SetAnchor(Gorgon::UI::Anchor::MiddleRight, Gorgon::UI::Anchor::MiddleLeft, Gorgon::UI::Anchor::MiddleLeft);
+
+    auto &cont4 = temp.AddContainer(3, Gorgon::UI::ComponentCondition::Always);
+    cont4.Background.SetAnimation(blueimg());
+    cont4.SetSize(10, 20, Gorgon::UI::Dimension::Pixel);
+    cont4.SetAnchor(Gorgon::UI::Anchor::MiddleRight, Gorgon::UI::Anchor::MiddleLeft, Gorgon::UI::Anchor::MiddleLeft);
+
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    return {"Anchoring accuracy", "Size 10x20, 10x19 and 10x20 objects on a 60x60 white background, second could be 0 or 1px from the top, first and third should be touching to the top.", stack};
+}
+
+TestData test_ignored(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(60_px, 60_px);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.AddIndex(2);
+    cont1.AddIndex(3);
+    cont1.AddIndex(4);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddContainer(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Background.SetAnimation(greenimg());
+    cont2.SetSize(10, 20, Gorgon::UI::Dimension::Pixel);
+    cont2.SetAnchor(Gorgon::UI::Anchor::None, Gorgon::UI::Anchor::TopLeft, Gorgon::UI::Anchor::TopLeft);
+
+    auto &cont3 = temp.AddContainer(2, Gorgon::UI::ComponentCondition::Always);
+    cont3.Background.SetAnimation(redimg());
+    cont3.SetSize(10, 19, Gorgon::UI::Dimension::Pixel);
+    cont3.SetAnchor(Gorgon::UI::Anchor::MiddleRight, Gorgon::UI::Anchor::MiddleLeft, Gorgon::UI::Anchor::MiddleLeft);
+
+    temp.AddIgnored(3, Gorgon::UI::ComponentCondition::Always);
+
+    auto &cont5 = temp.AddContainer(4, Gorgon::UI::ComponentCondition::Always);
+    cont5.Background.SetAnimation(blueimg());
+    cont5.SetSize(10, 20, Gorgon::UI::Dimension::Pixel);
+    cont5.SetAnchor(Gorgon::UI::Anchor::MiddleRight, Gorgon::UI::Anchor::MiddleLeft, Gorgon::UI::Anchor::MiddleLeft);
+
+    auto &stack = *new ComponentStack(temp);
+
+    layer.Add(stack);
+
+    return {"Ignored template", "Size 10x20, 10x19 and 10x20 objects on a 60x60 white background, second could be 0 or 1px from the top, first and third should be touching to the top.", stack};
+}
+
+TestData test_autosize_to_graphic(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(70_px, 50_px);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.SetBorderSize(10, 10);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetSize(20, 20);
+    cont2.Content.SetAnimation(greenimg());
+
+    auto &stack = *new ComponentStack(temp);
+    stack.SetAutosize(Gorgon::UI::Autosize::Automatic, Gorgon::UI::Autosize::Automatic);
+
+    layer.Add(stack);
+
+    return {"Autosizing to graphic component", "20x20 green object on a 40x40 white background.", stack};
+}
+
+TestData test_autosize_to_contentsized_graphic(Layer &layer) {
+    auto &temp = *new Template;
+    temp.SetSize(70_px, 50_px);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.SetBorderSize(10, 10);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddGraphics(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.Content.SetAnimation(greenimg());
+
+    auto &stack = *new ComponentStack(temp);
+    stack.SetAutosize(Gorgon::UI::Autosize::Automatic, Gorgon::UI::Autosize::Automatic);
+
+    layer.Add(stack);
+
+    return {"Autosizing to content sized graphic component", "10x10 green object on a 30x30 white background.", stack};
+}
+
+TestData test_autosize_to_text(Layer &layer) {
+    auto &app = getapp();
+
+    auto &temp = *new Template;
+    temp.SetSize(100_px, 50_px);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddTextholder(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetColor(Color::Black);
+    cont2.SetRenderer(app.fntlarge);
+    cont2.SetDataEffect(Gorgon::UI::ComponentTemplate::Text);
+    cont2.SetTag(Gorgon::UI::ComponentTemplate::TextTag);
+    auto &stack = *new ComponentStack(temp);
+
+    stack.SetAutosize(Gorgon::UI::Autosize::Automatic, Gorgon::UI::Autosize::Automatic);
+    stack.DisableTagWrap(Gorgon::UI::ComponentTemplate::TextTag);
+
+    layer.Add(stack);
+
+    return {"Autosizing to text component", "White background flush with text.", stack};
+}
+
+TestData test_autosize_to_textwrap(Layer &layer) {
+    auto &app = getapp();
+
+    auto &temp = *new Template;
+    temp.SetSize(100_px, 50_px);
+
+    auto &cont1 = temp.AddContainer(0, Gorgon::UI::ComponentCondition::Always);
+    cont1.AddIndex(1);
+    cont1.Background.SetAnimation(whiteimg());
+
+    auto &cont2 = temp.AddTextholder(1, Gorgon::UI::ComponentCondition::Always);
+    cont2.SetColor(Color::Black);
+    cont2.SetRenderer(app.fntlarge);
+    cont2.SetDataEffect(Gorgon::UI::ComponentTemplate::Text);
+    auto &stack = *new ComponentStack(temp);
+
+    stack.SetAutosize(Gorgon::UI::Autosize::Automatic, Gorgon::UI::Autosize::Automatic);
+
+    layer.Add(stack);
+
+    return {"Autosizing to text component", "White background flush with wrapped text.", stack};
+}
+
 
 std::vector<std::function<TestData(Layer &)>> tests = {
     //BEGIN layout
@@ -3481,6 +3570,13 @@ std::vector<std::function<TestData(Layer &)>> tests = {
     &test_ignored,
     //END
 
+    //BEGIN Autosize
+    &test_autosize_to_graphic,
+    &test_autosize_to_contentsized_graphic,
+    &test_autosize_to_text,
+    &test_autosize_to_textwrap,
+    //END
+
 };
 
 //END tests
@@ -3584,7 +3680,7 @@ int main() {
     auto displaytext = [&]() {
         textlayer.Clear();
         
-        app.stylarge.Print(textlayer, info[ind].first, 0,0, w);
+        app.stylarge.Print(textlayer, String::From(ind+1) + " " + info[ind].first, 0,0, w);
         app.sty.Print(textlayer, info[ind].second, 0, app.stylarge.GetSize(info[ind].first, w).Height, w);
         
         displayvalue();
