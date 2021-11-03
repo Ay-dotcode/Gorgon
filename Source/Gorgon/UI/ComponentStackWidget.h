@@ -152,7 +152,7 @@ namespace Gorgon { namespace UI {
         /// Adjusts autosizing of the widget. Setting autosize to true sets the autosize to
         /// automatic to nearest unit size
         void SetAutosize(bool hor, bool ver) {
-            SetAutosize(hor ? Autosize::Unit : Autosize::None, ver ? Autosize::Unit : Autosize::None);
+            SetAutosize(hor ? Autosize::Unit : Autosize::None, ver ? Autosize::Automatic : Autosize::None);
         }
 
         /// Adjusts autosizing of the widget. Setting autosize to true sets the autosize to
@@ -164,7 +164,7 @@ namespace Gorgon { namespace UI {
         /// Adjusts autosizing of the widget. Setting autosize to true sets the autosize to
         /// automatic to nearest unit size
         void SetVerticalAutosize(bool value) {
-            SetVerticalAutosize(value ? Autosize::Unit : Autosize::None);
+            SetVerticalAutosize(value ? Autosize::Automatic : Autosize::None);
         }
 
         /// Returns the horizontal autosize mode of the widget

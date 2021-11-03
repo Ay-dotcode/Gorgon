@@ -78,8 +78,10 @@ namespace Gorgon { namespace UI {
 
         parent = &container;
 
-        if(IsVisible())
+        if(IsVisible()) {
+            calculatebounds();
             boundschanged();
+        }
 
         parentenabledchanged(parent->IsEnabled());
     }

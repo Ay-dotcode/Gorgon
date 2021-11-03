@@ -6,6 +6,7 @@
 #include <Gorgon/Widgets/Window.h>
 #include <Gorgon/Widgets/TabPanel.h>
 #include <Gorgon/Widgets/Button.h>
+#include <Gorgon/UI/Dialog.h>
 #include <Gorgon/Widgets/Label.h>
 
 std::string helptext =
@@ -19,39 +20,18 @@ using namespace Gorgon::UI::literals;
 int main() {
     basic_Application<UI::Window> app("uitest", "UI Widget Test", helptext, 1, 0x80);
 
-    auto &org = app.wind.CreateOrganizer<UI::Organizers::Flow>();
+    //auto &org = app.wind.CreateOrganizer<UI::Organizers::Flow>();
+    Widgets::Panel w;
+
+    app.wind.Add(w);
+    w.Location.X = 50_perc;
     
-    Widgets::TabPanel wgt1;
-    
-    org
-        << wgt1;
+    Widgets::MarkdownLabel lbl2("This class is the base class for all **widget** containers.\n\nAll widgets require a layer to be placed on, to allow widget containers that are also widgets, this class is left abstract. You may derive from this class and WidgetBase at the same time. Visit <https://darkgaze.org> for more.\n\n[Working directory](.)");
+    lbl2.SetAutosize(UI::Autosize::None, UI::Autosize::Automatic);
+    w.Add(lbl2);
+    w.SetInteriorHeight(6_u);
+    std::cout << lbl2.GetCurrentHeight() << std::endl;
 
-    wgt1.Focus();
-
-    wgt1.New("Tab 1");
-    wgt1.New("Tab 2");
-    wgt1.New("Tab 3");
-    wgt1.New("Tab 4");
-    wgt1.SetTabRollover(true);
-    //wgt1.SetButtonTextWrap(true);
-
-    Widgets::Button btn1("Hey tab 1");
-    Widgets::Label lbl1("Hey tab 2");
-    Widgets::Label lbl2("Tab control is now working, scroll down for the button");
-    lbl2.SetAutosize(UI::Autosize::Automatic, UI::Autosize::Automatic);
-    Widgets::Button btn2("Hey tab 2");
-
-    wgt1["Tab 1"].Add(btn1);
-    wgt1["Tab 2"].Add(lbl1);
-    wgt1["Tab 2"].AddUnder(lbl2);
-    wgt1["Tab 2"].Add(btn2);
-
-    btn2.Location.Y = 400_px;
-    btn2.Location.X = 3_u;
-
-    wgt1.ActivateNext();
-        
-    
     app.wind.Run();
 
     return 0;

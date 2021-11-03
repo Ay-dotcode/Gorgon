@@ -281,10 +281,9 @@ namespace Gorgon { namespace UI {
         
         /// Notifies the stack about a size change
         virtual void Resize(const Geometry::Size &value) override {
-            Layer::Resize(value);
-            mouse.Resize(value);
-            
-            if(size != value) {
+            if(size != value || Layer::GetSize() != value) {
+                Layer::Resize(value);
+                mouse.Resize(value);
                 size = value;
                 Update();
             }
