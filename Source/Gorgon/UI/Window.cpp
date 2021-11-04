@@ -81,6 +81,17 @@ namespace Gorgon { namespace UI {
         underadapter.SetFocusChangedHandler([this] {
             focuschangedin(underadapter);
         });
+        
+        regtoken = Widgets::Registry::Changed.Register(*this, &Window::updateregistry);
+    }
+    
+    void Window::updateregistry() {
+        if(autobg) {
+            if(!bgimg)
+                bgimg = new Graphics::BlankImage;
+            bgimg->SetColor(Widgets::Registry::Active().Backcolor(Graphics::Color::Workspace));
+            Gorgon::Window::SetBackground(static_cast<Graphics::RectangularAnimation&>(*bgimg));
+        }
     }
 
     void Window::focuschangedin(LayerAdapter &cont) {
@@ -173,6 +184,10 @@ namespace Gorgon { namespace UI {
         underlayer = other.underlayer;
         other.Layer::Remove(*underlayer);
         other.underlayer = nullptr;
+        
+        bgimg = other.bgimg;
+        other.bgimg = nullptr;
+        autobg = other.autobg;
 
         other.Destroy();
 
@@ -213,10 +228,14 @@ namespace Gorgon { namespace UI {
 
         Tooltips.SetContainer(*this);
         Tooltips.RecreateTarget();
+        
+        regtoken = Widgets::Registry::Changed.Register(*this, &Window::updateregistry);
     }
 
 
     UI::Window &Window::operator= (UI::Window &&other) {
+        Widgets::Registry::Changed.Unregister(regtoken);
+        
         other.KeyEvent.Unregister(other.inputtoken);
         other.CharacterEvent.Unregister(other.chartoken);
 
@@ -252,6 +271,11 @@ namespace Gorgon { namespace UI {
         underlayer = other.underlayer;
         other.Layer::Remove(*underlayer);
         other.underlayer = nullptr;
+        
+        bgimg = other.bgimg;
+        other.bgimg = nullptr;
+        autobg = other.autobg;
+
 
         Gorgon::Window::operator = (std::move(other));
         WidgetContainer::operator = (std::move(other));
@@ -296,6 +320,8 @@ namespace Gorgon { namespace UI {
 
         Tooltips.SetContainer(*this);
         Tooltips.RecreateTarget();
+        
+        regtoken = Widgets::Registry::Changed.Register(*this, &Window::updateregistry);
 
         return *this;
     }
@@ -316,6 +342,14 @@ namespace Gorgon { namespace UI {
         Gorgon::Window::Resize(sz);
 
         return GetSize() == sz;
+    }
+
+
+    Window::~Window() {
+        KeyEvent.Unregister(inputtoken);
+        CharacterEvent.Unregister(chartoken);
+        Widgets::Registry::Changed.Unregister(regtoken);
+        delete extenderlayer;
     }
 
 } }

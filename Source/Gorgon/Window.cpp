@@ -5,6 +5,7 @@
 #include "Graphics/Color.h"
 #include "GL/FrameBuffer.h"
 #include "Input/DnD.h"
+#include "Graphics/BlankImage.h"
 
 #include "Config.h"
 
@@ -290,17 +291,16 @@ namespace Gorgon {
         SetBackground(static_cast<const Graphics::RectangularAnimation&>(value));
     }
     
+    void Window::SetBackground(const Graphics::RGBAf &value) {
+        OwnBackground(static_cast<const Graphics::RectangularAnimation&>(*new Graphics::BlankImage(value)));
+    }
+    
     void Window::SetBackground(const Graphics::RectangularAnimationProvider &value) {
-        if(ownbg)
-            delete bganim;
-        
-        bganim = &value.CreateAnimation();
-        ownbg = true;
-        redrawbg();
+        OwnBackground(value.CreateAnimation());
     }
     
     void Window::SetBackground(const Graphics::RectangularAnimation &value) {
-        if(ownbg)
+        if(&value != bganim && ownbg)
             delete bganim;
         
         bganim = &value;
@@ -309,12 +309,13 @@ namespace Gorgon {
     }
     
     void Window::OwnBackground(const Graphics::RectangularAnimation &value) {
-        if(ownbg)
-            delete bganim;
+        SetBackground(value);
         
-        bganim = &value;
         ownbg = true;
-        redrawbg();
+    }
+    
+    void Window::OwnBackground(const Graphics::Bitmap &value) {
+        OwnBackground(static_cast<const Graphics::RectangularAnimation&>(value));
     }
     
     void Window::RemoveBackground() {
@@ -353,7 +354,6 @@ namespace Gorgon {
         else if(contentslayer)
             contentslayer->Remove(layer);
     }
-
 
     void Window::deleting(Gorgon::Layer *layer) {
         if(layer == down)

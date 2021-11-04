@@ -328,6 +328,9 @@ namespace Gorgon {
             return pressed&&Input::Mouse::Button::X2;
         }
         
+        /// Sets the background color of the window.
+        void SetBackground(const Graphics::RGBAf &color);
+        
         /// Sets the background of the window. This background image
         /// will be scaled with the window automatically.
         void SetBackground(const Graphics::Bitmap &bg);
@@ -338,14 +341,18 @@ namespace Gorgon {
         
         /// Sets the background of the window. This background image
         /// will be scaled with the window automatically.
-        void SetBackground(const Graphics::RectangularAnimation &bg);
+        virtual void SetBackground(const Graphics::RectangularAnimation &bg);
         
         /// Sets the background of the window. This background image
         /// will be scaled with the window automatically.
         void OwnBackground(const Graphics::RectangularAnimation &bg);
         
+        /// Sets the background of the window. This background image
+        /// will be scaled with the window automatically.
+        void OwnBackground(const Graphics::Bitmap &bg);
+        
         /// Removes the background of the window.
-        void RemoveBackground();
+        virtual void RemoveBackground();
         
         /// Returns if the window has a background image
         bool HasBackground() const {

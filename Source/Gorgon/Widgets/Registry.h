@@ -86,7 +86,11 @@ namespace Gorgon { namespace Widgets {
         
         /// Activates this registry to be used to provide templates
         void Activate() {
+            if(active == this)
+                return;
+            
             active = this;
+            Changed();
         }
         
         static Registry &Active() {
@@ -135,6 +139,9 @@ namespace Gorgon { namespace Widgets {
         int GetUnitSize(int n) const {
             return n * GetUnitSize() + (n-1) * GetSpacing();
         }
+        
+        /// Fired when the active registry is changed.
+        static Event<void> Changed; // defined in 
 
     protected:
         /// This function should return a template for the given type. Due to 

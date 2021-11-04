@@ -44,6 +44,7 @@ SET(Local
 	RadioButtons.h
 	
 	Registry.h
+	Registry.cpp
 	
 	Slider.h
 	Scrollbar.h

@@ -1014,6 +1014,9 @@ namespace Gorgon { namespace Graphics {
             /// A color that is used for alternate list items
             Even,
             
+            /// A color that is used for main window background
+            Workspace,
+            
             /// User defined colors should start from this index. Some systems support user defined 
             /// colors.
             User = 64

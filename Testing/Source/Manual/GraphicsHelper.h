@@ -64,7 +64,7 @@ public:
         bgimage = BGImage(tilesize, tilesize, colmod, colmod*3);
         bgimage.Prepare();
         bgimage.DrawIn(l);
-    
+        
         int sz = 13;
 #ifdef WIN32
         fnt.LoadFile("C:/Windows/Fonts/tahoma.ttf", sz);

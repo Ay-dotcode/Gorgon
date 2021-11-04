@@ -12,6 +12,7 @@
 
 #include "WidgetContainer.h"
 #include "TooltipManager.h"
+#include "../Graphics/BlankImage.h"
 
 #include <stdexcept>
 
@@ -140,11 +141,7 @@ namespace Gorgon { namespace UI {
         /// Copy constructor is not allowed
         Window(const Window &) = delete;
 
-        virtual ~Window() {
-            KeyEvent.Unregister(inputtoken);
-            CharacterEvent.Unregister(chartoken);
-            delete extenderlayer;
-        }
+        virtual ~Window();
         
         Window(Window &&other);
         
@@ -255,6 +252,13 @@ namespace Gorgon { namespace UI {
         
         virtual void Destroy() override;
         
+        using Gorgon::Window::SetBackground;
+        
+        void SetBackground(const Graphics::RectangularAnimation &bg) override {
+            Gorgon::Window::SetBackground(bg);
+            autobg = false;
+        }
+        
         TooltipManager Tooltips = TooltipManager{*this};
         
         using WidgetContainer::Add;
@@ -266,6 +270,8 @@ namespace Gorgon { namespace UI {
         virtual Gorgon::Layer &getlayer() override {
             return *widgetlayer;
         }
+        
+        void updateregistry();
 
         decltype(KeyEvent)::Token keyinit();
 
@@ -285,6 +291,8 @@ namespace Gorgon { namespace UI {
         UnitSize interiorsize;
 
     private:
+        bool autobg = true;
+        Graphics::BlankImage *bgimg = nullptr;
         bool quiting = false;
         LayerAdapter extenderadapter, windowadapter, baradapter, dialogadapter, underadapter;
         Graphics::Layer *extenderlayer = nullptr;
@@ -298,6 +306,7 @@ namespace Gorgon { namespace UI {
 
         decltype(KeyEvent)::Token inputtoken = keyinit(); //to initialize token after window got constructed
         decltype(CharacterEvent)::Token chartoken = charinit(); //to initialize token after window got constructed
+        EventToken regtoken; //to initialize token after window got constructed
         
         int spacing   = 0;
         int unitwidth = 0;
