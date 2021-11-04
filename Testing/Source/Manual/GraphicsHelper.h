@@ -61,9 +61,11 @@ public:
         }
         wind.setname("Wind");
 
-        bgimage = BGImage(tilesize, tilesize, colmod, colmod*3);
-        bgimage.Prepare();
-        bgimage.DrawIn(l);
+        if(tilesize) {
+            bgimage = BGImage(tilesize, tilesize, colmod, colmod*3);
+            bgimage.Prepare();
+            bgimage.DrawIn(l);
+        }
         
         int sz = 13;
 #ifdef WIN32

@@ -736,7 +736,7 @@ namespace Gorgon { namespace Widgets {
             {Graphics::Color::Active, {Graphics::Color::Ivory, {Graphics::Color::Charcoal, 0.8}}},
             {Graphics::Color::Error, {Graphics::Color::DarkRed, {Graphics::Color::White, 0.2}}},
             {Graphics::Color::Title, {Graphics::Color::DarkGreen, Graphics::Color::Transparent}},
-            {Graphics::Color::Workspace, {Graphics::Color::Charcoal, {Graphics::Color::LightGrey, Graphics::Color::ElectricBlue, 0.3}}},
+            {Graphics::Color::Workspace, {Graphics::Color::Charcoal, {Graphics::Color::Grey, Graphics::Color::OceanBlue, 0.1}}},
         };
         
         void initfontrelated();

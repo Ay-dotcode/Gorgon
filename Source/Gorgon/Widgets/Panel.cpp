@@ -103,8 +103,10 @@ namespace Gorgon { namespace Widgets {
     }
 
     bool Panel::ResizeInterior(const UI::UnitSize &size) {
-        if(interiorsized != std::make_pair(true, true))
+        if(interiorsized != std::make_pair(true, true)) {
             lsize = {-1, -1};
+            this->size = {-1, -1};
+        }
 
         interiorsized = {true, true};
         ComponentStackWidget::Resize(size);
@@ -113,8 +115,10 @@ namespace Gorgon { namespace Widgets {
     }
 
     bool Panel::SetInteriorWidth(const UI::UnitDimension &size) {
-        if(interiorsized.first != true)
+        if(interiorsized.first != true) {
             lsize = {-1, -1};
+            this->size.Width = -1;
+        }
 
         interiorsized = {true, interiorsized.second};
         ComponentStackWidget::Resize({size, GetSize().Height});
@@ -123,8 +127,10 @@ namespace Gorgon { namespace Widgets {
     }
 
     bool Panel::SetInteriorHeight(const UI::UnitDimension &size) {
-         if(interiorsized.second != true)
+         if(interiorsized.second != true) {
             lsize = {-1, -1};
+            this->size.Height = -1;
+         }
 
        interiorsized = {interiorsized.first, true};
         ComponentStackWidget::Resize({GetSize().Width, size});

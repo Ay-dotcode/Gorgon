@@ -87,10 +87,7 @@ namespace Gorgon { namespace UI {
     
     void Window::updateregistry() {
         if(autobg) {
-            if(!bgimg)
-                bgimg = new Graphics::BlankImage;
-            bgimg->SetColor(Widgets::Registry::Active().Backcolor(Graphics::Color::Workspace));
-            Gorgon::Window::SetBackground(static_cast<Graphics::RectangularAnimation&>(*bgimg));
+            Gorgon::Window::SetBackground(Widgets::Registry::Active().Backcolor(Graphics::Color::Workspace));
         }
     }
 
@@ -185,9 +182,9 @@ namespace Gorgon { namespace UI {
         other.Layer::Remove(*underlayer);
         other.underlayer = nullptr;
         
-        bgimg = other.bgimg;
-        other.bgimg = nullptr;
         autobg = other.autobg;
+        other.autobg = true;
+
 
         other.Destroy();
 
@@ -272,9 +269,8 @@ namespace Gorgon { namespace UI {
         other.Layer::Remove(*underlayer);
         other.underlayer = nullptr;
         
-        bgimg = other.bgimg;
-        other.bgimg = nullptr;
         autobg = other.autobg;
+        other.autobg = true;
 
 
         Gorgon::Window::operator = (std::move(other));

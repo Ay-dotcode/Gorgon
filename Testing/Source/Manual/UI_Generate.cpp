@@ -96,7 +96,7 @@ DefineEnumStrings(CoffeeType, {
 });
 
 int main() {
-    basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 1, 0x80);
+    basic_Application<UI::Window> app("uitest", "UI Generator Test", helptext, 0, 0x80);
 
     ///Blank Panel & elements with Registry & Regulars
 //     Widgets::SimpleGenerator generator;

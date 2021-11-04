@@ -292,7 +292,6 @@ namespace Gorgon { namespace UI {
 
     private:
         bool autobg = true;
-        Graphics::BlankImage *bgimg = nullptr;
         bool quiting = false;
         LayerAdapter extenderadapter, windowadapter, baradapter, dialogadapter, underadapter;
         Graphics::Layer *extenderlayer = nullptr;

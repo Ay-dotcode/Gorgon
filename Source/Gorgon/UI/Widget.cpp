@@ -161,8 +161,8 @@ namespace Gorgon { namespace UI {
         );
 
         if(llocation != l) {
-            move(l);
             llocation = l;
+            move(l);
         }
 
         auto s = UI::Convert(
@@ -180,8 +180,8 @@ namespace Gorgon { namespace UI {
         }
 
         if(lsize != s) {
-            resize(s);
             lsize = s;
+            resize(s);
         }
     }
 

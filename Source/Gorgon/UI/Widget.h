@@ -337,20 +337,23 @@ namespace Gorgon { namespace UI {
         
         std::string tooltip;
 
-        /// last set location, used to determine if move is necessary
+        /// last set location in pixels, used to determine if move is necessary
         Geometry::Point llocation = {0, 0};
 
-        /// last set size, used to determine if resize is necessary
+        /// last set size in pixels, used to determine if resize is necessary
         Geometry::Size  lsize     = {-1, -1};
+
+        /// currently set location, used to determine if move is necessary
+        UnitPoint location = {0, 0};
+
+        /// currently set size, used to determine if resize is necessary
+        UnitSize  size = {-1, -1};
         
     private:
         bool visible = true;
         bool enabled = true;
         bool focus   = false;
         bool floating= false;
-
-        UnitPoint location = {0, 0};
-        UnitSize  size = {-1, -1};
         
         /// Never call this function
         virtual void hide() = 0;
