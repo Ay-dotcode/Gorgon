@@ -143,6 +143,8 @@ namespace Gorgon { namespace UI {
     void Widget::calculatebounds() {
         int unitsize = 0, spacing = 0, fr = 6;
         Geometry::Size sz;
+        bool changed = false;
+        
         if(HasParent()) {
             unitsize = GetParent().GetUnitSize();
             spacing = GetParent().GetSpacing();
@@ -165,6 +167,7 @@ namespace Gorgon { namespace UI {
         if(llocation != l) {
             llocation = l;
             move(l);
+            changed = true;
         }
 
         auto s = UI::Convert(
@@ -188,7 +191,11 @@ namespace Gorgon { namespace UI {
         if(lsize != s) {
             lsize = s;
             resize(s);
+            changed = true;
         }
+        
+        if(changed)
+            boundschanged();
     }
 
     void Widget::Move(const UnitPoint &value) {

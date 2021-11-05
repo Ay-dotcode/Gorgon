@@ -123,6 +123,7 @@ namespace Gorgon { namespace Widgets {
         /// The spacing should be left between widgets
         virtual int GetSpacing() const override;
         
+        
         using WidgetContainer::GetUnitSize;
         
         /// Returns the unit width for a widget. This size is enough to
@@ -157,10 +158,6 @@ namespace Gorgon { namespace Widgets {
         
         virtual Widget &AsWidget() override { return *this; }
 
-        virtual void parentboundschanged () override {
-            distributeparentboundschanged();
-        }
-        
         virtual Input::Layer &getinputlayer() {
             return inputlayer;
         }
@@ -169,6 +166,20 @@ namespace Gorgon { namespace Widgets {
         virtual void resize(const Geometry::Size &size) override;
 
         virtual void move(const Geometry::Point &location) override;
+
+        virtual void parentenabledchanged(bool state) override {
+            Widget::parentenabledchanged(state);
+
+            if(!state && IsEnabled())
+                distributeparentenabled(state);
+            else if(state && IsEnabled())
+                distributeparentenabled(state);
+        }
+        
+        void boundschanged() override {
+            Widget::boundschanged();
+            distributeparentboundschanged();
+        }
 
 
     private:
@@ -276,6 +287,20 @@ namespace Gorgon { namespace Widgets {
         virtual void focused() override;
 
         virtual void focuslost() override;
+
+        virtual void parentenabledchanged(bool state) override {
+            ComponentStackWidget::parentenabledchanged(state);
+
+            if(!state && IsEnabled())
+                distributeparentenabled(state);
+            else if(state && IsEnabled())
+                distributeparentenabled(state);
+        }
+        
+        void boundschanged() override {
+            ComponentStackWidget::boundschanged();
+            distributeparentboundschanged();
+        }
 
         virtual Layer &getlayer() override {
             return stack.GetLayerOf(stack.IndexOfTag(UI::ComponentTemplate::ContentsTag));

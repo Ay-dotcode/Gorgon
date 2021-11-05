@@ -182,16 +182,10 @@ namespace Gorgon { namespace UI {
     protected:        
         virtual void move(const Geometry::Point &location) override {
             stack.Move(location);
-
-            if(IsVisible() && HasParent())
-                boundschanged();
         }
         
         virtual void resize(const Geometry::Size &size) override {
             stack.Resize(size);
-
-            if(IsVisible() && HasParent())
-                boundschanged();
         }
 
     private:

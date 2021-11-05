@@ -243,7 +243,12 @@ namespace Gorgon { namespace Widgets {
             else if(state && IsEnabled())
                 distributeparentenabled(state);
         }
-                
+        
+        void boundschanged() override {
+            Widget::boundschanged();
+            distributeparentboundschanged();
+        }
+
         virtual void resize(const Geometry::Size &size) override;
         
         virtual void move(const Geometry::Point &location) override;

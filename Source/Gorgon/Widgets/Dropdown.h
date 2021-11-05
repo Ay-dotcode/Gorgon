@@ -187,6 +187,7 @@ namespace Gorgon { namespace Widgets {
         }
         
         virtual void parentboundschanged() override {
+            ComponentStackWidget::parentboundschanged();
             if(IsOpened()) {
                 Close();
                 

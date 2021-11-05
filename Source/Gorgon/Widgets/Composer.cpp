@@ -178,18 +178,10 @@ namespace Gorgon { namespace Widgets {
         else {
             ComponentStackWidget::resize(size);
         }
-
-        if(HasOrganizer())
-            GetOrganizer().Reorganize();
-        
-        childboundschanged(nullptr);
-        distributeparentboundschanged();
     }
     
     void ComponentStackComposer::move(const Geometry::Point &location) {
         ComponentStackWidget::move(location);
-        
-        distributeparentboundschanged();
     }
 
     UI::ExtenderRequestResponse ComponentStackComposer::RequestExtender(const Layer &self) {

@@ -157,11 +157,7 @@ namespace Gorgon { namespace Widgets {
             ComponentStackWidget::resize(size);
         }
         
-        if(HasOrganizer())
-            GetOrganizer().Reorganize();
-        
         childboundschanged(nullptr);
-        distributeparentboundschanged();
     }
 
     void Panel::move(const Geometry::Point &location) { 
