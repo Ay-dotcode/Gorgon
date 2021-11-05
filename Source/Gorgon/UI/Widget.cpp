@@ -90,6 +90,8 @@ namespace Gorgon { namespace UI {
         if(!parent)
             return;
         
+        widthperfraction = -1;
+        
         parent->childboundschanged(this);
         
         if(parent && parent->GetHoveredWidget() == this)
@@ -172,6 +174,10 @@ namespace Gorgon { namespace UI {
             fr
         );
 
+        if(size.Width.GetUnit() == Dimension::Fractions && widthperfraction != -1) {
+            s.Width = (int)std::round(size.Width.GetValue() * widthperfraction);
+        }
+
         if(size.Width.IsRelative()) {
             s.Width -= spacing;
         }
@@ -237,6 +243,10 @@ namespace Gorgon { namespace UI {
         int px = val(vertical ? sz.Height : sz.Width, unitsize, spacing, em, fr, size);
 
         if(size && val.IsRelative()) {
+            if(val.GetUnit() == Dimension::Fractions && !vertical && widthperfraction != -1) {
+                px = (int)std::round(val.GetValue() * widthperfraction);
+            }
+            
             px -= spacing;
         }
 
@@ -256,7 +266,10 @@ namespace Gorgon { namespace UI {
             else
                 return {(float)px/(unitsize+size*spacing), target};
         case Dimension::Fractions:
-                return {(int)std::round((float)fr * (px+size*spacing) / (vertical ? sz.Height : sz.Width)), target};
+            if(size && !vertical && widthperfraction != -1)
+                return (int)std::round((px+spacing)/widthperfraction);
+            else
+                return {(int)std::round((float)fr * (px+spacing*size) / (vertical ? sz.Height : sz.Width)), target};
         case Dimension::EM:
             return {(float)px/em, Dimension::EM};
         }
@@ -280,6 +293,10 @@ namespace Gorgon { namespace UI {
         int em = Widgets::Registry::Active().GetEmSize();
 
         auto px = UI::Convert(val, sz, unitsize, spacing, em, fr);
+        
+        if(val.Width.GetUnit() == Dimension::Fractions && widthperfraction != -1) {
+            px.Width = (int)std::round(val.Width.GetValue() * widthperfraction);
+        }
 
         if(val.Width.IsRelative()) {
             px.Width -= spacing;
@@ -301,10 +318,18 @@ namespace Gorgon { namespace UI {
         case Dimension::MilliUnitSize:
             return {{(float)(px.Width+spacing)/(unitsize+spacing), target}, {(float)(px.Height+spacing)/(unitsize+spacing), target}};
         case Dimension::Fractions:
+            if(widthperfraction != -1) {
+                return {
+                    {(int)std::round((float)(px.Width+spacing) / widthperfraction), target},
+                    {(int)std::round((float)fr * (px.Height+spacing) / sz.Height), target},
+                };
+            }
+            else {
                 return {
                     {(int)std::round((float)fr * (px.Width+spacing) / sz.Width), target},
                     {(int)std::round((float)fr * (px.Height+spacing) / sz.Height), target},
                 };
+            }
         case Dimension::EM:
             return {{(float)px.Width/em, Dimension::EM}, {(float)px.Height/em, Dimension::EM}};;
         }

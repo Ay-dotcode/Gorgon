@@ -59,6 +59,11 @@ namespace Gorgon { namespace UI {
             
             /// Adds the given text as a label to the attached container
             virtual Base &Add (const std::string &title);
+            
+            /// Returns if the organizer is currently working
+            bool IsReorganizing() const {
+                return organizing;
+            }
         
         protected:
             /// Called when the attachment of the organizer is changed

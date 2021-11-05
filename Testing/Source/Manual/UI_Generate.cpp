@@ -303,12 +303,12 @@ int main() {
     Widgets::ColorPlane plane;
     
     org << 100_perc << plane << org.Break
-        << 2 << "Label" << 2 << "" << Coffee << l2
+        << chkbutton << 1_fr << input << org.Break
+        << 2 << "Label" << 4_spcs << "" << 1_fr << Coffee << org.Break << l2
         << list << 5_perc << org.Break
+        << chk << chk2
         << icnbtn2 << icnbtn3 << dlist
         <<  radio << icnbtn << 5 << "Hello"
-        << chk << chk2 << chkbutton
-        << input
         << bar
         << scroll1 << scroll2
         << colorin

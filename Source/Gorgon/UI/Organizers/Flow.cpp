@@ -21,7 +21,6 @@ namespace Gorgon { namespace UI { namespace Organizers {
             Utils::NotImplemented("Tight organization is not implemented yet.");
         }
         else {
-            int uw = GetAttached().GetUnitSize();
             int y = 0;
             int maxy = 0;
             int rowc = 0;
@@ -29,6 +28,8 @@ namespace Gorgon { namespace UI { namespace Organizers {
             int indent = 0;
             int breaks = 0;
             int breakspace = 0;
+            int fractions = 0;
+            int fractionals = 0;
             int xoff;
             auto align = defaultalign;
             auto nextalign = defaultalign;
@@ -38,18 +39,24 @@ namespace Gorgon { namespace UI { namespace Organizers {
             
             auto dorow = [&]{
                 if(maxy == 0)
-                    maxy = uw;
+                    maxy = usize;
                 
                 y += maxy + s;
                 
                 if(breaks > 0)
-                    y += (breaks-1) * (uw + s) + breakspace;
+                    y += (breaks-1) * (usize + s) + breakspace;
                 
                 int w = 0;
-                if(row.GetCount())
-                    w = row.Last()->GetBounds().Right;
+                if(row.GetCount()) {
+                    if(row.Last()->GetWidth().GetUnit() == Dimension::Fractions) {
+                        w = row.Last()->GetBounds().Left + usize;
+                    }
+                    else {
+                        w = row.Last()->GetBounds().Right;
+                    }
+                }
                 
-                int off = 0;
+                float off = 0;
                 
                 if(align == Graphics::TextAlignment::Center) {
                     off = (width - w) / 2;
@@ -58,16 +65,28 @@ namespace Gorgon { namespace UI { namespace Organizers {
                     off = width - w;
                 }
                 
+                float perfraction = 0;
+                if(fractionals) {
+                    perfraction = float(width - w + fractionals * (usize+s)) / fractions;
+                    off = 0;
+                }
+                
                 for(auto &cell : row) {
                     cell.Move(Pixels(
                         cell.GetCurrentLocation() +
-                        Geometry::Point{off, (maxy - cell.GetCurrentHeight())/2}
+                        Geometry::Point{(int)std::round(off), (maxy - cell.GetCurrentHeight())/2}
                     ));
+                    if(cell.GetWidth().GetUnit() == Dimension::Fractions) {
+                        cell.setwidthperfraction(perfraction);
+                        off += perfraction * cell.GetWidth().GetValue() - usize - s;
+                    }
                 }
                 
                 x = 0;
                 rowc = 0;
                 maxy = 0;
+                fractions = 0;
+                fractionals = 0;
                 row.Clear();
                 breakspace = 0;
             };
@@ -105,7 +124,14 @@ namespace Gorgon { namespace UI { namespace Organizers {
                     continue;
                 }
                 
-                int w = widget.GetCurrentWidth();
+                int w = usize;
+                if(widget.GetWidth().GetUnit() == Dimension::Fractions) {
+                    fractions += widget.GetWidth().GetValue();
+                    fractionals++;
+                }
+                else {
+                    w = widget.GetCurrentWidth();
+                }
                 
                 if(x + w + xoff > width && rowc > 0 && breaks == 0) {
                     breaks = 1;

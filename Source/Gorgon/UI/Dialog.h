@@ -374,7 +374,7 @@ namespace Gorgon { namespace UI {
             }
         );
         
-        diag->ResizeInterior(negotiatesize(diag, text, false));
+        diag->ResizeInterior(Pixels(negotiatesize(diag, text, false)));
         if(l) {
             l->Move(Pixels(text->GetCurrentLocation().X, text->GetBounds().Bottom + text->GetCurrentLocation().Y));
             l->SetHeight(inp->GetHeight());

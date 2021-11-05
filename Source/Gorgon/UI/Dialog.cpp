@@ -98,11 +98,11 @@ namespace internal {
         for(int i=0; i<5; i++) { //maximum 5 iterations
             sz = text->GetCurrentSize();
 
-            if(!allowshrink)
+            if(!allowshrink && sz.Width < diag->GetInteriorSize().Width)
                 sz.Width = diag->GetInteriorSize().Width;
 
             if(sz.Width < diag->GetUnitSize() * 6) {
-                //too small, use 4units at least
+                //too small, use 6units at least
                 sz.Width = diag->GetUnitSize() * 6;
                 break;
             }

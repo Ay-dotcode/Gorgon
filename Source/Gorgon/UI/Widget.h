@@ -265,6 +265,12 @@ namespace Gorgon { namespace UI {
 #endif
         }
         
+        /// Is designed to be used by organizers
+        void setwidthperfraction(float value) {
+            widthperfraction = value;
+            calculatebounds();
+        }
+        
 #ifndef NDEBUG
     std::string dbgname;
 #endif
@@ -354,6 +360,8 @@ namespace Gorgon { namespace UI {
         bool enabled = true;
         bool focus   = false;
         bool floating= false;
+        
+        float widthperfraction = -1;
         
         /// Never call this function
         virtual void hide() = 0;
