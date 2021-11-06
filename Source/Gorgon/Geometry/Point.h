@@ -284,6 +284,7 @@ namespace Gorgon {
 				Float ydif = (Float)(target.Y - Y);
 				return (xdif * xdif) + (ydif * ydif);
 			}
+
 			/// Calculates Euclidean distance from this point to origin
 			Float Distance() const {
 				return std::sqrt( Float(X*X) + Float(Y*Y) );
@@ -293,14 +294,15 @@ namespace Gorgon {
 			Float EuclideanSquare() const {
 				return Float(X * X) + Float(Y * Y);
 			}
+
 			/// Calculates Manhattan distance from this point to the given target
-			Float ManhattanDistance(const basic_Point &target) const {
-				return (Float)(std::abs(X-target.X) + std::abs(Y-target.Y));
+			T_ ManhattanDistance(const basic_Point &target) const {
+				return (std::abs(X-target.X) + std::abs(Y-target.Y));
 			}
 
 			/// Calculates Manhattan distance from this point to origin
-			Float ManhattanDistance() const {
-				return (Float)(std::abs(X) + std::abs(Y));
+			T_ ManhattanDistance() const {
+				return (std::abs(X) + std::abs(Y));
 			}
 			
 			/// Normalizes the point as a unit vector

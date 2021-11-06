@@ -153,7 +153,7 @@ namespace Gorgon { namespace UI {
         
         if(delayleft != -1) {
             if(toplevel) {
-                int movement = (toplevel->GetMouseLocation()-lastlocation).ManhattanDistance();
+                int movement = (int)(toplevel->GetMouseLocation()-lastlocation).ManhattanDistance();
                 if(toleranceleft < movement) {
                     lastlocation = toplevel->GetMouseLocation();
                     delayleft = delay + Time::DeltaTime();
@@ -163,7 +163,7 @@ namespace Gorgon { namespace UI {
                 }
             }
             
-            if(delayleft <= Time::DeltaTime()) {
+            if(delayleft <= (long)Time::DeltaTime()) {
                 if(current) {
                     Show(current->GetTooltip());
                     place();
@@ -177,7 +177,7 @@ namespace Gorgon { namespace UI {
         }
         
         if(lingerleft != -1) {
-            if(lingerleft <= Time::DeltaTime()) {
+            if(lingerleft <= (long)Time::DeltaTime()) {
                 Hide();
                 
                 lingerleft = -1;

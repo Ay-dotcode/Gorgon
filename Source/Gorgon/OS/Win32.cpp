@@ -440,7 +440,7 @@ namespace Gorgon {
 
 		std::vector<std::string> filenames;
 
-		for(int i = 0; i<fontcount; i++) {
+		for(int i = 0; i<(int)fontcount; i++) {
 			DWORD type, size = maxsize, nl = maxnamelen;
 
 			result = RegEnumValue(fontskey, i,

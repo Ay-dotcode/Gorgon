@@ -1175,7 +1175,7 @@ namespace Gorgon { namespace Widgets {
                 if(it == storage.end())
                     return -1;
                 else
-                    return it-storage.begin();
+                    return long(it-storage.begin());
             }
             
             /// Allocates memory for the given amount of items
@@ -2059,7 +2059,7 @@ namespace Gorgon { namespace Widgets {
             vscroller->Range        = 1;
             *vscroller              = scrolloffset;
             vscroller->SmallChange  = float(scrolldist);
-            vscroller->SetSmoothChangeSpeed(scrollspeed);
+            vscroller->SetSmoothChangeSpeed(float(scrollspeed));
             vscroller->ValueChanged.Register(*this, &ListboxWidgetBase::ScrollTo);
             
             return vscroller;
@@ -2075,11 +2075,11 @@ namespace Gorgon { namespace Widgets {
             if(1000*abs(target-cur)/scrollspeed > maxscrolltime) {
                 //due to integer division, this value would be scrollspeed at some points, which will reset smooth speed
                 //if not, when scrolling is finished it will be reset
-                curspeed = 1000*abs(target-cur) / maxscrolltime;
+                curspeed = int(1000*abs(target-cur) / maxscrolltime);
             
                 auto scroller = dynamic_cast<VScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
                 if(scroller)
-                    scroller->SetSmoothChangeSpeed(curspeed);
+                    scroller->SetSmoothChangeSpeed(float(curspeed));
             }
             
             float dist = (float)curspeed/1000 * Time::DeltaTime();
@@ -2115,7 +2115,7 @@ namespace Gorgon { namespace Widgets {
                 
                 auto scroller = dynamic_cast<VScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
                 if(scroller)
-                    scroller->SetSmoothChangeSpeed(scrollspeed); //just in case
+                    scroller->SetSmoothChangeSpeed(float(scrollspeed)); //just in case
                     
                 stack.RemoveFrameEvent();
             }

@@ -940,7 +940,7 @@ namespace Gorgon {
 
                         for(int x=0; x<newsize.Width; x++) {
                             for(unsigned c=0; c<cpp; c++) {
-                                float xn = x + b.Left;
+                                float xn = float(x + b.Left);
 
                                 target(x, y, c) = Get((int)std::round(xn - yn * perpixel), y, c);
                             }
@@ -952,7 +952,7 @@ namespace Gorgon {
                         float yn = y - origin.Y + b.Top;
 
                         for(int x=0; x<newsize.Width; x++) {
-                            float xn = x + b.Left;
+                            float xn = float(x + b.Left);
 
                             float xx = xn - yn * perpixel;
 
@@ -978,7 +978,7 @@ namespace Gorgon {
                         float yn = y - origin.Y + b.Top;
 
                         for(int x=0; x<newsize.Width; x++) {
-                            float xn = x + b.Left;
+                            float xn = float(x + b.Left);
 
                             float xx = xn - yn * perpixel;
 
@@ -1039,7 +1039,7 @@ namespace Gorgon {
 
                         for(int y=0; y<newsize.Height; y++) {
                             for(unsigned c=0; c<cpp; c++) {
-                                float yn = y + b.Top;
+                                float yn = float(y + b.Top);
 
                                 target(x, y, c) = Get(x, (int)std::round(yn - xn * perpixel), c);
                             }
@@ -1051,7 +1051,7 @@ namespace Gorgon {
                         float xn = x - origin.X + b.Left;
 
                         for(int y=0; y<newsize.Height; y++) {
-                            float yn = y + b.Top;
+                            float yn = float(y + b.Top);
 
                             float yy = yn - xn * perpixel;
 
@@ -1077,7 +1077,7 @@ namespace Gorgon {
                         float xn = x - origin.X + b.Left;
 
                         for(int y=0; y<newsize.Height; y++) {
-                            float yn = y + b.Top;
+                            float yn = float(y + b.Top);
 
                             float yy = yn - xn * perpixel;
 
@@ -1120,7 +1120,7 @@ namespace Gorgon {
                 int yy = size.Height - 1;
                 for(int y=0; y<size.Height; y++) {
                     for(int x=0; x<size.Width; x++) {
-                        for(int c=0; c<cpp; c++) {
+                        for(unsigned c=0; c<cpp; c++) {
                             target(x, y, c) = operator()(x, yy, c);
                         }
                     }
@@ -1137,7 +1137,7 @@ namespace Gorgon {
                 int xx = size.Width- 1;
                 for(int x=0; x<size.Width; x++) {
                     for(int y=0; y<size.Height; y++) {
-                        for(int c=0; c<cpp; c++) {
+                        for(unsigned c=0; c<cpp; c++) {
                             target(x, y, c) = operator()(xx, y, c);
                         }
                     }

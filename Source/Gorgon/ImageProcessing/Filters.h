@@ -170,7 +170,7 @@ namespace Gorgon { namespace ImageProcessing {
                         default:
                             for(int c=0; c<C; c++) {
                                 if(!noalpha || c != A)
-                                    output(x, y, c) = values[c] / weightsum;
+                                    output(x, y, c) = Byte(values[c] / weightsum);
                             }
                             break;
                         }
@@ -178,7 +178,7 @@ namespace Gorgon { namespace ImageProcessing {
                     else {
                         for(int c=0; c<C; c++) {
                             if(!noalpha || c != A)
-                                output(x, y, c) = values[c] / weightsum;
+                                output(x, y, c) = Byte(values[c] / weightsum);
                         }
                     }
                 }
@@ -279,7 +279,7 @@ namespace Gorgon { namespace ImageProcessing {
                         default:
                             for(int c=0; c<C; c++) {
                                 if(!noalpha || c != A)
-                                    output(x, y, c) = values[c];
+                                    output(x, y, c) = Byte(values[c]);
                             }
                             break;
                         }
@@ -287,7 +287,7 @@ namespace Gorgon { namespace ImageProcessing {
                     else {
                         for(int c=0; c<C; c++) {
                             if(!noalpha || c != A)
-                                output(x, y, c) = values[c];
+                                output(x, y, c) = Byte(values[c]);
                         }
                     }
                 }

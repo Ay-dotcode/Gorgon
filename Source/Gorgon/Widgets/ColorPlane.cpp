@@ -61,7 +61,7 @@ namespace Gorgon { namespace Widgets {
                 if(l.Y == 0) {
                     if(l.X >= huetable.size() / 2) {
                         halftablerow = 1;
-                        l.X -= huetable.size() / 2;
+                        l.X -= (int)huetable.size() / 2;
                     }
                     else if(l.X < huetable.size()){
                         halftablerow = 0;
@@ -70,7 +70,7 @@ namespace Gorgon { namespace Widgets {
                 if(l.Y == 1) {
                     if(l.X >= huetable.size() / 2) {
                         halftablerow = 3;
-                        l.X -= huetable.size() / 2;
+                        l.X -= (int)huetable.size() / 2;
                     }
                     else if(l.X < huetable.size()){
                         halftablerow = 2;
@@ -80,7 +80,7 @@ namespace Gorgon { namespace Widgets {
             else if(l.Y == 0) {
                 if(l.X >= huetable.size() / 2) {
                     halftablerow = 3;
-                    l.X -= huetable.size() / 2;
+                    l.X -= (int)huetable.size() / 2;
                 }
                 else if(l.X < huetable.size()){
                     halftablerow = 2;
@@ -90,16 +90,16 @@ namespace Gorgon { namespace Widgets {
             found = true;
             switch(halftablerow) {
             case 0:
-                color = Graphics::LChAf(20, 10, huetable[l.X * 2]);
+                color = Graphics::LChAf(20, 10, float(huetable[l.X * 2]));
                 break;
             case 1:
-                color = Graphics::LChAf(80, 15, huetable[l.X * 2]);
+                color = Graphics::LChAf(80, 15, float(huetable[l.X * 2]));
                 break;
             case 2:
-                color = Graphics::LChAf(8, 25, huetable[l.X * 2]);
+                color = Graphics::LChAf(8, 25, float(huetable[l.X * 2]));
                 break;
             case 3:
-                color = Graphics::LChAf(5, 75, huetable[l.X * 2]);
+                color = Graphics::LChAf(5, 75, float(huetable[l.X * 2]));
                 break;
                 
             default:
@@ -115,7 +115,7 @@ namespace Gorgon { namespace Widgets {
             
             if(l.Y < lctable.size() && l.X < huetable.size()) {
                 found = true;
-                color = Graphics::LChAf(lctable[l.Y].first, lctable[l.Y].second, huetable[l.X]);
+                color = Graphics::LChAf(float(lctable[l.Y].first), float(lctable[l.Y].second), float(huetable[l.X]));
             }
             
             if(alpha) 
@@ -177,8 +177,8 @@ namespace Gorgon { namespace Widgets {
         display.Resize(sz);
         display.ForAllValues([](auto &c) { c = 255; });
         
-        sz.Width  -= huetable.size()*2 + 2;
-        sz.Height -= lctable.size()*2  + 8 + (lctable.size()>8)*2 + alpha*4; //extra space between grayscale and other colors
+        sz.Width  -= int(huetable.size()*2 + 2);
+        sz.Height -= int(lctable.size()*2  + 8 + (lctable.size()>8)*2 + alpha*4); //extra space between grayscale and other colors
         
         float w = (float)sz.Width / huetable.size();
         float h = (float)sz.Height/ (lctable.size() + 2 + (lctable.size()>8) + alpha);
@@ -191,7 +191,7 @@ namespace Gorgon { namespace Widgets {
         basecolor.A = 1.f;
         
         if(alpha) {
-            int sw = (h+4)/4+1;
+            int sw = int(std::round((h+4)/4+1));
             bool state = false;
             bool sstate = false;
             int toth = display.GetData().GetHeight();
@@ -239,7 +239,7 @@ namespace Gorgon { namespace Widgets {
         for(auto p : lctable) {
             x = 2;
             for(auto hue : huetable) {
-                drawrect(Graphics::LChAf(p.first, p.second, hue));
+                drawrect(Graphics::LChAf(float(p.first), float(p.second), float(hue)));
             }
             
             y += h + 2;
@@ -250,10 +250,10 @@ namespace Gorgon { namespace Widgets {
         //additional low constrast colors
         if(lctable.size() > 8) {
             for(int hue=0; hue<huetable.size()/2; hue++) {
-                drawrect(Graphics::LChAf(20, 10, huetable[hue*2]));
+                drawrect(Graphics::LChAf(20, 10, float(huetable[hue*2])));
             }
             for(int hue=0; hue<huetable.size()/2; hue++) {
-                drawrect(Graphics::LChAf(80, 15, huetable[hue*2]));
+                drawrect(Graphics::LChAf(80, 15, float(huetable[hue*2])));
             }
             y += h + 2;
         }
@@ -261,10 +261,10 @@ namespace Gorgon { namespace Widgets {
         //compress very dark colors
         x = 2;
         for(int hue=0; hue<huetable.size()/2; hue++) {
-            drawrect(Graphics::LChAf(8, 25, huetable[hue*2]));
+            drawrect(Graphics::LChAf(8.f, 25.f, float(huetable[hue*2])));
         }
         for(int hue=0; hue<huetable.size()/2; hue++) {
-            drawrect(Graphics::LChAf(5, 75, huetable[hue*2]));
+            drawrect(Graphics::LChAf(5.f, 75.f, float(huetable[hue*2])));
         }
         y += h + 2;
         

@@ -59,10 +59,10 @@ namespace Gorgon { namespace UI { namespace Organizers {
                 float off = 0;
                 
                 if(align == Graphics::TextAlignment::Center) {
-                    off = (width - w) / 2;
+                    off = (width - w) / 2.f;
                 }
                 else if(align == Graphics::TextAlignment::Right) {
-                    off = width - w;
+                    off = float(width - w);
                 }
                 
                 float perfraction = 0;

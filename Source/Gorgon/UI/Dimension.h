@@ -158,8 +158,8 @@ namespace Gorgon { namespace UI {
                         return (float)value * emwidth / 100.f;
                     case UnitSize:
                         if(!issize || (value >= -1 && value <= 1))
-                            return value * unitsize;
-                        return value * unitsize + (value - 1) * spacing;
+                            return float(value * unitsize);
+                        return float(value * unitsize + (value - 1) * spacing);
                     case MilliUnitSize:
                         if(!issize || (value >= -1000 && value <= 1000))
                             return (float)value * unitsize / 1000;
@@ -184,7 +184,7 @@ namespace Gorgon { namespace UI {
                     case EM:
                         return (float)value * emwidth / 100.f;
                     case UnitSize:
-                        return value * (unitsize + spacing);
+                        return float(value * (unitsize + spacing));
                     case MilliUnitSize:
                         return (float)value * (unitsize + spacing) / 1000;
                     case Spaces:

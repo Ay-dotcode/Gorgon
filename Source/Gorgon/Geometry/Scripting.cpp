@@ -204,7 +204,7 @@ namespace Gorgon { namespace Geometry {
                     Scripting::MapFunction(
                         [](Point owner, Point other){
                             return owner.ManhattanDistance(other);
-                        },Scripting::Types::Float(),
+                        },Scripting::Types::Int(),
                         {
                             Scripting::Parameter("Point","Another point to calculate the Manhattan Distance from",point)
                         },
@@ -213,7 +213,7 @@ namespace Gorgon { namespace Geometry {
                     Scripting::MapFunction(
                         [](Point owner){
                             return owner.ManhattanDistance();
-                        },Scripting::Types::Float(),
+                        },Scripting::Types::Int(),
                         { },
                         Scripting::ConstTag
                     )

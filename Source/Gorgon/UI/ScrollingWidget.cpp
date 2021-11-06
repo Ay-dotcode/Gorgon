@@ -139,11 +139,11 @@ namespace Gorgon { namespace UI {
                 
             auto vscroller = dynamic_cast<Widgets::VScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::VScrollTag));
             if(vscroller)
-                vscroller->SetSmoothChangeSpeed(scrollspeedpx);
+                vscroller->SetSmoothChangeSpeed(float(scrollspeedpx));
             
             auto hscroller = dynamic_cast<Widgets::HScroller<float>*>(stack.GetWidget(UI::ComponentTemplate::HScrollTag));
             if(hscroller)
-                hscroller->SetSmoothChangeSpeed(scrollspeedpx);
+                hscroller->SetSmoothChangeSpeed(float(scrollspeedpx));
                     
             scrollleftover = 0;
         }

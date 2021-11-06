@@ -96,8 +96,8 @@ namespace Gorgon { namespace Widgets {
             FcObjectSetDestroy(os);
         }
 
-#endif
     nofc:
+#endif
         static const std::string regularlist[] = {"dejavu sans", "freesans", "liberation sans", "arial","times new roman"};
         static const std::string monolist[] = {"dejavu sans mono", "free mono", "liberation mono", "consolas", "courier new"};
         
@@ -431,7 +431,7 @@ namespace Gorgon { namespace Widgets {
             }
         }
         else {
-            border.Width = bordersize;
+            border.Width = (int)std::round(bordersize);
             border.Shape = bordersize / 2.f + objectheight/18.f;
         }
         
@@ -500,28 +500,28 @@ namespace Gorgon { namespace Widgets {
         
         switch(id.Type) {
         case AssetID::Rectangle:
-            prov = makeborder(bd, bg, id.Border, bw, br);
+            prov = makeborder(bd, bg, id.Border, (int)std::round(bw), (int)std::round(br));
             break;
         case AssetID::Background:
-            prov = makeborder(0x0, bg, id.Border, bw, br);
+            prov = makeborder(0x0, bg, id.Border, (int)std::round(bw), (int)std::round(br));
             break;
         case AssetID::Frame:
-            prov = makeborder(bd, 0x0, id.Border, bw, br);
+            prov = makeborder(bd, 0x0, id.Border, (int)std::round(bw), (int)std::round(br));
             break;
         case AssetID::White:
-            prov = makeborder(0x0, Graphics::Color::White, id.Border, bw, br);
+            prov = makeborder(0x0, Graphics::Color::White, id.Border, (int)std::round(bw), (int)std::round(br));
             break;
         case AssetID::Focus:
             prov = makefocusborder();
             break;
         case AssetID::Edit:
-            prov = makeborder(bd, Colors[Graphics::Color::Edit].Backcolor, id.Border, bw, br);
+            prov = makeborder(bd, Colors[Graphics::Color::Edit].Backcolor, id.Border, (int)std::round(bw), (int)std::round(br));
             break;
         case AssetID::FgFilled:
-            prov = makeborder(bd, fg, id.Border, bw, br);
+            prov = makeborder(bd, fg, id.Border, (int)std::round(bw), (int)std::round(br));
             break;
         case AssetID::BorderFilled:
-            prov = makeborder(bd, bd, id.Border, bw, br);
+            prov = makeborder(bd, bd, id.Border, (int)std::round(bw), (int)std::round(br));
             break;
         case AssetID::DownArrow:
             prov = arrow(fg, shapesize, Gorgon::PI);
@@ -1213,7 +1213,7 @@ namespace Gorgon { namespace Widgets {
         
         auto &defbord = temp.AddGraphics(9, UI::ComponentCondition::Default);
         
-        float r = Border.Radius - Focus.Spacing;
+        float r = float(Border.Radius - Focus.Spacing);
         r = std::max(0.f, r);
         
         defbord.Content.SetAnimation(A(Frame, Focus, AllExceptTop, r, (float)Focus.Width));
@@ -2509,8 +2509,8 @@ namespace Gorgon { namespace Widgets {
             bg.SetTag(UI::ComponentTemplate::ResizeTag);            
         };
         
-        addborder(UI::ComponentCondition::Always, A(Rectangle, PassiveContiner, All, expandedradius(spacing)));
-        addborder(UI::ComponentCondition::Focused, A(Rectangle, ActiveContainer, All, expandedradius(spacing)));
+        addborder(UI::ComponentCondition::Always, A(Rectangle, PassiveContiner, All, expandedradius(float(spacing))));
+        addborder(UI::ComponentCondition::Focused, A(Rectangle, ActiveContainer, All, expandedradius(float(spacing))));
         
         auto &titlebar = tmp.AddContainer(5, UI::ComponentCondition::Always)
             .AddIndex(7) //icon

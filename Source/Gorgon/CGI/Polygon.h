@@ -210,7 +210,7 @@ namespace internal {
             }
             
             //fill
-            fn((Float)y, drawlist);
+            fn(y, drawlist);
             drawlist.clear();
         }
     }
