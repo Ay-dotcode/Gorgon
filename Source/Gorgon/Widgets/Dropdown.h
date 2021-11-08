@@ -125,7 +125,7 @@ namespace Gorgon { namespace Widgets {
                 list.Move(Pixels(res.CoordinatesInExtender.X, res.CoordinatesInExtender.Y + GetCurrentHeight()));
             }
             
-            list.SetWidth(GetWidth());
+            list.SetWidth(Pixels(GetCurrentWidth()));
             list.SetFloating(true);
             res.Extender->Add(list);
             
