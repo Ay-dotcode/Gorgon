@@ -21,11 +21,12 @@ namespace Gorgon { namespace Encoding {
 		class Reader {
 		public:
 			void (*Read)(png_struct_def *p, unsigned char *buf, size_t size);
+			virtual ~Reader() = default;
 		};
-
 		class Writer {
 		public:
 			void (*Write)(png_struct_def *p, unsigned char *buf, size_t size);
+			virtual ~Writer() = default;
 		};
 
 		//Vector streamers
