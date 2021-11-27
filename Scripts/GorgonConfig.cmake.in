@@ -114,7 +114,7 @@ MACRO(linkgorgon target)
 	compilersetup()
 	target_link_libraries(${target} Gorgon)
 	
-	include_directories(${GORGON_INCLUDE_DIRS})
+	target_include_directories(${target} SYSTEM PRIVATE ${GORGON_INCLUDE_DIRS})
 	
     if("@FREETYPE@" STREQUAL "SYSTEM" OR "@FREETYPE@" STREQUAL "BUILTIN")
         set(FREETYPE_INCLUDE_DIRS "@FREETYPE_INCLUDE_DIRS@")
