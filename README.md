@@ -41,6 +41,16 @@ Run the command below to install all the dependencies on Ubuntu 18.04.
 
 ```$ sudo apt-get install gcc cmake cmake-gui libx11-dev libxinerama-dev libxrandr-dev libxtst-dev doxygen freetype libfifechan-dev libfreetype6-dev libpulse-dev libfontconfig1-dev libflac-dev libvorbis-dev```
 
+### Fontconfig_DIR not found in cmake-gui for Ubuntu 18.04
+There is an issue with cmake v3.20+ versions with fontconfig. Just purge all the cmake you have installed before, after that download cmake-3.16.0.tar.gz from https://github.com/Kitware/CMake/releases/tag/v3.16.0
+after that
+```
+./bootstrap
+make -j32
+sudo make install
+```
+
+You have installed cmake v3.16.0. This version will solve the issue about fontconfig if you have installed correct fontconfig libraries.
 
 ----
     
