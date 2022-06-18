@@ -29,10 +29,10 @@ GGE 4.x is still in development and is not feature complete.
 
 ----
 
-### Fedora 32/33 on 64bit system dependencies
+### Fedora 32/33/34/35/36 on 64bit system dependencies
 Run the command below to install all the dependencies on Fedora distros after Fedora 26.
 
-```$ sudo dnf install gcc cmake cmake-gui libX11 libXinerama-devel libXrandr-devel libXext doxygen freetype freetype-devel pulseaudio-libs-devel fontconfig-devel libcurl flac-devel libvorbis-devel```
+```$ sudo dnf install gcc g++ cmake cmake-gui libX11-devel libXinerama-devel libXrandr-devel libXext doxygen freetype freetype-devel pulseaudio-libs-devel fontconfig-devel libcurl flac-devel libvorbis-devel ghc-OpenGL-devel```
 
 ----
 
@@ -82,11 +82,11 @@ You have installed cmake v3.16.0. This version will solve the issue about fontco
 
  6. Now run the command below to make files.
 
-    ```$ make```
+    ```$ cmake --build .```
     
     **Note:** Add -j8, -j4 for the number of CPU cores you would like to use to build Gorgon as it can take time with a sigle core. 
 
  7. Finally install Gorgon using sudo users.
 
-    ```$ sudo make install```
+    ```$ sudo cmake --install .```
     
