@@ -322,7 +322,7 @@ namespace Gorgon { namespace Graphics {
 
         /// Converts this color to the given color mode. At most GetChannelsPerPixel(mode) amount
         /// of values will be set
-        std::array<Gorgon::Byte, 4> Convert(const Gorgon::Graphics::ColorMode &mode) {
+        std::array<Gorgon::Byte, 4> Convert(const Gorgon::Graphics::ColorMode &mode) const {
             switch(mode){
                 case Gorgon::Graphics::ColorMode::Alpha:
                     return {A};
@@ -1048,11 +1048,11 @@ namespace Gorgon { namespace Graphics {
                 return {Forecolor, Backcolor};
             }
             
-            bool operator ==(const Pair &other) {
+            bool operator ==(const Pair &other) const {
                 return Forecolor == other.Forecolor && Backcolor == other.Backcolor;
             }
             
-            bool operator !=(const Pair &other) {
+            bool operator !=(const Pair &other) const {
                 return !(*this == other);
             }
             
@@ -1102,11 +1102,11 @@ namespace Gorgon { namespace Graphics {
                 return {Forecolor, Backcolor, Bordercolor};
             }
             
-            bool operator ==(const Triplet &other) {
+            bool operator ==(const Triplet &other) const {
                 return Forecolor == other.Forecolor && Backcolor == other.Backcolor && Bordercolor == other.Bordercolor;
             }
             
-            bool operator !=(const Triplet &other) {
+            bool operator !=(const Triplet &other) const {
                 return !(*this == other);
             }
             

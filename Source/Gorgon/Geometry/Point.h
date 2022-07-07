@@ -153,7 +153,10 @@ namespace Gorgon {
 				
 				while(s!=str.end() && (*s==' ' || *s=='\t')) s++;
 				if(s==str.end() || *s!=',') {
-					throw String::IllegalTokenError(s-str.begin(), 111002, std::string("Illegal token: ")+*s);
+                    std::string token = "[end]";
+                    if(s!=str.end())
+                        token = *s;
+					throw String::IllegalTokenError(s-str.begin(), 111002, std::string("Illegal token: ")+token);
 				}
 				s++;
 				

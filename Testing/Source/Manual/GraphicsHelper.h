@@ -27,7 +27,7 @@ Graphics::Bitmap BGImage(int w, int h, Byte col1 = 0x10, Byte col2 = 0x30);
 template<class W_>
 class basic_Application {
 public:
-    basic_Application(std::string appname, std::string title, std::string helptext, int tilesize=25, int colmod = 0x10) :
+    basic_Application(std::string appname, std::string title, std::string helptext, int tilesize=25, int colmod = 0x10, Gorgon::Geometry::Size size={800,600}) :
         appname(appname)
     {
         std::cout<<"Current working directory: ";
@@ -40,7 +40,7 @@ public:
 
         Gorgon::Initialize(appname);
 
-        wind = W_{{800, 600}, appname, title, true};
+        wind = W_{size, appname, title, true};
 
         //Gorgon::GL::log.InitializeConsole();
 

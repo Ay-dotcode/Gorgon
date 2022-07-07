@@ -216,7 +216,7 @@ namespace internal {
     }
 }
 ///@endcond
-    
+
     /**
      * This function fills the given point list as a polygon. List is treated as closed
      * where last pixel connects to the first. S_ is the number of subdivision for subpixel

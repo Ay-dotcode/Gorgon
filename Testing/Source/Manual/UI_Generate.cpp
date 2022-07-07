@@ -132,7 +132,7 @@ int main() {
     icnbtn.OwnIcon(icon2.CreateAnimation());
 
     Gorgon::Widgets::Label l("\tOne:");
-    Gorgon::Widgets::Label l2("Error", Gorgon::Widgets::Registry::Label_Subtitle);
+    Gorgon::Widgets::Label l2("Error", Gorgon::Widgets::Registry::Label_Bold);
 
     Gorgon::Widgets::RadioButtons<int> radio(Gorgon::Widgets::Registry::Radio_Regular);
     radio.Add(0,"One");
@@ -145,7 +145,7 @@ int main() {
     Gorgon::Widgets::Checkbox chk("One",Gorgon::Widgets::Registry::Checkbox_Regular);
     Gorgon::Widgets::Checkbox chk2("Lattej");
     Gorgon::Widgets::Checkbox chkbutton("C", Gorgon::Widgets::Registry::Checkbox_Button);
-    Gorgon::Widgets::Progressbar bar(Gorgon::Widgets::Registry::Progress_Regular);
+    Gorgon::Widgets::Progressbar bar(0, Gorgon::Widgets::Registry::Progress_Regular);
     Gorgon::Widgets::Panel toppanel(Gorgon::Widgets::Registry::Panel_Top);
     toppanel.Resize(Pixels( 30,30 ));
     Gorgon::Widgets::Label toplabel("Panel Top");
@@ -301,7 +301,9 @@ int main() {
     //org.SetAlignment(org.Center);
     
     Widgets::ColorPlane plane;
-    
+    plane.HueDensity = plane.Low;
+    plane.LCDensity = plane.Low;
+
     org << 100_perc << plane << org.Break
         << chkbutton << 1_fr << input << org.Break
         << 2 << "Label" << 4_spcs << "" << 1_fr << Coffee << org.Break << l2
