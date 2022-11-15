@@ -138,7 +138,8 @@ namespace Gorgon {
         /// Returns the offset of the object according to the given placement rule when there is the given
         /// remainder between object size and the area its being drawn on. Typical usage:
         /// `CalculateOffset(Placement::MiddleCenter, areasize - objectsize)`
-        inline Geometry::Point CalculateOffset(Placement place, Geometry::Size remainder) {
+        template<class T_>
+        Geometry::basic_Point<T_> CalculateOffset(Placement place, Geometry::basic_Size<T_> remainder) {
             switch(GetHorizontal(place)) {
             case Alignment::Start:
                 remainder.Width=0;
@@ -171,9 +172,25 @@ namespace Gorgon {
 #endif
             }
 
-            return (Geometry::Point)remainder;
+            return (Geometry::basic_Point<T_>)remainder;
         }
 
+        inline Geometry::Rectangle ShrinkFit(Placement place, const Geometry::Size &obj, const Geometry::Size &target) {
+            auto factor = Geometry::Sizef(target) / obj;
+            auto aspect = (float)obj.Width / obj.Height;
+            if(target.Width < obj.Width || target.Height < obj.Height) {
+                auto nsize = (factor.Width > factor.Height) ?
+                    Geometry::Sizef{target.Height * aspect, (float)target.Height} :
+                    Geometry::Sizef{(float)target.Width, target.Width / aspect};
+
+                auto offset = CalculateOffset<float>(place, target - nsize);
+                return {offset, nsize};
+            }
+            else {
+                auto offset = CalculateOffset<float>(place, target - obj);
+                return {offset, obj};
+            }
+        }
 
         /// This class allows control over a sizable object
         class SizeController {

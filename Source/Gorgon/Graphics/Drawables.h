@@ -127,6 +127,31 @@ namespace Gorgon { namespace Graphics {
 			drawstretched(target, r, color);
 		}
 
+		/// Draw to the given area by fitting the bitmap down to the size of the area
+		void DrawShrinked(TextureTarget &target, Placement align = Placement::MiddleCenter) {
+			DrawShrinked(target, {0, 0}, target.GetTargetSize(), align);
+		}
+
+		/// Draw to the given area by fitting the bitmap down to the size of the area
+		void DrawShrinked(TextureTarget &target, float x, float y, const Geometry::Sizef &size, Placement align = Placement::MiddleCenter) {
+			DrawShrinked(target, {x, y}, size, align);
+		}
+
+		/// Draw to the given area by fitting the bitmap down to the size of the area
+		void DrawShrinked(TextureTarget &target, const Geometry::Point &p, float w, float h, Placement align = Placement::MiddleCenter) {
+			DrawShrinked(target, p, {w, h}, align);
+		}
+
+		/// Draw to the given area by fitting the bitmap down to the size of the area
+		void DrawShrinked(TextureTarget &target, float x, float y, float w, float h, Placement align = Placement::MiddleCenter) {
+			DrawShrinked(target, {x, y}, {w, h}, align);
+		}
+
+		/// Draw to the given area by fitting the bitmap down to the size of the area
+		void DrawShrinked(TextureTarget &target, const Geometry::Pointf &p, const Geometry::Sizef &size, Placement align = Placement::MiddleCenter) {
+			DrawStretched(target, ShrinkFit(align, GetSize(), size) + p);
+		}
+
 
 		/// Draw the object to the target by specifying coordinates for four corners
 		void Draw(TextureTarget &target, float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4, RGBAf color = RGBAf(1.f)) const {

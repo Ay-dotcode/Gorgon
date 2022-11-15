@@ -33,5 +33,10 @@ namespace Gorgon { namespace CGI {
     private:
         Color_ color;
     };
+
+    template<class Color_ = Graphics::RGBA>
+    auto MakeSolidFill(Color_ color) {
+        return SolidFill<Color_>(color);
+    }
     
 } }
