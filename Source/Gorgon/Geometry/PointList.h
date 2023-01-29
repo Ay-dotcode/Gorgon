@@ -206,6 +206,7 @@ namespace Gorgon { namespace Geometry {
             Points.pop_back();
         }
         
+        /// Erase the specific index from the list
         void Erase(long index) {
             int size = Points.size();
             if(size == 0)
