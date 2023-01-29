@@ -581,13 +581,13 @@ namespace Gorgon {
 
 		/// Reflects the given point along the X axis considering given origin
 		template<class T_>
-		void ReflectX(basic_Point<T_> &point, const basic_Point<T_> &origin) {
+		void ReflectX(basic_Point<T_> &point, const basic_Point<T_> &origin = {0, 0}) {
 			point.Y = -point.Y+origin.Y*2;
 		}
 
 		/// Reflects the given point along the Y axis considering given origin
 		template<class T_>
-		void ReflectY(basic_Point<T_> &point, const basic_Point<T_> &origin) {
+		void ReflectY(basic_Point<T_> &point, const basic_Point<T_> &origin = {0, 0}) {
 			point.X = -point.X+origin.X*2;
 		}
 

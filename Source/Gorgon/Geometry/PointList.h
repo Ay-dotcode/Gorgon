@@ -206,6 +206,18 @@ namespace Gorgon { namespace Geometry {
             Points.pop_back();
         }
         
+        void Erase(long index) {
+            int size = Points.size();
+            if(size == 0)
+                throw std::out_of_range("List is empty");
+
+            if(index >= size)
+                throw std::out_of_range("Index is greater than  or equal to point list size");
+
+            Points.erase(std::begin(Points) + index);
+        }
+        
+        
         ///Adds the coordinates of the points on the right list to the left.
         ///Right list is treated as cyclic. If right list is empty, nothing is
         ///done.
