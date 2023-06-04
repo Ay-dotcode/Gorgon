@@ -60,6 +60,10 @@ namespace Gorgon { namespace Geometry {
 		basic_Point3D CrossProduct(const basic_Point3D &other) const {
 			return {Y*other.Z - Z*other.Y, Z*other.X - X*other.Z, X*other.Y - Y*other.X};
 		}
+
+		Float DotProduct(const basic_Point3D &other) const {
+            return {Y*other.Y + X*other.X + Z*other.Z};
+        }
         
         union {
             struct {
