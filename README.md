@@ -66,19 +66,14 @@ You have installed cmake v3.16.0. This version will solve the issue about fontco
 
     ```$ cd build```
 
- 4. Type in the following command to setup the cmake file system.
+ 4. Next run the command below to open the cmake gui config file
 
-    ```$ cmake -S /Path/To/Gorgon -B /Path/To/Gorgon/build```
+    ```$ cmake-gui ..```
 
- 5. Next run the command below to open the cmake gui config file
-
-    ```$ cmake-gui```
-
-    a. Set the source code path to /Path/To/Gorgon and the build binaries path to /Path/To/Gorgon/build if not done already, and press Configure if paths were not set. (skip step otherwise)
-    b. Set CMAKE_BUILD_TYPE TO Debug
-    c. Select desired modules and tools to be installed
-    d. If you do not want to install libraries, you may select built-in.
-    e. Then click Configure and Generate and close the cmake gui.
+    a. Set CMAKE_BUILD_TYPE TO Debug
+    b. Select desired modules and tools to be installed (optional)
+    c. If you do not want to install libraries, you may select built-in.
+    d. Then click Configure and Generate and close the cmake gui.
 
  6. Now run the command below to make files.
 
@@ -90,3 +85,7 @@ You have installed cmake v3.16.0. This version will solve the issue about fontco
 
     ```$ sudo cmake --install .```
     
+## How to start programming using Gorgon
+
+In the examples folder there are a few sample programs to get you started. They are not built along with Gorgon. You can compile them in examples folder or you may copy them somewhere else and compile using CMake.
+You may use Visual studio in Windows and KDevelop or VSCode on Linux as IDE. Gorgon based application will probably work with all IDEs that support CMake or supported by CMake build systems.
