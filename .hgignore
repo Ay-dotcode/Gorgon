@@ -1,4 +1,4 @@
-Build
+,Build
 build
 VSBuild
 Debug
@@ -49,3 +49,11 @@ syntax: regexp
 compile_commands.json
 .directory
 .cache
+.git
+
+# Map-dev ignores
+map-dev/MapLoader/Bin
+map-dev/MapLoader/build
+map-dev/MapLoader/\.
+map-dev/MapLoader/cmake-build-debug
+map-dev/MapLoader/MapLoader.kdev4
