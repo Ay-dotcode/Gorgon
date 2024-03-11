@@ -4,6 +4,7 @@ VSBuild
 Debug
 Lib
 Bin
+bin
 Docs/Latex
 Testing/Tests
 Testing/Runtime
@@ -51,9 +52,9 @@ compile_commands.json
 .cache
 .git
 
-# Map-dev ignores
-map-dev/MapLoader/Bin
-map-dev/MapLoader/build
-map-dev/MapLoader/\.
-map-dev/MapLoader/cmake-build-debug
-map-dev/MapLoader/MapLoader.kdev4
+# clion related
+cmake-build-debug
+
+
+Source/Gorgon/Game/bin/
+Source/Gorgon/Game/build/
