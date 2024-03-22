@@ -9,8 +9,6 @@
 #include <ostream>
 #include <regex>
 #include <string>
-#include <type_traits>
-#include <typeinfo>
 #include <variant>
 #include <vector>
 
@@ -66,11 +64,11 @@ namespace Game::Parser {
 std::regex operator""_reg(const char *str, size_t size);
 // auto <var_name> = "string"; set's it as const char *, it's undesired
 // situation. So _str converts it into string.
-constexpr std::string operator""_str(const char *str, size_t size);
+std::string operator""_str(const char *str, size_t size);
 // c string to integer conversion in an easy step.
-constexpr int operator""_int(const char *str, size_t size);
+int operator""_int(const char *str, size_t size);
 template <class Key, class Val>
-constexpr std::map<Key, Val> make_map(const Key &key, const Val &val) {
+std::map<Key, Val> make_map(const Key &key, const Val &val) {
   return {key, val};
 }
 
@@ -92,33 +90,28 @@ class basic_parser {
 
   public:
     // Get text contains the key.
-    constexpr static std::string get_text(const std::regex &needle,
+    static std::string get_text(const std::regex &needle,
                                           std::string haystack,
                                           const char &delim = '\"',
                                           const char &e = '=');
     // Get integer
-    constexpr static int get_int(const std::regex &needle, std::string haystack,
+    static int get_int(const std::regex &needle, std::string haystack,
                                  const char &delim = '\"', const char &e = '=');
     // Get text without a key, (finds a key and a value and returns it).
-    constexpr static std::string get_text_no_key(const std::string &haystack,
+    static std::string get_text_no_key(const std::string &haystack,
                                                  const char &delim = '\"',
                                                  const char &e = '=');
   };
 
-
-  template <class Ty>
-  std::string parse(std::map<std::string, std::vector<Ty>> SearchList);
-
 public:
+  template <class Ty>
+  std::string parse(std::vector<std::pair<std::string, Ty>>);
+
   basic_parser() = delete;
   explicit basic_parser(const std::string &file_name)
       : fileName(file_name), fs(file_name) {}
 
 
-
-  template <class Ty>
-  std::string Parse(const std::map<std::string, std::vector<Ty>> &SearchList) {
-    return this->parse<Ty>(SearchList);
-  };
+  ~basic_parser() { fs.close(); }
 };
 } // namespace Game::Parser

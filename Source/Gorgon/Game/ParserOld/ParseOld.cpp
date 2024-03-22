@@ -1,12 +1,10 @@
 //
 // Created by theany on 10.02.2024.
 //
-#include "Parse.h"
+#include "ParseOld.h"
 
-#include <format>
 #include <optional>
 #include <regex>
-#include <type_traits>
 #include <vector>
 
 
@@ -15,10 +13,10 @@ namespace Game::Parser {
     std::regex operator ""_reg(const char *str, size_t size) {
         return std::regex(str);
     }
-    constexpr std::string operator ""_str(const char *str, size_t size) {
+    std::string operator ""_str(const char *str, size_t size) {
         return {str};
     }
-    constexpr int operator ""_int(const char *str, size_t size){
+    int operator ""_int(const char *str, size_t size){
         return std::stoi(str);
     }
 
@@ -35,7 +33,7 @@ namespace Game::Parser {
     }
 
     // search and get the text of given key
-    constexpr std::string basic_parser::Get::get_text(const std::regex &needle, std::string haystack, const char &delim, const char &e) {
+    std::string basic_parser::Get::get_text(const std::regex &needle, std::string haystack, const char &delim, const char &e) {
         if(const auto res = std::regex_search(haystack, needle); !res)
             return "";
         // Remove delim and the needle
@@ -44,7 +42,7 @@ namespace Game::Parser {
     }
 
     // search and get the int value of given key
-    constexpr int basic_parser::Get::get_int(const std::regex &needle, std::string haystack, const char &delim, const char &e) {
+    int basic_parser::Get::get_int(const std::regex &needle, std::string haystack, const char &delim, const char &e) {
         const auto get = get_text(needle, std::move(haystack), delim, e);
         if(get.empty() or get == " ") {
             return -1;
@@ -55,7 +53,7 @@ namespace Game::Parser {
         return std::stoi(get);
     }
 
-    constexpr std::string basic_parser::Get::get_text_no_key(const std::string &haystack, const char &delim, const char &e) {
+    std::string basic_parser::Get::get_text_no_key(const std::string &haystack, const char &delim, const char &e) {
         auto ret = haystack;
 #ifdef DEBUG
 #ifdef DOUT
@@ -110,32 +108,9 @@ namespace Game::Parser {
     }
 
 
-    template<class Ty>
-    std::string basic_parser::parse(std::map<std::string, std::vector<Ty>> SearchList){
-    using Experimental::Console::Out::echo;
-    std::fstream fs(fileName);
-    if (!fs.is_open())
-      return "Error: Couldn't open or find the file!";
-
-    std::string lookup;
-    bool check = false;
-    while (fs >> lookup) {
-      for (auto [tag, attrList] : SearchList) {
-        static_assert(
-            (std::is_same_v<decltype(tag), decltype(""_str)> == false),
-            "Tag must be string!");
-        if (tagOpen(lookup) && lookup.find(tag)) {
-          check = true;
-        }
-        if (check) {
-            std::cout << lookup << "\n";
-        }
-        if (tagClose(lookup) && check) {
-          check = false;
-        }
-      }
+    template <class Ty>
+    std::string basic_parser::parse(std::vector<std::pair<std::string, Ty>> SearchList) {
+        return "";
     }
-
-    return "";
-  }
+  
 }
