@@ -58,3 +58,4 @@ cmake-build-debug
 
 Source/Gorgon/Game/bin/
 Source/Gorgon/Game/build/
+^\.idea/
