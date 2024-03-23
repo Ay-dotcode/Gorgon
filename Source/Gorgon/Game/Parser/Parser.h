@@ -31,12 +31,20 @@ namespace Gorgon::Game::Parser::Experimental::Any {
     class any_null_type {};
 
     template<typename  Ty = any_null_type>
-    class any_printable {
+    class nullable_type {
         private: 
             std::any a;
         public: 
-            any_printable(Ty a) : a(a) {}
-            any_printable(std::any a) : a(a) {}
+            nullable_type(Ty a) : a(a) {}
+            nullable_type(std::any a) : a(a) {}
+            nullable_type() : a(std::any()) {}
+
+            void operator=(nullable_type<Ty> obj) {
+                a = obj.a;
+            }
+            void operator=(std::any obj) {
+                a = obj;
+            }
             void operator=(const Ty &obj) {
                 a = obj;
             }
@@ -45,7 +53,12 @@ namespace Gorgon::Game::Parser::Experimental::Any {
                 return std::any_cast<Ty>(a);
             }
 
-            friend std::ostream& operator<<(std::ostream &os, const any_printable<Ty> &a) {
+            template<class T>
+            T Get() const {
+                return std::any_cast<T>(a);
+            }
+
+            friend std::ostream& operator<<(std::ostream &os, const nullable_type<Ty> &a) {
                 os << std::format("{}", a.Get());
                 return os;
             }
@@ -54,28 +67,23 @@ namespace Gorgon::Game::Parser::Experimental::Any {
             }
     };
 
+
 }
 
 template<class T, class CharT>
-struct std::formatter<Gorgon::Game::Parser::Experimental::Any::any_printable<T>, CharT> : std::formatter<T, CharT> 
+struct std::formatter<Gorgon::Game::Parser::Experimental::Any::nullable_type<T>, CharT> : std::formatter<T, CharT> 
 {
     template<class FormatContext>
-    auto format(Gorgon::Game::Parser::Experimental::Any::any_printable<T> t, FormatContext& fc) const 
+    auto format(Gorgon::Game::Parser::Experimental::Any::nullable_type<T> t, FormatContext& fc) const 
     {
-        if(!t.has_value()) {
-            return std::formatter<T, CharT>::format(Gorgon::Game::Parser::Experimental::Any::any_null_type {}, fc);
-        }
+      if(!t.has_value()) {
+        return std::formatter<T, CharT>::format(T{}, fc);
+      }
         return std::formatter<T, CharT>::format(t.Get(), fc);
     }
 };
+ 
 
-template <>
-struct std::formatter<Gorgon::Game::Parser::Experimental::Any::any_null_type> : std::formatter<std::string> {
-    template<class FormatContext>
-    auto format(Gorgon::Game::Parser::Experimental::Any::any_null_type, FormatContext& fc) const {
-        return std::formatter<std::string>::format("Has no value.", fc);
-    }
-};
 
 namespace Gorgon::Game::Parser {
 
@@ -95,21 +103,20 @@ namespace Gorgon::Game::Parser {
         ~basic_parser() {
             fs.close();
         }
-        
-        template<class Type>
-        Parsed::Object parse(const std::vector<std::pair<std::string, Type>>);
+
+        Parsed::Object parse(const std::vector<std::pair<std::string, std::vector<std::string>>>);
 
         template<class SearchType>
-        std::any find_text(const std::string &haystack, const std::string &needle);
+        Experimental::Any::nullable_type<std::string> find_text(const std::string &haystack, const std::string &needle);
 
         class RegexSearch {
             public: 
-            static std::any find_text(const std::string &haystack, const std::string &needle);
+            static Experimental::Any::nullable_type<std::string> find_text(const std::string &haystack, const std::string &needle);
         };
 
         class StringSearch {
             public: 
-            static std::any find_text(const std::string &haystack, const std::string &needle);
+            static Experimental::Any::nullable_type<std::string> find_text(const std::string &haystack, const std::string &needle);
         };
         
 
