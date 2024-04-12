@@ -4,16 +4,17 @@
 #include <Gorgon/String.h>
 #include <string>
 
-class ParseFailed : public std::exception {
-    std::string msg; 
-    public: 
-    ParseFailed(const char * msg = "Parse failed!") : msg(msg) {}
-    const char * what() {
-        return msg.c_str();
-    }
-};
 
-namespace Filler {
+
+namespace Game::Filler {
+    class ParseFailed : public std::exception {
+        std::string msg; 
+        public: 
+        ParseFailed(const char * msg = "Parse failed!") : msg(msg) {}
+        const char * what() {
+            return msg.c_str();
+        }
+    };
     namespace internal {
         template<class T_, int Ind>
         void SetByName_setif(T_ &obj, const std::string &name, const std::string &value) {

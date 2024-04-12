@@ -1,9 +1,7 @@
-#include "PugiXML/pugixml.hpp"
 #include <array>
 #include <string>
-#include <iostream>
 #include <Gorgon/Struct.h>
-#include "FillerSystem/Filler.h"
+#include "Parse/Parse.h"
 
 
 struct tileset {
@@ -22,7 +20,7 @@ struct tileset {
 int main() {
 
     std::array<tileset, 6> testarr; 
-    Filler::Fill<0, 6, 4>(testarr, "map.tmx", "map"); 
+    Game::Filler::Fill<0, 6, 4>(testarr, "map.tmx", "map"); 
     
     for(auto x : testarr) {
         std::cout << x.name << std::endl; 

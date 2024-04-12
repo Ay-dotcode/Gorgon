@@ -7,6 +7,7 @@
 #include <typeinfo>
 #include "Utils/Compiler.h"
 #include <functional>
+#include <ostream>
 
 namespace Gorgon {
 	namespace TMP {
