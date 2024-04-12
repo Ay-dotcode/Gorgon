@@ -20,7 +20,7 @@ struct tileset {
 int main() {
 
     std::array<tileset, 6> testarr; 
-    Game::Filler::Fill<0, 6, 4>(testarr, "map.tmx", "map"); 
+    Game::Parser::Filler::Fill<0, 6, 4>(testarr, "map.tmx", "map"); 
     
     for(auto x : testarr) {
         std::cout << x.name << std::endl; 

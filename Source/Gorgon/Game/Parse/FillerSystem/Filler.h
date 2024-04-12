@@ -6,7 +6,7 @@
 
 
 
-namespace Game::Filler {
+namespace Game::Parser::Filler {
     class ParseFailed : public std::exception {
         std::string msg; 
         public: 
