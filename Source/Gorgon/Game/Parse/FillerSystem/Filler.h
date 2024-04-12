@@ -6,7 +6,10 @@
 
 
 
-namespace Game::Parser::Filler {
+namespace Gorgon::Game::Parse::Filler {
+
+    /* Exception class */
+    // TODO Move that to exceptions file when more exceptio types created. 
     class ParseFailed : public std::exception {
         std::string msg; 
         public: 
@@ -15,6 +18,8 @@ namespace Game::Parser::Filler {
             return msg.c_str();
         }
     };
+
+
     namespace internal {
         template<class T_, int Ind>
         void SetByName_setif(T_ &obj, const std::string &name, const std::string &value) {
@@ -50,7 +55,11 @@ namespace Game::Parser::Filler {
 
 
         if constexpr (Index < ObjArrSize) {
-            auto child = map.begin(); 
+            
+            auto child = map.begin();
+            while(std::string((*child).name()) != name) {
+                child++; 
+            }
             for(int j = 0; j < Index; j++) {
                 child++; 
             }
@@ -58,6 +67,7 @@ namespace Game::Parser::Filler {
                 for(int i = 0; i < obj[Index].Reflection().MemberCount; i++) {
                     SetByName(obj[Index], attrlist[i], (*child).attribute(attrlist[i]).value());
                 }
+                obj[Index].SetInner((*child).first_child());
             }; 
             Fill<Index + 1, ObjArrSize, AttrCount, Structure>(obj, file_name, firstNode);
         }

@@ -1,30 +1,16 @@
-#include <array>
-#include <string>
+#include <Gorgon/Game/Parse/FillerSystem/Filler.h>
 #include <Gorgon/Struct.h>
-#include "Parse/Parse.h"
-
-
-struct tileset {
-    public: 
-    /* MUST BE ARRAY AND MUST BE CONST CHAR *  */
-    constexpr static inline std::string tag = "tileset";  
-
-    int firstgid, tilewidth, tileheight;
-    std::string name;  
-    DefineStructMembers(tileset, firstgid,  tilewidth, tileheight, name);  
-    pugi::xml_node inner; 
-
-}; 
-
+#include <Gorgon/Game/Map/Tiled.h>
 
 int main() {
+    Gorgon::Game::Map::Tiled::TiledMap map("map.tmx"); 
+    for(const auto& row : map.GetLayerMapData()[2]) {
+        for(const auto& col : row) {
+            std::cout << std::format("{},", col.inner.first_attribute().value()); 
+        }
+        std::cout << "\n";
+    }
 
-    std::array<tileset, 6> testarr; 
-    Game::Parser::Filler::Fill<0, 6, 4>(testarr, "map.tmx", "map"); 
-    
-    for(auto x : testarr) {
-        std::cout << x.name << std::endl; 
-    } 
 
     return 0; 
 }
