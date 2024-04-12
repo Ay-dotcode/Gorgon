@@ -7,13 +7,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_SOURCE_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/bin/debug)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/bin/release)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 find_package(Gorgon REQUIRED)
 
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG ")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DDEBUG")
 
-add_executable(${PROJECT_NAME} Parser/Parser.cpp main.cpp)
+add_executable(${PROJECT_NAME}  main.cpp PugiXML/pugixml.cpp)
 
-# linkgorgon(${PROJECT_NAME})
+linkgorgon(${PROJECT_NAME})
 
