@@ -40,6 +40,8 @@ option(DOCUMENTATION_GRAPHS "Enable graphs in documentation." OFF)
 
 option(TESTS "Enable compiling of test applications." OFF)
 
+option(GAME "Enable compiling of game modules." ON)
+
 if(WIN32)
 	set(FLAC BUILTIN CACHE STRING "Enable FLAC decoding and streaming.")
 else()

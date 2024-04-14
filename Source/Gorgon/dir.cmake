@@ -5,6 +5,7 @@ SET(Local
 	Encoding
 	External
 	Filesystem
+    Game
 	Geometry
 	GL
 	Graphics

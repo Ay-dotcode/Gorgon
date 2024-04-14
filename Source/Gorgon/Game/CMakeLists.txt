@@ -13,7 +13,7 @@ find_package(Gorgon REQUIRED)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -O0 -DDEBUG ")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -DDEBUG")
 
-add_executable(${PROJECT_NAME}  main.cpp Parse/PugiXML/pugixml.cpp)
+add_executable(${PROJECT_NAME}  main.cpp)
 
 linkgorgon(${PROJECT_NAME})
 

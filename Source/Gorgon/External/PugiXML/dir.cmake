@@ -1,0 +1,3 @@
+set(Local
+    Pugi.h
+)
