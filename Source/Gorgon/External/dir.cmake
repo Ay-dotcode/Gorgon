@@ -3,4 +3,5 @@ SET(Local
 	PNG
 	JPEG
 	PugiXML
+	zlib
 )
