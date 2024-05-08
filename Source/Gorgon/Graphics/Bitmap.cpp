@@ -541,6 +541,37 @@ namespace Gorgon { namespace Graphics {
         
         return ret;
     }
+
+    std::vector<Geometry::Bounds> Bitmap::GenerateAtlasBounds(Geometry::Size size, Geometry::Point margin, Geometry::Point outer_margin) const {
+        if(size == GetSize()) {
+            return {{Geometry::Point {0, 0}, size}};
+        } 
+
+        std::vector<Geometry::Bounds> ret; 
+        int H = GetHeight(); 
+        int W = GetWidth();
+
+        for(int y{ outer_margin.Y }; y <= H - size.Height - outer_margin.Y; y += size.Height + margin.Y) {
+            for(int x{ outer_margin.X }; x <= W - size.Width - outer_margin.X; x += size.Width + margin.X) {
+                ret.emplace_back(Geometry::Point {x, y}, size); 
+            }
+        }
+        return ret; 
+    }
+
+    std::vector<Geometry::Bounds> Bitmap::GenerateAtlasBounds(size_t size, size_t margin, size_t outer_margin) const {
+        return GenerateAtlasBounds(Geometry::Size{size, size}, Geometry::Point {margin, margin}, Geometry::Point{outer_margin, outer_margin}); 
+    }
+
+    std::vector<Geometry::Bounds> Bitmap::GenerateAtlasBounds(Geometry::Size size, size_t margin, size_t outer_margin) const {
+        return GenerateAtlasBounds(size, Geometry::Point {margin, margin}, Geometry::Point{outer_margin, outer_margin}); 
+    }
+
+    std::vector<Geometry::Bounds> Bitmap::GenerateAtlasBounds(size_t size, Geometry::Point margin, Geometry::Point outer_margin) const {
+        return GenerateAtlasBounds(Geometry::Size{size, size}, margin, outer_margin); 
+    }
+
+
     
     std::vector<TextureImage> Bitmap::CreateAtlasImages(std::vector<Geometry::Bounds> boundaries) const {
 		if(GetID() == 0) throw std::runtime_error("Cannot map atlas from an unprepared image");

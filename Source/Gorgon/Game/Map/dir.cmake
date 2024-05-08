@@ -1,3 +1,3 @@
 set(Local 
-    Tiled.h     
+    TiledMap.h
 )
