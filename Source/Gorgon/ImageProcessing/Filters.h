@@ -3,10 +3,6 @@
 #include "Kernel.h"
 
 #include "../Containers/Image.h"
-#include "../Geometry/Point.h"
-#include "../Graphics/Color.h"
-
-#include <vector>
 
 
 namespace Gorgon { namespace ImageProcessing {

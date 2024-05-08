@@ -1,11 +1,12 @@
 #pragma once
 
-#include <vector>
-#include <numeric>
-#include <initializer_list>
-
 #include "../Types.h"
 #include "../Geometry/Size.h"
+
+#include <iosfwd>
+#include <vector>
+#include <initializer_list>
+
 
 namespace Gorgon { namespace ImageProcessing {
     
@@ -24,12 +25,18 @@ namespace Gorgon { namespace ImageProcessing {
         
         /// Move constructor is supported
         Kernel(Kernel &&) = default;
+
+        /// Copy constructor is supported
+        Kernel(Kernel &) = default;
         
         /// Assigns new values
         Kernel &operator =(const std::initializer_list<std::initializer_list<Float>> &values);
         
         /// Move assignment is supported
         Kernel &operator =(Kernel &&) = default;
+        
+        /// Copy assignment is supported
+        Kernel &operator =(Kernel &) = default;
         
         /// Changes the size of the kernel. Values will not be preserved in a meaningful way.
         void Resize(const Geometry::Size &size);
@@ -142,5 +149,7 @@ namespace Gorgon { namespace ImageProcessing {
         
         std::vector<Float> kernel;
     };
+
+    std::ostream &operator <<(std::ostream &out, const Kernel &kernel);
     
 } }

@@ -2,6 +2,9 @@
 
 #include "../Utils/Assert.h"
 
+#include <iomanip>
+#include <numeric>
+
 namespace Gorgon { namespace ImageProcessing {
     
     Kernel::Kernel(const std::initializer_list<std::initializer_list<Float>> &values) {
@@ -97,7 +100,8 @@ namespace Gorgon { namespace ImageProcessing {
 
     Kernel Kernel::GaussianFilter(float sigma, Axis axis, float quality) {
         Kernel nkernel;
-        int size = (int)std::ceil(sigma * quality) * 2 + 1;
+        int center = (int)std::ceil(sigma * quality);
+        int size = center * 2 + 1;
         
         if(axis == Axis::Y)
             nkernel.size = {1, size};
@@ -107,7 +111,7 @@ namespace Gorgon { namespace ImageProcessing {
         float base1 = -1.f / (2 * sigma * sigma);
 
         for(int x = 0; x < size; x++) {
-            auto value =  std::exp(x * x * base1);
+            auto value =  std::exp((x-center) * (x-center) * base1);
             
             nkernel.kernel.push_back(value);
         }
@@ -144,4 +148,21 @@ namespace Gorgon { namespace ImageProcessing {
             }
         }
     }
+
+    std::ostream &operator <<(std::ostream &out, const Kernel &kernel) {
+        std::ios oldState(nullptr);
+        oldState.copyfmt(std::cout);
+
+        for(int y=0; y<kernel.GetHeight(); y++) {
+            for(int x=0; x<kernel.GetWidth(); x++) {
+                std::cout << std::setw(6) << kernel(x, y) << " ";
+            }
+            std::cout << '\n';
+        }
+
+        std::cout.copyfmt(oldState);
+
+        return out;
+    }
+
 } }

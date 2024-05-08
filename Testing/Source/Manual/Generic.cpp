@@ -1,4 +1,6 @@
-﻿#include "GraphicsHelper.h"
+﻿#include "Gorgon/Graphics/Color.h"
+#include "Gorgon/Types.h"
+#include "GraphicsHelper.h"
 #include <Gorgon/Graphics/Bitmap.h>
 
 #include <Gorgon/ImageProcessing/Kernel.h>
@@ -19,16 +21,18 @@ int main() {
     Graphics::Layer layer;
     app.wind.Add(layer);
     
-    Bitmap bmp;
-    bmp.Import("read.png");
-    bmp.StripAlpha();
+    Bitmap bmp({7,7}, Gorgon::Graphics::ColorMode::Grayscale);
+    bmp.Clear();
+    bmp(3, 3, 0) = 255;
+
+    auto k = Kernel::GaussianFilter(1, Gorgon::Axis::X, 2);
+    std::cout << k;
+    k.Normalize();
 
     bmp.Assume(
-        Convolution(
-            Convolution(bmp.GetData(), Kernel::GaussianFilter(2,Gorgon::Axis::X, 2)),
-            Kernel::GaussianFilter(2,Gorgon::Axis::Y, 2)
-        )
+        Convolution(bmp.GetData(), k)
     );
+    bmp = bmp.ZoomMultiple(8);
     bmp.Prepare();
 
     bmp.Draw(layer, 0,0);

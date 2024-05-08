@@ -1924,13 +1924,36 @@ namespace Gorgon {
             /// Location of the alpha channel, -1 means it does not exits
             int alphaloc = -1;
         };
-
+        
+        
+        /// Compares two images. Images are equal if their size, mode and 
+        /// contents are the same
+        template <class T_>
+        bool operator ==(const basic_Image<T_> &l, const basic_Image<T_> &r) {
+            if(l.GetSize() != r.GetSize()) return false;
+            if(l.GetMode() != r.GetMode()) return false;
+            
+            const auto S = l.GetSize();
+            const auto C = l.GetChannelsPerPixel();
+            for(int y=0; y<S.Height; y++) for(int x=0; x<S.Width; x++) for(int c=0; c<C; c++)
+                if(l(x, y, c) != r(x, y, c)) return false;
+            
+            return true;
+        }
+        
+        /// Compares two images. Images are equal if their size, mode and 
+        /// contents are not the same
+        template <class T_>
+        bool operator !=(const basic_Image<T_> &l, const basic_Image<T_> &r) {
+            return !(l == r);
+        }
+        
         /// Swaps two images. Should be used unqualified for ADL.
         template <class T_>
         inline void swap(basic_Image<T_> &l, basic_Image<T_> &r) {
             l.Swap(r);
         }
-
+        
 
         using Image = basic_Image<Byte>;
 
