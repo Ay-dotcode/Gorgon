@@ -273,7 +273,8 @@ namespace Gorgon::Game::Parse::Filler {
             /*
              * For type shortening.
              */
-            const auto attrlist = obj_list[i].Reflection().Names; 
+            const auto ref = obj_list[i].Reflection(); 
+            const auto attrlist = ref.Names; 
 
             auto child = first_child; 
 
@@ -325,7 +326,8 @@ namespace Gorgon::Game::Parse::Filler {
 
             obj_list.push_back({});
 
-            const auto attrlist = obj_list.back().Reflection().Names; 
+            const auto ref = obj_list.back().Reflection();
+            const auto attrlist = ref.Names; 
 
             for(int i{}; i < obj_list.back().Reflection().MemberCount; i++) {
                 SetByName(obj_list.back(), attrlist[i], node.attribute(attrlist[i]).value()); 
