@@ -29,7 +29,7 @@ namespace Gorgon::Game::Map::Tiled {
     struct Object {
         public: 
 
-        constexpr static inline std::string tag = "object"; 
+        const static inline std::string tag = "object"; 
 
         int id, gid; 
         float x, y; 
@@ -64,7 +64,7 @@ namespace Gorgon::Game::Map::Tiled {
             }
         }
 
-        constexpr static inline std::string tag = "objectgroup"; 
+        const static inline std::string tag = "objectgroup"; 
 
 
         int id; 
@@ -114,9 +114,9 @@ namespace Gorgon::Game::Map::Tiled {
         /**
          * @brief This has to be here for parsing. 
          * Fill function needs the tag to find the attributes and image source. 
-         * It has to be constexpr static since the Fill function it self is constexpr 
+         * It has to be const static since the Fill function it self is const 
          */
-        constexpr static inline std::string tag = "tileset"; 
+        const static inline std::string tag = "tileset"; 
 
         /**
          * @brief Attributes of the tileset node.
@@ -125,7 +125,7 @@ namespace Gorgon::Game::Map::Tiled {
          */
         int firstgid, tilewidth, tileheight, tilecount, columns; 
         std::string name; 
-        constexpr TileSet() {}
+        const TileSet() {}
         /**
          * @brief Reflection
          * The below macro call creates the Reflection part of the process. 
@@ -160,7 +160,7 @@ namespace Gorgon::Game::Map::Tiled {
          * It has to be constant expression and static, since the Fill function it self
          * is constant expression. 
          */
-        constexpr static inline std::string tag = "layer"; 
+        const static inline std::string tag = "layer"; 
         /**
          * @brief Attributes
          * .tmx file contains these attributes in the layer node. They are also required
@@ -259,7 +259,7 @@ namespace Gorgon::Game::Map::Tiled {
          */
         int width, height, tilewidth, tileheight; 
         DefineStructMembers(Map, width, height, tilewidth, tileheight); 
-        static constexpr inline std::string tag = "map"; 
+        static const inline std::string tag = "map"; 
         
         Map(const std::string& file_name, size_t tileset_count, size_t layer_count, size_t objectgroup_count) : TileSets(tileset_count), Layers(layer_count), ObjectGroups(objectgroup_count) {
             pugi::xml_document doc; 
@@ -400,16 +400,16 @@ namespace Gorgon::Game::Map::Tiled {
          * @brief Get the Tile Set object (reference)
          * 
          * @tparam Index 
-         * @return constexpr struct TileSet& 
+         * @return const struct TileSet& 
          */
-        template<size_t Index> constexpr struct TileSet& GetTileSet() { return TileSets[Index]; }
+        template<size_t Index> const struct TileSet& GetTileSet() { return TileSets[Index]; }
         /**
          * @brief Get the Tile Set object (const)
          * 
          * @tparam Index 
-         * @return constexpr struct TileSet 
+         * @return const struct TileSet 
          */
-        template<size_t Index> constexpr struct TileSet GetTileSet() const{ return TileSets[Index]; }
+        template<size_t Index> const struct TileSet GetTileSet() const{ return TileSets[Index]; }
         /**
          * @brief Get the Tile Set object (reference)
          * 
@@ -440,16 +440,16 @@ namespace Gorgon::Game::Map::Tiled {
          * @brief Get the Layer object (reference)
          * 
          * @tparam Index 
-         * @return constexpr struct Layer& 
+         * @return const struct Layer& 
          */
-        template<size_t Index> constexpr struct Layer& GetLayer() { return Layers[Index]; }
+        template<size_t Index> const struct Layer& GetLayer() { return Layers[Index]; }
         /**
          * @brief Get the Layer object (const)
          * 
          * @tparam Index 
-         * @return constexpr struct Layer 
+         * @return const struct Layer 
          */
-        template<size_t Index> constexpr struct Layer GetLayer() const { return Layers[Index]; }
+        template<size_t Index> const struct Layer GetLayer() const { return Layers[Index]; }
         /**
          * @brief Get the Layer object (reference)
          * 
