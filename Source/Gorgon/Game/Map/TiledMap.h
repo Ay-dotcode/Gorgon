@@ -125,7 +125,7 @@ namespace Gorgon::Game::Map::Tiled {
          */
         int firstgid, tilewidth, tileheight, tilecount, columns; 
         std::string name; 
-        const TileSet() {}
+        constexpr TileSet() {}
         /**
          * @brief Reflection
          * The below macro call creates the Reflection part of the process. 
