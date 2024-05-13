@@ -168,7 +168,8 @@ namespace Gorgon::Game::Parse::Filler {
             /* 
              * For type shortening.
              */
-            auto attrlist = obj_list[Index].Reflection().Names;
+            auto ref = obj_list[Index].Reflection(); 
+            auto attrlist = ref.Names;
 
             /*
              * Find if the given tag exist in the nodes. 
