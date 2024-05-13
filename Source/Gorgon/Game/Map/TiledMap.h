@@ -48,10 +48,19 @@ namespace Gorgon::Game::Map::Tiled {
             Parse::Filler::Fill(obj_list, objects); 
             auto upper = (*in).parent().parent();
             for(auto i {upper.begin()}; i != upper.end(); i++) {
-                if ((*i).attribute("id").value() == std::to_string(id) and (*i).previous_sibling().name() == std::string("layer")) {
+                if((*i).attribute("id").value() != std::to_string(id)) {
+                    continue;
+                }
+                if ((*i).previous_sibling().name() == std::string("layer")) {
                     previous_layer_index = std::stoi((*i).previous_sibling().attribute("id").value()); 
+                    previous_object_group_index = -1; 
                     break;
                 }
+                if ((*i).previous_sibling().name() == tag) {
+                    previous_layer_index = -2; 
+                    previous_object_group_index = std::stoi((*i).previous_sibling().attribute("id").value());
+                }
+
             }
         }
 
@@ -63,7 +72,7 @@ namespace Gorgon::Game::Map::Tiled {
 
         DefineStructMembers(ObjectGroup, id, name); 
 
-        int previous_layer_index; 
+        int previous_layer_index, previous_object_group_index; 
 
         Object operator[](size_t index) {
             return obj_list[index]; 

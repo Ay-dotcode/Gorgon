@@ -16,9 +16,9 @@ It's ODR violation but still the Renderer function will be here.
 #include <Gorgon/Graphics/Animations.h>
 #include <Gorgon/Graphics/Font.h>
 #include <Gorgon/Graphics/Layer.h>
-#include <Gorgon/Game/Map/TiledMap.h>
 #include <Gorgon/Graphics/Bitmap.h>
 #include <Gorgon/Graphics/Texture.h>
+#include <Gorgon/Struct.h>
 #include <Gorgon/Utils/Logging.h>
 #include <Gorgon/Widgets/Registry.h>
 #include <functional>
@@ -32,6 +32,8 @@ namespace Gorgon::Game::Rendering {
     template<class map_type, class derived> 
     class base_tile_renderer {
         public:
+        using MapType = map_type; 
+
         void Render() {
             static_cast<derived*>(this)->render_impl(); 
         }
@@ -40,9 +42,12 @@ namespace Gorgon::Game::Rendering {
             static_cast<derived*>(this)->generate_drawables();
         }
         
+        map_type GetMap() {
+            return map;
+        }
 
+        base_tile_renderer(Graphics::Layer& target_layer, const map_type& map) : map(map), target_layer(target_layer) {}
 
-        base_tile_renderer(const map_type& map, Graphics::Layer& target_layer) : map(map), target_layer(target_layer) {}
         protected: 
         Containers::Collection<Graphics::Bitmap> resources; 
         std::vector<Graphics::TextureImage> drawables; 
@@ -50,6 +55,7 @@ namespace Gorgon::Game::Rendering {
         std::unordered_map<int, int> objects; 
 
         map_type map; 
+        Containers::Collection<map_type> map_list;
 
         Graphics::Layer& target_layer; 
 
@@ -65,7 +71,9 @@ namespace Gorgon::Game::Rendering {
     template<class map_type>
     class StandardTileRenderer : public base_tile_renderer<map_type, StandardTileRenderer<map_type>> {
         public: 
-        StandardTileRenderer(const map_type& map, Graphics::Layer& target_layer) : Base(map, target_layer), prepared(false), drawable_ready(false) {}  
+        StandardTileRenderer(Graphics::Layer& target_layer, const map_type& map) : Base(target_layer, map), prepared(false), drawable_ready(false) {}  
+        using MapType = map_type; 
+
         private:
         bool prepared, drawable_ready; 
         using Type = StandardTileRenderer<map_type>; 
@@ -144,9 +152,16 @@ namespace Gorgon::Game::Rendering {
 
         void render_object(int id) {
             auto group = Base::map.GetObjectGroupMap(); 
-            group[id].ForEach([this](Map::Tiled::Object obj) {
+            group[id].ForEach([this](auto obj) {
                 this->Base::drawables[obj.gid - 1].Draw(Base::target_layer, obj.x, obj.y - obj.height);
             }); 
+
+            for (auto [key, val] : group) {
+                if (val.previous_object_group_index == id) {
+                    render_object(val.id);
+                    break; 
+                } 
+            }
         }
     };
 
@@ -154,6 +169,8 @@ namespace Gorgon::Game::Rendering {
     class IsometricTileRenderer : public base_tile_renderer<map_type, IsometricTileRenderer<map_type>> {
         public: 
         IsometricTileRenderer(const map_type& map, Graphics::Layer& target_layer) : Base(map, target_layer), prepared(false), drawable_ready(false) {}
+        using MapType = map_type; 
+
         private: 
         bool prepared, drawable_ready; 
         using Type = IsometricTileRenderer<map_type>; 

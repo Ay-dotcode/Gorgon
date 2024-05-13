@@ -7,7 +7,6 @@
 #include <Gorgon/TMP.h>
 #include <Gorgon/Utils/Assert.h>
 #include <cstddef>
-#include <format>
 #include <string>
 #include <any>
 #include <vector>
@@ -185,7 +184,7 @@ namespace Gorgon::Game::Parse::Filler {
              * If tag is given wrong, it'll cause a runtime error. 
              */
             if(first_child == last_node) {
-                throw Exception::bad_parameter(std::format("Tag {} doesn't exist in the file. Did you make a typo?", tag));
+                throw Exception::bad_parameter("Tag doesn't exist in the file. Did you make a typo?");
             }
 
             /*
@@ -282,7 +281,7 @@ namespace Gorgon::Game::Parse::Filler {
              * if tag doesn't exist, it'll throw a runtime error.
              */
             if (first_child == last_node) {
-                throw Exception::bad_parameter(std::format("Tag {} doesn't exist in the file. Did you make a typo?", tag));
+                throw Exception::bad_parameter("Tag doesn't exist in the file. Did you make a typo?");
             }
 
             /*
@@ -322,7 +321,7 @@ namespace Gorgon::Game::Parse::Filler {
 
         const std::string tag = Structure::tag; 
         for(auto node : nodes) {
-            ASSERT(tag == node.name(), std::format("Error: The tag is not matching. Make sure you gave the corect node list. ({} != {})", Structure::tag, node.name()));  
+            ASSERT(tag == node.name(), "Error: The tag is not matching. Make sure you gave the corect node list.");  
 
             obj_list.push_back({});
 
