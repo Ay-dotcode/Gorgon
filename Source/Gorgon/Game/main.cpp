@@ -18,6 +18,7 @@ Gorgon::Game::Parse::Filler::internal::any foo(Gorgon::Game::Parse::Filler::inte
 using Gorgon::Game::Map::Tiled::Map;
 using Gorgon::Game::Rendering::StandardTileRenderer;
  
+ 
 
 int main() {
     
@@ -28,8 +29,9 @@ int main() {
 
 
     Gorgon::SceneManager manager; 
-    Gorgon::Game::World<Gorgon::Game::Rendering::StandardTileRenderer<Map>> world(manager, StandardTileRenderer<Map>{Map{}, *new Gorgon::Graphics::Layer{}});
-    StandardTileRenderer<Map> renderer(Map{}, *new Gorgon::Graphics::Layer{}); 
+    Gorgon::Game::World<Gorgon::Game::Rendering::StandardTileRenderer<Map>> world(manager, StandardTileRenderer<Map>{*new Gorgon::Graphics::Layer{}, {{}, {}, {}}});
+    world.GetScene(0);
+    StandardTileRenderer<Map> renderer(*new Gorgon::Graphics::Layer{}, {}); 
     
 
   return 0;
