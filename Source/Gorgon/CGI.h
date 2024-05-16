@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Graphics/Color.h"
-
+#include <Gorgon/Geometry/Point.h>
 namespace Gorgon { namespace CGI {
     
     /**

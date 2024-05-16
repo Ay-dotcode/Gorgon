@@ -8,25 +8,30 @@ It's ODR violation but still the Renderer function will be here.
 */
 
 #pragma once
+#include <Gorgon/CGI/Line.h>
 #include <Gorgon/Containers/Collection.h>
 #include <Gorgon/Game/Exceptions/Exception.h>
 #include <Gorgon/Geometry/Bounds.h>
 #include <Gorgon/Geometry/Point.h>
+#include <Gorgon/Geometry/PointList.h>
 #include <Gorgon/Geometry/Size.h>
 #include <Gorgon/Graphics/Animations.h>
 #include <Gorgon/Graphics/Font.h>
 #include <Gorgon/Graphics/Layer.h>
 #include <Gorgon/Graphics/Bitmap.h>
 #include <Gorgon/Graphics/Texture.h>
+#include <Gorgon/String.h>
 #include <Gorgon/Struct.h>
 #include <Gorgon/Utils/Logging.h>
 #include <Gorgon/Widgets/Registry.h>
+#include <bits/types/locale_t.h>
 #include <functional>
 #include <initializer_list>
 #include <vector>
 
 #ifndef RENDERER_H
 #define RENDERER_H
+
 
 
 namespace Gorgon::Game::Rendering {
@@ -38,6 +43,15 @@ namespace Gorgon::Game::Rendering {
         void Render() {
             static_cast<derived*>(this)->render_impl(); 
         }
+
+        void BoundsOfTiles() {
+            static_cast<derived*>(this)->bound_impl(); 
+        }
+
+        void BoundsOnPoint(Geometry::Point location) {
+            static_cast<derived*>(this)->bound_on_impl(location);
+        }
+
         void Prepare() {
             static_cast<derived*>(this)->prepare_resources();
             static_cast<derived*>(this)->generate_drawables();
@@ -57,7 +71,7 @@ namespace Gorgon::Game::Rendering {
             this->map = map; 
         }
 
-        map_type GetActiveMap() {
+        map_type& GetActiveMap() {
             return map; 
         }
 
@@ -94,15 +108,15 @@ namespace Gorgon::Game::Rendering {
     template<class map_type>
     class StandardTileRenderer : public base_tile_renderer<map_type, StandardTileRenderer<map_type>> {
         public: 
-        StandardTileRenderer(Graphics::Layer& target_layer, const std::initializer_list<map_type>& map_list) : Base(target_layer, map_list), prepared(false), drawable_ready(false) {}  
-        StandardTileRenderer(Graphics::Layer& target_layer, const std::vector<map_type>& map_list) : Base(target_layer, map_list), prepared(false), drawable_ready(false) {}  
+        StandardTileRenderer(Graphics::Layer& target_layer, const std::initializer_list<map_type>& map_list) : Base(target_layer, map_list), prepared(false), drawable_ready(false), first_time(true) {}  
+        StandardTileRenderer(Graphics::Layer& target_layer, const std::vector<map_type>& map_list) : Base(target_layer, map_list), prepared(false), drawable_ready(false), first_time(true) {}  
         
-        StandardTileRenderer(const std::initializer_list<map_type>& map_list) : Base(map_list), prepared(false), drawable_ready(false) {}  
+        StandardTileRenderer(const std::initializer_list<map_type>& map_list) : Base(map_list), prepared(false), drawable_ready(false), first_time(true) {}  
         
         using MapType = map_type; 
 
         private:
-        bool prepared, drawable_ready; 
+        bool prepared, drawable_ready, first_time; 
         using Type = StandardTileRenderer<map_type>; 
         using Base = base_tile_renderer<map_type, Type>; 
         friend class base_tile_renderer<map_type, StandardTileRenderer<map_type>>; 
@@ -158,6 +172,10 @@ namespace Gorgon::Game::Rendering {
 
             for(const auto& layer : layers) {
                 auto map_data = layer.map_data(); 
+                auto name = Gorgon::String::ToLower(layer.name);
+                if (name.find("passability") != -1) {
+                    continue;
+                }
                 Base::RepeatCyclic(MW, MH, [map_data, MW, TH, TW, this](int x, int y) {
                     auto gid = map_data[x + y * MW]; 
                     if(gid == 0) 
@@ -187,6 +205,73 @@ namespace Gorgon::Game::Rendering {
                     break; 
                 } 
             }
+        }
+
+        void bound_impl() {
+            if(first_time) {
+                Base::resources.push_back(new Graphics::Bitmap{});
+                (*Base::resources.back()).Resize(map.width * map.tilewidth, map.height * map.tileheight);
+                first_time  = false; 
+            }
+            
+            Base::RepeatCyclic(Base::map.width, Base::map.height, [&](int x, int y) {
+                Geometry::PointList<> list; 
+                auto TW = map.tilewidth, TH = map.tileheight;
+                Geometry::Point top_left     = {x * TW, y * TH}, 
+                                bottom_left  = {x * TW, y * TH + TH},
+                                bottom_right = {x * TW + TW, y * TH + TH}, 
+                                top_right    = {x * TW + TW, y * TH}; 
+
+                list.Push(top_left);
+                list.Push(bottom_left);
+                list.Push(bottom_right);
+                list.Push(top_right);
+
+                CGI::DrawLines(*Base::resources.back(), list);
+            }); 
+            (*Base::resources.back()).Prepare();
+            (*Base::resources.back()).Draw(*target_layer, 0, 0); 
+            (*Base::resources.back()).Clear();
+        }
+        
+        /*TODO: Optimize this block.
+        Probable optimization way; 
+        I get the location from user, I don't need to check all tiles if I'm in that block.
+         */
+        void bound_on_impl(Geometry::Point location) {
+            if(first_time) {
+                Base::resources.push_back(new Graphics::Bitmap{});
+                (*Base::resources.back()).Resize(map.width * map.tilewidth, map.height * map.tileheight);
+                first_time  = false; 
+            }
+            
+            Base::RepeatCyclic(Base::map.width, Base::map.height, [&](int x, int y) {
+                Geometry::PointList<> list; 
+                auto TW = map.tilewidth, TH  = map.tileheight;
+                Geometry::Point top_left     = {x * TW, y * TH}, 
+                                bottom_left  = {x * TW, y * TH + TH},
+                                bottom_right = {x * TW + TW, y * TH + TH}, 
+                                top_right    = {x * TW + TW, y * TH}; 
+
+                if (not
+                   (location.X >= top_left.X and 
+                    location.X <= top_right.X and     
+                    location.Y >= top_left.Y and     
+                    location.Y <= bottom_left.Y)      
+                ) { return; }
+
+                list.Push(top_left);
+                list.Push(bottom_left);
+                list.Push(bottom_right);
+                list.Push(top_right);
+                list.Push(top_left);
+
+
+                CGI::DrawLines(*Base::resources.back(), list);
+            }); 
+            (*Base::resources.back()).Prepare();
+            (*Base::resources.back()).Draw(*target_layer, 0, 0); 
+            (*Base::resources.back()).Clear();
         }
     };
 
@@ -258,6 +343,11 @@ namespace Gorgon::Game::Rendering {
             const auto MW = map.width, MH = map.height; 
 
             for(const auto& layer: layers) {
+                auto name = Gorgon::String::ToLower(layer.name);
+            
+                if (name.find("passability") != -1) {
+                    continue;
+                }
                 auto map_data = layer.map_data();
                 Base::RepeatCyclic(MW, MH,[=](int x, int y) {
                     auto gid = map_data[x + y * MW]; 

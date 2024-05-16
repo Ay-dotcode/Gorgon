@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Gorgon/Containers/Iterator.h>
 #include <vector>
 #include <exception>
 
@@ -216,6 +217,11 @@ namespace Gorgon { namespace Geometry {
                 throw std::out_of_range("Index is greater than  or equal to point list size");
 
             Points.erase(std::begin(Points) + index);
+        }
+
+        void Erase(auto iterator) {
+
+            Points.erase(iterator); 
         }
         
         

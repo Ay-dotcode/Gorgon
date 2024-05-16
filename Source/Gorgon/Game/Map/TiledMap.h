@@ -3,11 +3,15 @@
 #include <Gorgon/External/PugiXML/pugi/pugixml.hpp>
 #include <Gorgon/Game/Exceptions/Exception.h>
 #include <Gorgon/Game/Parse/FillerSystem/Filler.h>
+#include <Gorgon/Geometry/Point.h>
+#include <Gorgon/Geometry/Size.h>
 #include <Gorgon/Graphics/Bitmap.h>
 #include <Gorgon/Graphics/Texture.h>
+#include <Gorgon/String.h>
 #include <Gorgon/Struct.h>
 #include <array>
 #include <cstddef>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -21,8 +25,38 @@
  * renderer. 
  */
 namespace Gorgon::Game::Map::Tiled { 
+    struct GridTile {
+        public: 
+        Gorgon::Geometry::Point location; 
+        GridTile* parent; 
+        float gCost, hCost, fCost; 
+        bool passable; 
+        GridTile() : parent(nullptr) {}
+        GridTile(const Gorgon::Geometry::Point& location, bool passable) : location(location), parent(nullptr), gCost(0), hCost(0), passable(passable) {}
+
+        void operator=(const GridTile& other) {
+            this->parent = other.parent; 
+            gCost = other.gCost; 
+            hCost = other.hCost; 
+            fCost = other.fCost; 
+            passable = other.passable; 
+            location = other.location; 
+        }
+        float f_cost() const {
+            return (gCost + hCost);
+        }  
+        bool is_passable() {
+            return passable; 
+        }
+
+        bool operator==(GridTile& other) {
+            return (this->location == other.location);
+        }
+    }; 
+
+
     /**
-     * @brief Tiled object layer class
+     @brief Tiled object layer class
      * 
      */
     
@@ -223,7 +257,7 @@ namespace Gorgon::Game::Map::Tiled {
 
         /**
          * @brief Return the 1d array of map data converted from csv
-         * Try using this vector with the indexes (x + (y * height))
+         * Try using this vector with the indexes (x + (y * width))
          * @return std::vector<int> 
          */
         std::vector<int> map_data() const {
@@ -241,7 +275,29 @@ namespace Gorgon::Game::Map::Tiled {
             }
             return ret; 
         }
+
+        std::vector<GridTile> data_to_grid() {
+            std::vector<GridTile> ret; 
+            const auto& data = map_data();
+            ret.reserve(width * height); 
+            for(int y{}; y < height; y++) {
+                for(int x{}; x < width; x++) {
+                    auto index = x + y * width;
+                    bool passable = data[index] == 0;  
+                    ret.emplace_back(Geometry::Point{x, y}, passable); 
+                }
+            }
+            return ret; 
+        }
         
+        Geometry::Size Size() {
+            return {width, height};
+        }
+
+        bool is_passability_layer() {
+            return String::ToLower(name).find("passability") != -1;
+        }
+
         private:
         std::string mapcsv; 
 
@@ -510,6 +566,20 @@ namespace Gorgon::Game::Map::Tiled {
                 ret[group.previous_layer_index] = group.id; 
             }
             return ret; 
+        }
+
+        /**
+         * @brief Get the Passability Layer 
+         * 
+         * @return Returns empty layer if not found.
+         */
+        Layer& GetPassabilityLayer() {
+            for(auto& layer : GetLayers()) {
+                if(layer.is_passability_layer()) {
+                    return layer; 
+                }
+            }
+            return *new Layer{};
         }
 
 
