@@ -164,7 +164,7 @@ namespace Gorgon { namespace Filesystem {
 			return false;
 		}
 		
-		int dest = open(destination.c_str(), O_WRONLY | O_CREAT, stat_source.st_mode & 0777);
+		int dest = open(destination.c_str(), O_WRONLY | O_CREAT | O_TRUNC, stat_source.st_mode & 0777);
 		if(dest==0) {
 			close(src);
 			return false;
