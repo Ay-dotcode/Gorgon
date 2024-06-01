@@ -15,7 +15,7 @@
 namespace Gorgon::Game::Parse::Filler {
 
     // Using Gorgon's Reflection system to handle member assignments in compile. 
-    namespace internal {
+    namespace Internal {
         inline size_t count(const pugi::xml_node_iterator& parent_node, std::string keyword) {
             auto children = parent_node->children("keyword");
             if(children.empty()) {
@@ -105,18 +105,18 @@ namespace Gorgon::Game::Parse::Filler {
             
         };
     }
-    const internal::Get GetByName;
+    const Internal::Get GetByName;
 
     // Wrapper for the above. 
     template<class T_>
     void SetByName(T_ &obj, const std::string &name, const std::string &value) {
-        internal::SetByName_expand(typename Gorgon::TMP::Generate<T_::ReflectionType::MemberCount>::Type{}, obj, name, value);
+        Internal::SetByName_expand(typename Gorgon::TMP::Generate<T_::ReflectionType::MemberCount>::Type{}, obj, name, value);
     }
 
 }
 
 namespace Gorgon::Game::Parse::Filler {
-    using namespace internal;
+    using namespace Internal;
 
     template<typename T_> 
     concept has_tag = requires(T_ t) {

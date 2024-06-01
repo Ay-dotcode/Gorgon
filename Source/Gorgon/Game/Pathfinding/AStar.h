@@ -4,12 +4,12 @@
 #include <Gorgon/Geometry/Line.h>
 #include <Gorgon/Geometry/Point.h>
 #include <Gorgon/Game/Map/TiledMap.h>
-#include <Gorgon/Geometry/PointList.h>
 #include <Gorgon/Geometry/Size.h>
 #include <Gorgon/Graphics/Bitmap.h>
 #include <Gorgon/Graphics/Color.h>
 #include <Gorgon/Graphics/Layer.h>
 #include <Gorgon/Utils/Assert.h>
+#include <Gorgon/Game/Pathfinding/Pathfinders.h>
 
 #include <unistd.h>
 #include <vector>
@@ -18,15 +18,11 @@
 namespace Gorgon::Game::Pathfinding::AStar {
 
     using HeuristicFunction = std::function<unsigned int(Gorgon::Geometry::Point, Gorgon::Geometry::Point)>;
-    using CoordinateList = Geometry::PointList<>;
-
-
     class Heuristic
     {
         static Gorgon::Geometry::Point GetHeuristic(Gorgon::Geometry::Point source_, Gorgon::Geometry::Point target_) {
             return{ abs(source_.X - target_.X),  abs(source_.Y - target_.Y) };
         }
-
         public:
         static uint manhattan(Gorgon::Geometry::Point source_, Gorgon::Geometry::Point target_) {
             auto delta = std::move(GetHeuristic(source_, target_));
@@ -43,21 +39,7 @@ namespace Gorgon::Game::Pathfinding::AStar {
         }
     };
 
-    struct TileNode
-    {
-        uint G, H;
-        Geometry::Point coordinates;
-        TileNode *parent;
-
-        TileNode(Geometry::Point coord_, TileNode *parent_ = nullptr) : parent(parent_), G(0), H(0), coordinates(coord_) {}
-        uint get_score() {
-            return G + H;
-        }
-    };
-
-    using NodeSet = std::vector<TileNode*>;
-
-    class Generator
+    class PathFinder : public base_pathfinder
     {
         bool DetectCollision(Gorgon::Geometry::Point coordinates_) {
             if (coordinates_.X < 0 || coordinates_.X >= worldSize.Width ||
@@ -85,7 +67,7 @@ namespace Gorgon::Game::Pathfinding::AStar {
         }
 
     public:
-        Generator() {
+        PathFinder() {
             SetDiagonalMovement(false);
             SetHeuristic(&AStar::Heuristic::manhattan);
             direction = {
@@ -96,6 +78,10 @@ namespace Gorgon::Game::Pathfinding::AStar {
 
         void SetSize(Gorgon::Geometry::Size layer_size_) {
             worldSize = layer_size_;
+        }
+
+        Geometry::Size GetSize() const {
+            return worldSize;
         }
 
         void SetDiagonalMovement(bool enable_) {
@@ -167,18 +153,18 @@ namespace Gorgon::Game::Pathfinding::AStar {
             return path;
         }
 
-        void AddCollision(Gorgon::Geometry::Point coordinates_) {
+        void AddBlock(Gorgon::Geometry::Point coordinates_) {
             walls.Push(coordinates_);
         }
 
-        void RemoveCollision(Gorgon::Geometry::Point coordinates_) {
+        void RemoveBlock(Gorgon::Geometry::Point coordinates_) {
             auto it = std::find(walls.begin(), walls.end(), coordinates_);
             if (it != walls.end()) {
                 
                 walls.Erase(it);
             }
         }
-        void ClearCollisions() {
+        void ClearBlocks() {
             walls.Clear();
         }
 

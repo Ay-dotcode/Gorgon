@@ -1,23 +1,22 @@
 #pragma once
 
-#include "Utils/Assert.h"
-#include "Event.h"
-#include "ConsumableEvent.h"
-#include "Main.h"
+#include <Gorgon/Utils/Assert.h>
+#include <Gorgon/Event.h>
+#include <Gorgon/ConsumableEvent.h>
+#include <Gorgon/Main.h>
 
-#include "Layer.h"
-#include "Input/Layer.h"
-#include "Input/Keyboard.h"
-#include "Graphics/Layer.h"
-#include "Containers/Hashmap.h"
-#include "UI/Window.h"
-#include "Time.h"
-#include "Widgets/Panel.h"
-
-#include <stdexcept>
+#include <Gorgon/Layer.h>
+#include <Gorgon/Input/Layer.h>
+#include <Gorgon/Input/Keyboard.h>
+#include <Gorgon/Graphics/Layer.h>
+#include <Gorgon/Containers/Hashmap.h>
+#include <Gorgon/UI/Window.h>
+#include <Gorgon/Time.h>
+#include <Gorgon/Widgets/Panel.h>
 
 
-namespace Gorgon {
+
+namespace Gorgon::Game::World::Scene {
 
     /// Can be used to identify scenes
     using SceneID = int;
@@ -25,18 +24,12 @@ namespace Gorgon {
     /// Used to denote there is no explicit scene id given to a
     /// scene.
     static constexpr SceneID NoSceneID = -1;
-    
+    class None {};
+
     class SceneManager;
 
-    /**
-    * This class represents a scene in the game like menu screen
-    * in game, post game, pause or different game modes. Scenes
-    * can be swapped on the fly and some scenes can be linked to
-    * others. Scene class is abstract, it must be derived by
-    * other classes in order to work.
-    */
-
-    class Scene : public Animation::Governor {
+    template<typename Derived = None>
+    class Scene : public Gorgon::Animation::Governor {
         friend class SceneManager;
     public:
 
@@ -131,13 +124,8 @@ namespace Gorgon {
         bool first    = true;
     };
 
-    /**
-    * This class is a Window that manages scenes, allowing swapping,
-    * handling input and game loop. This runner is most suitable for
-    * games where there would be multiple scenes (intro, how to play,
-    * game, pause screen, etc...) that compete with each other for
-    * input and rendering.
-    */
+
+
     class SceneManager : public UI::Window {
     public:
         using Window::Window;
@@ -194,7 +182,7 @@ namespace Gorgon {
 
         /// Returns the requested scene. If it does not exist, this
         /// function will throw runtime error.
-        Scene &GetScene(SceneID scene) {
+        Scene<> &GetScene(SceneID scene) {
             return scenes[scene];
         }
 
@@ -207,11 +195,11 @@ namespace Gorgon {
         /// Releases the ownership of the scene with the given ID,
         /// removing it from the manager. Using scene while it does
         /// not have parent might cause problems.
-        Scene &Release(SceneID id);
+        Scene<> &Release(SceneID id);
 
         /// Assumes the ownership of the the given scene, adding it
         /// to the list of scenes.
-        void Assume(Scene &scene) {
+        void Assume(Scene<> &scene) {
             scene.parent = this;
             scenes.Add(scene.id, scene);
         }
@@ -288,16 +276,15 @@ namespace Gorgon {
         }
 
         /// This event will be fired whenever a scene is activated.
-        Gorgon::Event<SceneManager, Scene&> ActivatedEvent{*this};
+        Gorgon::Event<SceneManager, Scene<>&> ActivatedEvent{*this};
 
     protected:
         EventToken init();
 
-        Gorgon::Containers::Hashmap<SceneID, Scene> scenes;
-        Scene *active = nullptr;
+        Gorgon::Containers::Hashmap<SceneID, Scene<>> scenes;
+        Scene<> *active = nullptr;
         EventToken inputtoken = init(); //to initialize token after window got constructed
         bool quiting = false;
     };
-
 
 }

@@ -257,6 +257,10 @@ namespace Gorgon { namespace Input {
             void SetClick(C_ *my, std::function<void(C_ &)> fn, Input::Mouse::Button btn = Input::Mouse::Button::Left) {
                 click = [fn, my, btn](Layer &, Geometry::Point, Input::Mouse::Button b) { if(b&&btn) (my->*fn)(); };
             }
+
+            auto GetClick() {
+                return click;;
+            }
             
             /// Removes click handler
             void ResetClick() {

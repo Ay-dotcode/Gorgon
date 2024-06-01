@@ -11,7 +11,6 @@
 #include <Gorgon/Struct.h>
 #include <array>
 #include <cstddef>
-#include <optional>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -25,50 +24,34 @@
  * renderer. 
  */
 namespace Gorgon::Game::Map::Tiled { 
+
     struct GridTile {
         public: 
         Gorgon::Geometry::Point location; 
-        GridTile* parent; 
-        float gCost, hCost, fCost; 
         bool passable; 
-        GridTile() : parent(nullptr) {}
-        GridTile(const Gorgon::Geometry::Point& location, bool passable) : location(location), parent(nullptr), gCost(0), hCost(0), passable(passable) {}
+        GridTile(const Gorgon::Geometry::Point& location, bool passable) : location(location), passable(passable) {}
 
-        void operator=(const GridTile& other) {
-            this->parent = other.parent; 
-            gCost = other.gCost; 
-            hCost = other.hCost; 
-            fCost = other.fCost; 
-            passable = other.passable; 
-            location = other.location; 
-        }
-        float f_cost() const {
-            return (gCost + hCost);
-        }  
         bool is_passable() {
             return passable; 
-        }
-
-        bool operator==(GridTile& other) {
-            return (this->location == other.location);
         }
     }; 
 
 
     /**
-     @brief Tiled object layer class
+     * @brief Tiled object layer class
      * 
      */
     
     struct Object {
         public: 
-
+        /* This is for look up and has to be here. */
         const static inline std::string tag = "object"; 
 
         int id, gid; 
         float x, y; 
         int width, height; 
-
+        
+        /* This is for fill system to work. Supplies reflection. */
         DefineStructMembers(Object, id, gid, x, y, width, height); 
     }; 
     
@@ -157,7 +140,7 @@ namespace Gorgon::Game::Map::Tiled {
          * .tmx file contains these attributes in the tileset node. They are also required
          * for rendering.
          */
-        int firstgid, tilewidth, tileheight, tilecount, columns; 
+        int firstgid, tilewidth, tileheight, tilecount, columns;
         std::string name; 
         TileSet() {}
         /**
@@ -313,7 +296,7 @@ namespace Gorgon::Game::Map::Tiled {
          * @brief Attributes
          * .tmx file contains this attributes for map node. 
          */
-        int width, height, tilewidth, tileheight; 
+        int width, height, tilewidth, tileheight;
         DefineStructMembers(Map, width, height, tilewidth, tileheight); 
         static const inline std::string tag = "map"; 
         
