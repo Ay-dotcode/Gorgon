@@ -157,6 +157,13 @@ namespace Gorgon::Game::Rendering {
             static_cast<derived*>(this)->generate_drawables();
         }
 
+        void Unprepare() {
+            static_cast<derived*>(this)->prepared = false; 
+            static_cast<derived*>(this)->drawable_ready = false; 
+            resources.clear();
+            drawables.clear();
+        }
+
         void PrepareZoomed(int factor) {
             static_cast<derived*>(this)->prepare_zoomed_resources(factor);
             static_cast<derived*>(this)->generate_zoomed_drawables(factor);
@@ -168,10 +175,7 @@ namespace Gorgon::Game::Rendering {
 
         void SetActiveMap(int ID, bool prepare = false) {
             map = map_list[ID]; 
-            static_cast<derived*>(this)->prepared = false; 
-            static_cast<derived*>(this)->drawable_ready = false; 
-            resources.clear();
-            drawables.clear();
+            Unprepare(); 
             if(prepare) {
                 this->Prepare(); 
             }
