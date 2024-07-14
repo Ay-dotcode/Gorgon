@@ -78,11 +78,87 @@ namespace Gorgon::Game::Rendering {
     public:
         static const bool value = sizeof(test<C>(0)) == sizeof(YesType);
     };
+    
+    template <typename, typename T>
+    struct has_pass_layer {};
+    
+    template <typename C, typename Ret, typename... Args>
+    struct has_pass_layer<C, Ret(Args...)> {
+    private:
+        typedef char YesType[1];
+        typedef char NoType[2];
+
+        template <typename T>
+        static YesType& test(decltype(&T::pass_layer_impl));
+
+        template <typename>
+        static NoType& test(...);
+
+    public:
+        static const bool value = sizeof(test<C>(0)) == sizeof(YesType);
+    };
+    
+    template <typename, typename T>
+    struct has_zoomed_prepare {};
+    
+    template <typename C, typename Ret, typename... Args>
+    struct has_zoomed_prepare<C, Ret(Args...)> {
+    private:
+        typedef char YesType[1];
+        typedef char NoType[2];
+
+        template <typename T>
+        static YesType& test(decltype(&T::prepare_zoomed_resources));
+
+        template <typename>
+        static NoType& test(...);
+
+    public:
+        static const bool value = sizeof(test<C>(0)) == sizeof(YesType);
+    };
+    
+    template <typename, typename T>
+    struct has_zoomed_generate {};
+    
+    template <typename C, typename Ret, typename... Args>
+    struct has_zoomed_generate<C, Ret(Args...)> {
+    private:
+        typedef char YesType[1];
+        typedef char NoType[2];
+
+        template <typename T>
+        static YesType& test(decltype(&T::generate_zoomed_drawables));
+
+        template <typename>
+        static NoType& test(...);
+
+    public:
+        static const bool value = sizeof(test<C>(0)) == sizeof(YesType);
+    };
+
+    class abstract_base_renderer {
+        public: 
+        virtual void Render(int, int) = 0; 
+        virtual void Render(Geometry::Point) = 0; 
+        virtual void BoundsOfTiles(Geometry::Point) = 0;
+        virtual void BoundsOfTiles(CGI::StrokeSettings, CGI::SolidFill<>, Geometry::Point) = 0; 
+        virtual Geometry::Point BoundsOnPoint(Geometry::Point, Geometry::Point) = 0; 
+        virtual Geometry::Point BoundsOnPoint(Geometry::Point, CGI::StrokeSettings, CGI::SolidFill<>, Geometry::Point) = 0; 
+        virtual std::shared_ptr<Graphics::TextureImage> GetImageByID(int) = 0; 
+        virtual void PassabilityLayer() = 0; 
+        virtual Geometry::Point TileCoordinateOnPoint(Geometry::Point) = 0; 
+        virtual void Prepare() = 0; 
+        virtual void PrepareZoomed(int) = 0;  
+        virtual void Unprepare() = 0; 
+        virtual void SetActiveMap(int, bool) = 0; 
+        virtual void SetLayer(Graphics::Layer&) = 0; 
+    }; 
 
     template<class map_type, class derived> 
-    class base_tile_renderer {
+    class base_tile_renderer  {
         public:
         using MapType = map_type; 
+        using Derived = derived; 
 
         void Render(int offset_x = 0, int offset_y = 0) {
             ASSERT(target_layer != nullptr, "Layer is not set, you must set it first.");
@@ -93,7 +169,7 @@ namespace Gorgon::Game::Rendering {
             static_cast<derived*>(this)->render_impl(offset.X, offset.Y); 
         }
         void BoundsOfTiles(Geometry::Point offset = {0, 0}) {
-            if constexpr (has_bounds<derived, void(CGI::StrokeSettings, CGI::SolidFill<>, int, int)>::value)
+            if constexpr (has_bounds<Derived, void(CGI::StrokeSettings, CGI::SolidFill<>, int, int)>::value)
                 static_cast<derived*>(this)->bound_impl(1.0, CGI::SolidFill<>{Graphics::Color::Black}, offset.X, offset.Y); 
             else {
                 ASSERT(false, "This function does not exist!");
@@ -101,8 +177,8 @@ namespace Gorgon::Game::Rendering {
         }
 
         void BoundsOfTiles(CGI::StrokeSettings stroke, CGI::SolidFill<> color, Geometry::Point offset = {0, 0}) {
-            if constexpr (has_bounds<derived, void(CGI::StrokeSettings, CGI::SolidFill<>, int, int)>::value)
-                static_cast<derived*>(this)->bound_impl(stroke, color, offset.X, offset.Y); 
+            if constexpr (has_bounds<Derived, void(CGI::StrokeSettings, CGI::SolidFill<>, int, int)>::value)
+                static_cast<Derived*>(this)->bound_impl(stroke, color, offset.X, offset.Y); 
             else {
                 ASSERT(false, "This function does not exist!");
             }
@@ -110,7 +186,7 @@ namespace Gorgon::Game::Rendering {
 
         Geometry::Point BoundsOnPoint(Geometry::Point location, Geometry::Point offset = {0, 0}) {
             if constexpr (has_bounds_on<derived, Geometry::Point(Geometry::Point, CGI::StrokeSettings, CGI::SolidFill<>, int, int)>::value)
-                return static_cast<derived*>(this)->bounds_on_impl(location, 1.0, CGI::SolidFill<>{Graphics::Color::Black}, offset.X, offset.Y);
+                return static_cast<Derived*>(this)->bounds_on_impl(location, 1.0, CGI::SolidFill<>{Graphics::Color::Black}, offset.X, offset.Y);
             else {
                 ASSERT(false, "This function does not exist!");
             }
@@ -118,8 +194,8 @@ namespace Gorgon::Game::Rendering {
         }
 
         Geometry::Point BoundsOnPoint(Geometry::Point location, CGI::StrokeSettings stroke, CGI::SolidFill<> color, Geometry::Point offset = {0, 0}) {
-            if constexpr (has_bounds_on<derived, Geometry::Point(Geometry::Point, CGI::StrokeSettings, CGI::SolidFill<>, int, int)>::value)
-                return static_cast<derived*>(this)->bounds_on_impl(location, stroke, color, offset.X, offset.Y);
+            if constexpr (has_bounds_on<Derived, Geometry::Point(Geometry::Point, CGI::StrokeSettings, CGI::SolidFill<>, int, int)>::value)
+                return static_cast<Derived*>(this)->bounds_on_impl(location, stroke, color, offset.X, offset.Y);
             else {
                 ASSERT(false, "This function does not exist!");
             }
@@ -131,42 +207,33 @@ namespace Gorgon::Game::Rendering {
         }
 
         void PassabilityLayer() {
-            auto pass_layer = map.GetPassabilityLayer(); 
-            for (auto block : pass_layer.data_to_grid()) {
-                if (block.is_passable()) { continue; }
-
-                Geometry::Rectanglef tile {
-                    block.location.X * map.tilewidth, block.location.Y * map.tileheight,
-                    map.tilewidth, map.tileheight
-                };
-                
-                target_layer->Draw(tile, Graphics::RGBAf{Graphics::Color::Black});
+            if constexpr (has_pass_layer<Derived, void()>::value) 
+                return static_cast<Derived*>(this)->pass_layer_imp();
+            else {
+                ASSERT(false, "This function does not exist!"); 
             }
         }
 
-        Geometry::Point TileCoordinateOnPoint(Geometry::Point location) {
-            auto TW = map.tilewidth, TH  = map.tileheight;
-            int x = location.X / TW;
-            int y = location.Y / TH;
-
-            return {x, y}; 
-        }
-
         void Prepare() {
-            static_cast<derived*>(this)->prepare_resources();
-            static_cast<derived*>(this)->generate_drawables();
+            static_cast<Derived*>(this)->prepare_resources();
+            static_cast<Derived*>(this)->generate_drawables();
         }
 
         void Unprepare() {
-            static_cast<derived*>(this)->prepared = false; 
-            static_cast<derived*>(this)->drawable_ready = false; 
+            static_cast<Derived*>(this)->prepared = false; 
+            static_cast<Derived*>(this)->drawable_ready = false; 
             resources.clear();
             drawables.clear();
         }
 
         void PrepareZoomed(int factor) {
-            static_cast<derived*>(this)->prepare_zoomed_resources(factor);
-            static_cast<derived*>(this)->generate_zoomed_drawables(factor);
+            if constexpr(has_zoomed_prepare<Derived, void(int)>::value and has_zoomed_generate<Derived, void(int)>::value) {
+                static_cast<Derived*>(this)->prepare_zoomed_resources(factor);
+                static_cast<Derived*>(this)->generate_zoomed_drawables(factor);
+            } else {
+                ASSERT(false, "This function does not exist!"); 
+            }
+
         }
         
         std::vector<map_type> GetMap() const {
@@ -185,8 +252,8 @@ namespace Gorgon::Game::Rendering {
             if(map_list.Find(map) != map_list.end()) { this->map = map; return; }
             map_list.emplace_back(map);
             this->map = map;
-            static_cast<derived*>(this)->prepared = false; 
-            static_cast<derived*>(this)->drawable_ready = false;
+            static_cast<Derived*>(this)->prepared = false; 
+            static_cast<Derived*>(this)->drawable_ready = false;
             resources.clear();
             drawables.clear();
             if(prepare) {
@@ -211,7 +278,7 @@ namespace Gorgon::Game::Rendering {
         std::vector<std::shared_ptr<Graphics::Bitmap>> resources;
         std::vector<std::shared_ptr<Graphics::TextureImage>> drawables;
 
-        std::unique_ptr<Graphics::Bitmap> allbounds, singlebounds;
+        std::shared_ptr<Graphics::Bitmap> allbounds, singlebounds;
 
         std::unordered_map<int, int> objects; 
  
@@ -247,10 +314,27 @@ namespace Gorgon::Game::Rendering {
 
         friend class has_bounds_on<StandardTileRenderer<map_type>, Geometry::Point(Geometry::Point,CGI::StrokeSettings, CGI::SolidFill<>, int, int)>;
         friend class has_bounds<StandardTileRenderer<map_type>, void(CGI::StrokeSettings, CGI::SolidFill<>, int, int)>;
+        friend class has_zoomed_prepare<StandardTileRenderer<map_type>, void(int)>;
+        friend class has_zoomed_generate<StandardTileRenderer<map_type>, void(int)>;
+
 
         using Base::target_layer; 
         using Base::map; 
         using Base::RepeatCyclic; 
+        
+        void pass_layer_impl() {
+            auto pass_layer = Base::map.GetPassabilityLayer(); 
+            for (auto block : pass_layer.data_to_grid()) {
+                if (block.is_passable()) { continue; }
+
+                Geometry::Rectanglef tile {
+                    block.location.X * Base::map.tilewidth, block.location.Y * map.tileheight,
+                    Base::map.tilewidth, Base::map.tileheight
+                };
+                
+                target_layer->Draw(tile, Graphics::RGBAf{Graphics::Color::Black});
+            }
+        }
 
         void prepare_zoomed_resources(int factor) {
             if(prepared)
@@ -377,7 +461,7 @@ namespace Gorgon::Game::Rendering {
 
         void bound_impl(CGI::StrokeSettings stroke, CGI::SolidFill<> color, int offset_x, int offset_y) {
             if(first_time_all) {
-                Base::allbounds = std::make_unique<Graphics::Bitmap>();
+                Base::allbounds = std::make_shared<Graphics::Bitmap>();
                 (*Base::allbounds).Resize(map.width * map.tilewidth, map.height * map.tileheight);
             
             
@@ -405,7 +489,7 @@ namespace Gorgon::Game::Rendering {
         
         Geometry::Point bounds_on_impl(Geometry::Point location, CGI::StrokeSettings stroke, CGI::SolidFill<> color, int offset_x, int offset_y) {
             if(first_time) {
-                Base::singlebounds =  std::make_unique<Graphics::Bitmap>();
+                Base::singlebounds =  std::make_shared<Graphics::Bitmap>();
                 (*Base::singlebounds).Resize(map.width * map.tilewidth, map.height * map.tileheight);
                 first_time  = false; 
             }
@@ -457,9 +541,25 @@ namespace Gorgon::Game::Rendering {
         friend class base_tile_renderer<map_type, IsometricTileRenderer<map_type>>; 
         friend class has_bounds_on<IsometricTileRenderer<map_type>, Geometry::Point(Geometry::Point,CGI::StrokeSettings, CGI::SolidFill<>, int, int)>;
         friend class has_bounds<IsometricTileRenderer<map_type>, void(CGI::StrokeSettings, CGI::SolidFill<>, int, int)>;
-        
+        friend class has_zoomed_prepare<StandardTileRenderer<map_type>, void(int)>;
+        friend class has_zoomed_generate<StandardTileRenderer<map_type>, void(int)>;
+
         using Base::target_layer; 
         using Base::map;
+        
+        void pass_layer_impl() {
+            auto pass_layer = Base::map.GetPassabilityLayer(); 
+            for (auto block : pass_layer.data_to_grid()) {
+                if (block.is_passable()) { continue; }
+
+                Geometry::Rectanglef tile {
+                    block.location.X * Base::map.tilewidth, block.location.Y * map.tileheight,
+                    Base::map.tilewidth, Base::map.tileheight
+                };
+                
+                target_layer->Draw(tile, Graphics::RGBAf{Graphics::Color::Black});
+            }
+        }
 
         void prepare_zoomed_resources(float factor) {
             if(prepared)
@@ -593,7 +693,7 @@ namespace Gorgon::Game::Rendering {
 
         void bound_impl(CGI::StrokeSettings stroke, CGI::SolidFill<> color, int offset_x, int offset_y) {
             if(first_time_all) {
-                Base::allbounds = std::make_unique<Graphics::Bitmap>();
+                Base::allbounds = std::make_shared<Graphics::Bitmap>();
                 (*Base::allbounds).Resize(map.width * map.tilewidth, map.height * map.tileheight);
             
                 Base::RepeatCyclic(Base::map.width, Base::map.height, [&](int x, int y) {
@@ -639,7 +739,7 @@ namespace Gorgon::Game::Rendering {
         
         Geometry::Point bounds_on_impl(Geometry::Point location, CGI::StrokeSettings stroke, CGI::SolidFill<> color, int offset_x, int offset_y) {
             if(first_time) {
-                Base::singlebounds =  std::make_unique<Graphics::Bitmap>();
+                Base::singlebounds =  std::make_shared<Graphics::Bitmap>();
                 (*Base::singlebounds).Resize(map.width * map.tilewidth, map.height * map.tileheight);
                 first_time  = false; 
             }
