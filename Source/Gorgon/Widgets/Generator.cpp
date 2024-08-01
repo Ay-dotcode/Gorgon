@@ -1867,11 +1867,11 @@ namespace Gorgon { namespace Widgets {
         );
         
         if(AssetID::VBorders(edge) == 1) {
-            defsize.Height = unitsize + Border.Width + spacing * 2;
+            defsize.Height = Pixels(unitsize + Border.Width + spacing * 2);
         }
         
         if(AssetID::HBorders(edge) == 1) {
-            defsize.Width = GetUnitSize(6) + Border.Width * 1 * spaced + spacing * 2;
+            defsize.Width = Pixels(GetUnitSize(6) + Border.Width * 1 * spaced + spacing * 2);
         }
         
         UI::Template temp = maketemplate();
