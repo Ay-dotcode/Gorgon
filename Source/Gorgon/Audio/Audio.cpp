@@ -21,6 +21,7 @@ namespace Gorgon {
 namespace Audio {
     
     Utils::Logger Log("Audio");
+    unsigned Delay = 0;
     
     std::vector<Device> Device::devices;
     Device Current;
@@ -83,10 +84,11 @@ namespace Audio {
 
                 if(internal::BufferSize == 0)
                     internal::BufferSize = int(freq * internal::BufferDuration);
+                
 
                 int datasize = channels * internal::BufferSize;
                 
-                data.resize(datasize*sizeof(float));
+                data.resize(datasize);
                 
                 temp.resize(internal::BufferSize);
             }
@@ -580,16 +582,26 @@ namespace Audio {
         
         internal::Loop loop;
         
+        auto ctime=Time::GetTime();
         while(!exiting) {
-
-            if(!loop()) {
-                SkipFrame();
-                std::this_thread::yield();
-                continue;
-            }
             
-            PostData(&loop.GetData()[0], loop.GetSize(), loop.GetChannelCount());
-            std::this_thread::yield();
+            if(loop()) {
+                PostData(&loop.GetData()[0], loop.GetSize(), loop.GetChannelCount());
+            }
+            else SkipFrame();
+            
+            auto currentdelta=ctime-Time::FrameStart();
+            
+            if(Delay > 0) {
+                if(Delay < currentdelta)
+                    std::this_thread::yield();
+                else {
+                    std::this_thread::sleep_for(std::chrono::duration<unsigned long, std::milli>(Delay - currentdelta));
+                }
+            }
+            else std::this_thread::yield();
+            
+            ctime = Time::FrameStart();
         }
     }
     

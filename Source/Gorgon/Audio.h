@@ -137,6 +137,7 @@ namespace Audio {
 	
 	extern Utils::Logger Log;
 	extern Device Current;
+	extern unsigned Delay;
 	
 	namespace internal {
 		extern std::thread audiothread;
