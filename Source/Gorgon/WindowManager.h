@@ -107,6 +107,10 @@ namespace Gorgon {
 			Geometry::Bounds GetUsable() const {
 				return usable;
 			}
+
+			float GetScaleFactor() const {
+				return scalefactor;
+			}
 			
 			/// Whether this display is primary.
 			bool IsPrimary() const {
@@ -169,6 +173,7 @@ namespace Gorgon {
 			Geometry::Rectangle area        = {0,0,0,0};
             Geometry::Bounds    usable      = {0,0,0,0};
 			bool                isprimary   = false;
+			float 				scalefactor = 1;
 			
 			std::string name;
 			

@@ -690,9 +690,9 @@ namespace Gorgon { namespace Graphics {
 		std::vector<Geometry::Bounds> CreateLinearAtlas(Containers::Collection<const Bitmap> list, AtlasMargin margins = None);
 
         std::vector<Geometry::Bounds> GenerateAtlasBounds(Geometry::Size size, Geometry::Point margin = {0, 0}, Geometry::Point outer_margin = {0, 0}) const; 
-        std::vector<Geometry::Bounds> GenerateAtlasBounds(size_t size, size_t margin = 0, size_t outer_margin = 0) const; 
-        std::vector<Geometry::Bounds> GenerateAtlasBounds(Geometry::Size size, size_t margin = {}, size_t outer_margin = {}) const; 
-        std::vector<Geometry::Bounds> GenerateAtlasBounds(size_t size, Geometry::Point margin = {}, Geometry::Point outer_margin = {}) const;
+        std::vector<Geometry::Bounds> GenerateAtlasBounds(int size, int margin = 0, int outer_margin = 0) const; 
+        std::vector<Geometry::Bounds> GenerateAtlasBounds(Geometry::Size size, int margin = {}, int outer_margin = {}) const; 
+        std::vector<Geometry::Bounds> GenerateAtlasBounds(int size, Geometry::Point margin = {}, Geometry::Point outer_margin = {}) const;
 
 		/// Creates images from the given atlas image and map. Prepares every image as well. This requires image to be prepared.
         /// Texture images can be passed around as value, but it is best to avoid that.

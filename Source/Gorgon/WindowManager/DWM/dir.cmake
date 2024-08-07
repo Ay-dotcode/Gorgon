@@ -7,3 +7,6 @@ set(Local
     Input.cpp
     Window.cpp
 )
+
+list(APPEND DebugLibs Shcore.lib)
+list(APPEND OptimizedLibs Shcore.lib)

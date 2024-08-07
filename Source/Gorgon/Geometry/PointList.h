@@ -219,11 +219,6 @@ namespace Gorgon { namespace Geometry {
             Points.erase(std::begin(Points) + index);
         }
 
-        void Erase(auto iterator) {
-
-            Points.erase(iterator); 
-        }
-        
         
         ///Adds the coordinates of the points on the right list to the left.
         ///Right list is treated as cyclic. If right list is empty, nothing is

@@ -10,8 +10,11 @@
 #include <Gorgon/Graphics/Layer.h>
 #include <Gorgon/Utils/Assert.h>
 #include <Gorgon/Game/Pathfinding/Pathfinders.h>
-
-#include <unistd.h>
+#ifndef WIN32
+    #include <unistd.h>
+#else 
+using uint = unsigned int; 
+#endif
 #include <vector>
 
 

@@ -559,15 +559,15 @@ namespace Gorgon { namespace Graphics {
         return ret; 
     }
 
-    std::vector<Geometry::Bounds> Bitmap::GenerateAtlasBounds(size_t size, size_t margin, size_t outer_margin) const {
+    std::vector<Geometry::Bounds> Bitmap::GenerateAtlasBounds(int size, int margin, int outer_margin) const {
         return GenerateAtlasBounds(Geometry::Size{size, size}, Geometry::Point {margin, margin}, Geometry::Point{outer_margin, outer_margin}); 
     }
 
-    std::vector<Geometry::Bounds> Bitmap::GenerateAtlasBounds(Geometry::Size size, size_t margin, size_t outer_margin) const {
+    std::vector<Geometry::Bounds> Bitmap::GenerateAtlasBounds(Geometry::Size size, int margin, int outer_margin) const {
         return GenerateAtlasBounds(size, Geometry::Point {margin, margin}, Geometry::Point{outer_margin, outer_margin}); 
     }
 
-    std::vector<Geometry::Bounds> Bitmap::GenerateAtlasBounds(size_t size, Geometry::Point margin, Geometry::Point outer_margin) const {
+    std::vector<Geometry::Bounds> Bitmap::GenerateAtlasBounds(int size, Geometry::Point margin, Geometry::Point outer_margin) const {
         return GenerateAtlasBounds(Geometry::Size{size, size}, margin, outer_margin); 
     }
 

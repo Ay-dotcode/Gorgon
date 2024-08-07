@@ -92,9 +92,9 @@ namespace Gorgon {
 #endif
 #ifdef AUDIO
 		Audio::Initialize();
-#endif
         Multimedia::Initialize();
 		Resource::Initialize();
+#endif
 	}
 
 	void Tick() {
@@ -160,8 +160,9 @@ namespace Gorgon {
 		}
 	}
 
-	void NextFrame() {
-		Render();
+	void NextFrame(bool render) {
+		if(render)
+            Render();
 
 		auto ctime=Time::GetTime();
 		auto currentdelta=ctime-Time::FrameStart();

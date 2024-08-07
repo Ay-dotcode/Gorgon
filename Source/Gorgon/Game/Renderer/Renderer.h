@@ -28,7 +28,6 @@ It's ODR violation but still the Renderer function will be here.
 #include <Gorgon/Utils/Assert.h>
 #include <Gorgon/Utils/Logging.h>
 #include <Gorgon/Widgets/Registry.h>
-#include <bits/types/locale_t.h>
 #include <functional>
 #include <initializer_list>
 #include <vector>

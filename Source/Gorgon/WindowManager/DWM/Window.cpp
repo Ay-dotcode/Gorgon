@@ -231,7 +231,7 @@ namespace internal {
         init();
 	}
 
-	Window::Window(const FullscreenTag &, const WindowManager::Monitor &monitor, const std::string &name, const std::string &title) : data(new internal::windowdata(*this)) {
+	Window::Window(const FullscreenTag &, const WindowManager::Monitor &monitor, const std::string &name, const std::string &title, bool visible__) : data(new internal::windowdata(*this)) {
 		windows.Add(this);
 
 		this->name = name;
@@ -243,7 +243,7 @@ namespace internal {
 		HINSTANCE instance;
 		HWND hwnd;
 		MSG msg;
-		bool visible = true;
+		bool visible = visible__;
 		ZeroMemory(&msg, sizeof(MSG));
 		ZeroMemory(&windclass, sizeof(windclass));
 
@@ -307,10 +307,12 @@ namespace internal {
 		ShowWindow(data->handle, SW_SHOW);
 		SetActiveWindow(data->handle);
 		ShowWindow(data->handle, SW_SHOW);
+		isvisible = true;
 	}
 
 	void Window::Hide() {
 		ShowWindow(data->handle, SW_HIDE);
+		isvisible = false;
 	}
 	
 	void Window::HidePointer() {

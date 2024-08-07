@@ -117,8 +117,7 @@ namespace Gorgon {
 
         /// Creates a fullscreen window. Fullscreen windows do not have chrome and covers
         /// entire screen, including any panels it contains.
-        Window(const FullscreenTag &, const WindowManager::Monitor &monitor, const std::string &name, const std::string &title="");
-
+        Window(const FullscreenTag &, const WindowManager::Monitor &monitor, const std::string &name, const std::string &title="", bool visible = true);
         /// Creates a fullscreen window. Fullscreen windows do not have chrome and covers
         /// entire screen, including any panels it contains.
         Window(const FullscreenTag &tag, const std::string &name, const std::string &title="") :
@@ -136,6 +135,11 @@ namespace Gorgon {
             
         /// Destroys this window
         virtual ~Window() { Destroy(); }
+        
+        /// Returns the OS specific data of the window. This data is used internally and should not be used unless necessary.
+        internal::windowdata  *getosdata() {
+            return data; 
+        }
         
         /// Destroys this window
         virtual void Destroy();

@@ -124,8 +124,8 @@ namespace Gorgon { namespace UI {
 
         /// Creates a fullscreen window. Fullscreen windows do not have chrome and covers
         /// entire screen, including any panels it contains.
-        Window(const FullscreenTag &tag, const WindowManager::Monitor &monitor, const std::string &name, const std::string &title = "") :
-            Gorgon::Window(tag, monitor, name, title)
+        Window(const FullscreenTag &tag, const WindowManager::Monitor &monitor, const std::string &name, const std::string &title = "", bool visible = true) :
+            Gorgon::Window(tag, monitor, name, title, visible)
         {
             init();
         }

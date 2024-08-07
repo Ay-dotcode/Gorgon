@@ -7,6 +7,7 @@
 #include "../../IO/MemoryStream.h"
 
 #include <ShlObj.h>
+#include <winuser.h>
 
 
 namespace Gorgon { namespace WindowManager {
@@ -508,10 +509,12 @@ namespace Gorgon { namespace WindowManager {
 		clipboard_entries.push_back({cf_g_bmp, data});
 		clipboard_entries.push_back({cf_png, data});
 		clipboard_entries.push_back({CF_DIB, data});
+		
 
 		SetClipboardData(cf_g_bmp, nullptr);
 		SetClipboardData(cf_png, nullptr);
 		SetClipboardData(CF_DIB, nullptr);
+
 		//jpg does not work on windows
 
 		//add file data later

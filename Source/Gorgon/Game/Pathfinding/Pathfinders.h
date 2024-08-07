@@ -2,7 +2,9 @@
 #include <Gorgon/Geometry/Size.h>
 #include <Gorgon/Geometry/PointList.h>
 #include <Gorgon/Geometry/Point.h>
-
+#ifdef WIN32
+using uint = unsigned int;
+#endif
 namespace Gorgon::Game::Pathfinding {
     struct TileNode
     {
@@ -29,4 +31,4 @@ namespace Gorgon::Game::Pathfinding {
         virtual void RemoveBlock(Gorgon::Geometry::Point) = 0; 
         virtual void ClearBlocks() = 0; 
     };
-}
+ }

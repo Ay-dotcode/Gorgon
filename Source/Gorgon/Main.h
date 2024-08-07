@@ -52,7 +52,7 @@ namespace Gorgon {
     /// frame tasks such as rendering. Before starting the next frame, a certain delay is performed.
     /// This delay aims to set each frame duration to 16ms, this duration sets the frames per second
     /// to 62.5. This delay greatly reduces the system load of simple games/applications.
-    void NextFrame();
+    void NextFrame(bool render = true);
 
     /// This method works similar to next frame, however, no delay is done. This function allows an
     /// application to update the display and perform OS tasks while still continuing operation.
