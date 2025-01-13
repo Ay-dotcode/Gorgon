@@ -160,7 +160,7 @@ namespace internal {
         init();
     }
     
-    Window::Window(const Gorgon::Window::FullscreenTag &, const WindowManager::Monitor &mon, const std::string &name, const std::string &title) : data(new internal::windowdata) {
+    Window::Window(const Gorgon::Window::FullscreenTag &, const WindowManager::Monitor &mon, const std::string &name, const std::string &title, bool visible) : data(new internal::windowdata) {
         
         this->name = name;
 
@@ -217,14 +217,19 @@ namespace internal {
         
         XChangeProperty(WindowManager::display, data->handle, WindowManager::XA_NET_WM_STATE, WindowManager::XA_ATOM, 32, PropModeReplace, (Byte*)flist, 1);
         
-        XMapWindow(WindowManager::display,data->handle);
-        XIfEvent(WindowManager::display, &event, &WindowManager::waitfor_mapnotify, (char*)data->handle);
+        if(isvisible) {
+            XMapWindow(WindowManager::display,data->handle);
+            XIfEvent(WindowManager::display, &event, &WindowManager::waitfor_mapnotify, (char*)data->handle);
+            data->ismapped = true;
+        }
+        else {
+            data->ismapped = false;
+        }
         
         XMoveWindow(WindowManager::display, data->handle, mon.GetLocation().X, mon.GetLocation().Y);
         
         XFlush(WindowManager::display);
         
-        data->ismapped=true;        
         data->ppoint=mon.GetLocation();
         
         Layer::Resize(mon.GetSize());
