@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.25)
 
 OPTION(IGNORE_COMPILER_VERSION "Ignore compiler version check" OFF)
 OPTION(IGNORE_COMPILER_VENDOR "Ignore compiler vendor check" OFF)

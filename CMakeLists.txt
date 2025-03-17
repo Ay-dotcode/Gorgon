@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.5)
-cmake_policy(VERSION 3.5)
+cmake_minimum_required(VERSION 3.25)
+cmake_policy(VERSION 3.25)
 
 project(Gorgon)
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Tools/ShaderEmbedder")
@@ -110,7 +110,7 @@ set(ADDITIONAL_CLIENT_FLAGS )
 if(NOT(${FORCE_32_BIT}))
     set(FIND_LIBRARY_USE_LIB64_PATHS ON)
     if(NOT WIN32)
-        list(INSERT 0 CMAKE_SYSTEM_LIBRARY_PATH /usr/lib64)
+        list(INSERT CMAKE_SYSTEM_LIBRARY_PATH 0 /usr/lib64)
     endif()
 endif()
 
