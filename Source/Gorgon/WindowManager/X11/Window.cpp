@@ -4,7 +4,6 @@
 #include "../../WindowManager.h"
 #include "../../Window.h"
 #include "../../Graphics/Layer.h"
-#include "../../Encoding/URI.h"
 #include "X11Keysym.h"
 #include <X11/cursorfont.h>
 
