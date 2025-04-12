@@ -1,7 +1,6 @@
 #include "PNG.h"
 
-#include "../External/PNG/png.h"
-#include "../External/PNG/pngstruct.h"
+#include <png.h>
 #include <stdexcept>
 #include <cstring>
 #include <algorithm>
@@ -10,18 +9,18 @@
 namespace Gorgon { namespace Encoding {
 	namespace png {
 		void ReadFile(png_struct_def *p, unsigned char *buf, size_t size) {
-			FileReader *reader = (FileReader*)(p->io_ptr);
+			FileReader *reader = (FileReader*)png_get_io_ptr(p);
 			reader->Buf.read((char*)buf, size);
 			size=(size_t)reader->Buf.gcount();
 			if(size>0 && reader->Buf.fail())
 				reader->Buf.clear();
 		}
 		void WriteFile(png_struct *p, unsigned char *buf, size_t size) {
-			FileWriter *writer = (FileWriter*)(p->io_ptr);
+			FileWriter *writer = (FileWriter*)png_get_io_ptr(p);
 			writer->Buf.write((char*)buf, size);
 		}
 		void ReadArray(png_struct *p, unsigned char *buf, size_t size) {
-			ArrayReader *reader = (ArrayReader*)(p->io_ptr);
+			ArrayReader *reader = (ArrayReader*)png_get_io_ptr(p);
 
             if(size + reader->BufPos > reader->Buf.size) {
                 size = reader->Buf.size - reader->BufPos;
@@ -30,14 +29,14 @@ namespace Gorgon { namespace Encoding {
 			reader->BufPos += (unsigned)size;
 		}
 		void ReadVector(png_struct *p, unsigned char *buf, size_t size) {
-			VectorReader *reader = (VectorReader*)(p->io_ptr);
+			VectorReader *reader = (VectorReader*)png_get_io_ptr(p);
 			size = std::min(size, reader->Buf.size() - reader->BufPos);
 			if (size)
 				std::memcpy(buf, &reader->Buf[reader->BufPos], size);
 			reader->BufPos += (unsigned)size;
 		}
 		void WriteVector(png_struct *p, unsigned char *buf, size_t size) {
-			VectorWriter *writer = (VectorWriter*)(p->io_ptr);
+			VectorWriter *writer = (VectorWriter*)png_get_io_ptr(p);
 			if (size)
 			{
 				unsigned oldSize = (unsigned)writer->Buf.size();
@@ -73,7 +72,7 @@ namespace Gorgon { namespace Encoding {
 			throw std::runtime_error("Cannot create PNG info struct");
 		}
 
-		if(setjmp(png_ptr->longjmp_buffer)) {
+		if(setjmp(png_jmpbuf(png_ptr))) {
 			png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 			throw std::runtime_error("Cannot read PNG file");
 		}

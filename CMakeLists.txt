@@ -20,8 +20,7 @@ set(PROJECT_PACKAGE_DIR ${CMAKE_CURRENT_LIST_DIR}/Package)
 
 set(gorgon_external_options "" NONE BUILTIN SYSTEM)
 
-#### SETTINGS ####
-
+# ### SETTINGS ####
 option(OPENGL "Use OpenGL as underlying GL. Should be ON for now." ON)
 
 option(AUDIO "Enable audio." ON)
@@ -43,15 +42,26 @@ option(TESTS "Enable compiling of test applications." OFF)
 option(GAME "Enable compiling of game modules." ON)
 
 if(WIN32)
+	set(PNG BUILTIN CACHE STRING "Use built-in or system PNG library.")
+else()
+	set(PNG SYSTEM CACHE STRING "Use system or built-in PNG library.")
+endif()
+
+if(NOT PNG IN_LIST gorgon_external_options)
+	message(FATAL_ERROR "PNG should be set to one of ${gorgon_external_options}")
+endif()
+
+if(WIN32)
 	set(FLAC BUILTIN CACHE STRING "Enable FLAC decoding and streaming.")
 else()
 	set(FLAC SYSTEM CACHE STRING "Enable FLAC decoding and streaming.")
 endif()
-if(NOT FLAC IN_LIST gorgon_external_options)
-    message(FATAL_ERROR "FLAC should be set to one of ${gorgon_external_options}")
-endif()
-set_property(CACHE FLAC PROPERTY STRINGS ${gorgon_external_options})
 
+if(NOT FLAC IN_LIST gorgon_external_options)
+	message(FATAL_ERROR "FLAC should be set to one of ${gorgon_external_options}")
+endif()
+
+set_property(CACHE FLAC PROPERTY STRINGS ${gorgon_external_options})
 
 option(UI "Enable UI subsystem." ON)
 
@@ -60,12 +70,15 @@ if(WIN32)
 else()
 	set(FREETYPE SYSTEM CACHE STRING "Enable FreeType font support")
 endif()
-if("${FREETYPE}" STREQUAL "ON") #upgrading old options
+
+if("${FREETYPE}" STREQUAL "ON") # upgrading old options
 	set(FREETYPE SYSTEM CACHE STRING "Enable FreeType font support" FORCE)
 endif()
+
 if(NOT FREETYPE IN_LIST gorgon_external_options)
-    message(FATAL_ERROR "FREETYPE should be set to one of ${gorgon_external_options}")
+	message(FATAL_ERROR "FREETYPE should be set to one of ${gorgon_external_options}")
 endif()
+
 set_property(CACHE FREETYPE PROPERTY STRINGS ${gorgon_external_options})
 
 if(WIN32)
@@ -73,9 +86,11 @@ if(WIN32)
 else()
 	set(VORBIS SYSTEM CACHE STRING "Enable Vorbis audio support")
 endif()
+
 if(NOT VORBIS IN_LIST gorgon_external_options)
-    message(FATAL_ERROR "VORBIS should be set to one of ${gorgon_external_options}")
+	message(FATAL_ERROR "VORBIS should be set to one of ${gorgon_external_options}")
 endif()
+
 set_property(CACHE VORBIS PROPERTY STRINGS ${gorgon_external_options})
 
 if(WIN32)
@@ -83,12 +98,15 @@ if(WIN32)
 else()
 	set(FONTCONFIG SYSTEM CACHE STRING "Enable Font config support")
 endif()
-if("${FONTCONFIG}" STREQUAL "ON") #upgrading old options
+
+if("${FONTCONFIG}" STREQUAL "ON") # upgrading old options
 	set(FONTCONFIG SYSTEM CACHE STRING "Enable FreeType font support" FORCE)
 endif()
+
 if(NOT FONTCONFIG IN_LIST gorgon_external_options)
-    message(FATAL_ERROR "FONTCONFIG should be set to one of ${gorgon_external_options}")
+	message(FATAL_ERROR "FONTCONFIG should be set to one of ${gorgon_external_options}")
 endif()
+
 set_property(CACHE FONTCONFIG PROPERTY STRINGS ${gorgon_external_options})
 
 OPTION(FORCE_32_BIT "Force 32 bit compilation" OFF)
@@ -99,23 +117,22 @@ set(INSTALL_BIN_DIR bin CACHE PATH "Installation directory for executables")
 
 set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")
 
-######################
-
+# #####################
 if(GSCRIPT_GENERATOR)
-    add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Tools/GscriptGenerator")
+	add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Tools/GscriptGenerator")
 endif()
 
-set(ADDITIONAL_CLIENT_FLAGS )
+set(ADDITIONAL_CLIENT_FLAGS)
 
 if(NOT(${FORCE_32_BIT}))
-    set(FIND_LIBRARY_USE_LIB64_PATHS ON)
-    if(NOT WIN32)
-        list(INSERT CMAKE_SYSTEM_LIBRARY_PATH 0 /usr/lib64)
-    endif()
+	set(FIND_LIBRARY_USE_LIB64_PATHS ON)
+
+	if(NOT WIN32)
+		list(INSERT CMAKE_SYSTEM_LIBRARY_PATH 0 /usr/lib64)
+	endif()
 endif()
 
-
-if(AUDIO AND (NOT AUDIOLIB OR AUDIOLIB STREQUAL ""))
+if(AUDIO AND(NOT AUDIOLIB OR AUDIOLIB STREQUAL ""))
 	if(WIN32)
 		set(AUDIOLIB WASAPI)
 	else()
@@ -126,37 +143,37 @@ endif()
 if(AUDIO)
 	add_definitions("-DAUDIO")
 	add_definitions("-DAUDIO_${AUDIOLIB}")
-    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DAUDIO")
-    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DAUDIO_${AUDIOLIB}")
+	string(APPEND ADDITIONAL_CLIENT_FLAGS " -DAUDIO")
+	string(APPEND ADDITIONAL_CLIENT_FLAGS " -DAUDIO_${AUDIOLIB}")
 endif()
 
 if(FREETYPE STREQUAL "SYSTEM" OR FREETYPE STREQUAL "BUILTIN")
-    add_definitions("-DFREETYPE_SUPPORT")
-    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DFREETYPE_SUPPORT")
+	add_definitions("-DFREETYPE_SUPPORT")
+	string(APPEND ADDITIONAL_CLIENT_FLAGS " -DFREETYPE_SUPPORT")
 endif()
 
 if(FLAC STREQUAL "SYSTEM" OR FLAC STREQUAL "BUILTIN")
-    add_definitions("-DFLAC_SUPPORT")
-    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DFLAC_SUPPORT")
+	add_definitions("-DFLAC_SUPPORT")
+	string(APPEND ADDITIONAL_CLIENT_FLAGS " -DFLAC_SUPPORT")
 endif()
 
 if(VORBIS STREQUAL "SYSTEM" OR VORBIS STREQUAL "BUILTIN")
-    add_definitions("-DVORBIS_SUPPORT")
-    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DVORBIS_SUPPORT")
+	add_definitions("-DVORBIS_SUPPORT")
+	string(APPEND ADDITIONAL_CLIENT_FLAGS " -DVORBIS_SUPPORT")
 endif()
 
 if(FONTCONFIG STREQUAL "SYSTEM" OR FONTCONFIG STREQUAL "BUILTIN")
-    add_definitions("-DFONTCONFIG_SUPPORT")
-    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DFONTCONFIG_SUPPORT")
+	add_definitions("-DFONTCONFIG_SUPPORT")
+	string(APPEND ADDITIONAL_CLIENT_FLAGS " -DFONTCONFIG_SUPPORT")
 endif()
 
 if(SCRIPTING)
 	add_definitions("-DSCRIPTING")
-    string(APPEND ADDITIONAL_CLIENT_FLAGS " -DSCRIPTING")
+	string(APPEND ADDITIONAL_CLIENT_FLAGS " -DSCRIPTING")
 endif()
 
 if(OPENGL)
-    set(OpenGL_GL_PREFERENCE "LEGACY")
+	set(OpenGL_GL_PREFERENCE "LEGACY")
 endif()
 
 if(DOCUMENTATION_GRAPHS)
@@ -185,21 +202,21 @@ if(UI)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DENABLE_UI")
 endif()
 
-if(UNIX) 
+if(UNIX)
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLINUX -Werror=return-type")
 else()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4800")
 endif()
 
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DGLM_SWIZZLE -DGLM_FORCE_RADIANS")
 
 # Make relative paths absolute (needed later on)
 foreach(p LIB BIN INCLUDE CMAKE)
-  set(var INSTALL_${p}_DIR)
-  if(NOT IS_ABSOLUTE "${${var}}")
-    set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
-  endif()
+	set(var INSTALL_${p}_DIR)
+
+	if(NOT IS_ABSOLUTE "${${var}}")
+		set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
+	endif()
 endforeach()
 
 include(Scripts/Compiler.cmake)
@@ -210,7 +227,6 @@ set(DebugLibs "")
 set(OptimizedLibs "")
 
 StartSource(Source/Gorgon)
-
 
 if(TESTS)
 	include(Scripts/Testing.cmake)
@@ -226,21 +242,22 @@ endif()
 
 set_property(TARGET Gorgon PROPERTY CXX_STANDARD 14)
 
-#if(WIN32)
-	set_target_properties(Gorgon PROPERTIES 
-		DEBUG_OUTPUT_NAME Gorgon_d
-		RELWITHDEBINFO_OUTPUT_NAME Gorgon_rd
-		MINSIZEREL_OUTPUT_NAME Gorgon_min
-	)
-#endif()
+# if(WIN32)
+set_target_properties(Gorgon PROPERTIES
+	DEBUG_OUTPUT_NAME Gorgon_d
+	RELWITHDEBINFO_OUTPUT_NAME Gorgon_rd
+	MINSIZEREL_OUTPUT_NAME Gorgon_min
+)
 
+# endif()
 if(NOT ${deps} STREQUAL "")
 	add_dependencies(Gorgon ${deps})
 endif()
 
-
 include_directories(Source/External)
 include_directories(Source)
+
+include(Scripts/Libs.cmake)
 
 target_link_libraries(Gorgon ${Libs})
 
@@ -252,51 +269,14 @@ if(NOT OptimizedLibs STREQUAL "")
 	target_link_libraries(Gorgon optimized ${OptimizedLibs})
 endif()
 
-
 install(TARGETS Gorgon
 	EXPORT GorgonTargets
 	ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
 	PUBLIC_HEADER DESTINATION "${INSTALL_INCLUDE_DIR}/Gorgon"
 )
 
-
-export(TARGETS Gorgon FILE "${PROJECT_PACKAGE_DIR}/GorgonTargets.cmake")
+export(TARGETS Gorgon APPEND FILE "${PROJECT_PACKAGE_DIR}/GorgonTargets.cmake")
 export(PACKAGE Gorgon)
-
-if(FLAC STREQUAL "BUILTIN") 
-	add_subdirectory(Source/External/flac)
-	
-	include_directories(Source/External/flac/include)
-
-	add_definitions("-DFLAC__NO_DLL")
-	
-	target_link_libraries(Gorgon flac)
-endif()
-
-if(FREETYPE STREQUAL "BUILTIN")
-	add_subdirectory(Source/External/freetype)
-	
-	include_directories(Source/External/freetype/include)
-	set(FREETYPE_INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/Source/External/freetype/include)
-	
-	target_link_libraries(Gorgon freetype)
-endif()
-
-if(VORBIS STREQUAL "BUILTIN")
-	add_subdirectory(Source/External/vorbis)
-	
-	include_directories(Source/External/vorbis/include)
-	
-	target_link_libraries(Gorgon vorbis)
-	
-	add_subdirectory(Source/External/ogg)
-	
-	include_directories(Source/External/ogg/include)
-endif()
-
-if(FONTCONFIG STREQUAL "BUILTIN")
-	message(FATAL_ERROR "Built-in fontconfig is not supported yet.")
-endif()
 
 if(WIN32)
 	add_definitions("-DDWM")
@@ -305,24 +285,24 @@ else()
 endif()
 
 file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
-   "${INSTALL_INCLUDE_DIR}")
+	"${INSTALL_INCLUDE_DIR}")
 
 set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/Source")
 
 configure_file(Scripts/GorgonConfig.cmake.in
-  "${PROJECT_PACKAGE_DIR}/GorgonConfig.cmake" @ONLY)
-  
+	"${PROJECT_PACKAGE_DIR}/GorgonConfig.cmake" @ONLY)
+
 set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/Source")
 configure_file(Scripts/GorgonConfig.cmake.in
-  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/GorgonConfig.cmake" @ONLY)
+	"${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/GorgonConfig.cmake" @ONLY)
 
 configure_file(Scripts/GorgonConfigVersion.cmake.in
-  "${PROJECT_PACKAGE_DIR}/GorgonConfigVersion.cmake" @ONLY)
+	"${PROJECT_PACKAGE_DIR}/GorgonConfigVersion.cmake" @ONLY)
 
 install(FILES
-  "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/GorgonConfig.cmake"
-  "${PROJECT_PACKAGE_DIR}/GorgonConfigVersion.cmake"
-  DESTINATION "${INSTALL_CMAKE_DIR}"
+	"${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/GorgonConfig.cmake"
+	"${PROJECT_PACKAGE_DIR}/GorgonConfigVersion.cmake"
+	DESTINATION "${INSTALL_CMAKE_DIR}"
 )
 
 install(EXPORT GorgonTargets DESTINATION "${INSTALL_CMAKE_DIR}")

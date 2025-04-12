@@ -5,7 +5,6 @@
 #include <functional>
 
 #include "../Types.h"
-#include "../Geometry/Size.h"
 #include "../Containers/Image.h"
 
 extern "C" {
