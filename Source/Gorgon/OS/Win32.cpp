@@ -471,7 +471,13 @@ namespace Gorgon {
 				face = nullptr;
 			}
 
-			filename = Filesystem::Canonical(filename);
+			try {
+				filename = Filesystem::Canonical(filename);
+			}
+			catch(...) {
+				continue;
+			}
+			
 			auto error = FT_New_Face(library, filename.c_str(), 0, &face);
 
 			if(error != FT_Err_Ok || face == nullptr)
