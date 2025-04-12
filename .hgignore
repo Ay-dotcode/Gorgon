@@ -18,6 +18,8 @@ Package/
 codelite/
 Docs/xml
 
+Source/External/flac/src/include/config.h
+
 syntax: glob
 
 *.obj

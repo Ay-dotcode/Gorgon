@@ -19,6 +19,7 @@ set(PROJECT_BINARY_DIR ${CMAKE_CURRENT_LIST_DIR}/Bin)
 set(PROJECT_PACKAGE_DIR ${CMAKE_CURRENT_LIST_DIR}/Package)
 
 set(gorgon_external_options "" NONE BUILTIN SYSTEM)
+set(gorgon_external_mandatory_options "" BUILTIN SYSTEM)
 
 # ### SETTINGS ####
 option(OPENGL "Use OpenGL as underlying GL. Should be ON for now." ON)
@@ -47,9 +48,11 @@ else()
 	set(PNG SYSTEM CACHE STRING "Use system or built-in PNG library.")
 endif()
 
-if(NOT PNG IN_LIST gorgon_external_options)
+if(NOT PNG IN_LIST gorgon_external_mandatory_options)
 	message(FATAL_ERROR "PNG should be set to one of ${gorgon_external_options}")
 endif()
+
+set_property(CACHE PNG PROPERTY STRINGS ${gorgon_external_mandatory_options})
 
 if(WIN32)
 	set(FLAC BUILTIN CACHE STRING "Enable FLAC decoding and streaming.")
