@@ -309,3 +309,10 @@ install(FILES
 )
 
 install(EXPORT GorgonTargets DESTINATION "${INSTALL_CMAKE_DIR}")
+
+option(CODE_COVERAGE "Enable coverage flags" ON)
+
+if(CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(--coverage -O0 -g)
+    add_link_options(--coverage)
+endif()

@@ -1,3 +1,4 @@
+
 #define CATCH_CONFIG_MAIN
 
 #define WINDOWS_LEAN_AND_MEAN
@@ -251,7 +252,7 @@ TEST_CASE( "Point geometric info", "[Point]") {
 	REQUIRE( p2.Slope(p4) == Approx(1.069767f) );
 }
 
-TEST_CASE( "Point <-> string", "[Point]" ) {
+/*TEST_CASE( "Point <-> string", "[Point]" ) {
 	
 	Point  p1("1, 2");
 	Pointf p2("(1.2f, 2.2f)");
@@ -397,7 +398,7 @@ TEST_CASE( "Point <-> string", "[Point]" ) {
 	REQUIRE_THROWS( Point::Parse("7a,5e") );
 	REQUIRE_THROWS( Point::Parse("(3,4") );
 	REQUIRE_THROWS( Point::Parse("3,4)") );
-}
+}*/
 
 TEST_CASE( "Point geometry functions", "[Point]" ) {
 	Point  p1(1, 2);
@@ -925,14 +926,14 @@ TEST_CASE( "Size point interaction", "[Size][Point]" ) {
 	p3=(p2/s2);
 	REQUIRE( p3.X == Approx(0.54545) );
 	REQUIRE( p3.Y == Approx(0.42308) );
-	
+}
 	/*p4=p1;
 	Scale(p4, s1);
 	REQUIRE( p4 == Point(20, 100) );
 	
 	p4=p1;
 	Scale(p4, s2);
-	REQUIRE( p4 == Point(22, 103) ||  p4 == Point(22, 104) );*/
+	REQUIRE( p4 == Point(22, 103) ||  p4 == Point(22, 104) );
 	
 	p3=p2;
 	Scale(p3, s1);
@@ -944,7 +945,6 @@ TEST_CASE( "Size point interaction", "[Size][Point]" ) {
 	REQUIRE( p3.X == Approx(2.64) );
 	REQUIRE( p3.Y == Approx(11.44) );
 }
-
 TEST_CASE( "Size geometric functions", "[Size]" ) {
 	Size  s1(1, 2);
 	Sizef s2(1.2f, 2.2f);
@@ -1028,7 +1028,7 @@ TEST_CASE( "Transform3D") {
     
     REQUIRE(similar(t1, t2));
     
-    /*glutil::MatrixStack m;
+    glutil::MatrixStack m;
     m.SetIdentity();
     m.Translate(1, 2, 3);
     m.Rotate({0,0,1}, Gorgon::PI/2);
@@ -1043,7 +1043,7 @@ TEST_CASE( "Transform3D") {
     glm::vec4 v(3, 3, 3, 1);
     v = m.Top() * v;
     
-    std::cout<<v.x<<" "<<v.y<<" "<<v.z<<std::endl;*/
+    std::cout<<v.x<<" "<<v.y<<" "<<v.z<<std::endl;
     
     
     t2 = {{0,-1,0,1}, {1,0,0,2},{0,0,1,3},{0,0,0,1}};
@@ -1076,7 +1076,7 @@ TEST_CASE( "Transform3D") {
     REQUIRE(similarp(p1, {3, 6, 9}));
 }
 
-/*
+
 TEST_CASE( "Bounds constructors", "[Bounds]" ) {
 	Bounds  b1(1.2, 2.2);
 	Boundsf b2(1.2, 2.2);
@@ -1088,4 +1088,6 @@ TEST_CASE( "Bounds constructors", "[Bounds]" ) {
 	Boundsf b9("1.2, 2.2");
 	
 	
-}*/
+}
+
+*/

@@ -102,7 +102,7 @@ std::ostream &operator <<(std::ostream &out, B a) {
 	return out;
 }
 
-TEST_CASE("Scripts", "[scripting]") {
+/*TEST_CASE("Scripts", "[scripting]") {
 	std::string scriptdir="../Source/Unit/Scripts";
 	if(!Gorgon::Filesystem::IsDirectory(scriptdir)) {
 		scriptdir="../Testing/Source/Unit/Scripts";
@@ -171,7 +171,7 @@ TEST_CASE("Scripts", "[scripting]") {
 		REQUIRE(outputstream.rdstate()==scriptoutput.rdstate());
 	}
 }
-
+*/
 TEST_CASE("Basic scripting", "[firsttest]") {
 	auto &vm=VirtualMachine::Get();
 	

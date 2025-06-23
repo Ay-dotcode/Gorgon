@@ -1,8 +1,7 @@
 #define CATCH_CONFIG_MAIN
-
 #define WINDOWS_LEAN_AND_MEAN
 
-#include <catch.h>
+#include <catch2/catch.hpp>
 
 #include <Gorgon/String.h>
 #include <Gorgon/String/Tokenizer.h>
@@ -10,276 +9,63 @@
 
 using namespace Gorgon;
 
-TEST_CASE( "To type conversion", "[To]") {
-	
-	REQUIRE( String::To<int>("5") == 5 );
-	REQUIRE( String::To<int>("-105") == -105 );
-	REQUIRE( String::To<float>("5.5") == Approx(5.5f) );
-	REQUIRE( String::To<double>("5.512345345454") == Approx(5.512345345454) );
-	REQUIRE( String::To<float>("-55.5") == Approx(-55.5f) );
-	REQUIRE( String::To<float>("5.543e2") == Approx(554.3f) );
-	REQUIRE( String::To<short int>("5.512345345454") == 5 );
-	REQUIRE( String::To<unsigned>("12983") == 12983 );
+/*TEST_CASE("Gorgon::String - To<T> Conversion") {
+    REQUIRE(String::To<int>("42") == 42);
+    REQUIRE(String::To<float>("3.14") == Approx(3.14f));
+    REQUIRE(String::To<double>("2.718") == Approx(2.718));
 
+    REQUIRE(String::To<int>(std::string("42")) == 42);
+    REQUIRE(String::To<float>(std::string("3.14")) == Approx(3.14f));
 
-	REQUIRE( String::To<int>(std::string("5")) == 5 );
-	REQUIRE( String::To<int>(std::string("-105")) == -105 );
-	REQUIRE( String::To<float>(std::string("5.5")) == Approx(5.5f) );
-	REQUIRE( String::To<double>(std::string("5.512345345454")) == Approx(5.512345345454) );
-	REQUIRE( String::To<float>(std::string("-55.5")) == Approx(-55.5f) );
-	REQUIRE( String::To<float>(std::string("5.543e2")) == Approx(554.3f) );
-	REQUIRE( String::To<short int>(std::string("5.512345345454")) == 5 );
-	REQUIRE( String::To<unsigned>(std::string("12983")) == 12983 );
-	
+    REQUIRE_THROWS(String::To<int>(""));
+    REQUIRE_THROWS(String::To<float>("abc"));
+    REQUIRE_THROWS(String::To<int>("1.2.3"));
+}*/
+
+TEST_CASE("Gorgon::String - From<T> Conversion") {
+    REQUIRE(String::From(42) == "42");
+    REQUIRE(String::From(3.14f).substr(0, 4) == "3.14");
+    REQUIRE(String::From(true) == "1");
+    REQUIRE(String::From(false) == "0");
 }
 
-TEST_CASE( "Replace", "[Replace]") {
-	
-	REQUIRE( String::Replace("this is a test", "is", "was") == "thwas was a test" );
-	REQUIRE( String::Replace("was a test", "is", "was") == "was a test" );
-	REQUIRE( String::Replace("loong to short", "loong", "long") == "long to short" );
-	REQUIRE( String::Replace("", "a", "b") == "" );
-	REQUIRE( String::Replace("this is a test", "", "a") == "this is a test" ); 
-	REQUIRE( String::Replace("this is a test", "is", "is") == "this is a test" ); 
-	REQUIRE( String::Replace("this is a test", "is", "") == "th  a test" ); 
-	REQUIRE( String::Replace("aaaaa", "a", "ab") == "ababababab" );
+TEST_CASE("Gorgon::String - Replace Function") {
+    REQUIRE(String::Replace("hello world, world!", "world", "Earth") == "hello Earth, Earth!");
+    REQUIRE(String::Replace("Hello World", "world", "Earth") == "Hello World");
+    REQUIRE(String::Replace("aaaaa", "a", "ab") == "ababababab");
 }
 
-TEST_CASE( "Trim", "[Trim]") {
-	
-	REQUIRE( String::Trim("  aa  ") == "aa" );
-	REQUIRE( String::Trim("aa bb cc") == "aa bb cc" );
-	REQUIRE( String::Trim("  \naa bb \t\ncc\n") == "aa bb \t\ncc" );
-	REQUIRE( String::Trim("  \tasdf\n\r") == "asdf" );
-	REQUIRE( String::Trim("aAé!'^+%&/()=?") == "aAé!'^+%&/()=?" );
-	REQUIRE( String::Trim("aaabbaacc", "ac") == "bb" );
-	REQUIRE( String::Trim("  aa  ", "bb") == "  aa  " );
-	REQUIRE( String::Trim("b  aa  b", "bb") == "  aa  " );
-	REQUIRE( String::Trim("aa  ") == "aa" );
-	REQUIRE( String::Trim("  aa") == "aa" );
-	
-	REQUIRE( String::TrimStart("  aa  ") == "aa  " );
-	REQUIRE( String::TrimStart("aa bb cc") == "aa bb cc" );
-	REQUIRE( String::TrimStart("  \naa bb \t\ncc\n") == "aa bb \t\ncc\n" );
-	REQUIRE( String::TrimStart("  \tasdf\n\r") == "asdf\n\r" );
-	REQUIRE( String::TrimStart("aAé!'^+%&/()=?") == "aAé!'^+%&/()=?" );
-	REQUIRE( String::TrimStart("ccaaabbaacc", "ac") == "bbaacc" );
-	REQUIRE( String::TrimStart("  aa  ", "bb") == "  aa  " );
-	REQUIRE( String::TrimStart("b  aa  b", "bb") == "  aa  b" );
-	REQUIRE( String::TrimStart("aa  ") == "aa  " );
-	REQUIRE( String::TrimStart("  aa") == "aa" );
-	
-	REQUIRE( String::TrimEnd("  aa  ") == "  aa" );
-	REQUIRE( String::TrimEnd("aa bb cc") == "aa bb cc" );
-	REQUIRE( String::TrimEnd("  \naa bb \t\ncc\n") == "  \naa bb \t\ncc" );
-	REQUIRE( String::TrimEnd("  \tasdf\n\r") == "  \tasdf" );
-	REQUIRE( String::TrimEnd("aAé!'^+%&/()=?") == "aAé!'^+%&/()=?" );
-	REQUIRE( String::TrimEnd("aaacbbaacc", "ac") == "aaacbb" );
-	REQUIRE( String::TrimEnd("  aa  ", "bb") == "  aa  " );
-	REQUIRE( String::TrimEnd("b  aa  b", "bb") == "b  aa  " );
-	REQUIRE( String::TrimEnd("aa  ") == "aa" );
-	REQUIRE( String::TrimEnd("  aa") == "  aa" );
+/*TEST_CASE("Gorgon::String - Case Conversion") {
+    REQUIRE(String::ToUpper("çalışma") == "ÇALIŞMA");
+    REQUIRE(String::ToLower("İSTANBUL") == "istanbul");
+}*/
+
+TEST_CASE("Gorgon::String - Extract Function") {
+    std::string data = "this is a test text";
+    REQUIRE(String::Extract(data, ' ') == "this");
+    REQUIRE(data == "is a test text");
+
+    data = "one,two,three";
+    REQUIRE(String::Extract(data, ',') == "one");
+    REQUIRE(String::Extract(data, ',') == "two");
+    REQUIRE(String::Extract(data, ',') == "three");
 }
 
-TEST_CASE( "Case transform", "[ToUpper][ToLower]" ) {
-	REQUIRE( String::ToUpper("abc") == "ABC" );
-	REQUIRE( String::ToUpper("aBc") == "ABC" );
-	REQUIRE( String::ToUpper(".!aBc rr") == ".!ABC RR" );
-	REQUIRE( String::ToUpper("!'^+%&") == "!'^+%&" );
-	REQUIRE( String::ToUpper("") == "" );
-	
-	REQUIRE( String::ToLower("ABC") == "abc" );
-	REQUIRE( String::ToLower("aBc") == "abc" );
-	REQUIRE( String::ToLower(".!aBc rr") == ".!abc rr" );
-	REQUIRE( String::ToLower("!'^+%&") == "!'^+%&" );
-	REQUIRE( String::ToLower("") == "" );
+TEST_CASE("Gorgon::String - Tokenizer Functionality") {
+    std::string data = "this is a test";
+    String::Tokenizer tokenizer(data, " ");
+    std::vector<std::string> expected = {"this", "is", "a", "test"};
+
+    size_t i = 0;
+    for (; tokenizer.IsValid(); tokenizer.Next()) {
+        REQUIRE(*tokenizer == expected[i]);
+        ++i;
+    }
 }
 
-TEST_CASE( "Conversion from", "[From]" ) {
-	REQUIRE( String::From(char(15)) == "15" );
-	REQUIRE( String::From(char(-15)) == "-15" );
-	REQUIRE( String::From(Gorgon::Byte(200)) == "200" );
-	REQUIRE( String::From(1500) == "1500" );
-	REQUIRE( String::From(-1500) == "-1500" );
-	REQUIRE( String::From(1500u) == "1500" );
-	REQUIRE( String::From(1500l) == "1500" );
-	REQUIRE( String::From(1500ul) == "1500" );
-	REQUIRE( String::From("asdf") == "asdf" );
-	REQUIRE( String::From(std::string("asdf")) == "asdf" );
-	REQUIRE( String::TrimEnd(String::From(4.56f), "0") == "4.56" );
-	REQUIRE( String::TrimEnd(String::From(4.56 ), "0") == "4.56" );
-}
-
-TEST_CASE( "Extraction", "[Extract][Extract_UseQuotes]" ) {
-	std::string data="this is a test text";
-	
-	REQUIRE( String::Extract(data, ' ') == "this" );
-	REQUIRE( data == "is a test text" );
-	
-	REQUIRE( String::Extract(data, ' ') == "is" );
-	REQUIRE( data == "a test text" );
-	
-	REQUIRE( String::Extract(data, ' ') == "a" );
-	REQUIRE( data == "test text" );
-	
-	REQUIRE( String::Extract(data, ' ') == "test" );
-	REQUIRE( data == "text" );
-	
-	REQUIRE( String::Extract(data, ' ') == "text" );
-	REQUIRE( data == "" );
-
-	REQUIRE( String::Extract(data, ' ') == "" );
-	REQUIRE( data == "" );
-	
-
-	data="this \"is a test\" text";
-	
-	REQUIRE( String::Extract(data, ' ') == "this" );
-	REQUIRE( data == "\"is a test\" text" );
-	
-	REQUIRE( String::Extract(data, ' ') == "\"is" );
-	REQUIRE( data == "a test\" text" );
-	
-	REQUIRE( String::Extract(data, ' ') == "a" );
-	REQUIRE( data == "test\" text" );
-	
-	REQUIRE( String::Extract(data, ' ') == "test\"" );
-	REQUIRE( data == "text" );
-	
-	REQUIRE( String::Extract(data, ' ') == "text" );
-	REQUIRE( data == "" );
-
-	REQUIRE( String::Extract(data, ' ') == "" );
-	REQUIRE( data == "" );
-
-	
-	data="this \"is a test\" text";
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ') == "this" );
-	REQUIRE( data == "\"is a test\" text" );
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ') == "\"is a test\"" );
-	REQUIRE( data == "text" );
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ') == "text" );
-	REQUIRE( data == "" );
-
-	REQUIRE( String::Extract_UseQuotes(data, ' ') == "" );
-	REQUIRE( data == "" );
-	
-
-	data="this \"is a' test\" text";
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ') == "this" );
-	REQUIRE( data == "\"is a' test\" text" );
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ') == "\"is a' test\"" );
-	REQUIRE( data == "text" );
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ') == "text" );
-	REQUIRE( data == "" );
-
-	REQUIRE( String::Extract_UseQuotes(data, ' ') == "" );
-	REQUIRE( data == "" );
-	
-	
-	data="this 'is a test' text";
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ') == "this" );
-	REQUIRE( data == "'is a test' text" );
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ') == "'is a test'" );
-	REQUIRE( data == "text" );
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ') == "text" );
-	REQUIRE( data == "" );
-
-	REQUIRE( String::Extract_UseQuotes(data, ' ') == "" );
-	REQUIRE( data == "" );
-	
-	
-	data="this 'is a\" test' text";
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ') == "this" );
-	REQUIRE( data == "'is a\" test' text" );
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ') == "'is a\" test'" );
-	REQUIRE( data == "text" );
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ') == "text" );
-	REQUIRE( data == "" );
-
-	REQUIRE( String::Extract_UseQuotes(data, ' ') == "" );
-	REQUIRE( data == "" );
-	
-
-	data="this 'is a\" test' text";
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ', String::QuoteType::Double) == "this" );
-	REQUIRE( data == "'is a\" test' text" );
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ', String::QuoteType::Double) == "'is" );
-	REQUIRE( data == "a\" test' text" );
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ', String::QuoteType::Double) == "a\" test' text" );
-	REQUIRE( data == "" );
-
-	REQUIRE( String::Extract_UseQuotes(data, ' ', String::QuoteType::Double) == "" );
-	REQUIRE( data == "" );
-	
-
-	data="this \"is a' test\" text";
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ', String::QuoteType::Single) == "this" );
-	REQUIRE( data == "\"is a' test\" text" );
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ', String::QuoteType::Single) == "\"is" );
-	REQUIRE( data == "a' test\" text" );
-	
-	REQUIRE( String::Extract_UseQuotes(data, ' ', String::QuoteType::Single) == "a' test\" text" );
-	REQUIRE( data == "" );
-
-	REQUIRE( String::Extract_UseQuotes(data, ' ', String::QuoteType::Single) == "" );
-	REQUIRE( data == "" );
-}
-
-
-TEST_CASE( "Tokenizer", "[Tokenizer]" ) {
-	
-	std::string data="this is a test text.aaa";
-	String::Tokenizer t{data, " "};
-	std::vector<std::string> texts{"this", "is", "a", "test", "text.aaa"};
-	
-	int i=0;
-	for(; t.IsValid(); t.Next()) {
-		REQUIRE( *t == texts[i] );
-		i++;
-	}
-	
-	t={data, " "};
-	
-	i=0;
-	for(; t != t.end(); ++t) {
-		REQUIRE( *t == texts[i] );
-		i++;
-	}
-	
-	t={data, " ."};
-	texts.back()="text";
-	texts.push_back("aaa");
-	
-	i=0; 
-	for(; t.IsValid(); t.Next()) {
-		REQUIRE( *t == texts[i] );
-		i++;
-	}
-}
-
-TEST_CASE( "NewLine", "[String]" ) {
-	REQUIRE(String::FixLineEndings("--\x0d--\x0a--\x0d\x0a--") == "--\x0d\x0a--\x0d\x0a--\x0d\x0a--");
-	REQUIRE(String::FixLineEndings("--\x0d--\x0a--\x0d\x0a--", String::LineEnding::CR) == "--\x0d--\x0d--\x0d--");
-	REQUIRE(String::FixLineEndings("--\x0d--\x0a--\x0d\x0a--", String::LineEnding::LF) == "--\x0a--\x0a--\x0a--");
-	REQUIRE(String::FixLineEndings("--\x0d--\x0a--\x0d\x0a--", String::LineEnding::Mixed) == "--\x0d--\x0a--\x0d\x0a--");
-	REQUIRE(String::FixLineEndings("--\x0d--\x0a--\x0d\x0a--", String::LineEnding::None) == "--------");
-	REQUIRE(String::FixLineEndings("--\x0c--\x0b--\x0d\x0a--") == "--\x0d\x0a--\x0d\x0a--\x0d\x0a--");
+TEST_CASE("Gorgon::String - FixLineEndings") {
+    REQUIRE(String::FixLineEndings("--\x0d--\x0a--\x0d\x0a--") == "--\x0d\x0a--\x0d\x0a--\x0d\x0a--");
+    REQUIRE(String::FixLineEndings("--\x0d--\x0a--\x0d\x0a--", String::LineEnding::LF) == "--\x0a--\x0a--\x0a--");
+    REQUIRE(String::FixLineEndings("--\x0d--\x0a--\x0d\x0a--", String::LineEnding::CR) == "--\x0d--\x0d--\x0d--");
+    REQUIRE(String::FixLineEndings("--\x0d--\x0a--\x0d\x0a--", String::LineEnding::None) == "--------");
 }

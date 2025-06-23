@@ -38,6 +38,7 @@ SET(UnitTests
 	ScopeGuard
 	String
 	URI
+	IO
 )
 
 
