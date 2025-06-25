@@ -6,7 +6,7 @@
 #include <Gorgon/Graphics/Color.h>
 #include <Gorgon/Geometry/Point.h>
 #include <Gorgon/Geometry/Size.h>
-// #include <Gorgon/SGuid.h>  // Gerekirse aktif et
+
 
 using namespace Gorgon;
 using namespace Gorgon::IO;
@@ -87,7 +87,8 @@ TEST_CASE("ReadFloat", "[IO]") {
     WriteDouble(stream, val);
     stream.seekg(0);
     REQUIRE(ReadDouble(stream) == Approx(val));
-}*/
+}
+*/
 
 TEST_CASE("ReadBool", "[IO]") {
     bool val = true;
