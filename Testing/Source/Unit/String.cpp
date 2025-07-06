@@ -20,10 +20,10 @@ TEST_CASE("Gorgon::String - To<T> Conversion (Safe)") {
     REQUIRE(String::To<int>(std::string("42")) == 42);
     REQUIRE(String::To<float>(std::string("3.14")) == Approx(3.14f));
 
-    
     REQUIRE(String::To<int>("") == 0);
     REQUIRE(String::To<float>("abc") == Approx(0.0f));
-    REQUIRE(String::To<int>("1.2.3") == 1); 
+    REQUIRE(String::To<int>("1.2.3") == 1);
+}
 
 TEST_CASE("Gorgon::String - From<T> Conversion") {
     REQUIRE(String::From(42) == "42");

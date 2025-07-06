@@ -4,6 +4,8 @@ cmake_policy(VERSION 3.25)
 project(Gorgon)
 add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/Tools/ShaderEmbedder")
 
+
+
 set(GORGON_MAJOR_VERSION 4)
 set(GORGON_MINOR_VERSION 0)
 set(GORGON_PATCH_VERSION 0)
