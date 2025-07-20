@@ -4,7 +4,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.25)
 
 INCLUDE(${CMAKE_TESTING_DIRECTORY}/tests.cmake)
 
-ENABLE_TESTING()
+include(CTest)
+
 
 file(MAKE_DIRECTORY ${CMAKE_TESTING_DIRECTORY}/Runtime)
 
@@ -23,6 +24,8 @@ IF(UNIT_TESTS)
 		TARGET_INCLUDE_DIRECTORIES(${target} PUBLIC "${CMAKE_TESTING_DIRECTORY}/Source")
 		TARGET_INCLUDE_DIRECTORIES(${target} PUBLIC "${CMAKE_SOURCE_DIR}/Source")
 		TARGET_LINK_LIBRARIES(${target} Gorgon)
+		target_compile_options(${target} PRIVATE -coverage)
+		target_link_options(${target} PRIVATE -coverage)
 		
 		ADD_TEST(NAME ${file} WORKING_DIRECTORY ${CMAKE_TESTING_DIRECTORY}/Runtime COMMAND  ${CMAKE_TESTING_DIRECTORY}/Tests/Unit/${target})
 	ENDFOREACH()
@@ -49,6 +52,8 @@ FOREACH(file ${ManualTests})
 		TARGET_INCLUDE_DIRECTORIES(${target} PUBLIC "${CMAKE_TESTING_DIRECTORY}/Source")
 		TARGET_INCLUDE_DIRECTORIES(${target} PUBLIC "${CMAKE_SOURCE_DIR}/Source")
 		TARGET_LINK_LIBRARIES(${target} Gorgon)
+		target_compile_options(${target} PRIVATE -coverage)
+		target_link_options(${target} PRIVATE -coverage)
 		
 		ADD_CUSTOM_COMMAND(TARGET manualtest COMMAND ${CMAKE_TESTING_DIRECTORY}/Tests/Manual/${target})
 	ENDIF()

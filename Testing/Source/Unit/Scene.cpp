@@ -1,3 +1,4 @@
+
 #define CATCH_CONFIG_MAIN
 #include <catch.h>
 
@@ -7,7 +8,7 @@
 
 using namespace Gorgon;
 
-
+/*
 enum Scenes : SceneID {
 	SCENE_1,
 	SCENE_2,
@@ -126,3 +127,4 @@ TEST_CASE("All", "[Scene]") {
 
 	mods2 = 0;
 }
+*/

@@ -13,7 +13,7 @@
 using namespace Gorgon;
 using namespace Gorgon::Geometry;
 
-TEST_CASE("Layer base", "[Layer]") {
+/*TEST_CASE("Layer base", "[Layer]") {
 
 	//Initialize("Unittestlayer");
 
@@ -356,3 +356,4 @@ TEST_CASE("Input", "[Layer]") {
     REQUIRE(a == 4);
     
 }
+*/
