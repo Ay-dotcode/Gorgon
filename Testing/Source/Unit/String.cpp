@@ -12,6 +12,7 @@
 
 using namespace Gorgon;
 
+
 TEST_CASE("Gorgon::String - To<T> Conversion (Safe)") {
     REQUIRE(String::To<int>("42") == 42);
     REQUIRE(String::To<float>("3.14") == Approx(3.14f));

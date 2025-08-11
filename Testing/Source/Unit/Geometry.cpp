@@ -252,7 +252,7 @@ TEST_CASE( "Point geometric info", "[Point]") {
 	REQUIRE( p2.Slope(p4) == Approx(1.069767f) );
 }
 
-/*TEST_CASE( "Point <-> string", "[Point]" ) {
+	/*TEST_CASE( "Point <-> string", "[Point]" ) {
 	
 	Point  p1("1, 2");
 	Pointf p2("(1.2f, 2.2f)");
@@ -398,8 +398,8 @@ TEST_CASE( "Point geometric info", "[Point]") {
 	REQUIRE_THROWS( Point::Parse("7a,5e") );
 	REQUIRE_THROWS( Point::Parse("(3,4") );
 	REQUIRE_THROWS( Point::Parse("3,4)") );
-}*/
-
+}
+*/
 TEST_CASE( "Point geometry functions", "[Point]" ) {
 	Point  p1(1, 2);
 	Pointf p2(1.2f, 2.2f);
