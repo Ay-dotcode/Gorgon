@@ -21,7 +21,7 @@ namespace Gorgon {
 namespace Audio {
     
     Utils::Logger Log("Audio");
-    unsigned Delay = 0;
+    unsigned Delay = 1;
     
     std::vector<Device> Device::devices;
     Device Current;
