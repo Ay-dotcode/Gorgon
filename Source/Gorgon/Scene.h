@@ -1,20 +1,16 @@
 #pragma once
 
-#include "Utils/Assert.h"
 #include "Event.h"
-#include "ConsumableEvent.h"
 #include "Main.h"
 
 #include "Layer.h"
 #include "Input/Layer.h"
-#include "Input/Keyboard.h"
 #include "Graphics/Layer.h"
 #include "Containers/Hashmap.h"
 #include "UI/Window.h"
 #include "Time.h"
 #include "Widgets/Panel.h"
 
-#include <stdexcept>
 
 
 namespace Gorgon {

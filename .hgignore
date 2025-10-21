@@ -20,6 +20,8 @@ Docs/xml
 
 Source/External/flac/src/include/config.h
 
+CMakeUserPresets.json
+
 syntax: glob
 
 *.obj

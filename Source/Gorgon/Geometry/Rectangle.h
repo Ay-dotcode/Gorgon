@@ -92,7 +92,6 @@ namespace Gorgon { namespace Geometry {
 		}
 
 		/// Properly parses a rectangle, throwing errors when necessary.
-		/// TODO Needs to be fixed
 		static basic_Rectangle Parse(std::string s) {
 			static char tospace[] = ",<>x";
 
@@ -104,8 +103,8 @@ namespace Gorgon { namespace Geometry {
 			basic_Rectangle ret;
 
 			std::istringstream is(s);
-			is>>ret.Left;
-			is>>ret.Top;
+			is>>ret.X;
+			is>>ret.Y;
 			is>>ret.Width;
 			is>>ret.Height;
 

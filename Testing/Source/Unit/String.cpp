@@ -1,7 +1,7 @@
 #define CATCH_CONFIG_MAIN
 #define WINDOWS_LEAN_AND_MEAN
 
-#include <catch2/catch.hpp>
+#include <catch.h>
 #include <Gorgon/String.h>
 #include <Gorgon/String/Tokenizer.h>
 #include <Gorgon/Types.h>

@@ -1,8 +1,8 @@
 
 #define CATCH_CONFIG_MAIN
-#include <catch2/catch.hpp>
-#include "/home/oktay/Belgeler/Gorgon/Gorgon/Source/Gorgon/IO/Stream.h"
+#include <catch.h>
 #include <sstream>
+#include <Gorgon/IO/Stream.h>
 #include <Gorgon/Graphics/Color.h>
 #include <Gorgon/Geometry/Point.h>
 #include <Gorgon/Geometry/Size.h>

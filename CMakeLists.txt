@@ -29,8 +29,8 @@ option(GSCRIPT_GENERATOR "Create scripting resources." OFF)
 option(NO_LOGGING "Disables logger globally. If set, unit tests for logging will fail." OFF)
 option(TESTMODE "Enable test mode." OFF)
 option(DOCUMENTATION_GRAPHS "Enable graphs in documentation." OFF)
-option(TESTS "Enable compiling of test applications." ON)  # Değiştirildi
-option(CODE_COVERAGE "Enable coverage flags" ON)  # Ekstra
+option(TESTS "Enable compiling of test applications." OFF) 
+option(CODE_COVERAGE "Enable coverage flags" OFF)
 
 if(WIN32)
     set(PNG BUILTIN CACHE STRING "Use built-in or system PNG library.")
@@ -296,7 +296,6 @@ install(FILES
 
 install(EXPORT GorgonTargets DESTINATION "${INSTALL_CMAKE_DIR}")
 
-option(CODE_COVERAGE "Enable coverage flags" ON)
 
 if(CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     add_compile_options(--coverage -O0 -g)
@@ -304,7 +303,7 @@ if(CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
 endif()
 
 if(CODE_COVERAGE AND TESTS)
-    find_program(GCOVR_COMMAND gcovr)
+    find_program(GCOVR_COMMAND gcov)
     if(GCOVR_COMMAND)
         add_custom_target(coverage
             COMMAND ${GCOVR_COMMAND} -r ${CMAKE_SOURCE_DIR} -e ".*External.*" --html --html-details -o coverage.html
@@ -312,6 +311,6 @@ if(CODE_COVERAGE AND TESTS)
             COMMENT "Generating code coverage report with gcovr..."
         )
     else()
-        message(WARNING "gcovr not found. The 'coverage' target will not be available.")
+        message(WARNING "gcov not found. The 'coverage' target will not be available.")
     endif()
 endif()
