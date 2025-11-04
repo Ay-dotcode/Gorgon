@@ -1,20 +1,14 @@
 #pragma once
 
-#include "../Utils/Assert.h"
 #include "../Event.h"
 #include "../Main.h"
 #include "../Layer.h"
-#include "../Input/Layer.h"
-#include "../Input/Keyboard.h"
 #include "../Graphics/Layer.h"
 #include "../Window.h"
 #include "LayerAdapter.h"
 
 #include "WidgetContainer.h"
 #include "TooltipManager.h"
-#include "../Graphics/BlankImage.h"
-
-#include <stdexcept>
 
 
 namespace Gorgon { namespace UI {
@@ -287,6 +281,8 @@ namespace Gorgon { namespace UI {
                 focusedadapter = nullptr;
             }
         }
+
+        virtual void resized() override;
 
         UnitSize interiorsize;
 

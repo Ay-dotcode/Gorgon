@@ -348,4 +348,8 @@ namespace Gorgon { namespace UI {
         delete extenderlayer;
     }
 
+    void Window::resized() {
+        distributeparentboundschanged();
+    }
+
 } }

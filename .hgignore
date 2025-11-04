@@ -1,4 +1,4 @@
-,Build
+Build
 build
 VSBuild
 Debug
@@ -8,7 +8,7 @@ bin
 Docs/Latex
 Testing/Tests
 Testing/Runtime
-Docs/HTML
+Docs
 
 clang
 ninja

@@ -478,6 +478,8 @@ namespace Gorgon {
         
         void redrawbg();
 
+        virtual void resized() {}
+
     private:
         void createglcontext();
 

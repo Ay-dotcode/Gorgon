@@ -2,10 +2,8 @@
 
 #include "../UI/ScrollingWidget.h"
 #include "../UI/WidgetContainer.h"
-#include "../Property.h"
 #include "../Input/KeyRepeater.h"
 #include "Registry.h"
-#include "Scrollbar.h"
 
 namespace Gorgon { namespace Widgets {
     

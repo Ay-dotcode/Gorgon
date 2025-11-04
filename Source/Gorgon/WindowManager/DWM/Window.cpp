@@ -352,7 +352,6 @@ namespace internal {
 	}
 
 	void Window::Resize(const Geometry::Size &size) {
-
 		WINDOWINFO wi;
 		wi.cbSize=sizeof(wi);
 
@@ -373,6 +372,8 @@ namespace internal {
 		Layer::Resize(s);
 		GL::Resize(s);
         redrawbg();
+
+		resized();
 	}
 
 	void Window::Move(const Geometry::Point &location) {

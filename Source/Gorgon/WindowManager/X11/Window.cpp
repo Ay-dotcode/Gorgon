@@ -331,7 +331,6 @@ namespace internal {
         XFlush(WindowManager::display);
     }
 
-    
     void Window::Close() {
         //already closed
         if(data->handle == 0)
@@ -721,6 +720,8 @@ namespace internal {
                         
                         ResizedEvent();
                         redrawbg();
+
+                        resized();
                     }
                     else {
                         int x, y;

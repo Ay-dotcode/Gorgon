@@ -1,5 +1,4 @@
 #include "Panel.h"
-#include "../Main.h"
 
 #include <math.h>
 
