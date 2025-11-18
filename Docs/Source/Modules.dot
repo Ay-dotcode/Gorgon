@@ -1,0 +1,90 @@
+digraph {
+	node[shape=rectangle, style=rounded, weight=1, nodesep=2, color=gray]
+	edge[weight=0.8, color=gray]
+	K=3
+	maxiter=100000
+	start=55
+	
+	{
+	node[style="bold,filled" fillcolor="#dddddd"]
+	eOS[label=OS]
+	OpenGL
+	PulseAudio
+	WASAPI
+	"GCC ABI"
+	}
+	
+	overlap=false
+	splines=true
+	{
+	edge [arrowhead=none]
+	eOS -> OS
+	eOS -> Network
+	eOS -> Time 
+	eOS -> Console
+	eOS -> Filesystem
+	
+	OpenGL -> GL
+	PulseAudio -> Audio
+	WASAPI -> Audio
+	
+	"GCC ABI" -> Compiler
+	}
+
+	OS -> Network
+	
+	Event
+	Containers
+	Geometry
+	
+	TMP -> Scripting
+/*	Graphics -> Widgets
+	Containers -> Audio
+	Containers -> Layer
+	Containers -> Encoding
+	Containers -> Widgets
+	Containers -> Resource*/
+	Layer -> Graphics
+	Layer -> Input
+	Layer -> "Window manager"
+	Input -> "Window manager"
+	GL -> Graphics
+	GL -> "Window manager"
+/*	Event -> Widgets
+	Event -> "Window manager"
+	Event -> Scripting
+	Event -> Animation
+	*/
+	"Window manager"
+	Widgets
+	Audio -> Widgets
+	Audio -> Multimedia
+	Scripting
+	Resource -> Widgets
+	Animation -> Widgets
+	Input -> Widgets
+	Time
+/*	Geometry -> Containers
+	Geometry -> Graphics
+	Geometry -> GL
+	Geometry -> "Window manager"
+	Geometry -> Widgets
+	Geometry -> Layer*/
+	Layer -> Widgets
+	Encoding -> Resource
+	Compiler -> Scripting
+	Any -> Scripting
+/*	Logging -> Audio [weight=0.01]
+	Logging -> GL [weight=0.01]
+*/
+	Compiler
+	Console -> Logging
+	Threading
+	SGuid -> Resource
+	IO -> Resource
+	Network
+	OS -> Main
+	Time -> Main
+	Time -> Logging
+	String -> Scripting
+}

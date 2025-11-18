@@ -1,5 +1,0 @@
-IF(${WIN32})
-    SET(Local StackWalker.cpp StackWalker.h )
-ELSE()
-    SET(Local)
-ENDIF()

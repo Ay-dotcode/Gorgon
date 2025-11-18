@@ -1,0 +1,1375 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Gorgon Game Engine Design Document</title>
+<style>
+	body { background-color:#eee; }
+	my li {
+        font-family: monospace;
+        list-style-type: none;
+    }
+    my li:before {
+        font-size:70%;
+        font-weight:bold;
+    }
+    my li[f]:before {
+        content: "[ f]";
+    }
+    my li[c]:before {
+        content: "[ct]";
+    }
+    my li[e]:before {
+        content: "[ev]";
+    }
+    my li[m]:before {
+        content: "[ m]";
+    }    
+    my li[f][s]:before {
+        content: "[sf]";
+    }
+    my li[m][s]:before {
+        content: "[sm]";
+    }
+    my li:before {
+        content: "[  ]";
+        white-space:pre;
+    }
+    my *[d] {
+        color:#260;
+    }
+    my *[q] {
+        color:#260;
+    }
+    my *[x] {
+        color:#821;
+    }
+    my *[p] {
+        color:#661;
+    }
+    my *[r]::after {
+		content: "  « to be removed";
+        color:#621;
+        font-size:80%;
+    }
+    my *[q]::after {
+		content: "  « to be analyzed";
+        color:#006;
+        font-size:80%;
+    }
+    
+    my *[a]::before {
+		content:"[!!]" !important;
+	}
+	my task {
+        font-family: monospace;
+        display:block;
+		color:black;
+    }
+    my task::before {
+		content:"[»t] ";
+        font-size:70%;
+        font-weight:bold;
+    }
+    
+    my section:before {
+		content:attr(name);
+		font-size:140%;
+		font-weight:bold;
+		margin-left:-10px;
+		counter-reset:module;
+		margin-bottom:15px;
+		display:block;
+    }
+    
+    my section {
+		padding-left: 10px;
+		display:block;
+    }
+    
+    my module:before {
+		counter-increment: module;
+		content:counter(module) ". " attr(name);
+		font-size:120%;
+		font-weight:bold;
+		margin-left:-15px;
+		margin-bottom:15px;
+		display:block;
+    }
+    
+    my module[optional]:before {
+		counter-increment: module;
+		content:counter(module) ". [o] " attr(name);
+		font-size:120%;
+		font-weight:bold;
+		margin-left:-15px;
+		margin-bottom:15px;
+		display:block;
+    }
+    
+    my module {
+		padding-left: 15px;
+		display:block;
+    }
+    
+    my namespace:before {
+		content:"[n] " attr(name);
+		font-size:100%;
+		font-weight:bold;
+		margin-left:-15px;
+		margin-bottom:5px;
+		display:block;
+		background-color:#eee;
+    }
+    
+    my namespace {
+		padding-left: 15px;
+		display:block;
+		list-style-type: none;
+		margin-bottom:10px;
+		background-clip: padding-box;
+		background: linear-gradient(90deg, rgba(0,0,0,0.2) 0pt, rgba(0,0,0,0) 2px);
+    }
+   
+    my class:before {
+		content:"[c] " attr(name);
+		font-size:100%;
+		font-weight:bold;
+		margin-left:-15px;
+		margin-bottom:5px;
+		display:block;
+		background-color:#eee;
+    }
+     
+    my class[inherits]:before {
+		content:"[c] " attr(name) " (inherits: " attr(inherits) ")";
+		font-size:100%;
+		font-weight:bold;
+		margin-left:-15px;
+		margin-bottom:5px;
+		display:block;
+		background-color:#eee;
+    }
+ 
+    
+    my class {
+		padding-left: 15px;
+		display:block;
+        list-style-type: none;
+		margin-bottom:10px;
+		background-clip: padding-box;
+		background: linear-gradient(90deg, rgba(0,0,0,0.2) 0pt, rgba(0,0,0,0) 2px);
+    }
+    
+    my *[done] {
+		color:#260;
+    }
+</style>
+</head>
+<my>
+<section name="Core modules">
+	<module name="Common">
+		<class name="Layer">
+			<li   c d> Empty
+			<li   c d> Resizing
+			<li   c d> Move
+			<li   f d> Move assignment
+			<li   f d> Swap
+			<li   f d> Add
+			<li   f d> Insert (under)
+			<li   f d> Remove
+			<li   f d> HasParent
+			<li   f d> GetParent
+			<li   f d> begin/end
+			<li   f d> First/Last
+			<li   f d> PlaceBefore
+			<li   f d> PlaceToTop
+			<li   f d> PlaceToBottom
+			<li   f d> GetOrder
+			<li   f d> Move
+			<li   f d> Resize
+			<li   f d> SetBounds
+			<li   f d> GetSize
+			<li   f d> GetLocation
+			<li   f d> GetBounds
+			<li   f d> Show
+			<li   f d> Hide
+			<li   f d> IsVisible
+			<li   f d> Render
+		</li></class>
+	</module>
+
+	<module name="Operating system">
+		<namespace name="OS">
+			<li   f  > Name
+			<li   f  > Version
+			<li   f d> GetEnv
+			<li   f d> Open
+			<li   f d> OpenTerminal
+			<li   f d> Start
+			<li   f d> DisplayMessage
+			<li   f d> GetAppDataPath
+			<li   f d> GetAppSettingPath
+			<li   f  > IsInternetConnected
+			<li   f  > IsNetworkConnected
+			<li   f  > IsWifiConnected
+			<li   f  > BatteryStatus
+			<li   f  > BatterPercentage
+			<li   f  > AvailableMemory
+			<li   f  > FreeMemory
+			<li   f  > ProcessorInfo
+			<li   f  > GPUInfo
+			<li   f  > FileTypeData
+			<li   f  > SystemFonts -> vector(filename)
+			<li   f  > SystemSound -> map(tag, filename)
+			</li><br>
+
+			<class name="CPU">
+				<li   m  > Brand
+				<li   m  > Model
+				<li   m  > Speed
+				<li   m  > Cores
+				<li   m  > Threads
+			</li></class>
+
+
+			<class name="GPU">
+				<li   m  > Memory
+				<li   m  > Brand
+				<li   m  > Model
+			</li></class>
+
+
+			<class name="FileType">
+				<li    m  > Name
+				<li    m  > Description
+				<li    m  > Icon
+			</li></class>
+
+
+			<namespace name="User">
+				<li   f d> GetName
+				<li   f d> GetUsername
+				<li   f d> GetDocumentsPath
+				<li   f d> GetHomePath
+				<li   f d> GetDataPath
+				<li   f  > IsAdmin
+			</li></namespace>
+		</namespace>
+	</module>
+
+	<module name="Window manager">
+		<class name="Window" inherits="Layer">
+			<li   c d> Automatic placement
+			<li   c d> Manual placement
+			<li   c d> Fullscreen
+			<li   f d> processmessage
+			<li   f d> activatecontext
+			<li   f d> Move
+			<li   f d> Resize
+			<li   f d> Show
+			<li   f d> Hide
+			<li   f d> IsVisible
+			<li   f d> Close
+			<li   f d> ShowPointer
+			<li   f d> HidePointer
+			<li   f d> SwitchToLocalPointers
+			<li   f d> SwitchToWMPointers
+			<li   f d> Render
+			<li   f d> SetTitle
+			<li   f d> GetTitle
+			<li   f d> AllowResize
+			<li   f d> PreventResize
+			<li   f d> GetName
+			<li   f d> GetExteriorDimensions
+			<li   f d> GetPosition
+			<li   f d> GetMonitor
+			<li   f d> IsClosed
+			<li   f d> SetIcon
+			<li   f d> Focus
+			<li   f d> IsFocused
+			<li   f d> Minimize
+			<li   f d> Maximize
+			<li   f d> IsMinimized
+			<li   f d> IsMaximized
+			<li   e d> ActivatedEvent
+			<li   e d> DeactivatedEvent
+			<li   e p> DestroyedEvent
+			<li   e d> ClosingEvent
+			<li   e d> MovedEvent
+			<li   e d> ResizedEvent
+			<li   e d> MinimizedEvent
+			<li   e d> RestoredEvent
+			<li   e d> InputEvent
+			<li   e d> KeyEvent
+			<li   e d> CharacterEvent
+			<li   m d> Pointers
+			<li s m d> Windows
+		</li></class>
+		
+		<namespace name="WindowManager">
+			<li   f  > CurrentContext
+			<li   f d> SetClipboardText
+			<li   f d> GetClipboardText
+			<li   f  > GetIconFor
+			</li><br>
+			
+			<class name="Icon">
+				<li   c d> From data
+			</li></class>
+			
+			<class name="Pointer">
+				<li   c  > From data
+				<li   c  > Default from OS
+				<li   c  > From OS
+			</li></class>
+			
+			<class name="Monitor">
+				<li   f d> GetSize
+				<li   f d> GetLocation
+				<li   f d> GetUsable
+				<li   f d> IsPrimary
+				<li   f d> GetName
+				<li s f d> Primary
+				<li s f d> Monitors
+				<li s f d> Refresh
+				<li s f  > IsChangeEventSupported
+				<li s e  > ChangedEvent
+			</li></class>
+		</li></namespace>
+	</module>
+
+	<module name="Graphics related">
+		<namespace name="Graphics">
+			<li   f d> Tile
+			<li     d> Tiling
+			<li     d> Alignment
+			<li     d> TextAlignment
+			<li     d> Placement
+			<li   f d> GetHorizontal
+			<li   f d> GetVertical
+			<li   f d> CalculateOffset
+			<li     d> ColorMode
+			<li   f d> GetBytesPerPixel
+			</li><br>
+			
+			<class name="RGBA">
+				<li   c d> From luma, int
+				<li   f d> operator = (RGBA, luma, int)
+				<li   f d> operator ==
+				<li   f d> operator !=
+				<li   f d> Luminance
+				<li   f d> AccurateLuminance
+				<li   f d> HTMLColor
+				<li   f d> Blend
+				<li   f d> operator string
+			</li></class>
+			
+			<class name="RGBAf">
+				<li   c d> From luma, RGBA
+				<li   f d> operator = (RGBA, int)
+				<li   f  > operator = (luma)
+				<li   f d> operator ==
+				<li   f d> operator !=
+				<li   f d> operator RGBA
+				<li   f d> Convert
+				<li   f d> Luminance
+				<li   f  > AccurateLuminance
+				<li   f d> Blend
+				<li   f  > operator string
+			</li></class>
+			
+			<class name="SizeController">
+				<li     q> Tiling
+				<li   f d> CalculateSize
+				<li   f d> CalculateOffset
+				<li   f d> CalculateArea
+				<li   f d> CalculateSize
+				<li   f d> GetTiling
+				<li   m d> Horizontal
+				<li   m d> Vertical
+				<li   m d> Place
+			</li></class>
+			
+			<class name="TextureSource">
+				<li   f d> GetID
+				<li   f q> GetImageSize
+				<li   f d> GetCoordinates
+				<li   f q> IsPartial
+			</li></class>
+			
+			<class name="Texture">
+				<li   c d> Empty
+				<li   c d> Regular
+				<li   c d> Atlas
+				<li   c d> From image
+				<li   c d> Copy and move constructor
+				<li   f d> Swap
+				<li   f d> Set (image, texture and info)
+				<li   f d> GetOD
+				<li   f d> GetImageSize
+				<li   f d> GetCoordinates
+				<li   f d> Destroy
+				<li   f d> Release
+			</li></class>
+			
+			<class name="TextureImage">
+				<pre>Solid drawable image based on a texture</pre>
+			</class>
+			
+			<class name="Bitmap" inherits="Image, -Texture, TextureSource, RectangularAnimation, RectangularAnimationProvider">
+				<li     d> Move semantics
+				<li   f d> Duplicate
+				<li   f d> CreateAnimation
+				<li   f d> ReleaseData
+				<li   f d> HasTexture
+				<li   f d> Assign (image, bytes)
+				<li   f  > Assign (containers::image?)
+				<li   f d> Assume (image, bytes)
+				<li   f d> Assume (containers::image)
+				<li   f d> Resize
+				<li   f d> operator ()
+				<li   f d> Get
+				<li   f d> GetBytesPerPixel
+				<li   f d> GetMode
+				<li   f d> GetSize
+				<li   f  > GetTotalSize
+				<li   f d> Prepare
+				<li   f d> Discard
+				<li   f d> ImportPNG
+				<li   f d> ImportJPG
+				<li   f d> ImportBMP
+				<li   f d> Import
+				<li   f d> ExportPNG
+				<li   f d> ExportJPG
+				<li   f d> ExportBMP
+				<li   f d> Export
+				<li   f  > Blur
+				<li   f  > Shadow
+				<li   f  > Grayscale
+				<li   f  > Resample
+				<li   f d> StripTransparency
+				<li   f d> StripRGB
+				<li   f d> CreateLinearAtlas
+				<li   f d> CreateAtlasImages
+			</li></class>
+			
+			<class name="Drawable">
+				<li   f d> Draw
+			</li></class>
+			
+			<class name="SizelessDrawable">
+				<li   f d> DrawIn
+				<li   f d> CalculateSize
+			</li></class>
+			
+			<class name="RectangularDrawable" inherits="Drawable, SizelessDrawable">
+				<li   f d> Draw
+				<li   f d> DrawStretched
+				<li   f d> DrawRotated
+				<li   f d> DrawIn
+				<li   f d> GetSize
+			</li></class>
+			
+			<class name="Image" inherits="RectangularDrawable, TextureSource" done>
+			
+			</class>
+			
+			<class name="Animation" inherits="Drawable, Gorgon::Animation::Base" done>
+			</class>
+			
+			<class name="SizelessAnimation" inherits="SizelessDrawable, Gorgon::Animation::Base" done>
+			</class>
+			
+			<class name="RectangularAnimation" inherits="Drawable, Gorgon::Animation::Base" done>
+			</class>
+			
+			<class name="AnimationProvider" inherits="Gorgon::Animation::Provider" done>
+				<li   f d> CreateAnimation
+			</li></class>
+			
+			<class name="SizelessAnimationProvider" inherits="Gorgon::Animation::Provider" done>
+				<li   f d> CreateAnimation
+			</li></class>
+
+			<class name="RectangularAnimationProvider" inherits="Gorgon::Animation::Provider" done>
+				<li   f d> CreateAnimation
+			</li></class>
+			
+			<class name="TextureAnimation">
+				<li   f d> Add / Insert / Own
+				<li   f d> begin / end
+				<li   f d> Clear
+				<li   f d> CreateAnimation
+				<li   f d> Duplicate
+				<li   f d> FrameAt
+				<li   f d> FrameIndexAt
+				<li   f d> GetCount
+				<li   f d> GetDuration (total, frame)
+				<li   f d> GetSize
+				<li   f d> GetImageAt
+				<li   f d> ReleaseAll
+				<li   f d> Remove
+				<li   f d> StartOf
+			</li></class>
+			
+			<class name="TextureTarget">
+				<li     d> DrawMode (partial)
+				<li   f d> Draw (using vertex coords, using vertex and texture coords)
+				<li   f d> Draw (tiling)
+				<li   f d> Clear
+				<li   f d> GetTargetSize
+				<li   f d> GetDrawMode
+				<li   f d> SetDrawMode
+			</li></class>
+			
+			<class name="Layer" inherits="Gorgon::Layer, TextureTarget">
+				<li   f d> Draw
+				<li   f d> Draw (tiled)
+				<li   f d> Clear
+				<li   f d> Render
+				<li   f d> GetDrawMode
+				<li   f d> SetDrawMode
+				<li   f d> SetColor
+				<li   f d> GetTargetSize
+				<task>Move surface to cpp</task>
+			</li></class>
+			
+			<class name="Pointer" inherits="Gorgon::Graphics::Drawable">
+				<li   f d> Draw
+				<li   f d> GetImage
+				<li   f d> SetImage
+				<li   f d> HasImage
+				<li   f d> RemoveImage
+				<li   f d> Assume
+				<li   f d> Release
+			</li></class>
+			
+			<class name="PointerStack">
+				<li   f d> Add
+				<li   f d> Assume
+				<li   f d> Exists
+				<li   f d> Set
+				<li   f d> Reset
+				<li   f d> Current
+				<li   f d> IsValid
+			</li></class>
+			
+			
+			<class name="CustomShadedLayer" inherits="Gorgon::Layer, TextureTarget">
+				<pre>Requires packaged shader</pre>
+			</class>
+			
+			<class name="TransformableLayer" inherits="Gorgon::Layer, TextureTarget, Transformable">
+				<pre>This might be integrated with all layers similar to offset</pre>
+			</class>
+			
+			<class name="SimpleShader">
+				<task>Replace uint32 with GL::Texture</task>
+				<li   f d> SetVertexCoords
+				<li   f d> SetTextureCoords
+				<li   f d> SetDiffuse
+			</li></class>
+			
+			<class name="MaskedShader">
+				<li   f d> SetVertexCoords
+				<li   f d> SetTextureCoords
+				<li   f d> SetDiffuse
+				<li   f q> SetMask
+			</li></class>
+			
+			<class name="MaskedTintShader">
+				<li   f d> SetVertexCoords
+				<li   f d> SetTextureCoords
+				<li   f d> SetDiffuse
+				<li   f d> SetTint
+				<li   f q> SetMask
+			</li></class>
+			
+		</namespace>
+		
+		<namespace name="GL">
+			<li   f d> GenerateTexture
+			<li   f  > UpdateTexture
+			<li   f  > DestroyTexture
+			<li   f d> SetupContext
+			<li   f d> Resize
+			<li   f d> Clear
+			</li><br>
+			
+			<class name="Shader">
+			</class>
+		</namespace>
+	</module>
+
+	<module optional name="Audio">
+		<namespace name="Listener">
+			<li   f  > GetPosition
+			<li   f  > Move
+			<li   f  > SetSpeed
+			<li   f  > SetAcceleration
+			<li   f  > AutoCalculate
+			</li>
+		</namespace>
+		
+		<li   f  > SetMeterConversion
+		<li   f  > GetMeterConversion
+		<li   f  > GetVolume
+		<li   f  > SetVolume
+		</li>
+	</module>
+
+	<module optional name="Multimedia">
+
+	</module>
+
+	<module name="Animation">
+
+	</module>
+
+	<module name="Resource">
+
+	</module>
+
+	<module name="Input">
+		<class name="File"> </class>
+		<class name="Blob"> </class>
+		<class name="Data"> </class>
+		<class name="DataTable"> </class>
+		<class name="DataItem"> </class>
+		<class name="Folder"> </class>
+		<class name="Font"> </class>
+		<class name="FontTheme ?"> </class>
+		<class name="Image"> </class>
+		<class name="Pointer"> </class>
+		<class name="Sound"> </class>
+		<class name="Link"> </class>
+		<class name="Line"> </class>
+		<class name="Rectange"> </class>
+		<class name="Region"> </class>
+		<class name="SizableObject"> </class>
+		<class name="Placeholder"> </class>
+	</module>
+
+</section>
+
+<section name="Supportive modules">
+	<module name="Filesystem">
+		<namespace name="Filesystem">
+			<li   f d> CreateDirectory
+			<li   f d> IsFile
+			<li   f d> IsDirectory
+			<li   f d> IsExists
+			<li   f d> IsWritable
+			<li   f d> Cononical
+			<li   f  > TryCanonoicalize
+			<li   f d> CurrentDirectory
+			<li   f d> IsHidden
+			<li   f  > IsReadOnly
+			<li   f d> Relative
+			<li   f d> ChangeDirectory
+			<li   f d> Join
+			<li   f d> GetFilename
+			<li   f d> GetDirectory
+			<li   f  > ConvertToNative
+			<li   f  > ConvertFromNative
+			<li   f  > ConvertToURI
+			<li   f d> Copy
+			<li   f d> Copy (vector)
+			<li   f d> Copy (iterator)
+			<li   f d> Move
+			<li   f  > Move (vector)
+			<li   f  > Move (iterator)
+			<li   f d> Delete
+			<li   f  > Delete (vector)
+			<li   f  > Delete (iterator)
+			<li   f  > Trash
+			<li   f  > Trash (vector)
+			<li   f  > Trash (iterator)
+			<li   f d> ExeDirectory
+			<li   f d> ExePath
+			<li   f  > ExeFilename
+			<li   f d> StartupDirectory
+			<li   f  > FreeSpace
+			<li   f  > TotalSpace
+			<li   f  > EntryPoints
+			<li   f  > MakeReadonly
+			<li   f  > MakeHidden
+			<li   f d> Size
+			<li   f  > Size (directory)
+			<li   f d> Save
+			<li   f d> Load
+			<li   f  > IsRemovable
+			<li   f  > IsNetwork
+			<li   f  > DriveType
+			<li   f q> LocateResource
+			</li><br>
+			
+			<class name="EntryPoint" done>
+				<li   m d> Path
+				<li   m d> Readable
+				<li   m d> Writable
+				<li   m d> Name
+			</li></class>
+		
+			<class name="DirectoryIterator" done>
+				<pre>Standard iterator</pre>
+			</class>
+			
+			<class name="DirectoryListing" done>
+				<li   f  > begin
+				<li   f  > end
+			</li></class>
+		</namespace>
+	</module>
+
+	<module name="Time">
+		<namespace name="Time">
+			<li   f d> GetDate
+			<li   f  > GetTime
+			<li   f d> FrameStart
+			<li   f d> DeltaTime
+			<li   f  > Timeout
+			<li   f  > Interval
+			<li   f  > Cancel
+			<li   f  > LocalTimezone
+			</li><br>
+
+
+			<class name="Timer">
+				<li   f d> Start
+				<li   f d> Tick
+				<li   f d> Get
+				<li   f d> Set
+				<li   f  > ShowDialog
+				<li  sf d> operator &lt;&lt; (ostream)
+			</li></class>
+
+			<class name="Date">
+				<li   m d> Millisecond
+				<li   m d> Second
+				<li   m d> Minute
+				<li   m d> Hour
+				<li   m d> Day
+				<li   m d> Month
+				<li   m d> Year
+				<li   m d> Timezone
+				<li   m d> WeekDay
+				<li   f d> AddDays
+				<li   f d> AddMonths
+				<li   f d> AddYears
+				<li   f d> AddSeconds
+				<li   f d> AddMinutes
+				<li   f d> AddHours
+				<li   f d> Date_En
+				<li   f d> ISODate
+				<li   f d> ISODateTime
+				<li   f d> MonthName_En
+				<li   f d> ShortMonthName_En
+				<li   f d> WeekdayName_En
+				<li   f d> ShortWeekdayName_En
+				<li   f d> Time
+				<li   f d> ShortTime
+				<li   f d> Timezone_GMT
+				<li   f d> IsSet
+				<li   f d> Unset
+				<li   f  > Normalize
+				<li   f d> Save
+				<li   f d> Load
+				<li   f d> Parse
+				<li   f  > Timestamp
+				<li s f d> Now
+				<li s f r> LocalTimezone
+				</li>
+			</class>
+		</namespace>
+	</module>
+
+
+	<module name="Logging">
+		<namespace name="utils">
+			<class name="Logger">
+				<li   f d> InitializeConsole
+				<li   f d> InitializeStream
+				<li   f d> InitializeFile
+				<li   f d> Cleanup
+				<li   f d> SetWidth
+				<li   f d> operator &lt;&lt;
+				<li   f d> Log
+				<li   f d> SetSection
+				<li   f d> GetSection
+				<li   f d> SetMarkTime
+				<li   f d> GetMarkTime
+				<li   f d> SetMarkDate
+				<li   f d> GetMarkDate
+				<li   f d> EnableColor
+				<li   f d> ForceColor
+				<li   f d> DisableColor
+				<li   f d> SetColorEnabled
+				<li   f d> IsColorEnabled
+				<li   f d> IsColorFunctional
+			</li></class>
+		</namespace>
+	</module>
+
+
+	<module name="Containers">
+		<namespace name="Containers">
+			<class name="Collection">
+				<li   c  > Filling constructor (use init list)
+				<li   c d> Move constructor
+				<li   f d> operator = (move assignment)
+				<li   f d> Swap
+				<li   f d> Duplicate
+				<li   f d> GetCount
+				<li   f d> GetSize
+				<li   f d> Add (ptr, ref)
+				<li   f d> Add (multiple items)
+				<li   f d> AddNew
+				<li   f d> Push (ptr, ref)
+				<li   f d> Pop
+				<li   f d> Insert (index, ref)
+				<li   f  > Insert (ptr)
+				<li   f d> InsertNew
+				<li   f d> MoveBefore (index, ref)
+				<li   f  > MoveBefore (ptr)
+				<li   f d> Remove (index, ref, ptr)
+				<li   f d> Delete (index, ref, ptr)
+				<li   f d> Clear
+				<li   f d> Collapse
+				<li   f d> DeleteAll
+				<li   f d> Destroy
+				<li   f d> Reserve
+				<li   f d> Find (ref, ptr) (const, non-const)
+				<li   f d> FindLocation (ref, ptr)
+				<li   f d> Sort (with, without predicate)
+				<li   f d> Get
+				<li   f d> operator []
+				<li   f d> begin
+				<li   f d> end
+				<li   f d> First
+				<li   f d> Last
+			</li></class>
+			
+			<class name="GarbageCollection" inherits="Collection" done>
+				<li   f d> Collect
+			</li></class>
+			
+			<class name="Hashmap">
+				<li   c d> Filling constructor
+				<li   c d> Move constructor
+				<li   f d> operator = (move assignment)
+				<li   f d> Swap
+				<li   f d> Duplicate
+				<li   f d> GetCount
+				<li   f  > GetSize
+				<li   f d> Add (ptr, ref) (with, without key)
+				<li   f  > Add (multiple items)
+				<li   f  > AddNew
+				<li   f d> Remove (index, ref, ptr)
+				<li   f d> Delete (index, ref, ptr)
+				<li   f  > Clear
+				<li   f d> Collapse
+				<li   f d> DeleteAll
+				<li   f d> Destroy
+				<li   f d> Find (key) (const, non-const)
+				<li   f d> Exists
+				<li   f d> operator []
+				<li   f d> begin
+				<li   f d> end
+				<li   f d> First
+				<li   f d> Last
+			</li></class>
+	
+			<class name="Image">
+				<li   c d> Empty
+				<li   c d> Resizing
+				<li   c d> Move
+				<li   f d> operator = (move assignment)
+				<li   f d> Swap
+				<li   f d> Duplicate
+				<li   f d> Resize
+				<li   f d> Assign (with/without set)
+				<li   f d> Assume (with/without set)
+				<li   f d> Release
+				<li   f d> Clean
+				<li   f d> Destroy
+				<li   f d> RawData (const/non const)
+				<li   f d> operator ()
+				<li   f d> Get
+				<li   f d> GetSize
+				<li   f d> GetTotalSize
+				<li   f d> GetMode
+				<li   f d> GetBytesPerPixel
+				<li   f d> ForeachPixel
+			</li></class>
+			
+			<class name="Wave">
+				<class name="Sample">
+					<task>Make channels a debug only feature</task>
+					<li   f d> Channel
+					<li   f d> operator []
+				</class>
+				
+				<li   c d> Empty
+				<li   c d> Resizing
+				<li   c d> Move
+				<li   f d> operator = (move assignment)
+				<li   f d> Swap
+				<li   f d> Duplicate
+				<li   f d> Resize
+				<li   f d> Assign (with/without set)
+				<li   f d> Assume (with/without set)
+				<li   f d> Release
+				<li   f d> Clean
+				<li   f d> Destroy
+				<li   f d> RawData (const/non const)
+				<li   f d> operator ()
+				<li   f d> Get
+				<li   f d> GetSize
+				<li   f d> GetBytes
+				<li   f d> GetChannelCount
+				<li   f d> GetSampleRate
+				<li   f d> SetSampleRate
+				<li   f d> begin
+				<li   f d> end
+			</li></class>
+		</namespace>
+	</module>
+
+	<module name="Encoding">
+		<class name="LZMA">
+			<li   f d> Encode
+			<li   f d> Decode
+			<li   f d> PropertySize
+			<li   m d> UseUncompressedSize
+		</li></class>
+		
+		<class name="PNG">
+			<li   f d> Encode
+			<li   f d> Decode
+		</li></class>
+		
+		<class name="JPG">
+			<li   f d> Encode
+			<li   f d> Decode
+		</li></class>
+		
+		<li   f q> URIEncode
+		<li   f q> URIDecode
+		</li><br>
+	</module>
+
+	<module name="Geometry">
+		<class name="Point">
+			<li   c d> From string
+			<li   f d> operator string
+			<li s f d> FromVector
+			<li s f d> Parse
+			<li   f d> operator -
+			<li   f d> operator +
+			<li   f d> operator * (point, value)
+			<li   f d> operator * (size)
+			<li   f d> operator / (point, value)
+			<li   f d> operator / (size)
+			<li   f d> operator +=, -=
+			<li   f d> operator *=, /= (value)
+			<li   f  > operator *=, /= (size)
+			<li   f d> Distance
+			<li   f d> Angle
+			<li   f d> Slope
+			<li   f q> Compare
+			<li   f d> operator ==
+			<li   f d> operator !=
+			<li   f d> Move
+			<li s f  > Max
+			<li s f d> operator &gt;&gt;
+			<li s f d> operator &lt;&lt;
+			<li s f d> Translate
+			<li s f d> Scale
+			<li s f  > Scale (size)
+			<li s f d> Rotate
+			<li s f d> SkewX/SkewY
+			<li s f d> ReflectX/ReflectY
+			<li s f  > Transform
+			<li s f d> Round
+		</li></class>
+		
+		<class name="Size">
+			<li   c d> From string
+			<li   c d> From point
+			<li   f d> operator string
+			<li s f d> Parse
+			<li   f d> operator ==
+			<li   f d> operator !=
+			<li   f d> operator +
+			<li   f d> operator -
+			<li   f d> operator +=
+			<li   f d> operator -=
+			<li   f d> operator *=
+			<li   f d> operator /=
+			<li   f d> operator point
+			<li   f d> Cells
+			<li   f d> Area
+			<li   f d> IsValid
+			<li   f  > Resize
+			<li s f d> Max
+			<li s f d> operator &gt;&gt;
+			<li s f d> operator &lt;&lt;
+			<li s f d> Scale
+			<li s f  > Transform
+			<li s f  > Round
+		</li></class>
+		
+		<class name="Rectangle">
+			<li   c d> From string
+			<li   c d> From bounds
+			<li   f d> operator string
+			<li   f d> operator bounds
+			<li   f d> Parse
+			<li   f d> Right
+			<li   f d> Bottom
+			<li   f d> SetRight
+			<li   f d> SetBottom
+			<li   f d> Resize
+			<li   f d> Move
+			<li   f d> Center
+			<li   f d> TopLeft
+			<li   f d> TopRight
+			<li   f d> BottomLeft
+			<li   f d> BottomRight
+			<li   f d> GetSize
+			<li   f d> operator ==
+			<li   f d> operation !=
+			<li   f d> operator +, - (point, size)
+			<li   f d> operator *,/ (size, constant)
+			<li   f  > IsValid
+			<li s f  > operator &gt;&gt;
+			<li s f d> operator &lt;&lt;
+			<li s f d> IsInside
+			<li s f  > Translate
+			<li s f  > Scale
+			<li s f  > Scale (size)
+			<li s f  > Rotate
+			<li s f  > Round
+		</li></class>
+		
+		<class name="Bounds">
+			<li   c d> From string
+			<li   f d> operator string
+			<li   f  > Parse
+			<li   f d> Width
+			<li   f d> Height
+			<li   f d> SetWidth
+			<li   f d> SetHeight
+			<li   f d> Resize
+			<li   f d> Move
+			<li   f d> Center
+			<li   f d> TopLeft
+			<li   f d> TopRight
+			<li   f d> BottomLeft
+			<li   f d> BottomRight
+			<li   f d> GetSize
+			<li   f d> operator ==
+			<li   f d> operation !=
+			<li   f d> operator |
+			<li   f d> operator &amp;
+			<li   f d> operator +, - (point)
+			<li   f  > operator +, - (size)
+			<li   f d> operator *,/ (size, constant)
+			<li   f d> Normalize
+			<li s f d> operator &gt;&gt;
+			<li s f d> operator &lt;&lt;
+			<li s f d> Intersect
+			<li s f d> Union
+			<li s f d> IsColliding
+			<li s f d> IsInside
+			<li s f d> Translate
+			<li s f d> Scale
+			<li s f d> Scale (size)
+			<li s f d> Rotate
+			<li s f d> SkewX/SkewY
+			<li s f  > ReflectX/ReflectY
+			<li s f  > Transform
+			<li s f  > Round
+		</li></class>
+		
+		<class name="Margins">
+			<li   c  > From string
+			<li   f d> operator string
+			<li   f  > Parse
+			<li   f d> TotalX
+			<li   f d> TotalY
+			<li   f d> Horizontal
+			<li   f d> Vertical
+			<li   f d> operator +
+			<li   f d> operator -
+			<li   f d> operator ==
+			<li   f d> operator !=
+			<li   f q> AddToLeft (should be updated for box model)
+			<li   f q> AddToTop (should be updated for box model)
+			<li   f q> AddToRight (should be updated for box model)
+			<li   f q> AddToBottom (should be updated for box model)
+			<li   f d> TopLeft
+			<li s f d> opeartor + (size, bounds)
+			<li s f d> operator &gt;&gt;
+			<li s f d> operator &lt;&lt;
+			<li s f  > Round
+		</li></class>
+	</module>
+	
+	<module name="IO">
+		<li   f d> ReadEnum32
+		<li   f d> ReadInt32
+		<li   f d> ReadUInt32
+		<li   f d> ReadInt16
+		<li   f d> ReadUInt16
+		<li   f d> ReadInt8
+		<li   f d> ReadUInt8
+		<li   f d> ReadFloat
+		<li   f d> ReadDouble
+		<li   f d> ReadBool
+		<li   f d> ReadString
+		<li   f d> ReadArray
+		<li   f d> ReadGuid
+		<li   f d> WriteEnum32
+		<li   f d> WriteInt32
+		<li   f d> WriteUInt32
+		<li   f d> WriteInt16
+		<li   f d> WriteUInt16
+		<li   f d> WriteInt8
+		<li   f d> WriteUInt8
+		<li   f d> WriteFloat
+		<li   f d> WriteDouble
+		<li   f d> WriteBool
+		<li   f d> WriteStringWithSize
+		<li   f d> WriteString
+		<li   f q> WriteArray
+		<li   f q> WriteVector
+		<li   f d> WriteGuid
+	</module>
+
+	<module name="Template meta programming">
+		<li     d> DefineStruct
+		<li     d> DefineStructMembersWithName
+		<li     d> DefineEnumStrings
+		<li     d> DefineEnumStringsCM (class member)
+		<li     d> DefineEnumStringsTN (with typename)
+		<li     d> DefineEnumStringsCMTN (class member with typename) 
+		</li>
+	
+		<namespace name="TMP">
+			<li     d> Sequence
+			<li     d> Generate
+			<li     d> RemoveRValueReference
+			<li     d> IsStreamable
+			</li><br>
+			
+			<class name="FunctionTraits">
+				<li     d> ReturnType
+				<li     d> Arity
+				<li     d> IsMember
+				<li     d> Arguments&lt;int&gt;: Type
+			</li></class>
+			
+			<class name="RTTI">
+				<li   f d> IsPointer
+				<li   f d> IsReference
+				<li   f d> IsConstant
+				<li   f d> IsSameType
+				<li   f d> operator ==
+				<li   f d> operator !=
+				<li   f d> operator type_info
+				<li   f d> GetSize
+				<li   f d> TypeInfo
+				<li   f d> Name
+			</li></class>
+			
+			<class name="RRTS" inherits="RTTI">
+				<li   f d> Duplicate
+				<li   f d> Clone
+				<li   f d> Delete
+			</li></class>
+			
+			<class name="RTTH">
+				<li   m d> NormalType
+				<li   m d> ConstType
+				<li   m d> RefType
+				<li   m d> ConstRefType
+				<li   m d> PtrType
+				<li   m d> ConstPtrType
+			</li></class>
+		</li></namespace>
+	</module>
+
+	<module name="Compiler">
+		<li     d> ASSERT
+		<li     d> ASSERT_ALL
+		<li     d> ASSERT_DUMP
+		<li   f d> ASSERT_FALSE
+		<li   f d> NotImplemented
+	
+		<namespace name="Utils">
+			<li   f d> GetTypeName
+			<li     d> WEAKINIT
+		</li></namespace>
+	</module>
+	
+	<module name="Event">
+		<li   c d> Empty/filling
+		<li   c d> Move
+		<li   f  > operator = move assignment
+		<li   f  > Swap
+		<li   f  > Register (free, member function)
+		<li   f  > Unregister
+		<li   f  > operator ()
+	</li></module><br/>
+
+	<module name="Console">
+			<li   f d> IsColorSupported
+			<li   f d> IsStyleSupported
+			<li   f d> SetColor
+			<li   f d> SetBackground
+			<li   f d> Reset
+			<li   f d> SetBold
+			<li   f d> SetUnderline
+			<li   f d> SetItalic
+			<li   f d> SetNegative
+			<li   f d> GetWidth
+			<li   f d> GotoXY
+			<li   f d> EnableCaret
+			<li   f d> DisableCaret
+		</li></namespace>
+	</module><br/>
+
+	<module name="String">
+		<namespace name="String">
+			<li   f d> Trim
+			<li   f d> TrimStart
+			<li   f d> TrimEnd
+			<li   f  > TrimInplace
+			<li   f  > TrimStartInplace
+			<li   f  > TrimEndInplace
+			<li   f d> To
+			<li   f d> From
+			<li   f  > Parse
+			<li   f d> ToLower
+			<li   f d> ToUpper
+			<li   f  > ToLowerInplace
+			<li   f  > ToUpperInplace
+			<li   f d> Replace
+			<li   f  > ReplaceInplace
+			<li   f d> Extract
+			<li   f d> Extract_UseQuotes
+			<li   f  > Split
+			<li   f  > TrimQuotes
+			<li   f  > TrimQuotesInplace
+			<li   f d> Concat
+			</li><br>
+			
+			<class name="CaseInsensitiveLess" done></class><br>
+			
+			<class name="Tokenizer" done>
+				<pre>Forward iterator that tokenizes a string from the given delimeter.</pre>
+			</class>
+		</namespace>
+	</module>
+	
+	<module name="Others">
+		<class name="Any">
+			<li   c d> Empty / Copy / Move constructor
+			<li   c d> Assumed / Duplicated
+			<li   f d> TypeInfo
+			<li   f d> TypeServices
+			<li   f d> operator = (copy/move)
+			<li   f d> operator = (value)
+			<li   f d> Swap
+			<li   f d> Set
+			<li   f d> Clear
+			<li   f d> GetRaw
+			<li   f d> SetRaw
+			<li   f d> AssumeRaw
+			<li   f d> Disown
+			<li   f d> SetType
+			<li   f d> Get
+			<li   f d> GetTypeName
+			<li   f d> UnsafeGet
+			<li   f d> TypeCheck
+			<li   f d> IsSameType
+			<li   f d> IsPointer
+			<li   f d> Pointer
+			<li   f d> operator ==
+			<li   f d> operator !=
+			<li   f d> IsSet
+		</li></class>
+		
+		<class name="SGuid">
+			<li   c d> Empty constructor
+			<li   c d> Create new constructor (uses tag)
+			<li   c d> Filling constructor (using array, long long, parts, stream)
+			<li   f d> operator ==, !=, <
+			<li   f d> Set
+			<li   f d> New
+			<li   f d> operator string
+			<li   f d> Load
+			<li   f d> Save
+			<li   f d> LoadLong (old full guid)
+			<li   f d> IsEmpty
+			<li   f d> operator bool
+			<li s m d> Empty
+		</li></class>
+		
+		<namespace name="Threading">
+			<li   f d> RunAsync
+			<li   f d> RunInParallel
+		</li></namespace>
+	</module>
+</section>
+
+
+<section name="Additional modules">
+
+	<module name="Data services">
+
+	</module>
+
+	<module name="CGI">
+
+	</module>
+
+	<module name="Effects">
+
+	</module>
+
+	<module name="Widgets">
+
+	</module>
+
+	<module name="Network">
+
+	</module>
+
+	<module name="Scripting">
+
+	</module>
+	
+</section>
+
+<section name="Gaming">
+
+	<module name="World">
+
+	</module>
+
+	<module name="Physics">
+
+	</module>
+
+	<module name="Actors">
+
+	</module>
+
+	<module name="Additional shaders">
+
+	</module>
+</section>
+</my>

@@ -1,1 +1,0 @@
-SET(Local curl.h curlbuild.h curlrules.h curlver.h easy.h mprintf.h multi.h stdcheaders.h typecheck-gcc.h )

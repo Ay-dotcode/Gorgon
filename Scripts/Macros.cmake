@@ -1,11 +1,11 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.25)
 
 MACRO(DoSource)
-	IF(${wd} MATCHES ".+")
-		MESSAGE("> Building ${wd}")
-	ELSE()
-		MESSAGE("> Building Root")
-	ENDIF()
+	#IF(${wd} MATCHES ".+")
+	#	MESSAGE("> Listing ${wd}")
+	#ELSE()
+	#	MESSAGE("> Listing Root")
+	#ENDIF()
 	
 	STRING(REGEX REPLACE "/" "\\\\" srcgrp "${wd}")
 	STRING(REGEX REPLACE "Source" "" srcgrp "${srcgrp}")
@@ -13,23 +13,29 @@ MACRO(DoSource)
 	
 	IF(${wd} MATCHES ".+")
 		SET(LocalFixed)
+		SET(LocalShaders)
 		FOREACH(L ${Local}) 
-			IF(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${wd}/${L}")
+			IF(IS_DIRECTORY "${CMAKE_SOURCE_DIR}/${wd}/${L}")
+			ELSEIF(L MATCHES ".*\\.glsl")
+				LIST(APPEND LocalShaders "${wd}/${L}")
 			ELSE()
 				LIST(APPEND LocalFixed "${wd}/${L}")
 			ENDIF()
 		ENDFOREACH()
 	ELSE()
 		SET(LocalFixed)
+		SET(LocalShaders)
 		FOREACH(L ${Local}) 
-			IF(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${wd}/${L}")
+			IF(IS_DIRECTORY "${CMAKE_SOURCE_DIR}/${wd}/${L}")
+			ELSEIF(L MATCHES ".*\\.glsl")
+				LIST(APPEND LocalShaders ${L})
 			ELSE()
 				LIST(APPEND LocalFixed ${L})
 			ENDIF()
 		ENDFOREACH()
 	ENDIF()
 
-	LIST(APPEND All ${LocalFixed})
+	LIST(APPEND All ${LocalFixed} ${LocalShaders})
 	LIST(LENGTH LocalFixed len)
 	IF(len GREATER 7)
 		SET(headergrpfiles)
@@ -49,8 +55,10 @@ MACRO(DoSource)
 		SOURCE_GROUP("${srcgrp}" FILES ${LocalFixed})
 	ENDIF()
 	
+	SOURCE_GROUP("${srcgrp}\\Shaders" FILES ${LocalShaders})
+	
 	FOREACH(S ${Local})
-		IF(IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/${wd}/${S}")
+		IF(IS_DIRECTORY "${CMAKE_SOURCE_DIR}/${wd}/${S}")
 			IF("${wd}" MATCHES "^[^\\/]+")
 				SET(wd "${wd}/${S}")
 			ELSE()
@@ -74,5 +82,50 @@ MACRO(StartSource src)
 	SET(testid 0)
 	SET(Local ${src})
 	SET(ExcludeDoc)
+	SET(deps)
 	DoSource()
+ENDMACRO()
+
+list(APPEND deps ShaderEmbedder)
+
+MACRO(EmbedShaders out for) #inputs
+	set(listv)
+	
+	foreach(a ${ARGN})
+		list(APPEND listv ${CMAKE_SOURCE_DIR}/${wd}/${a})
+	endforeach()
+	
+	add_custom_command(
+		OUTPUT ${CMAKE_SOURCE_DIR}/${wd}/${out}
+		COMMAND "${CMAKE_SOURCE_DIR}/Tools/ShaderEmbedder/Bin/ShaderEmbedder" ${out} ${ARGN}
+		DEPENDS ShaderEmbedder ${listv}
+		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/${wd}"
+		COMMENT "Embedding shaders into ${out}"
+	)
+	
+	list(APPEND Local ${ARGN})
+	list(APPEND Local ${out})
+	
+	get_property(cur SOURCE ${CMAKE_SOURCE_DIR}/${wd}/${for} PROPERTY OBJECT_DEPENDS)
+	set_property(SOURCE ${CMAKE_SOURCE_DIR}/${wd}/${for} APPEND PROPERTY OBJECT_DEPENDS "${cur};${CMAKE_SOURCE_DIR}/${wd}/${out}")
+ENDMACRO()
+
+list(APPEND deps GscriptGenerator)
+
+MACRO(GenerateGscript out) #inputs
+	set(listv)
+	
+	foreach(a ${ARGN})
+		list(APPEND listv ${CMAKE_SOURCE_DIR}/${wd}/${a})
+	endforeach()
+	
+	add_custom_command(
+		OUTPUT ${CMAKE_SOURCE_DIR}/${wd}/${out}
+		COMMAND "${CMAKE_SOURCE_DIR}/Tools/GscriptGenerator/Bin/GscriptGenerator" ${out} ${ARGN}
+		DEPENDS GscriptGenerator ${listv}
+		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/${wd}"
+		COMMENT "Creating Gscript files into ${out}"
+	)
+	
+	list(APPEND Local ${ARGN})
 ENDMACRO()
