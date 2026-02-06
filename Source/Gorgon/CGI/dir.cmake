@@ -3,5 +3,6 @@ set(Local
     Circle.h
     Line.h
     Path.h
+    PathFill.h
     Polygon.h
 )
