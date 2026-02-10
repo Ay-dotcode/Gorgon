@@ -193,6 +193,33 @@ public:
     return out;
   }
 
+  Path Duplicate() const {
+    Path copy;
+    copy.Commands = Commands;
+    copy.Contours = Contours;
+    copy.ActiveContourIndex = ActiveContourIndex;
+    copy.ExpectsMoveTo = ExpectsMoveTo;
+    return copy;
+  }
+
+  template <class F_> void TransformPoints(F_ fn) {
+    for (auto &cmd : Commands) {
+      switch (cmd.Verb) {
+      case PathVerb::MoveTo:
+      case PathVerb::LineTo:
+        fn(cmd.To);
+        break;
+      case PathVerb::CubicTo:
+        fn(cmd.Cubic.C1);
+        fn(cmd.Cubic.C2);
+        fn(cmd.Cubic.To);
+        break;
+      case PathVerb::Close:
+        break;
+      }
+    }
+  }
+
 private:
   std::vector<PathCommand> Commands;
   std::vector<PathContour> Contours;
