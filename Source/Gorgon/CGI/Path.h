@@ -70,8 +70,11 @@ struct PathContour {
 // auto pts = p.FlattenPointLists();
 class Path {
 public:
+  Path() = default;
   Path(const Path &) = delete;
   Path &operator=(const Path &) = delete;
+  Path(Path &&) = default;
+  Path &operator=(Path &&) = default;
 
   void MoveTo(Geometry::Pointf to, bool isNegative = false) {
     if (ActiveContourIndex < 0 || !ExpectsMoveTo)
