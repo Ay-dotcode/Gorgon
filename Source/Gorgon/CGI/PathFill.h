@@ -13,7 +13,11 @@ void Draw(Containers::Image &target, const Path &path, Float tolerance = 0.72f,
           bool enforceWinding = true,
           F_ fill = SolidFill<>{Graphics::Color::Black}) {
   auto pointLists = path.FlattenPointLists(tolerance, enforceWinding);
-  Polyfill<S_, W_, Geometry::Pointf, F_>(target, pointLists, fill);
+  Containers::Collection<const Geometry::PointList<Geometry::Pointf>> lists;
+  for (const auto &points : pointLists) {
+    lists.Add(points);
+  }
+  Polyfill<S_, W_, Geometry::Pointf, F_>(target, lists, fill);
 }
 
 template <int S_ = GORGON_DEFAULT_SUBDIVISIONS, int W_ = 0,
