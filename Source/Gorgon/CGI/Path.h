@@ -70,6 +70,12 @@ struct PathContour {
 // auto pts = p.FlattenPointLists();
 class Path {
 public:
+  struct FlattenedContour {
+    Geometry::PointList<Geometry::Pointf> Points;
+    bool IsClosed = false;
+    bool IsNegative = false;
+  };
+
   Path() = default;
   Path(const Path &) = delete;
   Path &operator=(const Path &) = delete;
@@ -102,13 +108,25 @@ public:
     ASSERT(ActiveContourIndex >= 0 && !ExpectsMoveTo,
            "Close requires an active contour started by MoveTo");
     PushCommand(PathCommand::Close());
+    ExpectsMoveTo = true;
   }
 
   std::vector<Geometry::PointList<Geometry::Pointf>>
   FlattenPointLists(Float tolerance = 0.72f, bool enforceWinding = true) const {
+    auto flattened = FlattenContours(tolerance, enforceWinding);
+    std::vector<Geometry::PointList<Geometry::Pointf>> out;
+    out.reserve(flattened.size());
+    for (auto &fc : flattened) {
+      out.push_back(std::move(fc.Points));
+    }
+    return out;
+  }
+
+  std::vector<FlattenedContour>
+  FlattenContours(Float tolerance = 0.72f, bool enforceWinding = true) const {
     ASSERT(tolerance > 0, "Tolerance cannot be 0 or less");
 
-    std::vector<Geometry::PointList<Geometry::Pointf>> out;
+    std::vector<FlattenedContour> out;
     out.reserve(Contours.size());
 
     for (const auto &contour : Contours) {
@@ -121,8 +139,10 @@ public:
       ASSERT(endIndex <= Commands.size(),
              "Contour command range is out of bounds");
 
-      Geometry::PointList<Geometry::Pointf> points;
+      FlattenedContour flattened;
+      flattened.IsNegative = contour.Negative();
 
+      auto &points = flattened.Points;
       bool haveCurrent = false;
       Geometry::Pointf current(0, 0);
       Geometry::Pointf start(0, 0);
@@ -169,6 +189,7 @@ public:
         }
         case PathVerb::Close: {
           ASSERT(haveCurrent, "Close requires MoveTo");
+          flattened.IsClosed = true;
           current = start;
           i = endIndex;
           break;
@@ -187,11 +208,12 @@ public:
         bool isCCW = area2 > 0;
 
         // Convention: positive geometry -> CCW, negative geometry -> CW.
-        bool wantCCW = !contour.Negative();
+        bool wantCCW = !flattened.IsNegative;
         if (isCCW != wantCCW)
           std::reverse(points.begin(), points.end());
       }
-      out.push_back(std::move(points));
+
+      out.push_back(std::move(flattened));
     }
     return out;
   }
