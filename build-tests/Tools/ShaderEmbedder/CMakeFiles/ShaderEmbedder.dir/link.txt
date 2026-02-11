@@ -1,0 +1,1 @@
+/usr/bin/c++  -std=c++14 -g -Wl,--dependency-file=CMakeFiles/ShaderEmbedder.dir/link.d CMakeFiles/ShaderEmbedder.dir/Source/Main.cpp.o -o /home/Josey/Documents/Gorgon/Tools/ShaderEmbedder/Bin/ShaderEmbedder
