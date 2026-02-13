@@ -12,7 +12,7 @@ template <int S_ = GORGON_DEFAULT_SUBDIVISIONS, int W_ = 0,
 void Draw(Containers::Image &target, const Path &path, Float tolerance = 0.72f,
           bool enforceWinding = true,
           F_ fill = SolidFill<>{Graphics::Color::Black}) {
-  auto pointLists = path.FlattenPointLists(tolerance, enforceWinding);
+  auto pointLists = path.Flatten(tolerance, enforceWinding);
   Containers::Collection<const Geometry::PointList<Geometry::Pointf>> lists;
   for (const auto &points : pointLists) {
     lists.Add(points);

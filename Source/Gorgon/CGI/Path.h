@@ -11,111 +11,113 @@
 namespace Gorgon {
 namespace CGI {
 
-enum class PathVerb : uint8_t { MoveTo, LineTo, CubicTo, Close };
+template <class Point_> class basic_Path {
+public:
+  using Point = Point_;
+  using PointList = Geometry::PointList<Point>;
 
-struct PathCubic {
-  Geometry::Pointf C1;
-  Geometry::Pointf C2;
-  Geometry::Pointf To;
-};
+  enum Verb { MoveTo, LineTo, CubicTo, Close };
 
-struct PathCommand {
-  PathVerb Verb = PathVerb::Close;
-
-  union {
-    Geometry::Pointf To;
-    PathCubic Cubic;
+  struct Cubic {
+    Point C1;
+    Point C2;
+    Point To;
   };
 
-  PathCommand() : To(0, 0) {}
+  struct Command {
+    Verb Verb = Close;
 
-  static PathCommand MoveTo(Geometry::Pointf to) {
-    PathCommand cmd;
-    cmd.Verb = PathVerb::MoveTo;
-    cmd.To = to;
-    return cmd;
-  }
+    union {
+      Point To;
+      Cubic Cubic;
+    };
 
-  static PathCommand LineTo(Geometry::Pointf to) {
-    PathCommand cmd;
-    cmd.Verb = PathVerb::LineTo;
-    cmd.To = to;
-    return cmd;
-  }
+    Command() : To() {}
 
-  static PathCommand CubicTo(Geometry::Pointf c1, Geometry::Pointf c2,
-                             Geometry::Pointf to) {
-    PathCommand cmd;
-    cmd.Verb = PathVerb::CubicTo;
-    cmd.Cubic = {c1, c2, to};
-    return cmd;
-  }
+    static Command MoveTo(Point to) {
+      Command cmd;
+      cmd.Verb = Verb::MoveTo;
+      cmd.To = to;
+      return cmd;
+    }
 
-  static PathCommand Close() {
-    PathCommand cmd;
-    cmd.Verb = PathVerb::Close;
-    return cmd;
-  }
-};
+    static Command LineTo(Point to) {
+      Command cmd;
+      cmd.Verb = Verb::LineTo;
+      cmd.To = to;
+      return cmd;
+    }
 
-struct PathContour {
-  uint32_t FirstCommandIndex = 0;
-  uint32_t CommandCount = 0;
-  uint8_t IsNegative = 0;
+    static Command CubicTo(Point c1, Point c2, Point to) {
+      Command cmd;
+      cmd.Verb = Verb::CubicTo;
+      cmd.Cubic = {c1, c2, to};
+      return cmd;
+    }
 
-  bool Negative() const { return IsNegative != 0; }
-};
+    static Command Close() {
+      Command cmd;
+      cmd.Verb = Verb::Close;
+      return cmd;
+    }
+  };
 
-// Usage: Path p; p.MoveTo({0, 0}); p.LineTo({10, 0}); p.Close();
-// auto pts = p.FlattenPointLists();
-class Path {
-public:
+  struct Contour {
+    std::uint32_t FirstCommandIndex = 0;
+    std::uint32_t CommandCount = 0;
+    std::uint8_t IsNegative = 0;
+
+    bool Negative() const { return IsNegative != 0; }
+  };
+
   struct FlattenedContour {
-    Geometry::PointList<Geometry::Pointf> Points;
+    PointList Points;
     bool IsClosed = false;
     bool IsNegative = false;
   };
 
-  Path() = default;
-  Path(const Path &) = delete;
-  Path &operator=(const Path &) = delete;
-  Path(Path &&) = default;
-  Path &operator=(Path &&) = default;
+  basic_Path() = default;
+  basic_Path(const basic_Path &) = delete;
+  basic_Path &operator=(const basic_Path &) = delete;
+  basic_Path(basic_Path &&) = default;
+  basic_Path &operator=(basic_Path &&) = default;
 
-  void MoveTo(Geometry::Pointf to, bool isNegative = false) {
+  // Usage: Path p; p.AddMoveTo({0, 0}); p.AddLineTo({10, 0}); p.CloseContour();
+  // auto pts = p.Flatten();
+  void AddMoveTo(Point to, bool isNegative = false) {
     if (ActiveContourIndex < 0 || !ExpectsMoveTo)
       BeginContour(isNegative);
     else
       Contours[ActiveContourIndex].IsNegative = isNegative ? 1 : 0;
 
-    PushCommand(PathCommand::MoveTo(to));
+    PushCommand(Command::MoveTo(to));
     ExpectsMoveTo = false;
   }
 
-  void LineTo(Geometry::Pointf to) {
+  void AddLineTo(Point to) {
     ASSERT(ActiveContourIndex >= 0 && !ExpectsMoveTo,
            "LineTo requires an active contour started by MoveTo");
-    PushCommand(PathCommand::LineTo(to));
+    PushCommand(Command::LineTo(to));
   }
 
-  void CubicTo(Geometry::Pointf c1, Geometry::Pointf c2, Geometry::Pointf to) {
+  void AddCubicTo(Point c1, Point c2, Point to) {
     ASSERT(ActiveContourIndex >= 0 && !ExpectsMoveTo,
            "CubicTo requires an active contour started by MoveTo");
-    PushCommand(PathCommand::CubicTo(c1, c2, to));
+    PushCommand(Command::CubicTo(c1, c2, to));
   }
 
-  void Close() {
+  void CloseContour() {
     ASSERT(ActiveContourIndex >= 0 && !ExpectsMoveTo,
            "Close requires an active contour started by MoveTo");
-    PushCommand(PathCommand::Close());
+    PushCommand(Command::Close());
     ExpectsMoveTo = true;
     ActiveContourIndex = -1;
   }
 
-  std::vector<Geometry::PointList<Geometry::Pointf>>
-  FlattenPointLists(Float tolerance = 0.72f, bool enforceWinding = true) const {
+  std::vector<PointList> Flatten(Float tolerance = 0.72f,
+                                 bool enforceWinding = true) const {
     auto flattened = FlattenContours(tolerance, enforceWinding);
-    std::vector<Geometry::PointList<Geometry::Pointf>> out;
+    std::vector<PointList> out;
     out.reserve(flattened.size());
     for (auto &fc : flattened) {
       out.push_back(std::move(fc.Points));
@@ -145,18 +147,17 @@ public:
 
       auto &points = flattened.Points;
       bool haveCurrent = false;
-      Geometry::Pointf current(0, 0);
-      Geometry::Pointf start(0, 0);
+      Point current(0, 0);
+      Point start(0, 0);
 
       for (std::size_t i = beginIndex; i < endIndex; i++) {
         const auto &cmd = Commands[i];
 
         if (!haveCurrent)
-          ASSERT(cmd.Verb == PathVerb::MoveTo,
-                 "Contours must start with MoveTo");
+          ASSERT(cmd.Verb == Verb::MoveTo, "Contours must start with MoveTo");
 
         switch (cmd.Verb) {
-        case PathVerb::MoveTo: {
+        case Verb::MoveTo: {
           current = cmd.To;
           start = current;
           haveCurrent = true;
@@ -164,17 +165,17 @@ public:
           points.Push(current);
           break;
         }
-        case PathVerb::LineTo: {
+        case Verb::LineTo: {
           ASSERT(haveCurrent, "LineTo requires MoveTo");
           current = cmd.To;
           if (points.IsEmpty() || points.Back() != current)
             points.Push(current);
           break;
         }
-        case PathVerb::CubicTo: {
+        case Verb::CubicTo: {
           ASSERT(haveCurrent, "CubicTo requires MoveTo");
-          basic_Bezier<Geometry::Pointf> bez(current, cmd.Cubic.C1,
-                                             cmd.Cubic.C2, cmd.Cubic.To);
+          basic_Bezier<Point> bez(current, cmd.Cubic.C1, cmd.Cubic.C2,
+                                  cmd.Cubic.To);
           auto seg = bez.Flatten(tolerance);
           auto sz = seg.GetSize();
           if (sz > 0) {
@@ -188,7 +189,7 @@ public:
           current = cmd.Cubic.To;
           break;
         }
-        case PathVerb::Close: {
+        case Verb::Close: {
           ASSERT(haveCurrent, "Close requires MoveTo");
           flattened.IsClosed = true;
           current = start;
@@ -219,8 +220,8 @@ public:
     return out;
   }
 
-  Path Duplicate() const {
-    Path copy;
+  basic_Path Duplicate() const {
+    basic_Path copy;
     copy.Commands = Commands;
     copy.Contours = Contours;
     copy.ActiveContourIndex = ActiveContourIndex;
@@ -231,30 +232,30 @@ public:
   template <class F_> void TransformPoints(F_ fn) {
     for (auto &cmd : Commands) {
       switch (cmd.Verb) {
-      case PathVerb::MoveTo:
-      case PathVerb::LineTo:
+      case Verb::MoveTo:
+      case Verb::LineTo:
         fn(cmd.To);
         break;
-      case PathVerb::CubicTo:
+      case Verb::CubicTo:
         fn(cmd.Cubic.C1);
         fn(cmd.Cubic.C2);
         fn(cmd.Cubic.To);
         break;
-      case PathVerb::Close:
+      case Verb::Close:
         break;
       }
     }
   }
 
 private:
-  std::vector<PathCommand> Commands;
-  std::vector<PathContour> Contours;
+  std::vector<Command> Commands;
+  std::vector<Contour> Contours;
 
   int ActiveContourIndex = -1;
   bool ExpectsMoveTo = false;
 
   void BeginContour(bool isNegative) {
-    PathContour contour;
+    Contour contour;
     contour.FirstCommandIndex = Commands.size();
     contour.CommandCount = 0;
     contour.IsNegative = isNegative ? 1 : 0;
@@ -264,7 +265,7 @@ private:
     ExpectsMoveTo = true;
   }
 
-  void PushCommand(const PathCommand &cmd) {
+  void PushCommand(const Command &cmd) {
     ASSERT(ActiveContourIndex >= 0,
            "Cannot add path commands without an active contour");
     Commands.push_back(cmd);
@@ -273,8 +274,7 @@ private:
     contour.CommandCount++;
   }
 
-  static Float
-  SignedArea2(const Geometry::PointList<Geometry::Pointf> &points) {
+  static Float SignedArea2(const PointList &points) {
     // Returns twice the signed area. Positive means CCW.
     Float a = 0;
     auto n = points.GetSize();
@@ -286,6 +286,8 @@ private:
     return a;
   }
 };
+
+using Path = basic_Path<Geometry::Pointf>;
 
 } // namespace CGI
 } // namespace Gorgon
