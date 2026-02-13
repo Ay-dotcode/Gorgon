@@ -28,7 +28,6 @@ SET(UnitTests
 	FLAC
 	GarbageCollection
 	Geometry
-	Path
 	Hashmap
 	KeyRepeater
 	Layer

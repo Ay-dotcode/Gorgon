@@ -305,10 +305,6 @@ if(CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     add_link_options(--coverage)
 endif()
 
-if(TESTS)
-    include("${CMAKE_CURRENT_LIST_DIR}/Scripts/Testing.cmake")
-endif()
-
 if(CODE_COVERAGE AND TESTS)
     find_program(GCOVR_COMMAND gcov)
     if(GCOVR_COMMAND)
