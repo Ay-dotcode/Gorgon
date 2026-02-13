@@ -109,6 +109,7 @@ public:
            "Close requires an active contour started by MoveTo");
     PushCommand(PathCommand::Close());
     ExpectsMoveTo = true;
+    ActiveContourIndex = -1;
   }
 
   std::vector<Geometry::PointList<Geometry::Pointf>>
@@ -203,7 +204,7 @@ public:
       if (points.GetSize() >= 2 && points.Front() == points.Back())
         points.Pop();
 
-      if (enforceWinding && points.GetSize() >= 3) {
+      if (enforceWinding && flattened.IsClosed && points.GetSize() >= 3) {
         auto area2 = SignedArea2(points);
         bool isCCW = area2 > 0;
 
