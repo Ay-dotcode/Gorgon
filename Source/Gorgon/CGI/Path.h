@@ -11,19 +11,23 @@
 namespace Gorgon {
 namespace CGI {
 
+/// Path builder that records drawing commands and can flatten curves.
 template <class Point_> class basic_Path {
 public:
   using Point = Point_;
   using PointList = Geometry::PointList<Point>;
 
+  /// Drawing commands supported by the path.
   enum Verb { MoveTo, LineTo, CubicTo, Close };
 
+  /// Cubic Bezier segment control points.
   struct Cubic {
     Point C1;
     Point C2;
     Point To;
   };
 
+  /// Single drawing command stored in the path.
   struct Command {
     Verb Verb = Close;
 
@@ -34,6 +38,7 @@ public:
 
     Command() : To() {}
 
+    /// Create a move command that starts or repositions the contour.
     static Command MoveTo(Point to) {
       Command cmd;
       cmd.Verb = Verb::MoveTo;
@@ -41,6 +46,7 @@ public:
       return cmd;
     }
 
+    /// Create a line command to the given point.
     static Command LineTo(Point to) {
       Command cmd;
       cmd.Verb = Verb::LineTo;
@@ -48,6 +54,7 @@ public:
       return cmd;
     }
 
+    /// Create a cubic Bezier command with two controls and an endpoint.
     static Command CubicTo(Point c1, Point c2, Point to) {
       Command cmd;
       cmd.Verb = Verb::CubicTo;
@@ -55,6 +62,7 @@ public:
       return cmd;
     }
 
+    /// Create a close command that seals the current contour.
     static Command Close() {
       Command cmd;
       cmd.Verb = Verb::Close;
@@ -62,6 +70,7 @@ public:
     }
   };
 
+  /// Metadata describing a contour inside the command buffer.
   struct Contour {
     std::uint32_t FirstCommandIndex = 0;
     std::uint32_t CommandCount = 0;
@@ -70,6 +79,7 @@ public:
     bool Negative() const { return IsNegative != 0; }
   };
 
+  /// Flattened contour representation produced by `FlattenContours`.
   struct FlattenedContour {
     PointList Points;
     bool IsClosed = false;
@@ -82,8 +92,8 @@ public:
   basic_Path(basic_Path &&) = default;
   basic_Path &operator=(basic_Path &&) = default;
 
-  // Usage: Path p; p.AddMoveTo({0, 0}); p.AddLineTo({10, 0}); p.CloseContour();
-  // auto pts = p.Flatten();
+  /// Usage: Path p; p.AddMoveTo({0, 0}); p.AddLineTo({10, 0});
+  /// p.CloseContour(); auto pts = p.Flatten();
   void AddMoveTo(Point to, bool isNegative = false) {
     if (ActiveContourIndex < 0 || !ExpectsMoveTo)
       BeginContour(isNegative);
@@ -94,18 +104,21 @@ public:
     ExpectsMoveTo = false;
   }
 
+  /// Append a straight segment to the active contour.
   void AddLineTo(Point to) {
     ASSERT(ActiveContourIndex >= 0 && !ExpectsMoveTo,
            "LineTo requires an active contour started by MoveTo");
     PushCommand(Command::LineTo(to));
   }
 
+  /// Append a cubic Bezier segment to the active contour.
   void AddCubicTo(Point c1, Point c2, Point to) {
     ASSERT(ActiveContourIndex >= 0 && !ExpectsMoveTo,
            "CubicTo requires an active contour started by MoveTo");
     PushCommand(Command::CubicTo(c1, c2, to));
   }
 
+  /// Close the active contour, marking it as finished.
   void CloseContour() {
     ASSERT(ActiveContourIndex >= 0 && !ExpectsMoveTo,
            "Close requires an active contour started by MoveTo");
@@ -114,6 +127,7 @@ public:
     ActiveContourIndex = -1;
   }
 
+  /// Flatten the path into polylines; optionally enforce winding.
   std::vector<PointList> Flatten(Float tolerance = 0.72f,
                                  bool enforceWinding = true) const {
     auto flattened = FlattenContours(tolerance, enforceWinding);
@@ -125,6 +139,7 @@ public:
     return out;
   }
 
+  /// Flatten the path and return per-contour metadata.
   std::vector<FlattenedContour>
   FlattenContours(Float tolerance = 0.72f, bool enforceWinding = true) const {
     ASSERT(tolerance > 0, "Tolerance cannot be 0 or less");
@@ -220,6 +235,7 @@ public:
     return out;
   }
 
+  /// Create a deep copy of the path.
   basic_Path Duplicate() const {
     basic_Path copy;
     copy.Commands = Commands;
@@ -229,6 +245,7 @@ public:
     return copy;
   }
 
+  /// Apply an in-place transform to every point stored in commands.
   template <class F_> void TransformPoints(F_ fn) {
     for (auto &cmd : Commands) {
       switch (cmd.Verb) {

@@ -6,7 +6,7 @@
 namespace Gorgon {
 namespace CGI {
 
-// Convenience wrapper that converts a path to point lists, then fills it.
+/// Convenience wrapper that converts a path to point lists, then fills it.
 template <int S_ = GORGON_DEFAULT_SUBDIVISIONS, int W_ = 0,
           class F_ = SolidFill<>>
 void Draw(Containers::Image &target, const Path &path, Float tolerance = 0.72f,
@@ -20,6 +20,7 @@ void Draw(Containers::Image &target, const Path &path, Float tolerance = 0.72f,
   Polyfill<S_, W_, Geometry::Pointf, F_>(target, lists, fill);
 }
 
+/// Convenience wrapper that converts a path to point lists, then fills it.
 template <int S_ = GORGON_DEFAULT_SUBDIVISIONS, int W_ = 0,
           class F_ = SolidFill<>>
 void Draw(Graphics::Bitmap &target, const Path &path, Float tolerance = 0.72f,
